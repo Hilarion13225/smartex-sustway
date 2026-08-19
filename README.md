@@ -84,7 +84,12 @@ détail des phases A→G, le calendrier daté et le backlog complet.
       moteur de règles (score/risque, validé par 27 tests unitaires), endpoints
       Sites (CRUD, isolation multi-tenant), tests d'intégration `@QuarkusTest`
       (auth, entreprises, sites — 14 tests, exécutés contre PostgreSQL réel)
-- [ ] **Phase C — Abonnements & onboarding**
+- [x] **Phase C — Abonnements & onboarding (partiel)** : formules (Free/Standard/
+      Avancées), création d'entreprise couplée à un abonnement (RG24), refus de
+      création en formule Free (RG25), paiement PI-SPI/Wave — **stub fonctionnel
+      uniquement** (intégration réelle non câblée, cf. §5.3 du CDC, "point ouvert
+      restant"). 2FA (RG36) implémentée (SMS + application d'authentification,
+      voir ci-dessous) — reste à connecter au frontend (prochain lot).
 - [ ] **Phase D — IA de base (Standard)**
 - [ ] **Phase E — IA avancée (Avancées)**
 - [ ] **Phase F — Référentiels sectoriels & back-office**
@@ -127,13 +132,23 @@ fois l'API lancée : `/api/swagger-ui`.
 |---|---|---|
 | POST | `/auth/inscription` | Création de compte (email non vérifié au départ) |
 | GET | `/auth/verification-email?token=...` | RG36 — active le compte |
-| POST | `/auth/connexion` | Retourne un JWT (Bearer, 8h) |
+| POST | `/auth/connexion` | Retourne soit un token de session (`deuxFaRequise:false`), soit `deuxFaRequise:true` + `tokenPreAuth` si la 2FA est active |
+| POST | `/auth/connexion/2fa` | Étape 2 (2FA) : `{tokenPreAuth, code}` → token de session |
+| POST | `/auth/2fa/app/demarrer` | Démarre l'activation 2FA application (retourne le secret + l'URI `otpauth://` à encoder en QR code côté frontend) |
+| POST | `/auth/2fa/app/confirmer` | Confirme l'activation avec un code TOTP valide (`{code}`) |
+| POST | `/auth/2fa/sms/demarrer` | Démarre l'activation 2FA SMS (`{telephone}`) |
+| POST | `/auth/2fa/sms/confirmer` | Confirme l'activation avec le code reçu (`{tokenActivation, code}`) |
+| POST | `/auth/2fa/desactiver` | Désactive la 2FA |
 | GET | `/utilisateurs/moi` | Profil de l'utilisateur authentifié |
 | GET | `/entreprises` | Entreprises auxquelles l'utilisateur est rattaché |
-| POST | `/entreprises` | Création d'entreprise (l'auteur en devient responsable) |
+| POST | `/entreprises` | Création d'entreprise + abonnement (RG24 : `formuleCode` obligatoire, `periodicite` requise si formule payante ; `FREE` refusé — RG25) |
 | GET | `/entreprises/{id}` | Détail (accès vérifié par `AutorisationService`) |
 | GET | `/roles` | Liste des rôles RBAC |
 | GET | `/secteurs` | Liste des secteurs d'activité (publique, pas d'authentification requise) |
+| GET | `/formules` | Liste des formules d'abonnement (publique — CDC §5, choix avant inscription) |
+| GET | `/entreprises/{id}/abonnement` | Abonnement courant de l'entreprise |
+| GET | `/entreprises/{id}/abonnement/paiements` | Historique des paiements |
+| POST | `/entreprises/{id}/abonnement/paiements` | Initier un paiement (`{"fournisseur":"PI_SPI"\|"WAVE"}`) — **stub**, active l'abonnement immédiatement (voir avertissement ci-dessous) |
 | GET | `/entreprises/{id}/sites` | Sites d'une entreprise |
 | GET | `/entreprises/{id}/sites/{siteId}` | Détail d'un site |
 | POST | `/entreprises/{id}/sites` | Création d'un site (RG04) |
@@ -145,6 +160,35 @@ depuis cet environnement, ce code Java n'a pas pu être compilé/testé ici
 (contrairement au moteur de règles, testé en Java pur avec JUnit5 local).
 Première étape chez vous : `mvn compile` puis `mvn quarkus:dev`, et me
 signaler toute erreur — je corrige immédiatement.
+
+## Paiement — état réel (phase C)
+
+⚠️ **`PaiementService` est un stub.** Le CDC (§5.3, "point ouvert restant")
+indique explicitement que "les modalités précises d'intégration technique
+avec PI-SPI et Wave (API, frais, couverture des opérateurs) restent à
+cadrer avec Smartex Expertises". En l'absence de ce cadrage, tout paiement
+initié via `POST /abonnement/paiements` est **automatiquement marqué
+réussi et active l'abonnement**, sans appel à un vrai fournisseur. Ne pas
+utiliser en production tel quel — voir le commentaire de `PaiementService`
+pour la liste des points à câbler une fois les accès PI-SPI/Wave obtenus.
+
+## 2FA et sécurité des tokens (phase C, suite)
+
+RG36 : la 2FA (SMS ou application d'authentification) est optionnelle, au
+choix de l'utilisateur. Comme pour la vérification d'email, aucun envoi
+SMS réel n'est branché — le code est journalisé côté serveur (`mvn
+quarkus:dev`) plutôt qu'envoyé, en attendant un fournisseur SMS.
+
+⚠️ **`SessionPurposeFilter` est nouveau et mérite une vérification
+particulière** (voir tests `SessionPurposeFilterTest`). Il ferme une faille
+de "confusion de jetons" : sans lui, un token de vérification d'email
+(à usage unique) aurait pu servir à s'authentifier sur n'importe quel
+endpoint protégé, puisque seule la signature du JWT était vérifiée, pas
+son usage prévu. Tous les tokens portent désormais un claim `purpose`,
+et ce filtre global rejette (401) toute requête authentifiée dont le
+token n'a pas `purpose=SESSION`. Testez en particulier que la connexion
+normale fonctionne toujours après ce changement — c'est le risque de
+régression le plus probable de ce lot.
 
 ## Sécurité — phase B
 

@@ -4,23 +4,16 @@ import { decoderJwt, tokenExpire } from '../lib/jwt';
 
 /**
  * Contexte d'authentification RÉEL — parle effectivement à l'API Quarkus
- * (voir README racine, section "API disponible (Phase B)").
+ * (voir README racine, section "API disponible"). Couvre désormais
+ * l'inscription, la vérification email, la connexion (avec 2FA optionnelle
+ * en deux étapes — RG36), les entreprises, les abonnements/paiements et la
+ * gestion de la 2FA.
  *
  * Volontairement SÉPARÉ du contexte de démonstration (auth/AuthContext.jsx,
- * utilisé par tout le reste de l'application sur des données mockées dans
- * data/mock.js). Les deux univers coexistent sans se marcher dessus :
- *   - AuthContext / useAuth()    -> démo complète (Dashboard, Audits...),
- *     nécessaire tant que les modules IA/scoring/rapports (phases D à G)
- *     n'existent pas côté backend.
- *   - ApiAuthContext / useApiAuth() -> connexion réelle (inscription,
- *     vérification email, connexion, création d'entreprise), sur les seuls
- *     modules effectivement construits et testés (phase B).
- *
- * Fusionner les deux viendrait soit casser tout le reste de l'app (qui
- * suppose un utilisateur mocké avec rôle/formule/audits), soit obliger à
- * reconstruire prématurément 15+ pages sur des données qui n'existent pas
- * encore côté API. On préfère avancer honnêtement : ce qui est réel est
- * clairement isolé et affiché comme tel (pages ConnexionReelle/EspaceReel).
+ * utilisé par le reste de l'application sur des données mockées dans
+ * data/mock.js — Dashboard, Audits, Pipeline... modules pas encore
+ * construits côté API, phases D à G). Les deux univers coexistent sans se
+ * marcher dessus.
  */
 export const ApiAuthContext = createContext(null);
 
@@ -68,6 +61,8 @@ export function ApiAuthProvider({ children }) {
     chargerProfil();
   }, [chargerProfil]);
 
+  // --- Inscription / vérification email ---------------------------------
+
   const inscrire = useCallback(async (nom, prenom, email, motDePasse) => {
     return api.post('/api/v1/auth/inscription', { nom, prenom, email, motDePasse }, { avecAuth: false });
   }, []);
@@ -76,10 +71,29 @@ export function ApiAuthProvider({ children }) {
     return api.get(`/api/v1/auth/verification-email?token=${encodeURIComponent(tokenVerification)}`, { avecAuth: false });
   }, []);
 
+  // --- Connexion (RG36 : deux étapes si la 2FA est active) ---------------
+
+  /**
+   * Retourne la réponse brute de l'API : {deuxFaRequise, methode, tokenPreAuth}
+   * si la 2FA doit encore être validée (le token de session n'est PAS
+   * positionné dans ce cas — l'appelant doit ensuite appeler confirmerDeuxFa),
+   * ou {deuxFaRequise:false, token, typeToken} sinon (session déjà active
+   * au retour de cet appel).
+   */
   const connecter = useCallback(async (email, motDePasse) => {
     const reponse = await api.post('/api/v1/auth/connexion', { email, motDePasse }, { avecAuth: false });
+    if (!reponse.deuxFaRequise) {
+      ecrireToken(reponse.token);
+      setToken(reponse.token);
+    }
+    return reponse;
+  }, []);
+
+  const confirmerDeuxFa = useCallback(async (tokenPreAuth, code) => {
+    const reponse = await api.post('/api/v1/auth/connexion/2fa', { tokenPreAuth, code }, { avecAuth: false });
     ecrireToken(reponse.token);
     setToken(reponse.token);
+    return reponse;
   }, []);
 
   const deconnecter = useCallback(() => {
@@ -89,10 +103,63 @@ export function ApiAuthProvider({ children }) {
     setEntreprises([]);
   }, []);
 
+  // --- Gestion de la 2FA (utilisateur déjà connecté) ----------------------
+
+  const demarrerActivationAppDeuxFa = useCallback(async () => {
+    return api.post('/api/v1/auth/2fa/app/demarrer', undefined);
+  }, []);
+
+  const confirmerActivationAppDeuxFa = useCallback(
+    async (code) => {
+      const u = await api.post('/api/v1/auth/2fa/app/confirmer', { code });
+      setUtilisateur(u);
+      return u;
+    },
+    []
+  );
+
+  const demarrerActivationSmsDeuxFa = useCallback(async (telephone) => {
+    return api.post('/api/v1/auth/2fa/sms/demarrer', { telephone });
+  }, []);
+
+  const confirmerActivationSmsDeuxFa = useCallback(
+    async (tokenActivation, code) => {
+      const u = await api.post('/api/v1/auth/2fa/sms/confirmer', { tokenActivation, code });
+      setUtilisateur(u);
+      return u;
+    },
+    []
+  );
+
+  const desactiverDeuxFa = useCallback(async () => {
+    const u = await api.post('/api/v1/auth/2fa/desactiver', undefined);
+    setUtilisateur(u);
+    return u;
+  }, []);
+
+  // --- Entreprises / abonnements / paiements ------------------------------
+
+  /** RG24/RG25 : payload doit inclure formuleCode (+ periodicite si formule payante). */
   const creerEntreprise = useCallback(async (payload) => {
-    const entreprise = await api.post('/api/v1/entreprises', payload);
-    setEntreprises((prev) => [...prev, entreprise]);
-    return entreprise;
+    const reponse = await api.post('/api/v1/entreprises', payload);
+    setEntreprises((prev) => [...prev, reponse.entreprise]);
+    return reponse; // { entreprise, abonnement }
+  }, []);
+
+  const recupererAbonnement = useCallback(async (entrepriseId) => {
+    return api.get(`/api/v1/entreprises/${entrepriseId}/abonnement`);
+  }, []);
+
+  const payerAbonnement = useCallback(async (entrepriseId, fournisseur) => {
+    return api.post(`/api/v1/entreprises/${entrepriseId}/abonnement/paiements`, { fournisseur });
+  }, []);
+
+  const listerFormules = useCallback(async () => {
+    return api.get('/api/v1/formules', { avecAuth: false });
+  }, []);
+
+  const listerSecteurs = useCallback(async () => {
+    return api.get('/api/v1/secteurs', { avecAuth: false });
   }, []);
 
   const valeur = useMemo(
@@ -106,11 +173,43 @@ export function ApiAuthProvider({ children }) {
       inscrire,
       verifierEmail,
       connecter,
+      confirmerDeuxFa,
       deconnecter,
+      demarrerActivationAppDeuxFa,
+      confirmerActivationAppDeuxFa,
+      demarrerActivationSmsDeuxFa,
+      confirmerActivationSmsDeuxFa,
+      desactiverDeuxFa,
       creerEntreprise,
+      recupererAbonnement,
+      payerAbonnement,
+      listerFormules,
+      listerSecteurs,
       rafraichirProfil: chargerProfil,
     }),
-    [token, utilisateur, entreprises, roleCourant, chargement, inscrire, verifierEmail, connecter, deconnecter, creerEntreprise, chargerProfil]
+    [
+      token,
+      utilisateur,
+      entreprises,
+      roleCourant,
+      chargement,
+      inscrire,
+      verifierEmail,
+      connecter,
+      confirmerDeuxFa,
+      deconnecter,
+      demarrerActivationAppDeuxFa,
+      confirmerActivationAppDeuxFa,
+      demarrerActivationSmsDeuxFa,
+      confirmerActivationSmsDeuxFa,
+      desactiverDeuxFa,
+      creerEntreprise,
+      recupererAbonnement,
+      payerAbonnement,
+      listerFormules,
+      listerSecteurs,
+      chargerProfil,
+    ]
   );
 
   return <ApiAuthContext.Provider value={valeur}>{children}</ApiAuthContext.Provider>;

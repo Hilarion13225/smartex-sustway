@@ -13,6 +13,12 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 
+/**
+ * RG24 : toute création d'entreprise exige une formule d'abonnement valide
+ * (formuleCode + periodicite pour les formules payantes) — voir
+ * EntrepriseResource.creer. La réponse de création est désormais un DTO
+ * combiné {entreprise, abonnement} (EntrepriseAvecAbonnementDto).
+ */
 @QuarkusTest
 class EntrepriseResourceTest {
 
@@ -27,13 +33,19 @@ class EntrepriseResourceTest {
         String entrepriseId = given()
                 .header("Authorization", "Bearer " + utilisateur.token)
                 .contentType(ContentType.JSON)
-                .body(Map.of("raisonSociale", "Entreprise Test", "identifiantLegal", identifiantLegal))
+                .body(Map.of(
+                        "raisonSociale", "Entreprise Test",
+                        "identifiantLegal", identifiantLegal,
+                        "formuleCode", "STANDARD",
+                        "periodicite", "ANNUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then()
                 .statusCode(201)
-                .body("raisonSociale", equalTo("Entreprise Test"))
-                .body("identifiantLegal", equalTo(identifiantLegal))
-                .extract().path("id");
+                .body("entreprise.raisonSociale", equalTo("Entreprise Test"))
+                .body("entreprise.identifiantLegal", equalTo(identifiantLegal))
+                .body("abonnement.formuleCode", equalTo("STANDARD"))
+                .body("abonnement.statut", equalTo("EN_ATTENTE_PAIEMENT"))
+                .extract().path("entreprise.id");
 
         given()
                 .header("Authorization", "Bearer " + utilisateur.token)
@@ -58,16 +70,54 @@ class EntrepriseResourceTest {
         given()
                 .header("Authorization", "Bearer " + utilisateur.token)
                 .contentType(ContentType.JSON)
-                .body(Map.of("raisonSociale", "Entreprise Test", "identifiantLegal", identifiantLegal))
+                .body(Map.of(
+                        "raisonSociale", "Entreprise Test",
+                        "identifiantLegal", identifiantLegal,
+                        "formuleCode", "STANDARD",
+                        "periodicite", "ANNUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201);
 
         given()
                 .header("Authorization", "Bearer " + utilisateur.token)
                 .contentType(ContentType.JSON)
-                .body(Map.of("raisonSociale", "Autre Raison Sociale", "identifiantLegal", identifiantLegal))
+                .body(Map.of(
+                        "raisonSociale", "Autre Raison Sociale",
+                        "identifiantLegal", identifiantLegal,
+                        "formuleCode", "STANDARD",
+                        "periodicite", "ANNUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(409);
+    }
+
+    @Test
+    void creerEntreprise_formuleFree_estRefuseeParRG25() {
+        var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
+
+        given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "raisonSociale", "Entreprise Free",
+                        "identifiantLegal", "RCCM-FREE-" + UUID.randomUUID(),
+                        "formuleCode", "FREE"))
+                .when().post("/api/v1/entreprises")
+                .then().statusCode(403);
+    }
+
+    @Test
+    void creerEntreprise_formulePayanteSansPeriodicite_estRejetee() {
+        var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
+
+        given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "raisonSociale", "Entreprise Sans Periodicite",
+                        "identifiantLegal", "RCCM-NOPERIOD-" + UUID.randomUUID(),
+                        "formuleCode", "STANDARD"))
+                .when().post("/api/v1/entreprises")
+                .then().statusCode(400);
     }
 
     @Test
@@ -83,10 +133,14 @@ class EntrepriseResourceTest {
         String entrepriseIdA = given()
                 .header("Authorization", "Bearer " + utilisateurA.token)
                 .contentType(ContentType.JSON)
-                .body(Map.of("raisonSociale", "Entreprise A", "identifiantLegal", "RCCM-A-" + UUID.randomUUID()))
+                .body(Map.of(
+                        "raisonSociale", "Entreprise A",
+                        "identifiantLegal", "RCCM-A-" + UUID.randomUUID(),
+                        "formuleCode", "STANDARD",
+                        "periodicite", "MENSUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
-                .extract().path("id");
+                .extract().path("entreprise.id");
 
         // B ne doit pas pouvoir consulter l'entreprise de A (exigence §1.4 —
         // isolation stricte, indépendante de toute permission accordée par ailleurs).

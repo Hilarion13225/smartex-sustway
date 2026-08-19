@@ -70,6 +70,13 @@
       <artifactId>quarkus-elytron-security-common</artifactId>
     </dependency>
 
+    <!-- TOTP (2FA application d'authentification, RG36/CDC §5.4) -->
+    <dependency>
+      <groupId>dev.samstevens.totp</groupId>
+      <artifactId>totp</artifactId>
+      <version>1.7.1</version>
+    </dependency>
+
     <!-- Cache / Redis -->
     <dependency>
       <groupId>io.quarkus</groupId>

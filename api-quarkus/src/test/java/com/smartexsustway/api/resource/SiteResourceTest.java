@@ -24,10 +24,14 @@ class SiteResourceTest {
         return given()
                 .header("Authorization", "Bearer " + token)
                 .contentType(ContentType.JSON)
-                .body(Map.of("raisonSociale", "Entreprise Sites Test", "identifiantLegal", "RCCM-SITE-" + UUID.randomUUID()))
+                .body(Map.of(
+                        "raisonSociale", "Entreprise Sites Test",
+                        "identifiantLegal", "RCCM-SITE-" + UUID.randomUUID(),
+                        "formuleCode", "STANDARD",
+                        "periodicite", "ANNUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
-                .extract().path("id");
+                .extract().path("entreprise.id");
     }
 
     @Test

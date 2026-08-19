@@ -56,6 +56,14 @@ public class Utilisateur {
     @Column(name = "deuxfa_methode", length = 20)
     private MethodeDeuxFa deuxfaMethode;
 
+    /** Secret TOTP (base32), méthode APP uniquement — jamais exposé via un DTO. */
+    @Column(name = "deuxfa_secret", length = 64)
+    private String deuxfaSecret;
+
+    /** Nécessaire pour la méthode SMS — nullable, renseigné à l'activation de la 2FA. */
+    @Column(name = "telephone", length = 20)
+    private String telephone;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "statut", nullable = false, columnDefinition = "statut_utilisateur")
@@ -132,18 +140,45 @@ public class Utilisateur {
         return deuxfaActive;
     }
 
-    public void activerDeuxFa(MethodeDeuxFa methode) {
-        this.deuxfaActive = true;
+    /**
+     * Étape 1/2 de l'activation de la 2FA : enregistre la méthode et le
+     * secret (APP uniquement — null pour SMS, qui n'a pas besoin de secret
+     * persistant). {@code deuxfaActive} reste volontairement à false tant
+     * que {@link #confirmerActivationDeuxFa()} n'a pas été appelé — on ne
+     * doit jamais activer une 2FA dont l'utilisateur n'a pas prouvé qu'il
+     * sait produire un code valide (risque de se verrouiller lui-même hors
+     * de son compte).
+     */
+    public void demarrerActivationDeuxFa(MethodeDeuxFa methode, String secret) {
         this.deuxfaMethode = methode;
+        this.deuxfaSecret = secret;
+    }
+
+    /** Étape 2/2 : à appeler uniquement après vérification réussie d'un code. */
+    public void confirmerActivationDeuxFa() {
+        this.deuxfaActive = true;
     }
 
     public void desactiverDeuxFa() {
         this.deuxfaActive = false;
         this.deuxfaMethode = null;
+        this.deuxfaSecret = null;
     }
 
     public MethodeDeuxFa getDeuxfaMethode() {
         return deuxfaMethode;
+    }
+
+    public String getDeuxfaSecret() {
+        return deuxfaSecret;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
     }
 
     public StatutUtilisateur getStatut() {
