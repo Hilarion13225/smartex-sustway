@@ -490,7 +490,7 @@ export default function Inscription() {
               <Badge ton="vert" icone={CheckCircle2}>Compte activé</Badge>
 
               <div className="mt-7 flex justify-end">
-                <button type="button" className="btn-primary" onClick={() => navigate('/reel')}>
+                <button type="button" className="btn-primary" onClick={() => navigate('/app')}>
                   Aller à mon espace
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </button>

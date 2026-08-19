@@ -8,7 +8,7 @@ Ce dépôt regroupe les trois services du projet (voir CDC v1.5/1.6, section 9 �
 |---|---|---|
 | `api-quarkus/` | Java 21 / Quarkus | API backend : authentification, RBAC, moteur de règles, orchestration des appels IA |
 | `services-ia-python/` | Python 3.12 / FastAPI | Pipeline d'agents IA (Document, Evidence, Compliance, Risk, Scoring, Recommendation, Reporting) |
-| `frontend-react/` | React 19 / Vite / Tailwind | Interfaces par rôle (entreprise, expert, admin), dashboards, back-office |
+| `frontend-react/` | React 19 / Vite / Tailwind | Interfaces entièrement connectées à l'API réelle (aucune donnée mockée) |
 | `database/` | PostgreSQL 16 | Schéma de référence (DDL) et données de seed |
 
 Documentation de cadrage : voir `docs/` (plan de projet, cahier des charges, MCD).
@@ -89,7 +89,8 @@ détail des phases A→G, le calendrier daté et le backlog complet.
       création en formule Free (RG25), paiement PI-SPI/Wave — **stub fonctionnel
       uniquement** (intégration réelle non câblée, cf. §5.3 du CDC, "point ouvert
       restant"). 2FA (RG36) implémentée (SMS + application d'authentification,
-      voir ci-dessous) — reste à connecter au frontend (prochain lot).
+      voir ci-dessous) — frontend entièrement reconnecté (voir section
+      "Frontend" ci-dessous, toutes les données mockées ont été retirées).
 - [ ] **Phase D — IA de base (Standard)**
 - [ ] **Phase E — IA avancée (Avancées)**
 - [ ] **Phase F — Référentiels sectoriels & back-office**
@@ -160,6 +161,28 @@ depuis cet environnement, ce code Java n'a pas pu être compilé/testé ici
 (contrairement au moteur de règles, testé en Java pur avec JUnit5 local).
 Première étape chez vous : `mvn compile` puis `mvn quarkus:dev`, et me
 signaler toute erreur — je corrige immédiatement.
+
+## Frontend — entièrement connecté à l'API réelle
+
+Toutes les données mockées ont été retirées (`data/mock.js`, `data/formules.js`,
+`data/referentiel.js`, ainsi que les pages qui en dépendaient — tableau de bord,
+audits, pipeline IA, revue experte, rapports... : ces écrans reviendront au fil
+des phases D à G, connectés à de vraies données plutôt qu'à des maquettes).
+
+Routes actuelles :
+
+| Route | Contenu |
+|---|---|
+| `/` | Page d'accueil (formules chargées depuis `GET /formules`) |
+| `/inscription` | Wizard d'inscription réel (compte → vérification email → entreprise/abonnement → paiement) |
+| `/connexion` | Connexion réelle, avec étape 2FA si activée |
+| `/app` | Liste des entreprises (protégée) |
+| `/app/:entrepriseId` | Détail entreprise : abonnement (+ reprise de paiement), sites (RG04, CRUD complet) |
+| `/app/profil` | Profil utilisateur + gestion de la 2FA (SMS/application) |
+
+Un point non résolu, à traiter lors d'un prochain nettoyage : la création de
+site demande un code pays ISO alpha-2 saisi à la main (`SitesSection` dans
+`EntrepriseDetail.jsx`), faute d'un endpoint public de liste des pays côté API.
 
 ## Email — configuration (RG36)
 

@@ -58,4 +58,6 @@ async function requete(chemin, { method = 'GET', body, avecAuth = true, signal }
 export const api = {
   get: (chemin, options) => requete(chemin, { ...options, method: 'GET' }),
   post: (chemin, body, options) => requete(chemin, { ...options, method: 'POST', body }),
+  put: (chemin, body, options) => requete(chemin, { ...options, method: 'PUT', body }),
+  delete: (chemin, options) => requete(chemin, { ...options, method: 'DELETE' }),
 };

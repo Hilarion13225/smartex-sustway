@@ -36,7 +36,7 @@ export default function ConnexionReelle() {
         setTokenPreAuth(reponse.tokenPreAuth);
         setEtape('2fa');
       } else {
-        navigate('/reel');
+        navigate('/app');
       }
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
@@ -51,7 +51,7 @@ export default function ConnexionReelle() {
     setChargement(true);
     try {
       await confirmerDeuxFa(tokenPreAuth, code2fa);
-      navigate('/reel');
+      navigate('/app');
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Code invalide');
     } finally {

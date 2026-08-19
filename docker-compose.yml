@@ -105,9 +105,9 @@ services:
       # EmailService, dégradation silencieuse).
       SMARTEX_MAIL_HOST: ${SMARTEX_MAIL_HOST:-smtp-relay.brevo.com}
       SMARTEX_MAIL_PORT: ${SMARTEX_MAIL_PORT:-587}
-      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-}
-      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-}
-      SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-no-reply@smartex-sustway.local}
+      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-b60338001@smtp-brevo.com}
+      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-xsmtpsib-9c072a07ffb04a17d9013c81735af59b65f7a4be94b6be56916181353bc0725c-DEAWohWtibidf9SA}
+      SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-yaokonan475@gmail.com}
     ports:
       - "8080:8080"
     depends_on:
