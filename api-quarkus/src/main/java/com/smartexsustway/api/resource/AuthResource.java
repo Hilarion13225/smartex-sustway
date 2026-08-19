@@ -7,6 +7,7 @@ import com.smartexsustway.api.domain.enums.MethodeDeuxFa;
 import com.smartexsustway.api.domain.enums.StatutUtilisateur;
 import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.notification.EmailService;
 import com.smartexsustway.api.resource.dto.Connexion2FaRequest;
 import com.smartexsustway.api.resource.dto.ConnexionRequest;
 import com.smartexsustway.api.resource.dto.ConnexionResponse;
@@ -28,6 +29,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import java.util.List;
@@ -68,6 +70,12 @@ public class AuthResource {
     @Inject
     AuditLogService auditLogService;
 
+    @Inject
+    EmailService emailService;
+
+    @ConfigProperty(name = "smartex.api.base-url", defaultValue = "http://localhost:8080")
+    String apiBaseUrl;
+
     @POST
     @Path("/inscription")
     @Transactional
@@ -85,10 +93,14 @@ public class AuthResource {
         utilisateurRepository.persist(utilisateur);
 
         String tokenVerification = jwtService.genererTokenVerificationEmail(utilisateur.getId());
-        // TODO phase C (suite) : brancher un vrai envoi d'email (SMTP/service transactionnel).
-        // En attendant, le lien est journalisé pour permettre les tests manuels.
+        String lienVerification = apiBaseUrl + "/api/v1/auth/verification-email?token=" + tokenVerification;
+
+        // Filet de sécurité conservé même maintenant que l'envoi réel est
+        // branché (EmailService) : reste utile si Brevo n'est pas configuré
+        // (dev sans compte) ou temporairement indisponible.
         LOG.infof("Lien de vérification email pour %s : GET /api/v1/auth/verification-email?token=%s",
                 utilisateur.getEmail(), tokenVerification);
+        emailService.envoyerVerificationEmail(utilisateur.getEmail(), utilisateur.getPrenom(), lienVerification);
 
         auditLogService.journaliser(utilisateur.getId(), null, "INSCRIPTION", "utilisateur", utilisateur.getId());
 

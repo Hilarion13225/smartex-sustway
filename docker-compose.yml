@@ -98,6 +98,16 @@ services:
       SMARTEX_REDIS_URL: redis://redis:6379
       SMARTEX_IA_SERVICE_URL: http://services-ia-python:8000
       SMARTEX_CORS_ORIGINS: http://localhost:5173
+      SMARTEX_API_BASE_URL: http://localhost:8080
+      # Identifiants Brevo lus depuis votre environnement/fichier .env local
+      # (docker compose les substitue automatiquement s'ils sont exportés,
+      # sinon la valeur par défaut vide désactive l'envoi réel — voir
+      # EmailService, dégradation silencieuse).
+      SMARTEX_MAIL_HOST: ${SMARTEX_MAIL_HOST:-smtp-relay.brevo.com}
+      SMARTEX_MAIL_PORT: ${SMARTEX_MAIL_PORT:-587}
+      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-}
+      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-}
+      SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-no-reply@smartex-sustway.local}
     ports:
       - "8080:8080"
     depends_on:

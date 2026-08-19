@@ -161,6 +161,32 @@ depuis cet environnement, ce code Java n'a pas pu être compilé/testé ici
 Première étape chez vous : `mvn compile` puis `mvn quarkus:dev`, et me
 signaler toute erreur — je corrige immédiatement.
 
+## Email — configuration (RG36)
+
+L'envoi réel de l'email de vérification est branché via **Brevo** (SMTP,
+300 emails/jour gratuits, sans limite de temps). Sans configuration,
+l'envoi échoue silencieusement (log warning) et l'inscription reste
+fonctionnelle — le lien continue d'être journalisé (`mvn quarkus:dev`)
+comme filet de sécurité.
+
+**Pour activer l'envoi réel :**
+
+1. Créez un compte gratuit sur [brevo.com](https://www.brevo.com)
+2. Ajoutez et vérifiez un expéditeur (Menu → Expéditeurs, domaines & IP
+   dédiées → Expéditeurs → Ajouter un expéditeur) — une simple adresse
+   email suffit, pas besoin de domaine pour commencer
+3. Récupérez vos identifiants SMTP (Menu → SMTP & API → onglet SMTP) —
+   **différents de vos identifiants de connexion au tableau de bord**
+4. Copiez `api-quarkus/.env.example` en `api-quarkus/.env` et renseignez
+   `SMARTEX_MAIL_USERNAME`, `SMARTEX_MAIL_PASSWORD`, `SMARTEX_MAIL_FROM`
+   (`.env` est déjà exclu du dépôt — ne jamais committer de vrais
+   identifiants)
+5. Redémarrez `mvn quarkus:dev` (Quarkus charge `.env` automatiquement)
+
+⚠️ La 2FA par SMS reste en mode "loggé côté serveur" pour l'instant —
+aucun fournisseur SMS n'offre de véritable envoi gratuit en production
+(contrairement à l'email). À cadrer plus tard, comme PI-SPI/Wave.
+
 ## Paiement — état réel (phase C)
 
 ⚠️ **`PaiementService` est un stub.** Le CDC (§5.3, "point ouvert restant")
