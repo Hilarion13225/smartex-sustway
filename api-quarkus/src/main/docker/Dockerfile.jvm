@@ -1,0 +1,25 @@
+####
+# Dockerfile JVM — Smartex Sustway API
+# Ce Dockerfile suppose que le build Maven a déjà été effectué en amont
+# (mvn package), conformément au modèle standard généré par Quarkus.
+#
+#   mvn package
+#   docker build -f src/main/docker/Dockerfile.jvm -t smartex-api-quarkus .
+#   docker run -i --rm -p 8080:8080 smartex-api-quarkus
+####
+FROM registry.access.redhat.com/ubi9/openjdk-21-runtime:1.20
+
+ENV LANGUAGE='en_US:en'
+WORKDIR /deployments
+
+COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
+COPY --chown=185 target/quarkus-app/*.jar /deployments/
+COPY --chown=185 target/quarkus-app/app/ /deployments/app/
+COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+
+EXPOSE 8080
+USER 185
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+ENTRYPOINT ["java", "-jar", "/deployments/quarkus-run.jar"]

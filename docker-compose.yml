@@ -1,0 +1,138 @@
+# =====================================================================
+# Smartex Sustway — Environnement de développement local
+# Phase A du plan de projet
+# =====================================================================
+# Usage :
+#   docker compose up -d postgres redis minio        # infra seule
+#   docker compose up -d                              # stack complète (api, ia, front)
+#   docker compose --profile tools up -d adminer      # + outils d'administration
+# =====================================================================
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smartex
+      POSTGRES_PASSWORD: smartex
+      POSTGRES_DB: smartex_sustway
+    ports:
+      - "5432:5432"
+    volumes:
+      - smartex_postgres_data:/var/lib/postgresql/data
+      - ./database/migrations:/docker-entrypoint-initdb.d/01-migrations:ro
+      - ./database/seeds:/docker-entrypoint-initdb.d/02-seeds:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartex -d smartex_sustway"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartex-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - smartex_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: smartex-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: smartex
+      MINIO_ROOT_PASSWORD: smartex_minio_secret
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Console web
+    volumes:
+      - smartex_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  services-ia-python:
+    build:
+      context: ./services-ia-python
+    container_name: smartex-ia
+    restart: unless-stopped
+    environment:
+      SMARTEX_ENV: dev
+      SMARTEX_DATABASE_URL: postgresql://smartex:smartex@postgres:5432/smartex_sustway
+      SMARTEX_REDIS_URL: redis://redis:6379/0
+      SMARTEX_S3_ENDPOINT: http://minio:9000
+      SMARTEX_API_QUARKUS_BASE_URL: http://api-quarkus:8080
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./services-ia-python/app:/app/app
+
+  api-quarkus:
+    build:
+      context: ./api-quarkus
+    container_name: smartex-api
+    restart: unless-stopped
+    environment:
+      SMARTEX_DB_URL: jdbc:postgresql://postgres:5432/smartex_sustway
+      SMARTEX_DB_USER: smartex
+      SMARTEX_DB_PASSWORD: smartex
+      SMARTEX_REDIS_URL: redis://redis:6379
+      SMARTEX_IA_SERVICE_URL: http://services-ia-python:8000
+      SMARTEX_CORS_ORIGINS: http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      services-ia-python:
+        condition: service_started
+
+  frontend-react:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile.dev
+    container_name: smartex-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend-react/src:/app/src
+    depends_on:
+      - api-quarkus
+
+  # --- Outils d'administration (optionnels, profil "tools") ---
+  adminer:
+    image: adminer:latest
+    container_name: smartex-adminer
+    profiles: ["tools"]
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  smartex_postgres_data:
+  smartex_redis_data:
+  smartex_minio_data:

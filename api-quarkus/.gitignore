@@ -1,0 +1,12 @@
+target/
+.idea/
+*.iml
+.vscode/
+*.log
+.env
+
+# La paire de clés RSA dev (src/main/resources/{private,public}Key.pem) est
+# volontairement VERSIONNÉE : elle sert uniquement à faire tourner l'API en
+# local sans étape de génération manuelle. Elle est publique dans ce repo,
+# donc jamais utilisable en production — régénérer une vraie paire de clés
+# hors du contrôle de version avant tout déploiement réel (voir README sécurité).

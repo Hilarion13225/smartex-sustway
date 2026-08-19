@@ -1,0 +1,13 @@
+# OS / éditeurs
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Secrets locaux
+.env
+.env.local
+*.pem
+
+# Logs
+*.log
