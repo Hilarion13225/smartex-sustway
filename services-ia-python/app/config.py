@@ -13,6 +13,16 @@ class Settings(BaseSettings):
     s3_bucket: str = "smartex-documents"
     confiance_seuil_revue_experte: float = 0.80  # RG38 — seuil de confiance IA à 80 %
 
+    # --- LLM (Compliance/Document Agents) ---
+    # Gemini (Google AI Studio) — palier gratuit. ATTENTION : sur le palier
+    # gratuit, les prompts peuvent être utilisés par Google pour améliorer
+    # ses produits (contrairement au palier payant, qui exclut cet usage).
+    # Décision actée pour la phase de développement — à requalifier avec
+    # Smartex Expertises avant tout traitement de données clients réelles
+    # (voir README, section "Agents IA").
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+
     model_config = SettingsConfigDict(env_prefix="SMARTEX_", env_file=".env", extra="ignore")
 
 

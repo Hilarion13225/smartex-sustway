@@ -91,7 +91,29 @@ détail des phases A→G, le calendrier daté et le backlog complet.
       restant"). 2FA (RG36) implémentée (SMS + application d'authentification,
       voir ci-dessous) — frontend entièrement reconnecté (voir section
       "Frontend" ci-dessous, toutes les données mockées ont été retirées).
-- [ ] **Phase D — IA de base (Standard)**
+- [x] **Phase D — IA de base (Standard), sous-lot 1/3** : référentiel Smartex
+      Sustway complet (87 critères, 6 domaines, source CDC §7), composition
+      dynamique du questionnaire (RG34), missions d'audit avec questionnaire
+      figé à la création (RG10/RG11/RG20/RG35).
+- [x] **Phase D — sous-lot 2/3 : collecte de preuves** : upload de documents
+      (S3/MinIO), scan antivirus obligatoire avant tout stockage (ClamAV,
+      protocole clamd INSTREAM — exigence sécurité §1.4), restriction des
+      types de fichiers, association preuve ↔ critères (RG15, un document
+      peut couvrir plusieurs critères). Validé en conditions réelles (77/77
+      tests, y compris AntivirusService contre un vrai ClamAV).
+- [x] **Phase D — sous-lot 3/3 : agents IA** : pipeline Document Agent
+      (extraction multimodale) + Evidence/Compliance Agent combiné
+      (probabilité de conformité + niveau de confiance), via Gemini
+      (Google AI Studio, palier gratuit — voir section "Agents IA"
+      ci-dessous, mise en garde importante sur ce palier). RG27 : la
+      conversion probabilité → note reste exclusivement assurée par
+      ScoringEngine (Quarkus), jamais par l'IA. RG22/RG38 : file de revue
+      experte créée automatiquement si confiance IA < 80 % (formule
+      Avancées). ⚠️ Le flux complet (Quarkus → services-ia-python → Gemini)
+      n'a pas pu être testé de bout en bout côté développement (pas de clé
+      Gemini disponible) — le service Python a en revanche été réellement
+      installé et testé (7/7, dépendances résolues pour de vrai, y compris
+      un conflit de versions corrigé). **La Phase D est maintenant complète.**
 - [ ] **Phase E — IA avancée (Avancées)**
 - [ ] **Phase F — Référentiels sectoriels & back-office**
 - [ ] **Phase G — Finalisation**
@@ -183,6 +205,99 @@ Routes actuelles :
 Un point non résolu, à traiter lors d'un prochain nettoyage : la création de
 site demande un code pays ISO alpha-2 saisi à la main (`SitesSection` dans
 `EntrepriseDetail.jsx`), faute d'un endpoint public de liste des pays côté API.
+
+## Agents IA (RG21/RG27/RG38)
+
+⚠️ **Palier gratuit Gemini — mise en garde importante.** Contrairement au
+palier payant, les prompts envoyés via le palier gratuit de Google AI
+Studio peuvent être utilisés par Google pour améliorer ses produits.
+Chaque preuve RSE traitée (politiques internes, données de conformité,
+parfois sensibles) transite donc vers un service dont les conditions
+d'utilisation autorisent cet usage. **Décision actée pour la phase de
+développement — à requalifier avec Smartex Expertises avant tout
+traitement de données clients réelles.**
+
+**Obtenir une clé (gratuite) :**
+1. https://aistudio.google.com/apikey → Créer une clé API
+2. `services-ia-python/.env` (créez-le s'il n'existe pas) :
+   ```
+   SMARTEX_GEMINI_API_KEY=votre-cle
+   ```
+3. Ou en variable d'environnement système avant `docker compose up`
+
+**Architecture :** Document Agent (extraction multimodale directe du
+PDF/image, pas d'OCR séparé) → Evidence + Compliance Agent combinés en un
+seul appel Gemini (économie de quota sur le palier gratuit) → réponse
+structurée (JSON forcé via `response_schema`) avec probabilité de
+conformité + niveau de confiance + justification.
+
+**RG27 — point de sécurité métier important :** l'IA ne produit jamais de
+note (1-5) directement, uniquement une probabilité (0-1). La conversion
+est exclusivement assurée par `ScoringEngine.niveauEngagement(...)` côté
+Quarkus (même moteur testé depuis la phase B, 27 tests) — `services-ia-python`
+n'implémente aucune logique de notation.
+
+**RG22/RG38 :** si la confiance IA renvoyée est inférieure à 0,80
+(`smartex.evaluation.seuil-confiance-revue-experte`) et que la formule
+souscrite est Avancées, une `RevueExperte` est créée automatiquement
+(file d'attente — l'écran de traitement par un expert est un lot
+ultérieur).
+
+⚠️ **Non testé de bout en bout** (Quarkus → services-ia-python → Gemini)
+faute de clé API disponible côté développement. En revanche, le service
+Python a été réellement installé (résolution de dépendances effective, un
+conflit de versions trouvé et corrigé — `pydantic` vs `google-genai`) et
+ses tests exécutés pour de vrai (7/7, agents mockés). Testez en priorité
+`EvaluationResource.evaluer(...)` avec une vraie clé configurée.
+
+**Tests concernés :**
+- `EvaluationResourceTest` (Quarkus) : ne couvre que les validations sans
+  appel au pipeline IA (absence de preuve, isolation) — testable sans
+  aucune infrastructure externe.
+- `services-ia-python/tests/test_evaluations.py` : agents mockés, ne
+  nécessite pas de clé API réelle.
+- Flux complet non couvert par un test automatisé — à vérifier
+  manuellement avec `docker compose up -d minio clamav services-ia-python`
+  et une vraie clé Gemini.
+
+## Stockage documentaire & antivirus (RG15, exigence sécurité §1.4)
+
+⚠️ **Composants non testés en conditions réelles** — écrits sans accès à
+Docker/MinIO/ClamAV côté développement, contrairement au reste du projet
+(toujours testé sur PostgreSQL réel avant livraison). À valider avec
+attention particulière.
+
+**Démarrage local :**
+
+```powershell
+docker compose up -d minio clamav
+```
+
+⏱️ Premier démarrage de ClamAV lent (plusieurs minutes — téléchargement des
+signatures virales). Vérifiez qu'il est prêt avant de lancer les tests :
+
+```powershell
+docker compose ps clamav   # doit afficher "healthy"
+```
+
+**Tests concernés :**
+- `DocumentResourceTest` : 2 tests sur 3 ne nécessitent aucune infrastructure
+  externe (rejet de type de fichier, isolation multi-tenant — les deux
+  s'arrêtent avant tout appel réseau). Le 3ᵉ (`televerser_flotComplet_...`)
+  nécessite MinIO + ClamAV démarrés.
+- `PreuveResourceTest` : nécessite MinIO + ClamAV pour l'intégralité de la
+  classe (une preuve exige un document déjà téléversé et scanné sain).
+
+**Politique de repli si ClamAV est injoignable** (`smartex.antivirus.echec-bloquant`) :
+refuse l'upload par défaut (fail-closed, cohérent avec une exigence de
+sécurité explicite) — assoupli uniquement en profil dev, jamais en test ni
+par défaut.
+
+**Flux d'upload :** le fichier est scanné **avant** tout envoi vers
+MinIO — un fichier infecté ne touche jamais le stockage. Types de fichiers
+acceptés : PDF, JPEG/PNG, Word, Excel, texte brut (liste dans
+`DocumentResource.TYPES_AUTORISES`, à ajuster si besoin — aucune liste
+n'est imposée par le CDC).
 
 ## Email — configuration (RG36)
 

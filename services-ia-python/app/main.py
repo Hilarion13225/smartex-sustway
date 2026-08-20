@@ -10,7 +10,7 @@ un healthcheck et l'ossature des routes, sans logique IA encore branchée.
 
 from fastapi import FastAPI
 from app.config import get_settings
-from app.routers import analyses
+from app.routers import analyses, evaluations
 
 settings = get_settings()
 
@@ -21,6 +21,7 @@ app = FastAPI(
 )
 
 app.include_router(analyses.router, prefix="/api/v1/analyses", tags=["analyses"])
+app.include_router(evaluations.router, prefix="/api/v1/evaluations", tags=["évaluations"])
 
 
 @app.get("/health", tags=["système"])

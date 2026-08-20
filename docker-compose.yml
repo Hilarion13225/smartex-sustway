@@ -63,6 +63,26 @@ services:
       timeout: 5s
       retries: 10
 
+  clamav:
+    # Antivirus (exigence sécurité §1.4 : scan à l'upload). Image officielle
+    # ClamAV avec clamd exposé en TCP (protocole INSTREAM, voir
+    # AntivirusService côté api-quarkus). Premier démarrage lent (plusieurs
+    # minutes) : téléchargement des signatures virales. Le healthcheck
+    # attend que clamd réponde avant de considérer le service prêt.
+    image: clamav/clamav:stable
+    container_name: smartex-clamav
+    restart: unless-stopped
+    ports:
+      - "3310:3310"
+    volumes:
+      - smartex_clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 180s
+
   services-ia-python:
     build:
       context: ./services-ia-python
@@ -74,6 +94,10 @@ services:
       SMARTEX_REDIS_URL: redis://redis:6379/0
       SMARTEX_S3_ENDPOINT: http://minio:9000
       SMARTEX_API_QUARKUS_BASE_URL: http://api-quarkus:8080
+      # Clé Gemini (Google AI Studio, palier gratuit) lue depuis votre .env
+      # local — voir README, section "Agents IA" pour la mise en garde sur
+      # le palier gratuit et la marche à suivre pour obtenir une clé.
+      SMARTEX_GEMINI_API_KEY: ${SMARTEX_GEMINI_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:
@@ -105,9 +129,16 @@ services:
       # EmailService, dégradation silencieuse).
       SMARTEX_MAIL_HOST: ${SMARTEX_MAIL_HOST:-smtp-relay.brevo.com}
       SMARTEX_MAIL_PORT: ${SMARTEX_MAIL_PORT:-587}
-      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-b60338001@smtp-brevo.com}
-      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-xsmtpsib-9c072a07ffb04a17d9013c81735af59b65f7a4be94b6be56916181353bc0725c-DEAWohWtibidf9SA}
-      SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-yaokonan475@gmail.com}
+      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-}
+      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-}
+      SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-no-reply@smartex-sustway.local}
+      # Stockage documentaire (S3/MinIO) et antivirus (§1.4)
+      SMARTEX_S3_ENDPOINT: http://minio:9000
+      SMARTEX_S3_ACCESS_KEY: smartex
+      SMARTEX_S3_SECRET_KEY: smartex_minio_secret
+      SMARTEX_S3_BUCKET: smartex-documents
+      SMARTEX_CLAMAV_HOST: clamav
+      SMARTEX_CLAMAV_PORT: 3310
     ports:
       - "8080:8080"
     depends_on:
@@ -115,6 +146,10 @@ services:
         condition: service_healthy
       services-ia-python:
         condition: service_started
+      minio:
+        condition: service_healthy
+      clamav:
+        condition: service_healthy
 
   frontend-react:
     build:
@@ -146,3 +181,4 @@ volumes:
   smartex_postgres_data:
   smartex_redis_data:
   smartex_minio_data:
+  smartex_clamav_data:

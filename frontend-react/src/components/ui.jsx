@@ -1,10 +1,11 @@
 import clsx from 'clsx';
-import { Info, Loader2 } from 'lucide-react';
+import { Info } from 'lucide-react';
+import SustwayLoader from './SustwayLoader';
 export function Card({
   children,
   className
 }) {
-  return <section className={clsx('card', className)}>{children}</section>;
+  return <section className={clsx('card rounded-2xl border-ink-100', className)}>{children}</section>;
 }
 export function CardHeader({
   titre,
@@ -31,7 +32,7 @@ export function PageTitre({
 }) {
   return <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div className="flex items-start gap-3">
-        <span className="rounded-xl bg-brand-50 p-2.5 text-brand-600">
+        <span className="rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 p-2.5 text-white shadow-glow">
           <Icone className="h-5 w-5" aria-hidden />
         </span>
         <div>
@@ -67,7 +68,7 @@ export function StatCard({
   icone: Icone,
   ton = 'neutre'
 }) {
-  return <div className="card flex items-center gap-4 p-5">
+  return <div className="carte-stat">
       <span className={clsx('rounded-xl p-3', TONS[ton])}>
         <Icone className="h-5 w-5" aria-hidden />
       </span>
@@ -92,26 +93,26 @@ export function Barre({
 export function Vide({
   message
 }) {
-  return <div className="flex flex-col items-center gap-2 px-6 py-12 text-center">
+  return <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-12 text-center">
       <Info className="h-6 w-6 text-ink-300" aria-hidden />
       <p className="text-sm text-ink-500">{message}</p>
     </div>;
 }
 
-/** Loader personnalisé affiché pendant les traitements longs (section 9). */
+/** Loader personnalisé Smartex Sustway, affiché pendant les traitements longs (CDC §9). */
 export function Loader({
   message
 }) {
-  return <div className="flex items-center justify-center gap-3 px-6 py-12">
-      <Loader2 className="h-5 w-5 animate-spin text-brand-600" aria-hidden />
-      <p className="text-sm text-ink-600">{message}</p>
+  return <div className="flex flex-col items-center justify-center gap-3 px-6 py-12">
+      <SustwayLoader taille="lg" />
+      {message ? <p className="text-sm text-ink-600">{message}</p> : null}
     </div>;
 }
 export function Alerte({
   children,
   ton = 'bleu'
 }) {
-  return <div className={clsx('flex items-start gap-2 rounded-lg px-4 py-3 text-sm', TONS[ton])}>
+  return <div className={clsx('flex items-start gap-2 rounded-xl px-4 py-3 text-sm', TONS[ton])}>
       <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
       <p>{children}</p>
     </div>;

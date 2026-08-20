@@ -32,6 +32,16 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- BOM séparé requis pour quarkus-amazon-s3 (io.quarkiverse.amazonservices,
+           pas géré par le quarkus-bom principal) — même version que la
+           plateforme Quarkus, alignement garanti par le projet Quarkiverse. -->
+      <dependency>
+        <groupId>${quarkus.platform.group-id}</groupId>
+        <artifactId>quarkus-amazon-services-bom</artifactId>
+        <version>${quarkus.platform.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -87,6 +97,16 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-mailer</artifactId>
+    </dependency>
+
+    <!-- Stockage documentaire S3/MinIO (RG15, exigence sécurité §1.4) -->
+    <dependency>
+      <groupId>io.quarkiverse.amazonservices</groupId>
+      <artifactId>quarkus-amazon-s3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>url-connection-client</artifactId>
     </dependency>
 
     <!-- Client REST vers les services IA Python (comm. synchrone, décision actée CDC §13) -->

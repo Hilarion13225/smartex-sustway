@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { KeyRound, Loader2, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
+import { KeyRound, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
+import SustwayLoader from '../components/SustwayLoader';
 import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Card, CardHeader, PageTitre } from '../components/ui';
 import { ApiError } from '../lib/apiClient';
@@ -162,7 +163,7 @@ function SectionDeuxFa() {
             Méthode active : <span className="font-medium">{utilisateur.deuxfaMethode}</span>
           </p>
           <button type="button" className="btn-secondary mt-3" disabled={chargement} onClick={desactiver}>
-            {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <ShieldOff className="h-4 w-4" aria-hidden />}
+            {chargement ? <SustwayLoader taille="sm" /> : <ShieldOff className="h-4 w-4" aria-hidden />}
             Désactiver la 2FA
           </button>
         </div>
@@ -203,7 +204,7 @@ function SectionDeuxFa() {
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="btn-primary" disabled={chargement || codeApp.length < 6}>
-                  {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+                  {chargement ? <SustwayLoader taille="sm" /> : null}
                   Confirmer
                 </button>
                 <button type="button" className="btn-ghost" onClick={() => setMode(null)}>
@@ -230,7 +231,7 @@ function SectionDeuxFa() {
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="btn-primary" disabled={chargement}>
-                  {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+                  {chargement ? <SustwayLoader taille="sm" /> : null}
                   Envoyer le code
                 </button>
                 <button type="button" className="btn-ghost" onClick={() => setMode(null)}>
@@ -260,7 +261,7 @@ function SectionDeuxFa() {
               </div>
               <div className="flex gap-2">
                 <button type="submit" className="btn-primary" disabled={chargement || codeSms.length < 6}>
-                  {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+                  {chargement ? <SustwayLoader taille="sm" /> : null}
                   Confirmer
                 </button>
                 <button

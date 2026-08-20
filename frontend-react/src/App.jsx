@@ -2,8 +2,15 @@ import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-
 import { ApiAuthProvider } from './auth/ApiAuthContext';
 import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
+import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
 import Accueil from './pages/Accueil';
+import Services from './pages/Services';
+import Formules from './pages/Formules';
+import APropos from './pages/APropos';
+import Contact from './pages/Contact';
+import Faq from './pages/Faq';
+import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import Entreprises from './pages/Entreprises';
@@ -22,7 +29,15 @@ export default function App() {
     <ApiAuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Accueil />} />
+          <Route element={<LayoutPublic />}>
+            <Route path="/" element={<Accueil />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/formules" element={<Formules />} />
+            <Route path="/a-propos" element={<APropos />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<Faq />} />
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
+          </Route>
           <Route path="/connexion" element={<ConnexionReelle />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route element={<RouteProtegee />}>

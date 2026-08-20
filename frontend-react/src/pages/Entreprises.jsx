@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Loader2, PlusCircle } from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle2, Clock, PlusCircle, Sparkles, X } from 'lucide-react';
+import SustwayLoader from '../components/SustwayLoader';
+import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
-import { Alerte, Badge, Card, PageTitre, Vide } from '../components/ui';
+import { Alerte, Badge, Card, PageTitre } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 
 /** RG24/RG25 : la création exige une formule payante (Free refusée par l'API). */
@@ -47,6 +49,21 @@ export default function Entreprises() {
     }
   }
 
+  const nombreActives = entreprises.filter((e) => e.statut === 'ACTIF').length;
+  const nombreEnAttente = entreprises.length - nombreActives;
+
+  const statistiques = [
+    { libelle: 'Entreprises suivies', valeur: entreprises.length, icone: Building2, ton: 'bleu' },
+    { libelle: 'Abonnements actifs', valeur: nombreActives, icone: CheckCircle2, ton: 'vert' },
+    { libelle: 'En attente', valeur: nombreEnAttente, icone: Clock, ton: 'ambre' },
+  ];
+
+  const TONS_PUCE = {
+    bleu: 'bg-blue-50 text-blue-600 ring-blue-100',
+    vert: 'bg-brand-50 text-brand-600 ring-brand-100',
+    ambre: 'bg-amber-50 text-amber-600 ring-amber-100',
+  };
+
   return (
     <>
       <PageTitre
@@ -54,15 +71,29 @@ export default function Entreprises() {
         titre="Entreprises"
         description="Chaque entreprise est créée avec un abonnement (RG24) — la formule Free ne permet pas la création (RG25)."
         actions={
-          <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>
-            <PlusCircle className="h-4 w-4" aria-hidden />
-            Nouvelle entreprise
+          <button type="button" className="btn-vitrine" onClick={() => setAfficherFormulaire((v) => !v)}>
+            {afficherFormulaire ? <X className="h-4 w-4" aria-hidden /> : <PlusCircle className="h-4 w-4" aria-hidden />}
+            {afficherFormulaire ? 'Fermer' : 'Nouvelle entreprise'}
           </button>
         }
       />
 
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        {statistiques.map((stat, index) => (
+          <Revele key={stat.libelle} delai={index * 90} className="carte-stat">
+            <span className={`rounded-xl p-3 ring-1 ${TONS_PUCE[stat.ton]}`}>
+              <stat.icone className="h-5 w-5" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{stat.libelle}</p>
+              <p className="mt-0.5 text-2xl font-semibold text-ink-900">{stat.valeur}</p>
+            </div>
+          </Revele>
+        ))}
+      </div>
+
       {afficherFormulaire ? (
-        <Card className="mb-6 p-5">
+        <Card className="mb-6 overflow-hidden p-5 motion-safe:animate-apparition-bas">
           <form className="space-y-4" onSubmit={soumettre}>
             {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
             <div className="grid gap-4 sm:grid-cols-2">
@@ -152,8 +183,8 @@ export default function Entreprises() {
                 </select>
               </div>
             </div>
-            <button type="submit" className="btn-primary" disabled={chargement}>
-              {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+            <button type="submit" className="btn-vitrine" disabled={chargement}>
+              {chargement ? <SustwayLoader taille="sm" /> : null}
               Créer l’entreprise
             </button>
           </form>
@@ -161,19 +192,50 @@ export default function Entreprises() {
       ) : null}
 
       {entreprises.length === 0 ? (
-        <Vide message="Aucune entreprise pour l’instant." />
+        <div className="relative overflow-hidden rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-14 text-center">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-halo-brand motion-safe:animate-apparition-douce"
+            aria-hidden
+          />
+          <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
+            <Building2 className="h-6 w-6" aria-hidden />
+          </span>
+          <p className="relative mt-4 text-base font-semibold text-ink-900">Aucune entreprise pour l’instant</p>
+          <p className="relative mx-auto mt-1 max-w-md text-sm text-ink-500">
+            Créez votre première entreprise pour lancer une évaluation RSE et suivre votre score domaine par domaine.
+          </p>
+          <button type="button" className="btn-vitrine relative mt-5" onClick={() => setAfficherFormulaire(true)}>
+            <Sparkles className="h-4 w-4" aria-hidden />
+            Créer une entreprise
+          </button>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {entreprises.map((e) => (
-            <Link key={e.id} to={`/app/${e.id}`} className="card block p-5 transition-shadow hover:shadow-md">
-              <p className="font-medium text-ink-900">{e.raisonSociale}</p>
-              <p className="mt-0.5 text-xs text-ink-500">{e.identifiantLegal}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {e.secteurCode ? <Badge>{e.secteurCode}</Badge> : null}
-                {e.taille ? <Badge>{e.taille}</Badge> : null}
-                <Badge ton={e.statut === 'ACTIF' ? 'vert' : 'neutre'}>{e.statut}</Badge>
-              </div>
-            </Link>
+          {entreprises.map((e, index) => (
+            <Revele key={e.id} delai={index * 70}>
+              <Link to={`/app/${e.id}`} className="carte-app group block h-full">
+                <span
+                  className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-halo-brand opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  aria-hidden
+                />
+                <div className="relative flex items-start justify-between gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
+                    <Building2 className="h-5 w-5" aria-hidden />
+                  </span>
+                  <ArrowRight
+                    className="h-4 w-4 text-ink-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-brand-600"
+                    aria-hidden
+                  />
+                </div>
+                <p className="relative mt-4 font-semibold text-ink-900">{e.raisonSociale}</p>
+                <p className="relative mt-0.5 text-xs text-ink-500">{e.identifiantLegal}</p>
+                <div className="relative mt-3 flex flex-wrap gap-2">
+                  {e.secteurCode ? <Badge>{e.secteurCode}</Badge> : null}
+                  {e.taille ? <Badge>{e.taille}</Badge> : null}
+                  <Badge ton={e.statut === 'ACTIF' ? 'vert' : 'neutre'}>{e.statut}</Badge>
+                </div>
+              </Link>
+            </Revele>
           ))}
         </div>
       )}

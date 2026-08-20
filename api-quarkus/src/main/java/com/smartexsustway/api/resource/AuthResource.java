@@ -76,6 +76,14 @@ public class AuthResource {
     @ConfigProperty(name = "smartex.api.base-url", defaultValue = "http://localhost:8080")
     String apiBaseUrl;
 
+    /**
+     * TEMPORAIRE : voir application.properties. true par défaut (RG36
+     * pleinement appliquée) — désactivé uniquement en profil dev pour fluidifier
+     * les tests manuels pendant la phase D. Ne jamais désactiver en production.
+     */
+    @ConfigProperty(name = "smartex.auth.verification-email-obligatoire", defaultValue = "true")
+    boolean verificationEmailObligatoire;
+
     @POST
     @Path("/inscription")
     @Transactional
@@ -101,6 +109,16 @@ public class AuthResource {
         LOG.infof("Lien de vérification email pour %s : GET /api/v1/auth/verification-email?token=%s",
                 utilisateur.getEmail(), tokenVerification);
         emailService.envoyerVerificationEmail(utilisateur.getEmail(), utilisateur.getPrenom(), lienVerification);
+
+        // TEMPORAIRE (voir smartex.auth.verification-email-obligatoire) : en
+        // dev uniquement, l'email reste envoyé/journalisé comme d'habitude,
+        // mais le compte est activé immédiatement plutôt que d'attendre le
+        // clic — pour ne plus avoir à copier un token à chaque test manuel
+        // pendant la phase D. RG36 reste pleinement appliquée en test et par
+        // défaut ailleurs (voir application.properties, %dev uniquement).
+        if (!verificationEmailObligatoire) {
+            utilisateur.marquerEmailVerifie();
+        }
 
         auditLogService.journaliser(utilisateur.getId(), null, "INSCRIPTION", "utilisateur", utilisateur.getId());
 

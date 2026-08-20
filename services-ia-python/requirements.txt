@@ -1,6 +1,6 @@
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
-pydantic==2.10.4
+pydantic==2.13.4
 pydantic-settings==2.7.0
 httpx==0.28.1
 sqlalchemy==2.0.36
@@ -8,5 +8,8 @@ psycopg[binary]==3.2.3
 redis==5.2.1
 boto3==1.35.90
 
-# Dépendances IA (branchées progressivement en phases D/E) :
-# langchain, sentence-transformers, pgvector, pytesseract/OCR, anthropic
+# Agents IA (Document/Evidence/Compliance) — palier gratuit Google AI Studio.
+# Épingle < 3.0.0 sur recommandation officielle du SDK (changement de
+# comportement prévu en v3 sur l'appel de fonctions automatique — sans
+# impact ici, mais épinglé par prudence).
+google-genai>=2.18.0,<3.0.0

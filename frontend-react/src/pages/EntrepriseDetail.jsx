@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, MapPin, PlusCircle, Smartphone, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeft, MapPin, PlusCircle, Smartphone, Trash2, Wallet } from 'lucide-react';
+import SustwayLoader from '../components/SustwayLoader';
+import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -62,7 +64,8 @@ export default function EntrepriseDetail() {
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
+        <Revele>
+          <Card className="h-full p-5">
           <CardHeader titre="Abonnement" icone={Wallet} />
           {chargementAbonnement ? (
             <Loader message="Chargement de l’abonnement…" />
@@ -76,16 +79,19 @@ export default function EntrepriseDetail() {
           ) : (
             <Vide message="Aucun abonnement trouvé pour cette entreprise." />
           )}
-        </Card>
+          </Card>
+        </Revele>
 
-        <Card className="p-5">
+        <Revele delai={120}>
+          <Card className="h-full p-5">
           <CardHeader titre="Sites" icone={MapPin} />
           {chargementSites ? (
             <Loader message="Chargement des sites…" />
           ) : (
             <SitesSection entrepriseId={entrepriseId} sites={sites} onChange={rafraichirSites} />
           )}
-        </Card>
+          </Card>
+        </Revele>
       </div>
     </>
   );
@@ -111,23 +117,23 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
   return (
     <div className="space-y-3">
       <dl className="grid grid-cols-2 gap-3 text-sm">
-        <div>
-          <dt className="text-ink-500">Formule</dt>
-          <dd className="font-medium">{abonnement.formuleNom}</dd>
+        <div className="rounded-xl bg-ink-50/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-ink-500">Formule</dt>
+          <dd className="mt-0.5 font-semibold text-ink-900">{abonnement.formuleNom}</dd>
         </div>
-        <div>
-          <dt className="text-ink-500">Périodicité</dt>
-          <dd className="font-medium">{abonnement.periodicite ?? '—'}</dd>
+        <div className="rounded-xl bg-ink-50/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-ink-500">Périodicité</dt>
+          <dd className="mt-0.5 font-semibold text-ink-900">{abonnement.periodicite ?? '—'}</dd>
         </div>
-        <div>
-          <dt className="text-ink-500">Statut</dt>
-          <dd>
+        <div className="rounded-xl bg-ink-50/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-ink-500">Statut</dt>
+          <dd className="mt-1">
             <Badge ton={abonnement.statut === 'ACTIF' ? 'vert' : 'ambre'}>{abonnement.statut}</Badge>
           </dd>
         </div>
-        <div>
-          <dt className="text-ink-500">Échéance</dt>
-          <dd className="font-medium">{abonnement.dateFin ?? '—'}</dd>
+        <div className="rounded-xl bg-ink-50/70 p-3">
+          <dt className="text-xs uppercase tracking-wide text-ink-500">Échéance</dt>
+          <dd className="mt-0.5 font-semibold text-ink-900">{abonnement.dateFin ?? '—'}</dd>
         </div>
       </dl>
 
@@ -143,11 +149,11 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
           </p>
           <div className="flex gap-2">
             <button type="button" className="btn-secondary" disabled={chargement} onClick={() => payer('PI_SPI')}>
-              {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Wallet className="h-4 w-4" aria-hidden />}
+              {chargement ? <SustwayLoader taille="sm" /> : <Wallet className="h-4 w-4" aria-hidden />}
               Payer via PI-SPI
             </button>
             <button type="button" className="btn-secondary" disabled={chargement} onClick={() => payer('WAVE')}>
-              {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Smartphone className="h-4 w-4" aria-hidden />}
+              {chargement ? <SustwayLoader taille="sm" /> : <Smartphone className="h-4 w-4" aria-hidden />}
               Payer via Wave
             </button>
           </div>
@@ -192,7 +198,10 @@ function SitesSection({ entrepriseId, sites, onChange }) {
       {sites && sites.length > 0 ? (
         <ul className="space-y-2">
           {sites.map((s) => (
-            <li key={s.id} className="flex items-center justify-between rounded-lg border border-ink-200 p-3 text-sm">
+            <li
+              key={s.id}
+              className="flex items-center justify-between rounded-xl border border-ink-100 bg-white p-3 text-sm transition duration-300 hover:border-brand-200 hover:shadow-sm"
+            >
               <div>
                 <p className="font-medium">{s.nom}</p>
                 <p className="text-xs text-ink-500">{[s.ville, s.paysNom].filter(Boolean).join(', ') || '—'}</p>
@@ -271,7 +280,7 @@ function SitesSection({ entrepriseId, sites, onChange }) {
           </div>
           <div className="flex gap-2">
             <button type="submit" className="btn-primary" disabled={chargement}>
-              {chargement ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : null}
+              {chargement ? <SustwayLoader taille="sm" /> : null}
               Créer le site
             </button>
             <button type="button" className="btn-ghost" onClick={() => setAfficherFormulaire(false)}>
