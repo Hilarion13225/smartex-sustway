@@ -1,6 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, ClipboardEdit, MapPin, PlusCircle, Smartphone, Trash2, Wallet } from 'lucide-react';
+import {
+  ArrowLeft,
+  ClipboardList,
+  ClipboardEdit,
+  FileText,
+  History,
+  ListChecks,
+  ListTodo,
+  MapPin,
+  PlusCircle,
+  Smartphone,
+  Trash2,
+  Users,
+  Wallet,
+} from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -53,7 +67,7 @@ export default function EntrepriseDetail() {
 
   return (
     <>
-      <Link to="/app" className="btn-ghost mb-4 -ml-2">
+      <Link to="/app/entreprises" className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour aux entreprises
       </Link>
@@ -68,6 +82,26 @@ export default function EntrepriseDetail() {
               <ClipboardList className="h-4 w-4" aria-hidden />
               Audits RSE
             </Link>
+            <Link to={`/app/${entrepriseId}/documents`} className="btn-secondary">
+              <FileText className="h-4 w-4" aria-hidden />
+              Documents
+            </Link>
+            <Link to={`/app/${entrepriseId}/questionnaire`} className="btn-secondary">
+              <ListChecks className="h-4 w-4" aria-hidden />
+              Questionnaire
+            </Link>
+            <Link to={`/app/${entrepriseId}/plan-actions`} className="btn-secondary">
+              <ListTodo className="h-4 w-4" aria-hidden />
+              Plan d’actions
+            </Link>
+            <Link to={`/app/${entrepriseId}/utilisateurs`} className="btn-secondary">
+              <Users className="h-4 w-4" aria-hidden />
+              Utilisateurs
+            </Link>
+            <Link to={`/app/${entrepriseId}/journal`} className="btn-secondary">
+              <History className="h-4 w-4" aria-hidden />
+              Journal
+            </Link>
             {peut('revue:traiter') ? (
               <Link to={`/app/${entrepriseId}/revues-expertes`} className="btn-secondary">
                 <ClipboardEdit className="h-4 w-4" aria-hidden />
@@ -81,7 +115,15 @@ export default function EntrepriseDetail() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Revele>
           <Card className="h-full p-5">
-          <CardHeader titre="Abonnement" icone={Wallet} />
+          <CardHeader
+            titre="Abonnement"
+            icone={Wallet}
+            action={
+              <Link to={`/app/${entrepriseId}/abonnement`} className="btn-ghost">
+                Historique des paiements
+              </Link>
+            }
+          />
           {chargementAbonnement ? (
             <Loader message="Chargement de l’abonnement…" />
           ) : abonnement ? (

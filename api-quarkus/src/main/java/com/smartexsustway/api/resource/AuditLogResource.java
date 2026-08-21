@@ -1,0 +1,65 @@
+package com.smartexsustway.api.resource;
+
+import com.smartexsustway.api.domain.entity.Utilisateur;
+import com.smartexsustway.api.domain.repository.AuditLogRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.resource.dto.AuditLogDto;
+import com.smartexsustway.api.security.AutorisationService;
+import com.smartexsustway.api.tenant.TenantContext;
+import io.quarkus.security.Authenticated;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * RG19 / §1.4 — consultation du journal d'audit d'une entreprise.
+ *
+ * Imbriquée sous /entreprises/{entrepriseId} comme les autres ressources
+ * métier : le journal est une donnée d'entreprise, donc soumise à la même
+ * isolation multi-tenant. Lecture seule par construction — une entrée de
+ * journal ne se modifie ni ne se supprime.
+ */
+@Path("/api/v1/entreprises/{entrepriseId}/journal")
+@Produces(MediaType.APPLICATION_JSON)
+@Authenticated
+public class AuditLogResource {
+
+    private static final int TAILLE_MAX = 200;
+
+    @Inject AuditLogRepository auditLogRepository;
+    @Inject UtilisateurRepository utilisateurRepository;
+    @Inject AutorisationService autorisationService;
+    @Inject TenantContext tenantContext;
+
+    @GET
+    public Response lister(@PathParam("entrepriseId") UUID entrepriseId,
+                            @QueryParam("page") @DefaultValue("0") int page,
+                            @QueryParam("taille") @DefaultValue("50") int taille) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+
+        int tailleEffective = Math.min(Math.max(taille, 1), TAILLE_MAX);
+        var entrees = auditLogRepository.parEntreprise(entrepriseId, Math.max(page, 0), tailleEffective);
+
+        // Résolution groupée des auteurs : une entrée sur deux partage le
+        // même utilisateur, autant éviter un findById par ligne.
+        Map<UUID, Utilisateur> auteurs = new HashMap<>();
+        entrees.stream()
+                .map(e -> e.getUtilisateurId())
+                .filter(id -> id != null)
+                .distinct()
+                .forEach(id -> auteurs.put(id, utilisateurRepository.findById(id)));
+
+        var dtos = entrees.stream().map(e -> AuditLogDto.depuis(e, auteurs.get(e.getUtilisateurId()))).toList();
+        return Response.ok(dtos).build();
+    }
+}
