@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { BookOpen, Building2, ExternalLink, LifeBuoy, LogOut, Menu, ShieldCheck, UserCog, X } from 'lucide-react';
+import { BookOpen, Building2, ExternalLink, LayoutDashboard, LifeBuoy, LogOut, Menu, ShieldCheck, UserCog, X } from 'lucide-react';
 import clsx from 'clsx';
 import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -8,7 +8,8 @@ import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const LIENS = [
-  { vers: '/app', libelle: 'Entreprises', icone: Building2, fin: true },
+  { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+  { vers: '/app/entreprises', libelle: 'Entreprises', icone: Building2 },
   { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
 ];
 
@@ -35,7 +36,7 @@ function dateDuJour() {
   return `${JOURS[maintenant.getDay()]} ${maintenant.getDate()} ${MOIS[maintenant.getMonth()]} ${maintenant.getFullYear()}`;
 }
 
-/** Mise en page de l'espace connecté — navigation réelle uniquement (Entreprises, Profil). */
+/** Mise en page de l'espace connecté — navigation réelle uniquement (pilotage, entreprises, profil). */
 export default function Layout() {
   const { utilisateur, roleCourant, peut, deconnecter } = useApiAuth();
   const [ouvert, setOuvert] = useState(false);

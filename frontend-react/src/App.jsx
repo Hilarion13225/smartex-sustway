@@ -13,6 +13,7 @@ import Faq from './pages/Faq';
 import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
+import TableauDeBord from './pages/TableauDeBord';
 import Entreprises from './pages/Entreprises';
 import EntrepriseDetail from './pages/EntrepriseDetail';
 import AuditsListe from './pages/AuditsListe';
@@ -24,6 +25,12 @@ import ReferentielsListe from './pages/ReferentielsListe';
 import ReferentielDetail from './pages/ReferentielDetail';
 import IndicePreparation from './pages/IndicePreparation';
 import CritereEvaluation from './pages/CritereEvaluation';
+import Documents from './pages/Documents';
+import Questionnaire from './pages/Questionnaire';
+import Abonnement from './pages/Abonnement';
+import Utilisateurs from './pages/Utilisateurs';
+import Journal from './pages/Journal';
+import PlanActions from './pages/PlanActions';
 import RevueExperteQueue from './pages/RevueExperteQueue';
 import Profil from './pages/Profil';
 
@@ -52,8 +59,15 @@ export default function App() {
           <Route path="/inscription" element={<Inscription />} />
           <Route element={<RouteProtegee />}>
             <Route path="/app" element={<Layout />}>
-              <Route index element={<Entreprises />} />
+              <Route index element={<TableauDeBord />} />
+              <Route path="entreprises" element={<Entreprises />} />
               <Route path=":entrepriseId" element={<EntrepriseDetail />} />
+              <Route path=":entrepriseId/documents" element={<Documents />} />
+              <Route path=":entrepriseId/questionnaire" element={<Questionnaire />} />
+              <Route path=":entrepriseId/abonnement" element={<Abonnement />} />
+              <Route path=":entrepriseId/utilisateurs" element={<Utilisateurs />} />
+              <Route path=":entrepriseId/journal" element={<Journal />} />
+              <Route path=":entrepriseId/plan-actions" element={<PlanActions />} />
               <Route path=":entrepriseId/audits" element={<AuditsListe />} />
               <Route path=":entrepriseId/audits/:auditId" element={<AuditDetail />} />
               <Route path=":entrepriseId/audits/:auditId/score" element={<AuditScore />} />
