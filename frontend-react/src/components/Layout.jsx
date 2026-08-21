@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Building2, ExternalLink, LifeBuoy, LogOut, Menu, ShieldCheck, UserCog, X } from 'lucide-react';
+import { BookOpen, Building2, ExternalLink, LifeBuoy, LogOut, Menu, ShieldCheck, UserCog, X } from 'lucide-react';
 import clsx from 'clsx';
 import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
 import { useApiAuth } from '../auth/useApiAuth';
+import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const LIENS = [
   { vers: '/app', libelle: 'Entreprises', icone: Building2, fin: true },
   { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
 ];
+
+const LIEN_BACK_OFFICE = { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen };
 
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = [
@@ -34,13 +37,14 @@ function dateDuJour() {
 
 /** Mise en page de l'espace connecté — navigation réelle uniquement (Entreprises, Profil). */
 export default function Layout() {
-  const { utilisateur, deconnecter } = useApiAuth();
+  const { utilisateur, roleCourant, peut, deconnecter } = useApiAuth();
   const [ouvert, setOuvert] = useState(false);
   const navigate = useNavigate();
 
   if (!utilisateur) return null;
 
   const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
+  const liens = peut('referentiel:administrer') ? [...LIENS, LIEN_BACK_OFFICE] : LIENS;
 
   return (
     <div className="flex h-full bg-ink-50">
@@ -67,7 +71,7 @@ export default function Layout() {
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Pilotage</p>
-          {LIENS.map((lien) => (
+          {liens.map((lien) => (
             <NavLink
               key={lien.vers}
               to={lien.vers}
@@ -117,7 +121,9 @@ export default function Layout() {
               <p className="truncate text-sm font-medium text-ink-900">
                 {utilisateur.prenom} {utilisateur.nom}
               </p>
-              <p className="truncate text-xs text-ink-500">{utilisateur.email}</p>
+              <p className="truncate text-xs text-ink-500">
+                {roleCourant ? ROLE_LIBELLE[roleCourant] ?? roleCourant : utilisateur.email}
+              </p>
             </div>
             <button
               type="button"

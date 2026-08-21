@@ -21,7 +21,12 @@ class Settings(BaseSettings):
     # Smartex Expertises avant tout traitement de données clients réelles
     # (voir README, section "Agents IA").
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.5-flash"
+    # TEMPORAIRE — bascule sur Flash-Lite pour contourner le quota gratuit
+    # épuisé sur gemini-3.6-flash (paliers de quota distincts par modèle).
+    # À REMETTRE sur "gemini-3.6-flash" une fois le quota principal
+    # reconstitué (qualité légèrement inférieure sur Flash-Lite, acceptable
+    # pour un test mais pas recommandé en continu).
+    gemini_model: str = "gemini-3.5-flash-lite"
 
     model_config = SettingsConfigDict(env_prefix="SMARTEX_", env_file=".env", extra="ignore")
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, MapPin, PlusCircle, Smartphone, Trash2, Wallet } from 'lucide-react';
+import { ArrowLeft, ClipboardList, ClipboardEdit, MapPin, PlusCircle, Smartphone, Trash2, Wallet } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -9,12 +9,13 @@ import { api, ApiError } from '../lib/apiClient';
 
 /**
  * Détail d'une entreprise : abonnement (avec reprise de paiement si en
- * attente — RG20), et gestion des sites (RG04, endpoints déjà prêts côté
- * API depuis la phase B, jamais encore branchés côté frontend jusqu'ici).
+ * attente — RG20), gestion des sites (RG04), et accès aux audits RSE
+ * (RG10/RG11) — le lien vers la file de revue experte n'apparaît que pour
+ * les rôles habilités (EXPERT_REVIEWER/ADMIN_AUDIT/SUPER_ADMIN).
  */
 export default function EntrepriseDetail() {
   const { entrepriseId } = useParams();
-  const { entreprises, recupererAbonnement, payerAbonnement } = useApiAuth();
+  const { entreprises, recupererAbonnement, payerAbonnement, peut } = useApiAuth();
 
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
@@ -61,6 +62,20 @@ export default function EntrepriseDetail() {
         icone={MapPin}
         titre={entreprise.raisonSociale}
         description={`${entreprise.identifiantLegal}${entreprise.secteurCode ? ' — ' + entreprise.secteurCode : ''}${entreprise.taille ? ' — ' + entreprise.taille : ''}`}
+        actions={
+          <>
+            <Link to={`/app/${entrepriseId}/audits`} className="btn-primary">
+              <ClipboardList className="h-4 w-4" aria-hidden />
+              Audits RSE
+            </Link>
+            {peut('revue:traiter') ? (
+              <Link to={`/app/${entrepriseId}/revues-expertes`} className="btn-secondary">
+                <ClipboardEdit className="h-4 w-4" aria-hidden />
+                Revue experte
+              </Link>
+            ) : null}
+          </>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -88,7 +103,12 @@ export default function EntrepriseDetail() {
           {chargementSites ? (
             <Loader message="Chargement des sites…" />
           ) : (
-            <SitesSection entrepriseId={entrepriseId} sites={sites} onChange={rafraichirSites} />
+            <SitesSection
+              entrepriseId={entrepriseId}
+              sites={sites}
+              onChange={rafraichirSites}
+              peutModifier={peut('entreprise:modifier', abonnement?.formuleCode)}
+            />
           )}
           </Card>
         </Revele>
@@ -163,7 +183,7 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
   );
 }
 
-function SitesSection({ entrepriseId, sites, onChange }) {
+function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
   const [formulaire, setFormulaire] = useState({ nom: '', adresse: '', ville: '', codePostal: '', paysCodeIso2: 'CI' });
   const [chargement, setChargement] = useState(false);
@@ -208,7 +228,7 @@ function SitesSection({ entrepriseId, sites, onChange }) {
               </div>
               <div className="flex items-center gap-2">
                 <Badge ton={s.statut === 'ACTIF' ? 'vert' : 'neutre'}>{s.statut}</Badge>
-                {s.statut !== 'ARCHIVE' ? (
+                {s.statut !== 'ARCHIVE' && peutModifier ? (
                   <button
                     type="button"
                     className="btn-ghost p-1.5 text-rose-600"
@@ -226,7 +246,7 @@ function SitesSection({ entrepriseId, sites, onChange }) {
         <Vide message="Aucun site pour l’instant." />
       )}
 
-      {afficherFormulaire ? (
+      {!peutModifier ? null : afficherFormulaire ? (
         <form className="space-y-3 rounded-lg border border-ink-200 p-3" onSubmit={creerSite}>
           {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
           <div className="grid gap-3 sm:grid-cols-2">

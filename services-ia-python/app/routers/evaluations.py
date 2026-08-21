@@ -14,7 +14,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from uuid import UUID
 
-from app.agents import document_agent, evidence_compliance_agent
+from app.agents import document_agent, evidence_compliance_agent, recommendation_agent, risk_agent
 from app.services.gemini_client import GeminiNonConfigure
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,14 @@ class EvaluerCritereRequest(BaseModel):
     critere_libelle: str
     critere_description: str | None = None
     documents: list[DocumentPourEvaluation] = Field(min_length=1)
+    # RG21 : le pipeline dépend de la formule souscrite — Risk Agent et
+    # Recommendation Agent ne sont exécutés que si Quarkus indique que
+    # l'audit est en formule Avancées (Quarkus est seul responsable de
+    # cette décision métier ; ce service ne connaît pas la notion de
+    # formule d'abonnement). Champs distincts (plutôt qu'un flag unique)
+    # pour permettre de les découpler plus tard sans changer le contrat.
+    analyse_risque: bool = False
+    generer_recommandation: bool = False
 
 
 class DocumentAnalyseDto(BaseModel):
@@ -48,6 +56,13 @@ class EvaluerCritereResponse(BaseModel):
     couverture_preuve: bool
     justification: str
     documents_analyses: list[DocumentAnalyseDto]
+    # Renseignés uniquement si analyse_risque était vrai dans la requête.
+    signal_risque: bool | None = None
+    categorie_risque: str | None = None
+    justification_risque: str | None = None
+    # Renseignés uniquement si generer_recommandation était vrai dans la requête.
+    recommandation_necessaire: bool | None = None
+    pistes_amelioration: str | None = None
 
 
 @router.post("/critere", response_model=EvaluerCritereResponse)
@@ -75,6 +90,40 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
 
         justification = f"{resultat.justification_couverture} {resultat.justification_conformite}".strip()
 
+        signal_risque: bool | None = None
+        categorie_risque: str | None = None
+        justification_risque: str | None = None
+
+        if payload.analyse_risque:
+            resultat_risque = await risk_agent.evaluer(
+                code=payload.critere_code,
+                libelle=payload.critere_libelle,
+                description=payload.critere_description,
+                resumes=[d.resume for d in documents_analyses],
+                probabilite_conformite=resultat.probabilite_conformite,
+                confiance=resultat.confiance,
+                justification_conformite=justification,
+            )
+            signal_risque = resultat_risque.signal_risque
+            categorie_risque = resultat_risque.categorie
+            justification_risque = resultat_risque.justification
+
+        recommandation_necessaire: bool | None = None
+        pistes_amelioration: str | None = None
+
+        if payload.generer_recommandation:
+            resultat_recommandation = await recommendation_agent.evaluer(
+                code=payload.critere_code,
+                libelle=payload.critere_libelle,
+                description=payload.critere_description,
+                resumes=[d.resume for d in documents_analyses],
+                probabilite_conformite=resultat.probabilite_conformite,
+                couverture_preuve=resultat.couverture_preuve,
+                justification_conformite=justification,
+            )
+            recommandation_necessaire = resultat_recommandation.recommandation_necessaire
+            pistes_amelioration = resultat_recommandation.pistes_amelioration
+
         return EvaluerCritereResponse(
             audit_critere_id=payload.audit_critere_id,
             probabilite_conformite=resultat.probabilite_conformite,
@@ -82,6 +131,11 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
             couverture_preuve=resultat.couverture_preuve,
             justification=justification,
             documents_analyses=documents_analyses,
+            signal_risque=signal_risque,
+            categorie_risque=categorie_risque,
+            justification_risque=justification_risque,
+            recommandation_necessaire=recommandation_necessaire,
+            pistes_amelioration=pistes_amelioration,
         )
 
     except GeminiNonConfigure as exc:

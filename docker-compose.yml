@@ -116,6 +116,14 @@ services:
     container_name: smartex-api
     restart: unless-stopped
     environment:
+      # Active le profil %dev de Quarkus dans le jar packagé (l'image est
+      # buildée en mode "package" normal, pas "quarkus:dev" — sans cette
+      # variable, les propriétés préfixées %dev.* de application.properties
+      # (vérification email non obligatoire, échec antivirus non bloquant,
+      # etc.) ne s'appliquent jamais et le compte reste "non actif" tant que
+      # l'email de vérification n'a pas été cliqué). À retirer avant toute
+      # mise en production réelle (voir application.properties, RG36).
+      QUARKUS_PROFILE: dev
       SMARTEX_DB_URL: jdbc:postgresql://postgres:5432/smartex_sustway
       SMARTEX_DB_USER: smartex
       SMARTEX_DB_PASSWORD: smartex

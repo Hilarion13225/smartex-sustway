@@ -17,7 +17,9 @@ public record EvaluerCritereRequestDto(
         @JsonProperty("critere_code") String critereCode,
         @JsonProperty("critere_libelle") String critereLibelle,
         @JsonProperty("critere_description") String critereDescription,
-        @JsonProperty("documents") List<DocumentPourEvaluationDto> documents
+        @JsonProperty("documents") List<DocumentPourEvaluationDto> documents,
+        @JsonProperty("analyse_risque") boolean analyseRisque,
+        @JsonProperty("generer_recommandation") boolean genererRecommandation
 ) {
     public record DocumentPourEvaluationDto(
             @JsonProperty("nom") String nom,

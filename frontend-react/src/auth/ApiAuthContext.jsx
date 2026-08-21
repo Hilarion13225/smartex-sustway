@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { api, ecrireToken, lireToken } from '../lib/apiClient';
 import { decoderJwt, tokenExpire } from '../lib/jwt';
+import { possedePermission } from './permissions';
 
 /**
  * Contexte d'authentification RÉEL — parle effectivement à l'API Quarkus
@@ -162,12 +163,26 @@ export function ApiAuthProvider({ children }) {
     return api.get('/api/v1/secteurs', { avecAuth: false });
   }, []);
 
+  /**
+   * `plan` (formule de l'entreprise concernée par l'action) est fourni par
+   * l'appelant plutôt que lu d'un état global : contrairement au prototype
+   * de référence, un même compte peut être rattaché à plusieurs entreprises
+   * à des formules différentes — il n'existe pas de « formule active »
+   * unique côté application. Omettre `plan` reste sûr pour les permissions
+   * jamais soumises à restriction de formule (ex. referentiel:administrer).
+   */
+  const peut = useCallback(
+    (permission, plan) => possedePermission(roleCourant, plan, permission),
+    [roleCourant]
+  );
+
   const valeur = useMemo(
     () => ({
       token,
       utilisateur,
       entreprises,
       roleCourant,
+      peut,
       chargement,
       estConnecte: Boolean(token && utilisateur),
       inscrire,
@@ -192,6 +207,7 @@ export function ApiAuthProvider({ children }) {
       utilisateur,
       entreprises,
       roleCourant,
+      peut,
       chargement,
       inscrire,
       verifierEmail,

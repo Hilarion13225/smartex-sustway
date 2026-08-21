@@ -43,6 +43,12 @@ public class Domaine {
         // JPA
     }
 
+    public Domaine(Referentiel referentiel, String code, String nom) {
+        this.referentiel = referentiel;
+        this.code = code;
+        this.nom = nom;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -59,12 +65,24 @@ public class Domaine {
         return nom;
     }
 
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public int getOrdre() {
         return ordre;
+    }
+
+    public void setOrdre(int ordre) {
+        this.ordre = ordre;
     }
 
     @Override

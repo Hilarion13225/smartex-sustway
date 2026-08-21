@@ -14,13 +14,15 @@ public record AuditDto(
         LocalDate dateDebut,
         LocalDate dateFin,
         String statut,
-        int nombreCriteres
+        int nombreCriteres,
+        String formuleCode
 ) {
     public static AuditDto depuis(Audit a, int nombreCriteres) {
         return new AuditDto(
                 a.getId(), a.getEntreprise().getId(), a.getReferentiel().getCode(),
                 a.getNom(), a.getDescription(), a.getDateDebut(), a.getDateFin(),
-                a.getStatut().name(), nombreCriteres
+                a.getStatut().name(), nombreCriteres,
+                a.getFormuleAbonnement() == null ? null : a.getFormuleAbonnement().getCode()
         );
     }
 }

@@ -16,13 +16,20 @@ public record EvaluationDto(
         String source,
         String statut,
         boolean revueExperteDeclenchee,
-        OffsetDateTime dateEvaluation
+        OffsetDateTime dateEvaluation,
+        Boolean signalRisque,
+        String categorieRisque,
+        String justificationRisque,
+        Boolean recommandationNecessaire,
+        String pistesAmelioration
 ) {
     public static EvaluationDto depuis(Evaluation e, boolean revueExperteDeclenchee) {
         return new EvaluationDto(
                 e.getId(), e.getAuditCritere().getId(), e.getProbabiliteConforme(), e.getNote(),
                 e.getConfianceIa(), e.getJustification(), e.getSource().name(), e.getStatut().name(),
-                revueExperteDeclenchee, e.getDateEvaluation()
+                revueExperteDeclenchee, e.getDateEvaluation(),
+                e.getSignalRisque(), e.getCategorieRisque(), e.getJustificationRisque(),
+                e.getRecommandationNecessaire(), e.getPistesAmelioration()
         );
     }
 }

@@ -6,6 +6,7 @@ import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.AuditQuestion;
 import com.smartexsustway.api.domain.entity.Critere;
+import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.Question;
 import com.smartexsustway.api.domain.entity.Referentiel;
@@ -23,6 +24,7 @@ import com.smartexsustway.api.resource.dto.AuditCreateRequest;
 import com.smartexsustway.api.resource.dto.AuditCritereDto;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.scoring.AuditScoreService;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
@@ -67,6 +69,7 @@ public class AuditResource {
     @Inject AbonnementRepository abonnementRepository;
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
+    @Inject AuditScoreService auditScoreService;
     @Inject AuditQuestionRepository auditQuestionRepository;
     @Inject QuestionRepository questionRepository;
     @Inject UtilisateurRepository utilisateurRepository;
@@ -105,6 +108,23 @@ public class AuditResource {
         return Response.ok(criteres).build();
     }
 
+    /**
+     * RG32 — agrégation du score global et par domaine de la mission, à
+     * partir des évaluations définitives (statut VALIDEE) des critères
+     * actifs/applicables (RG35). Un critère non encore évalué, ou dont
+     * l'évaluation attend une revue experte (EN_REVUE), ne participe pas
+     * encore au score — il est compté séparément (nombreCriteresEnRevue /
+     * nombreCriteresNonEvalues) pour distinguer avancement et conformité.
+     */
+    @GET
+    @Path("/{auditId}/score")
+    public Response score(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        return Response.ok(auditScoreService.calculer(audit)).build();
+    }
+
     @POST
     @Transactional
     public Response creer(@PathParam("entrepriseId") UUID entrepriseId, @Valid AuditCreateRequest requete) {
@@ -136,9 +156,13 @@ public class AuditResource {
 
         // RG34/RG35 : composition dynamique du questionnaire, figée dans la
         // mission (voir javadoc QuestionnaireService et AuditCritere).
+        // RG37 : la criticité de chaque critère est résolue pour le secteur
+        // de l'entreprise auditée (surcharge sectorielle si elle existe,
+        // sinon criticité générale), puis gelée dans l'AuditCritere.
         List<Critere> criteresApplicables = questionnaireService.composer(entreprise, referentiel);
         for (Critere critere : criteresApplicables) {
-            AuditCritere auditCritere = new AuditCritere(audit, critere);
+            Criticite criticiteEffective = questionnaireService.criticiteEffective(critere, entreprise);
+            AuditCritere auditCritere = new AuditCritere(audit, critere, criticiteEffective);
             auditCritereRepository.persist(auditCritere);
 
             for (Question question : questionRepository.parCritere(critere.getId())) {

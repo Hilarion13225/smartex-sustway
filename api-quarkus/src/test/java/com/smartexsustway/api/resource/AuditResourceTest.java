@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 
 /**
@@ -138,6 +139,59 @@ class AuditResourceTest {
                 .statusCode(200)
                 .body("$", hasSize(1))
                 .body("[0].nom", equalTo("Audit à lister"));
+    }
+
+    @Test
+    void score_avantToutEvaluation_estNeutreEtRepartiParDomaine() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+
+        String auditId = given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "referentielCode", "SMARTEX_SUSTWAY",
+                        "nom", "Audit Score",
+                        "dateDebut", LocalDate.now().toString()))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits")
+                .then().statusCode(201)
+                .extract().path("id");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/score")
+                .then()
+                .statusCode(200)
+                .body("auditId", equalTo(auditId))
+                .body("scoreGlobal", equalTo(0))
+                .body("nombreCriteresTotal", equalTo(87))
+                .body("nombreCriteresEvalues", equalTo(0))
+                .body("nombreCriteresEnRevue", equalTo(0))
+                .body("nombreCriteresNonEvalues", equalTo(87))
+                .body("domaines.nombreCriteresTotal.sum()", equalTo(87))
+                .body("domaines.nombreCriteresEvalues", everyItem(equalTo(0)));
+    }
+
+    @Test
+    void score_isolationMultiTenant_unUtilisateurNeVoitPasLeScoreDunAutre() {
+        var ctxA = creerEntrepriseAvecAbonnementActif();
+        String auditId = given()
+                .header("Authorization", "Bearer " + ctxA.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "referentielCode", "SMARTEX_SUSTWAY",
+                        "nom", "Audit Score Isolé",
+                        "dateDebut", LocalDate.now().toString()))
+                .when().post("/api/v1/entreprises/" + ctxA.entrepriseId() + "/audits")
+                .then().statusCode(201)
+                .extract().path("id");
+
+        var utilisateurB = UtilisateurDeTest.creerEtConnecter(jwtService);
+
+        given()
+                .header("Authorization", "Bearer " + utilisateurB.token)
+                .when().get("/api/v1/entreprises/" + ctxA.entrepriseId() + "/audits/" + auditId + "/score")
+                .then()
+                .statusCode(403);
     }
 
     @Test

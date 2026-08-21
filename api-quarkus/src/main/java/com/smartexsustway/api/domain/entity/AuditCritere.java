@@ -68,6 +68,20 @@ public class AuditCritere {
         this.criticite = critere.getCriticite();
     }
 
+    /**
+     * RG37 — variante utilisée quand la criticité effective a déjà été
+     * résolue en amont (voir QuestionnaireService.criticiteEffective),
+     * qui peut différer de {@code critere.getCriticite()} si une
+     * surcharge sectorielle existe pour le secteur de l'entreprise
+     * auditée. Le constructeur à deux arguments reste disponible pour les
+     * appelants qui n'ont pas besoin de cette résolution (ex. tests).
+     */
+    public AuditCritere(Audit audit, Critere critere, Criticite criticiteEffective) {
+        this.audit = audit;
+        this.critere = critere;
+        this.criticite = criticiteEffective;
+    }
+
     public UUID getId() {
         return id;
     }

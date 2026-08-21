@@ -58,6 +58,12 @@ public class Referentiel {
         // JPA
     }
 
+    public Referentiel(String code, String nom, TypeReferentiel type) {
+        this.code = code;
+        this.nom = nom;
+        this.type = type;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -70,6 +76,10 @@ public class Referentiel {
         return nom;
     }
 
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
     public TypeReferentiel getType() {
         return type;
     }
@@ -78,12 +88,24 @@ public class Referentiel {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getVersion() {
         return version;
     }
 
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public StatutGenerique getStatut() {
         return statut;
+    }
+
+    public void setStatut(StatutGenerique statut) {
+        this.statut = statut;
     }
 
     @Override

@@ -77,6 +77,35 @@ public class Evaluation {
     @Column(name = "statut", nullable = false, columnDefinition = "statut_evaluation")
     private StatutEvaluation statut = StatutEvaluation.PROVISOIRE;
 
+    // Risk Agent (CDC §10, formule Avancées) : signal d'anomalie détecté
+    // dans le contenu des preuves. Distinct du risque attendu déterministe
+    // (RG26, calculé côté ScoringEngine à partir de la criticité) — ce
+    // champ ne participe à aucun calcul de score ni de priorité, il sert
+    // uniquement de signal informatif pour l'expert et le Recommendation
+    // Agent. Null si le pipeline n'a pas exécuté le Risk Agent (formule
+    // Standard).
+    @Column(name = "signal_risque")
+    private Boolean signalRisque;
+
+    @Column(name = "categorie_risque", length = 50)
+    private String categorieRisque;
+
+    @Column(name = "justification_risque", columnDefinition = "text")
+    private String justificationRisque;
+
+    // Recommendation Agent (CDC §10, formule Avancées) : pistes
+    // d'amélioration concrètes proposées pour ce critère. Portée limitée
+    // à ce lot (Phase E) — la génération automatique de non-conformités
+    // et d'actions correctives (module 11) est prévue en Phase G et
+    // s'appuiera sur les tables non_conforme/action_corrective, déjà en
+    // base mais non encore alimentées. Null si le Recommendation Agent
+    // n'a pas été exécuté (formule Standard).
+    @Column(name = "recommandation_necessaire")
+    private Boolean recommandationNecessaire;
+
+    @Column(name = "pistes_amelioration", columnDefinition = "text")
+    private String pistesAmelioration;
+
     protected Evaluation() {
         // JPA
     }
@@ -99,8 +128,25 @@ public class Evaluation {
         return probabiliteConforme;
     }
 
+    /**
+     * Réservé à la correction par un expert humain lors d'une revue
+     * (RevueExperteResource) — RG27 interdit à l'IA de fixer directement
+     * ce champ, pas à un expert qui, lui, produit une décision humaine
+     * documentée (voir RevueExperte.commentaire). Après appel, evaluation
+     * redevient la source de vérité unique pour tout calcul de score en
+     * aval, alignée sur la décision finale de l'expert.
+     */
+    public void setProbabiliteConforme(BigDecimal probabiliteConforme) {
+        this.probabiliteConforme = probabiliteConforme;
+    }
+
     public short getNote() {
         return note;
+    }
+
+    /** Voir {@link #setProbabiliteConforme(BigDecimal)} — même justification, réservé à la revue experte. */
+    public void setNote(short note) {
+        this.note = note;
     }
 
     public BigDecimal getConfianceIa() {
@@ -153,6 +199,46 @@ public class Evaluation {
 
     public void setStatut(StatutEvaluation statut) {
         this.statut = statut;
+    }
+
+    public Boolean getSignalRisque() {
+        return signalRisque;
+    }
+
+    public void setSignalRisque(Boolean signalRisque) {
+        this.signalRisque = signalRisque;
+    }
+
+    public String getCategorieRisque() {
+        return categorieRisque;
+    }
+
+    public void setCategorieRisque(String categorieRisque) {
+        this.categorieRisque = categorieRisque;
+    }
+
+    public String getJustificationRisque() {
+        return justificationRisque;
+    }
+
+    public void setJustificationRisque(String justificationRisque) {
+        this.justificationRisque = justificationRisque;
+    }
+
+    public Boolean getRecommandationNecessaire() {
+        return recommandationNecessaire;
+    }
+
+    public void setRecommandationNecessaire(Boolean recommandationNecessaire) {
+        this.recommandationNecessaire = recommandationNecessaire;
+    }
+
+    public String getPistesAmelioration() {
+        return pistesAmelioration;
+    }
+
+    public void setPistesAmelioration(String pistesAmelioration) {
+        this.pistesAmelioration = pistesAmelioration;
     }
 
     @Override

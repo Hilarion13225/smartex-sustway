@@ -1,6 +1,7 @@
 package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.audit.AuditLogService;
+import com.smartexsustway.api.conformite.NonConformiteService;
 import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Document;
@@ -70,6 +71,7 @@ public class EvaluationResource {
     @Inject PreuveRepository preuveRepository;
     @Inject EvaluationRepository evaluationRepository;
     @Inject RevueExperteRepository revueExperteRepository;
+    @Inject NonConformiteService nonConformiteService;
     @Inject StorageService storageService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
@@ -109,6 +111,12 @@ public class EvaluationResource {
             return erreur(400, "Aucune preuve associée à ce critère — impossible de lancer l'évaluation IA");
         }
 
+        // RG21 : le pipeline d'agents IA dépend de la formule souscrite —
+        // calculé une seule fois ici, réutilisé à la fois pour demander
+        // (ou non) l'analyse du Risk Agent et pour la logique de revue
+        // experte plus bas (déjà présente avant l'ajout du Risk Agent).
+        boolean formuleAvancees = estFormuleAvancees(audit);
+
         List<EvaluerCritereRequestDto.DocumentPourEvaluationDto> documents = new ArrayList<>();
         for (Preuve preuve : preuves) {
             Document document = preuve.getDocument();
@@ -129,7 +137,10 @@ public class EvaluationResource {
                 auditCritere.getCritere().getCode(),
                 auditCritere.getCritere().getLibelle(),
                 auditCritere.getCritere().getDescription(),
-                documents
+                documents,
+                formuleAvancees, // analyseRisque (Risk Agent)
+                formuleAvancees  // genererRecommandation (Recommendation Agent) — même condition
+                                 // aujourd'hui (RG21), champs distincts pour rester découplables
         );
 
         EvaluerCritereResponseDto reponse;
@@ -151,7 +162,18 @@ public class EvaluationResource {
         evaluation.setConfianceIa(confiance);
         evaluation.setJustification(reponse.justification());
         evaluation.setSource(SourceEvaluation.IA);
-        evaluationRepository.persist(evaluation);
+        evaluation.setSignalRisque(reponse.signalRisque());
+        evaluation.setCategorieRisque(reponse.categorieRisque());
+        evaluation.setJustificationRisque(reponse.justificationRisque());
+        evaluation.setRecommandationNecessaire(reponse.recommandationNecessaire());
+        evaluation.setPistesAmelioration(reponse.pistesAmelioration());
+        // persistAndFlush (et non persist seul) : @CreationTimestamp n'est
+        // renseigné par Hibernate qu'au flush, qui autrement n'aurait lieu
+        // qu'à la fin de la transaction — sans ce flush explicite,
+        // dateEvaluation reste null dans l'entité en mémoire au moment de
+        // construire la réponse ci-dessous (RG14 : la date fait partie de
+        // l'historique conservé, y compris dans la réponse renvoyée au client).
+        evaluationRepository.persistAndFlush(evaluation);
 
         boolean revueDeclenchee = declencherRevueExperteSiNecessaire(audit, evaluation, probabilite, (short) niveau, confiance);
 
@@ -160,13 +182,19 @@ public class EvaluationResource {
         return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation, revueDeclenchee)).build();
     }
 
-    /** RG22/RG38 : file de revue experte si confiance IA < seuil, formule Avancées uniquement. */
+    /**
+     * RG22/RG38 : file de revue experte si confiance IA < seuil, formule
+     * Avancées uniquement. RG16 : si aucune revue n'est requise, l'analyse
+     * IA constitue déjà l'évaluation définitive — l'évaluation passe donc
+     * directement à VALIDEE plutôt que de rester indéfiniment PROVISOIRE
+     * (le seul autre chemin vers VALIDEE est le traitement d'une revue,
+     * voir RevueExperteResource).
+     */
     private boolean declencherRevueExperteSiNecessaire(Audit audit, Evaluation evaluation, BigDecimal probabilite,
                                                          short niveau, BigDecimal confiance) {
-        boolean formuleAvancees = audit.getFormuleAbonnement() != null
-                && FORMULE_AVANCEES.equals(audit.getFormuleAbonnement().getCode());
-
-        if (!formuleAvancees || confiance == null || confiance.compareTo(seuilConfianceRevueExperte) >= 0) {
+        if (!estFormuleAvancees(audit) || confiance == null || confiance.compareTo(seuilConfianceRevueExperte) >= 0) {
+            evaluation.setStatut(StatutEvaluation.VALIDEE);
+            nonConformiteService.genererSiNecessaire(evaluation);
             return false;
         }
 
@@ -174,6 +202,12 @@ public class EvaluationResource {
         revueExperteRepository.persist(revue);
         evaluation.setStatut(StatutEvaluation.EN_REVUE);
         return true;
+    }
+
+    /** RG21 : le pipeline d'agents exécuté (et donc le Risk Agent) dépend de la formule souscrite. */
+    private boolean estFormuleAvancees(Audit audit) {
+        return audit.getFormuleAbonnement() != null
+                && FORMULE_AVANCEES.equals(audit.getFormuleAbonnement().getCode());
     }
 
     private Audit trouverAudit(UUID entrepriseId, UUID auditId) {

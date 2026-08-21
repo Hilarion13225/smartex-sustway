@@ -137,6 +137,13 @@
       <artifactId>quarkus-config-yaml</artifactId>
     </dependency>
 
+    <!-- Génération de rapports PDF (module 12) -->
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>3.0.5</version>
+    </dependency>
+
     <!-- Tests -->
     <dependency>
       <groupId>io.quarkus</groupId>

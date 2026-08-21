@@ -62,6 +62,12 @@ public class Critere {
         // JPA
     }
 
+    public Critere(Domaine domaine, String code, String libelle) {
+        this.domaine = domaine;
+        this.code = code;
+        this.libelle = libelle;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -78,20 +84,40 @@ public class Critere {
         return libelle;
     }
 
+    public void setLibelle(String libelle) {
+        this.libelle = libelle;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public TypeApplicabilite getApplicabilite() {
         return applicabilite;
     }
 
+    public void setApplicabilite(TypeApplicabilite applicabilite) {
+        this.applicabilite = applicabilite;
+    }
+
     public Criticite getCriticite() {
         return criticite;
     }
 
+    public void setCriticite(Criticite criticite) {
+        this.criticite = criticite;
+    }
+
     public boolean isActif() {
         return actif;
+    }
+
+    public void setActif(boolean actif) {
+        this.actif = actif;
     }
 
     @Override

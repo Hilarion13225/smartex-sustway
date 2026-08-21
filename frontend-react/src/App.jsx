@@ -15,6 +15,16 @@ import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import Entreprises from './pages/Entreprises';
 import EntrepriseDetail from './pages/EntrepriseDetail';
+import AuditsListe from './pages/AuditsListe';
+import AuditDetail from './pages/AuditDetail';
+import AuditScore from './pages/AuditScore';
+import NonConformites from './pages/NonConformites';
+import Rapports from './pages/Rapports';
+import ReferentielsListe from './pages/ReferentielsListe';
+import ReferentielDetail from './pages/ReferentielDetail';
+import IndicePreparation from './pages/IndicePreparation';
+import CritereEvaluation from './pages/CritereEvaluation';
+import RevueExperteQueue from './pages/RevueExperteQueue';
 import Profil from './pages/Profil';
 
 function RouteProtegee() {
@@ -44,7 +54,17 @@ export default function App() {
             <Route path="/app" element={<Layout />}>
               <Route index element={<Entreprises />} />
               <Route path=":entrepriseId" element={<EntrepriseDetail />} />
+              <Route path=":entrepriseId/audits" element={<AuditsListe />} />
+              <Route path=":entrepriseId/audits/:auditId" element={<AuditDetail />} />
+              <Route path=":entrepriseId/audits/:auditId/score" element={<AuditScore />} />
+              <Route path=":entrepriseId/audits/:auditId/non-conformites" element={<NonConformites />} />
+              <Route path=":entrepriseId/audits/:auditId/rapports" element={<Rapports />} />
+              <Route path=":entrepriseId/audits/:auditId/indice-preparation" element={<IndicePreparation />} />
+              <Route path=":entrepriseId/audits/:auditId/criteres/:auditCritereId" element={<CritereEvaluation />} />
+              <Route path=":entrepriseId/revues-expertes" element={<RevueExperteQueue />} />
               <Route path="profil" element={<Profil />} />
+              <Route path="referentiels" element={<ReferentielsListe />} />
+              <Route path="referentiels/:code" element={<ReferentielDetail />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
