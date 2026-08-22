@@ -80,7 +80,8 @@ export default function CritereEvaluation() {
   }, [rafraichir]);
 
   const preuvesDuCritere = (preuves ?? []).filter((p) => critere && p.critereCodes.includes(critere.critereCode));
-  const derniereEvaluation = evaluations && evaluations.length > 0 ? evaluations[evaluations.length - 1] : null;
+  // L'API renvoie les évaluations de la plus récente à la plus ancienne.
+  const derniereEvaluation = evaluations && evaluations.length > 0 ? evaluations[0] : null;
   // RG09 : la collecte déclarative vaut source d'analyse au même titre que
   // les preuves — l'API accepte l'évaluation dès que l'une des deux existe.
   const declaratifRenseigne = Boolean(
