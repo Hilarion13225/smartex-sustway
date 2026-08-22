@@ -105,6 +105,14 @@ jobs:
             sleep 2
           done
           echo "MinIO n'a pas démarré" && exit 1
+      - name: ClamAV (scan à l'upload, échec bloquant hors profil dev)
+        run: |
+          docker run -d --name clamav -p 3310:3310 clamav/clamav:stable
+          for _ in $(seq 1 60); do
+            if docker exec clamav clamdcheck.sh >/dev/null 2>&1; then exit 0; fi
+            sleep 5
+          done
+          echo "clamd n'a pas démarré" && exit 1
       - name: Clés JWT de test (les .pem réels ne sont pas versionnés)
         run: |
           openssl genpkey -algorithm RSA -out src/main/resources/privateKey.pem -pkeyopt rsa_keygen_bits:2048
