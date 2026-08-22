@@ -38,7 +38,7 @@ export default function CompteurAnime({ valeur, duree = 1400, suffixe = '', clas
         };
         image = requestAnimationFrame(avancer);
       },
-      { threshold: 0.4 }
+      { threshold: 0 }
     );
 
     observateur.observe(element);
