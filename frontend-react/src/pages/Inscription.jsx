@@ -54,8 +54,7 @@ const COULEURS_FORCE = ['bg-rose-400', 'bg-amber-400', 'bg-amber-500', 'bg-brand
  */
 export default function Inscription() {
   const navigate = useNavigate();
-  const { inscrire, verifierEmail, connecter, creerEntreprise, payerAbonnement, listerFormules, listerSecteurs } =
-    useApiAuth();
+  const { inscrire, connecter, creerEntreprise, payerAbonnement, listerFormules, listerSecteurs } = useApiAuth();
 
   const [etape, setEtape] = useState('formule');
   const [formules, setFormules] = useState([]);
@@ -75,7 +74,6 @@ export default function Inscription() {
     taille: 'PME',
   });
 
-  const [tokenColle, setTokenColle] = useState('');
   const [entrepriseCreee, setEntrepriseCreee] = useState(null);
   const [abonnementCree, setAbonnementCree] = useState(null);
   const [paiementResultat, setPaiementResultat] = useState(null);
@@ -139,44 +137,64 @@ export default function Inscription() {
     }
   }
 
-  async function soumettreVerification(e) {
-    e.preventDefault();
-    setErreur(null);
-    setChargement(true);
-    try {
-      const token = tokenColle.includes('token=') ? tokenColle.split('token=')[1].trim() : tokenColle.trim();
-      await verifierEmail(token);
+  // Étape "vérification" : aucune saisie à faire ici — l'activation se fait
+  // en cliquant le lien reçu par email (page /verification-email). Cette
+  // page sonde discrètement en arrière-plan (tentative de connexion toutes
+  // les 3s) pour détecter l'activation et enchaîner seule sur la suite,
+  // sans que l'utilisateur ait à revenir cliquer quoi que ce soit ici.
+  useEffect(() => {
+    if (etape !== 'verification') return undefined;
 
-      const connexion = await connecter(formulaire.email, formulaire.motDePasse);
-      if (connexion.deuxFaRequise) {
-        // Cas limite : ne devrait pas arriver pour un compte tout juste créé
-        // (la 2FA se configure après coup), mais on ne bloque pas l'utilisateur.
-        setErreur('Ce compte a une double authentification active — connectez-vous via la page de connexion.');
-        return;
+    let annule = false;
+    const minuteur = setInterval(async () => {
+      try {
+        const connexion = await connecter(formulaire.email, formulaire.motDePasse);
+        if (annule) return;
+        clearInterval(minuteur);
+
+        if (connexion.deuxFaRequise) {
+          // Cas limite : ne devrait pas arriver pour un compte tout juste créé
+          // (la 2FA se configure après coup), mais on ne bloque pas l'utilisateur.
+          setErreur('Ce compte a une double authentification active — connectez-vous via la page de connexion.');
+          return;
+        }
+
+        if (estFree) {
+          setEtape('confirmation');
+          return;
+        }
+
+        setChargement(true);
+        const { entreprise, abonnement } = await creerEntreprise({
+          raisonSociale: formulaire.raisonSociale,
+          identifiantLegal: formulaire.identifiantLegal,
+          secteurCode: formulaire.secteurCode || undefined,
+          taille: formulaire.taille || undefined,
+          formuleCode: plan,
+          periodicite,
+        });
+        if (annule) return;
+        setEntrepriseCreee(entreprise);
+        setAbonnementCree(abonnement);
+        setEtape('paiement');
+      } catch (err) {
+        if (annule) return;
+        // 403 = compte pas encore actif : c'est l'état normal tant que
+        // l'email n'a pas été vérifié, on continue simplement d'attendre.
+        if (err instanceof ApiError && err.statut === 403) return;
+        clearInterval(minuteur);
+        setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+      } finally {
+        if (!annule) setChargement(false);
       }
+    }, 3000);
 
-      if (estFree) {
-        setEtape('confirmation');
-        return;
-      }
-
-      const { entreprise, abonnement } = await creerEntreprise({
-        raisonSociale: formulaire.raisonSociale,
-        identifiantLegal: formulaire.identifiantLegal,
-        secteurCode: formulaire.secteurCode || undefined,
-        taille: formulaire.taille || undefined,
-        formuleCode: plan,
-        periodicite,
-      });
-      setEntrepriseCreee(entreprise);
-      setAbonnementCree(abonnement);
-      setEtape('paiement');
-    } catch (err) {
-      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
-    } finally {
-      setChargement(false);
-    }
-  }
+    return () => {
+      annule = true;
+      clearInterval(minuteur);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [etape]);
 
   async function soumettrePaiement(e) {
     e.preventDefault();
@@ -476,7 +494,7 @@ export default function Inscription() {
       ) : null}
 
       {etape === 'verification' ? (
-        <form onSubmit={soumettreVerification}>
+        <div>
           <h2 className="text-lg font-semibold text-ink-900">Vérification de l’adresse email</h2>
           <p className="mt-1 text-sm text-ink-500">RG36 — le compte n’est activé qu’après vérification de l’email.</p>
           <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
@@ -485,36 +503,18 @@ export default function Inscription() {
               Vérifiez votre boîte mail pour activer votre compte.
             </p>
           </div>
-          <div className="mt-3">
-            <Alerte ton="ambre">
-              Un email de vérification vient de vous être envoyé. Ouvrez-le et copiez le lien (ou le token) qu’il
-              contient, puis collez-le ci-dessous pour activer votre compte <strong>sans quitter cette page</strong> —
-              cliquer directement sur le lien vous ferait sortir du parcours d’inscription avant l’étape paiement. Si
-              vous ne recevez pas l’email (pensez au dossier spam), le même lien est aussi journalisé dans les logs
-              du terminal <code>mvn quarkus:dev</code>.
-            </Alerte>
+          <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-200 py-8 text-center">
+            <SustwayLoader taille="md" />
+            <p className="text-sm text-ink-500">
+              En attente de la vérification… cette page continuera automatiquement dès que vous aurez cliqué le lien
+              reçu par email.
+            </p>
           </div>
-          <div className="mt-5">
-            <label className="label" htmlFor="token-verification">
-              Token de vérification (ou lien complet)
-            </label>
-            <textarea
-              id="token-verification"
-              required
-              rows={3}
-              className="input font-mono text-xs"
-              placeholder="eyJhbGci... ou le lien complet copié depuis les logs"
-              value={tokenColle}
-              onChange={(e) => setTokenColle(e.target.value)}
-            />
-          </div>
-          <div className="mt-7 flex justify-end">
-            <button type="submit" className="btn-vitrine" disabled={chargement}>
-              {chargement ? <SustwayLoader taille="sm" /> : <Mail className="h-4 w-4" aria-hidden />}
-              {estFree ? 'Vérifier et activer le compte' : 'Vérifier et créer l’entreprise'}
-            </button>
-          </div>
-        </form>
+          <p className="mt-4 text-center text-xs text-ink-400">
+            Vous ne recevez rien (pensez au dossier spam) ? Le même lien est aussi journalisé dans les logs du
+            terminal <code>mvn quarkus:dev</code> — ouvrez-le pour activer votre compte.
+          </p>
+        </div>
       ) : null}
 
       {etape === 'paiement' ? (
