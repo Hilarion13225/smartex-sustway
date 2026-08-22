@@ -78,6 +78,7 @@ export const ROLE_LIBELLE = {
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
   EMPLOYE: 'Collaborateur',
   VISITEUR: 'Visiteur (démonstration)',
+  AUCUN_ROLE_ATTRIBUE: 'Free',
 };
 
 /**
