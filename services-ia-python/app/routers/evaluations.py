@@ -9,12 +9,18 @@ propre StorageService.
 
 import base64
 import logging
-
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
 from uuid import UUID
 
-from app.agents import document_agent, evidence_compliance_agent, recommendation_agent, risk_agent
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field, model_validator
+
+from app.agents import (
+    document_agent,
+    evidence_compliance_agent,
+    recommendation_agent,
+    risk_agent,
+)
+from app.agents.evidence_compliance_agent import ReponseDeclaree
 from app.services.gemini_client import GeminiNonConfigure
 
 logger = logging.getLogger(__name__)
@@ -33,7 +39,14 @@ class EvaluerCritereRequest(BaseModel):
     critere_code: str
     critere_libelle: str
     critere_description: str | None = None
-    documents: list[DocumentPourEvaluation] = Field(min_length=1)
+    # RG09 : la collecte declarative (scenario textuel + reponses au
+    # questionnaire) complete les preuves documentaires. Un critere peut
+    # donc etre evalue sans document si l'entreprise a decrit sa situation,
+    # d'ou l'absence de min_length ici - Quarkus verifie qu'au moins une
+    # des deux sources est renseignee avant d'appeler ce service.
+    documents: list[DocumentPourEvaluation] = Field(default_factory=list)
+    scenario: str | None = None
+    reponses: list[ReponseDeclaree] = Field(default_factory=list)
     # RG21 : le pipeline dépend de la formule souscrite — Risk Agent et
     # Recommendation Agent ne sont exécutés que si Quarkus indique que
     # l'audit est en formule Avancées (Quarkus est seul responsable de
@@ -42,6 +55,14 @@ class EvaluerCritereRequest(BaseModel):
     # pour permettre de les découpler plus tard sans changer le contrat.
     analyse_risque: bool = False
     generer_recommandation: bool = False
+
+    @model_validator(mode="after")
+    def _au_moins_une_source(self) -> "EvaluerCritereRequest":
+        if not self.documents and not self.scenario and not self.reponses:
+            raise ValueError(
+                "Aucune source d'analyse : au moins un document, un scenario ou une reponse est requis"
+            )
+        return self
 
 
 class DocumentAnalyseDto(BaseModel):
@@ -72,7 +93,7 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
         for document in payload.documents:
             try:
                 contenu = base64.b64decode(document.contenu_base64, validate=True)
-            except Exception as exc:  # noqa: BLE001 - on veut un 422 propre, pas une 500 generique
+            except Exception as exc:  # on veut un 422 propre, pas une 500 generique
                 raise HTTPException(
                     status_code=422,
                     detail=f"Contenu base64 invalide pour le document '{document.nom}'",
@@ -86,6 +107,8 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
             libelle=payload.critere_libelle,
             description=payload.critere_description,
             resumes=[d.resume for d in documents_analyses],
+            scenario=payload.scenario,
+            reponses=payload.reponses,
         )
 
         justification = f"{resultat.justification_couverture} {resultat.justification_conformite}".strip()
@@ -142,6 +165,6 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except HTTPException:
         raise
-    except Exception as exc:  # noqa: BLE001 - toute erreur Gemini (quota, reseau...) devient un 503 propre
+    except Exception as exc:  # toute erreur Gemini (quota, reseau...) devient un 503 propre
         logger.exception("Echec de l'evaluation IA pour le critere %s", payload.critere_code)
         raise HTTPException(status_code=503, detail=f"Echec du pipeline d'agents IA : {exc}") from exc

@@ -18,6 +18,8 @@ public record EvaluerCritereRequestDto(
         @JsonProperty("critere_libelle") String critereLibelle,
         @JsonProperty("critere_description") String critereDescription,
         @JsonProperty("documents") List<DocumentPourEvaluationDto> documents,
+        @JsonProperty("scenario") String scenario,
+        @JsonProperty("reponses") List<ReponseDeclareeDto> reponses,
         @JsonProperty("analyse_risque") boolean analyseRisque,
         @JsonProperty("generer_recommandation") boolean genererRecommandation
 ) {
@@ -25,6 +27,14 @@ public record EvaluerCritereRequestDto(
             @JsonProperty("nom") String nom,
             @JsonProperty("type_mime") String typeMime,
             @JsonProperty("contenu_base64") String contenuBase64
+    ) {
+    }
+
+    /** RG09 — réponse déclarative de l'entreprise à une question du critère. */
+    public record ReponseDeclareeDto(
+            @JsonProperty("question") String question,
+            @JsonProperty("valeur") String valeur,
+            @JsonProperty("commentaire") String commentaire
     ) {
     }
 }

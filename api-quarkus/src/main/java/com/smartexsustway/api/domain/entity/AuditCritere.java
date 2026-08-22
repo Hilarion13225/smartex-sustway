@@ -58,6 +58,9 @@ public class AuditCritere {
     @Column(name = "statut", nullable = false, length = 30)
     private String statut = "A_EVALUER";
 
+    @Column(name = "scenario", columnDefinition = "text")
+    private String scenario;
+
     protected AuditCritere() {
         // JPA
     }
@@ -128,6 +131,14 @@ public class AuditCritere {
 
     public void setStatut(String statut) {
         this.statut = statut;
+    }
+
+    public String getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(String scenario) {
+        this.scenario = scenario;
     }
 
     @Override

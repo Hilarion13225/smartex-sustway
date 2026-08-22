@@ -9,6 +9,7 @@ un healthcheck et l'ossature des routes, sans logique IA encore branchée.
 """
 
 from fastapi import FastAPI
+
 from app.config import get_settings
 from app.routers import analyses, evaluations
 

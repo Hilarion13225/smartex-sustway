@@ -6,9 +6,10 @@ Recommendation/Reporting) seront implémentés en phases D et E. Ce routeur
 fixe uniquement le contrat d'API entre Quarkus et les services Python.
 """
 
+from uuid import UUID
+
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from uuid import UUID
 
 router = APIRouter()
 

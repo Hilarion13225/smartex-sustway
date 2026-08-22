@@ -7,6 +7,9 @@ import {
   ClipboardCheck,
   FileText,
   Lightbulb,
+  ListChecks,
+  MessageSquareText,
+  Save,
   ShieldAlert,
   Sparkles,
   UploadCloud,
@@ -20,6 +23,12 @@ import { formaterDateHeure } from '../lib/export';
 
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 'vert' };
+const VALEURS_REPONSE = [
+  { code: 'OUI', libelle: 'Oui' },
+  { code: 'NON', libelle: 'Non' },
+  { code: 'PARTIEL', libelle: 'Partiellement' },
+  { code: 'NON_APPLICABLE', libelle: 'Non applicable' },
+];
 
 export default function CritereEvaluation() {
   const { entrepriseId, auditId, auditCritereId } = useParams();
@@ -28,6 +37,7 @@ export default function CritereEvaluation() {
 
   const [critere, setCritere] = useState(state?.critere ?? null);
   const [preuves, setPreuves] = useState(null);
+  const [saisie, setSaisie] = useState(null);
   const [evaluations, setEvaluations] = useState(null);
   const [audit, setAudit] = useState(null);
   const [chargement, setChargement] = useState(!state?.critere);
@@ -37,15 +47,17 @@ export default function CritereEvaluation() {
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${auditCritereId}/evaluations`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}`),
+      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${auditCritereId}/questions`),
     ];
     if (!critere) {
       promesses.push(api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres`));
     }
     Promise.all(promesses)
-      .then(([p, e, a, tousLesCriteres]) => {
+      .then(([p, e, a, s, tousLesCriteres]) => {
         setPreuves(p);
         setEvaluations(e);
         setAudit(a);
+        setSaisie(s);
         if (tousLesCriteres) {
           setCritere(tousLesCriteres.find((c) => c.id === auditCritereId) ?? null);
         }
@@ -53,6 +65,7 @@ export default function CritereEvaluation() {
       .catch(() => {
         setPreuves([]);
         setEvaluations([]);
+        setSaisie({ scenario: null, questions: [] });
       })
       .finally(() => setChargement(false));
     // critere volontairement absent des dépendances : ne pas re-fetcher la
@@ -67,6 +80,11 @@ export default function CritereEvaluation() {
 
   const preuvesDuCritere = (preuves ?? []).filter((p) => critere && p.critereCodes.includes(critere.critereCode));
   const derniereEvaluation = evaluations && evaluations.length > 0 ? evaluations[evaluations.length - 1] : null;
+  // RG09 : la collecte déclarative vaut source d'analyse au même titre que
+  // les preuves — l'API accepte l'évaluation dès que l'une des deux existe.
+  const declaratifRenseigne = Boolean(
+    saisie && (saisie.scenario || (saisie.questions ?? []).some((q) => q.valeur || q.commentaire))
+  );
 
   return (
     <>
@@ -93,6 +111,24 @@ export default function CritereEvaluation() {
             }
           />
 
+          <Revele>
+            <Card className="mb-6 p-5">
+              <CardHeader
+                titre="Questionnaire & scénario"
+                icone={ListChecks}
+                sousTitre="RG09 — réponses déclaratives et description de la situation, analysées avec les preuves"
+              />
+              <SaisieSection
+                entrepriseId={entrepriseId}
+                auditId={auditId}
+                auditCritereId={auditCritereId}
+                saisie={saisie}
+                onChange={setSaisie}
+                peutRepondre={peut('preuve:deposer', audit?.formuleCode)}
+              />
+            </Card>
+          </Revele>
+
           <div className="grid gap-6 lg:grid-cols-2">
             <Revele>
               <Card className="h-full p-5">
@@ -115,7 +151,7 @@ export default function CritereEvaluation() {
                   entrepriseId={entrepriseId}
                   auditId={auditId}
                   auditCritereId={auditCritereId}
-                  peutEvaluer={preuvesDuCritere.length > 0}
+                  peutEvaluer={preuvesDuCritere.length > 0 || declaratifRenseigne}
                   derniereEvaluation={derniereEvaluation}
                   onChange={rafraichir}
                 />
@@ -125,6 +161,153 @@ export default function CritereEvaluation() {
         </>
       )}
     </>
+  );
+}
+
+function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange, peutRepondre }) {
+  const [scenario, setScenario] = useState(saisie?.scenario ?? '');
+  const [reponses, setReponses] = useState(() => reponsesInitiales(saisie));
+  const [enregistrement, setEnregistrement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const [enregistre, setEnregistre] = useState(false);
+
+  useEffect(() => {
+    setScenario(saisie?.scenario ?? '');
+    setReponses(reponsesInitiales(saisie));
+  }, [saisie]);
+
+  const questions = saisie?.questions ?? [];
+
+  function modifier(auditQuestionId, champ, valeur) {
+    setEnregistre(false);
+    setReponses((precedentes) => ({
+      ...precedentes,
+      [auditQuestionId]: { ...precedentes[auditQuestionId], [champ]: valeur },
+    }));
+  }
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    setEnregistrement(true);
+    try {
+      const resultat = await api.put(
+        `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${auditCritereId}/questions`,
+        {
+          scenario,
+          reponses: questions.map((q) => ({
+            auditQuestionId: q.auditQuestionId,
+            valeur: reponses[q.auditQuestionId]?.valeur || null,
+            commentaire: reponses[q.auditQuestionId]?.commentaire || null,
+          })),
+        }
+      );
+      onChange(resultat);
+      setEnregistre(true);
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setEnregistrement(false);
+    }
+  }
+
+  if (!saisie) return <Loader message="Chargement du questionnaire…" />;
+  if (questions.length === 0) return <Vide message="Aucune question rattachée à ce critère." />;
+
+  return (
+    <form className="space-y-5" onSubmit={enregistrer}>
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+      {enregistre ? <Alerte ton="vert">Saisie enregistrée.</Alerte> : null}
+
+      <ul className="space-y-4">
+        {questions.map((q) => (
+          <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-white p-4">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <p className="text-sm font-medium text-ink-900">{q.libelle}</p>
+              <Badge ton={q.statut === 'REPONDU' ? 'vert' : 'neutre'}>{q.statut}</Badge>
+            </div>
+
+            {q.type === 'FERMEE' ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {VALEURS_REPONSE.map((v) => (
+                  <label
+                    key={v.code}
+                    className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm ${
+                      reponses[q.auditQuestionId]?.valeur === v.code
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-ink-200 text-ink-600'
+                    } ${peutRepondre ? '' : 'pointer-events-none opacity-60'}`}
+                  >
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      name={`reponse-${q.auditQuestionId}`}
+                      value={v.code}
+                      checked={reponses[q.auditQuestionId]?.valeur === v.code}
+                      disabled={!peutRepondre}
+                      onChange={() => modifier(q.auditQuestionId, 'valeur', v.code)}
+                    />
+                    {v.libelle}
+                  </label>
+                ))}
+              </div>
+            ) : null}
+
+            <label className="label mt-3" htmlFor={`commentaire-${q.auditQuestionId}`}>
+              {q.type === 'FERMEE' ? 'Précision (optionnelle)' : 'Réponse'}
+            </label>
+            <textarea
+              id={`commentaire-${q.auditQuestionId}`}
+              className="input min-h-[70px]"
+              placeholder="Décrivez la pratique en place, les limites constatées…"
+              value={reponses[q.auditQuestionId]?.commentaire ?? ''}
+              disabled={!peutRepondre}
+              onChange={(e) => modifier(q.auditQuestionId, 'commentaire', e.target.value)}
+            />
+
+            {q.dateReponse ? (
+              <p className="mt-2 text-xs text-ink-500">Dernière saisie le {formaterDateHeure(q.dateReponse)}</p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      <div>
+        <label className="label flex items-center gap-2" htmlFor="scenario-critere">
+          <MessageSquareText className="h-4 w-4 text-ink-400" aria-hidden />
+          Scénario — situation de l’entreprise sur ce critère
+        </label>
+        <textarea
+          id="scenario-critere"
+          className="input min-h-[120px]"
+          placeholder="Contexte, dispositifs en place, écarts connus, projets en cours…"
+          value={scenario}
+          disabled={!peutRepondre}
+          onChange={(e) => {
+            setEnregistre(false);
+            setScenario(e.target.value);
+          }}
+        />
+        <p className="mt-1 text-xs text-ink-500">
+          Analysé par l’IA en complément des preuves ; une déclaration sans document réduit la confiance.
+        </p>
+      </div>
+
+      {peutRepondre ? (
+        <button type="submit" className="btn-primary" disabled={enregistrement}>
+          {enregistrement ? <SustwayLoader taille="sm" /> : <Save className="h-4 w-4" aria-hidden />}
+          Enregistrer la saisie
+        </button>
+      ) : (
+        <p className="text-xs text-ink-500">Votre formule ou votre rôle ne permet pas de renseigner le questionnaire.</p>
+      )}
+    </form>
+  );
+}
+
+function reponsesInitiales(saisie) {
+  return Object.fromEntries(
+    (saisie?.questions ?? []).map((q) => [q.auditQuestionId, { valeur: q.valeur, commentaire: q.commentaire ?? '' }])
   );
 }
 
@@ -247,7 +430,9 @@ function EvaluationSection({ entrepriseId, auditId, auditCritereId, peutEvaluer,
         {chargement ? 'Analyse en cours (Document → Evidence → Compliance)…' : 'Lancer l’évaluation IA'}
       </button>
       {!peutEvaluer ? (
-        <p className="text-xs text-ink-500">Déposez au moins une preuve avant de pouvoir lancer l’évaluation.</p>
+        <p className="text-xs text-ink-500">
+          Déposez une preuve ou renseignez le questionnaire avant de pouvoir lancer l’évaluation.
+        </p>
       ) : null}
 
       {derniereEvaluation ? <ResultatEvaluation evaluation={derniereEvaluation} /> : <Vide message="Aucune évaluation pour l’instant." />}
