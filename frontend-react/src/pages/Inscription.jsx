@@ -481,9 +481,11 @@ export default function Inscription() {
           <p className="mt-1 text-sm text-ink-500">RG36 — le compte n’est activé qu’après vérification de l’email.</p>
           <div className="mt-4">
             <Alerte ton="ambre">
-              Aucun service d’envoi d’email n’est encore branché (TODO phase C) : le lien de vérification est affiché
-              dans les logs du terminal <code>mvn quarkus:dev</code>. Copiez-y le token (ou le lien complet) et
-              collez-le ci-dessous.
+              Un email de vérification vient de vous être envoyé. Ouvrez-le et copiez le lien (ou le token) qu’il
+              contient, puis collez-le ci-dessous pour activer votre compte <strong>sans quitter cette page</strong> —
+              cliquer directement sur le lien vous ferait sortir du parcours d’inscription avant l’étape paiement. Si
+              vous ne recevez pas l’email (pensez au dossier spam), le même lien est aussi journalisé dans les logs
+              du terminal <code>mvn quarkus:dev</code>.
             </Alerte>
           </div>
           <div className="mt-5">

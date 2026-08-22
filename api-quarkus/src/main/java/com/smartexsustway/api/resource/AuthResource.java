@@ -76,6 +76,9 @@ public class AuthResource {
     @ConfigProperty(name = "smartex.api.base-url", defaultValue = "http://localhost:8080")
     String apiBaseUrl;
 
+    @ConfigProperty(name = "smartex.frontend.base-url", defaultValue = "http://localhost:5173")
+    String frontendBaseUrl;
+
     /**
      * TEMPORAIRE : voir application.properties. true par défaut (RG36
      * pleinement appliquée) — désactivé uniquement en profil dev pour fluidifier
@@ -101,13 +104,15 @@ public class AuthResource {
         utilisateurRepository.persist(utilisateur);
 
         String tokenVerification = jwtService.genererTokenVerificationEmail(utilisateur.getId());
-        String lienVerification = apiBaseUrl + "/api/v1/auth/verification-email?token=" + tokenVerification;
+        // Le lien pointe sur le frontend (page /verification-email), qui
+        // appelle lui-même GET /api/v1/auth/verification-email : un clic
+        // direct sur un lien pointant sur l'API afficherait du JSON brut.
+        String lienVerification = frontendBaseUrl + "/verification-email?token=" + tokenVerification;
 
         // Filet de sécurité conservé même maintenant que l'envoi réel est
         // branché (EmailService) : reste utile si Brevo n'est pas configuré
         // (dev sans compte) ou temporairement indisponible.
-        LOG.infof("Lien de vérification email pour %s : GET /api/v1/auth/verification-email?token=%s",
-                utilisateur.getEmail(), tokenVerification);
+        LOG.infof("Lien de vérification email pour %s : %s", utilisateur.getEmail(), lienVerification);
         emailService.envoyerVerificationEmail(utilisateur.getEmail(), utilisateur.getPrenom(), lienVerification);
 
         // TEMPORAIRE (voir smartex.auth.verification-email-obligatoire) : en
