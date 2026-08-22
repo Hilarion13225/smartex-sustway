@@ -34,8 +34,8 @@ const PRIORITE_TON = {
 const NIVEAU_TON = {
   CRITIQUE: 'rouge',
   MAJEURE: 'ambre',
-  MINEURE: 'bleu',
-  OBSERVATION: 'neutre',
+  MODEREE: 'bleu',
+  MINEURE: 'neutre',
 };
 
 function estEnRetard(action) {
