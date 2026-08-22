@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   ClipboardCheck,
+  Eraser,
   FileText,
   Lightbulb,
   ListChecks,
@@ -216,9 +217,6 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
 
   return (
     <form className="space-y-5" onSubmit={enregistrer}>
-      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
-      {enregistre ? <Alerte ton="vert">Saisie enregistrée.</Alerte> : null}
-
       <ul className="space-y-4">
         {questions.map((q) => (
           <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-white p-4">
@@ -250,6 +248,16 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
                     {v.libelle}
                   </label>
                 ))}
+                {peutRepondre && reponses[q.auditQuestionId]?.valeur ? (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm text-ink-600"
+                    onClick={() => modifier(q.auditQuestionId, 'valeur', null)}
+                  >
+                    <Eraser className="mr-1 inline h-4 w-4" aria-hidden />
+                    Effacer la réponse
+                  </button>
+                ) : null}
               </div>
             ) : null}
 
@@ -301,6 +309,9 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
       ) : (
         <p className="text-xs text-ink-500">Votre formule ou votre rôle ne permet pas de renseigner le questionnaire.</p>
       )}
+
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+      {enregistre ? <Alerte ton="vert">Saisie enregistrée.</Alerte> : null}
     </form>
   );
 }
