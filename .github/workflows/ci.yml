@@ -95,6 +95,16 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: MinIO (stockage documentaire attendu au démarrage de l'API)
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=smartex -e MINIO_ROOT_PASSWORD=smartex_minio_secret \
+            minio/minio:latest server /data
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO n'a pas démarré" && exit 1
       - name: Clés JWT de test (les .pem réels ne sont pas versionnés)
         run: |
           openssl genpkey -algorithm RSA -out src/main/resources/privateKey.pem -pkeyopt rsa_keygen_bits:2048
