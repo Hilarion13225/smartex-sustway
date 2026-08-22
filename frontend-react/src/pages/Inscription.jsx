@@ -479,7 +479,13 @@ export default function Inscription() {
         <form onSubmit={soumettreVerification}>
           <h2 className="text-lg font-semibold text-ink-900">Vérification de l’adresse email</h2>
           <p className="mt-1 text-sm text-ink-500">RG36 — le compte n’est activé qu’après vérification de l’email.</p>
-          <div className="mt-4">
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
+            <Mail className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
+            <p className="text-sm font-semibold text-brand-800">
+              Vérifiez votre boîte mail pour activer votre compte.
+            </p>
+          </div>
+          <div className="mt-3">
             <Alerte ton="ambre">
               Un email de vérification vient de vous être envoyé. Ouvrez-le et copiez le lien (ou le token) qu’il
               contient, puis collez-le ci-dessous pour activer votre compte <strong>sans quitter cette page</strong> —
