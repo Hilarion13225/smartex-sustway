@@ -1,6 +1,7 @@
 """Configuration du service, chargée depuis les variables d'environnement."""
 
 from functools import lru_cache
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

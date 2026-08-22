@@ -14,6 +14,7 @@ import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
+import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.repository.RevueExperteRepository;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.ia.EvaluerCritereRequestDto;
@@ -69,6 +70,7 @@ public class EvaluationResource {
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject PreuveRepository preuveRepository;
+    @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject EvaluationRepository evaluationRepository;
     @Inject RevueExperteRepository revueExperteRepository;
     @Inject NonConformiteService nonConformiteService;
@@ -107,8 +109,16 @@ public class EvaluationResource {
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         List<Preuve> preuves = preuveRepository.parAuditCritere(auditCritereId);
-        if (preuves.isEmpty()) {
-            return erreur(400, "Aucune preuve associée à ce critère — impossible de lancer l'évaluation IA");
+        List<EvaluerCritereRequestDto.ReponseDeclareeDto> reponses = reponsesDeclarees(auditCritereId);
+        String scenario = auditCritere.getScenario();
+
+        // RG09 : la collecte déclarative (réponses au questionnaire, scénario
+        // textuel) est une source d'analyse au même titre que les preuves
+        // documentaires — l'évaluation reste refusée seulement si le critère
+        // ne porte aucun élément, quel qu'il soit.
+        if (preuves.isEmpty() && reponses.isEmpty() && scenario == null) {
+            return erreur(400, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
+                    + "— impossible de lancer l'évaluation IA");
         }
 
         // RG21 : le pipeline d'agents IA dépend de la formule souscrite —
@@ -138,6 +148,8 @@ public class EvaluationResource {
                 auditCritere.getCritere().getLibelle(),
                 auditCritere.getCritere().getDescription(),
                 documents,
+                scenario,
+                reponses,
                 formuleAvancees, // analyseRisque (Risk Agent)
                 formuleAvancees  // genererRecommandation (Recommendation Agent) — même condition
                                  // aujourd'hui (RG21), champs distincts pour rester découplables
@@ -202,6 +214,17 @@ public class EvaluationResource {
         revueExperteRepository.persist(revue);
         evaluation.setStatut(StatutEvaluation.EN_REVUE);
         return true;
+    }
+
+    /** RG09 : réponses déjà saisies sur le critère, transmises au pipeline avec les preuves. */
+    private List<EvaluerCritereRequestDto.ReponseDeclareeDto> reponsesDeclarees(UUID auditCritereId) {
+        return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
+                .filter(r -> r.getValeur() != null || r.getCommentaire() != null)
+                .map(r -> new EvaluerCritereRequestDto.ReponseDeclareeDto(
+                        r.getAuditQuestion().getQuestion().getLibelle(),
+                        r.getValeur() != null ? r.getValeur().name() : null,
+                        r.getCommentaire()))
+                .toList();
     }
 
     /** RG21 : le pipeline d'agents exécuté (et donc le Risk Agent) dépend de la formule souscrite. */

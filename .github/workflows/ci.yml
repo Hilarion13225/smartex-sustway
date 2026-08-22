@@ -74,6 +74,20 @@ jobs:
     defaults:
       run:
         working-directory: api-quarkus
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: smartex
+          POSTGRES_PASSWORD: smartex
+          POSTGRES_DB: smartex_sustway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U smartex"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -81,7 +95,29 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - name: Build & tests (profil test, H2 en mémoire)
+      - name: MinIO (stockage documentaire attendu au démarrage de l'API)
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER=smartex -e MINIO_ROOT_PASSWORD=smartex_minio_secret \
+            minio/minio:latest server /data
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO n'a pas démarré" && exit 1
+      - name: ClamAV (scan à l'upload, échec bloquant hors profil dev)
+        run: |
+          docker run -d --name clamav -p 3310:3310 clamav/clamav:stable
+          for _ in $(seq 1 60); do
+            if docker exec clamav clamdcheck.sh >/dev/null 2>&1; then exit 0; fi
+            sleep 5
+          done
+          echo "clamd n'a pas démarré" && exit 1
+      - name: Clés JWT de test (les .pem réels ne sont pas versionnés)
+        run: |
+          openssl genpkey -algorithm RSA -out src/main/resources/privateKey.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in src/main/resources/privateKey.pem -out src/main/resources/publicKey.pem
+      - name: Build & tests (profil test, PostgreSQL + Flyway)
         run: mvn -B verify
 
   # ---------------------------------------------------------------
