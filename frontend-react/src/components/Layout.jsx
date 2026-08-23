@@ -1,19 +1,78 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { BookOpen, Building2, ExternalLink, LayoutDashboard, LifeBuoy, LogOut, Menu, ShieldCheck, UserCog, X } from 'lucide-react';
+import {
+  BookOpen,
+  Building2,
+  ClipboardList,
+  ExternalLink,
+  FileText,
+  History,
+  LayoutDashboard,
+  LifeBuoy,
+  ListTodo,
+  LogOut,
+  Menu,
+  ShieldCheck,
+  UserCheck,
+  UserCog,
+  Wallet,
+  X,
+} from 'lucide-react';
 import clsx from 'clsx';
 import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
-const LIENS = [
-  { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
-  { vers: '/app/entreprises', libelle: 'Entreprises', icone: Building2 },
-  { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
-];
+const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
 
-const LIEN_BACK_OFFICE = { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen };
+/**
+ * Rôles habilités à administrer une entreprise (abonnement, journal) —
+ * reflète exactement AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE
+ * côté API : ce n'est pas une permission soumise à la formule, mais une
+ * capacité de rôle, donc gérée ici par code de rôle plutôt que via peut().
+ */
+const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', 'RESPONSABLE_ENTREPRISE']);
+
+/**
+ * Navigation groupée façon Pilotage / Audit / Administration. Un lien sans
+ * `entreprise: true` est une route globale ; les autres pointent vers
+ * l'entreprise actuellement sélectionnée dans le sélecteur de la sidebar
+ * (voir plus bas) — notre application est multi-tenant (section 2.2), donc
+ * contrairement au prototype de référence il n'existe pas de route plate
+ * unique pour « les non-conformités » ou « le journal » : il faut toujours
+ * une entreprise de contexte.
+ */
+const GROUPES = [
+  {
+    titre: 'Pilotage',
+    liens: [{ vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true }],
+  },
+  {
+    titre: 'Audit',
+    liens: [
+      { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
+      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FileText },
+      {
+        chemin: (id) => `/app/${id}/revues-expertes`,
+        libelle: 'Revue experte',
+        icone: UserCheck,
+        permission: 'revue:traiter',
+      },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
+    ],
+  },
+  {
+    titre: 'Administration',
+    liens: [
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
+      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
+      { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
+      { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
+    ],
+  },
+];
 
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = [
@@ -38,14 +97,37 @@ function dateDuJour() {
 
 /** Mise en page de l'espace connecté — navigation réelle uniquement (pilotage, entreprises, profil). */
 export default function Layout() {
-  const { utilisateur, roleCourant, peut, deconnecter } = useApiAuth();
+  const { utilisateur, entreprises, roleCourant, peut, deconnecter } = useApiAuth();
   const [ouvert, setOuvert] = useState(false);
+  const [entrepriseCouranteId, setEntrepriseCouranteId] = useState(
+    () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
+  );
   const navigate = useNavigate();
+
+  // Si l'entreprise mémorisée n'est plus dans la liste (accès révoqué,
+  // nouvel appareil...) ou qu'aucune n'est encore choisie, on retombe sur
+  // la première entreprise de l'utilisateur dès qu'elle est connue.
+  useEffect(() => {
+    if (entreprises.length === 0) return;
+    if (!entreprises.some((e) => e.id === entrepriseCouranteId)) {
+      setEntrepriseCouranteId(entreprises[0].id);
+    }
+  }, [entreprises, entrepriseCouranteId]);
+
+  function choisirEntreprise(id) {
+    setEntrepriseCouranteId(id);
+    localStorage.setItem(CLE_ENTREPRISE_COURANTE, id);
+  }
 
   if (!utilisateur) return null;
 
   const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
-  const liens = peut('referentiel:administrer') ? [...LIENS, LIEN_BACK_OFFICE] : LIENS;
+
+  function lienVisible(lien) {
+    if (lien.permission && !peut(lien.permission)) return false;
+    if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
+    return true;
+  }
 
   return (
     <div className="flex h-full bg-ink-50">
@@ -70,32 +152,80 @@ export default function Layout() {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Pilotage</p>
-          {liens.map((lien) => (
-            <NavLink
-              key={lien.vers}
-              to={lien.vers}
-              end={lien.fin}
-              onClick={() => setOuvert(false)}
-              className={({ isActive }) => clsx('lien-app group', isActive ? 'lien-app-actif' : 'lien-app-inactif')}
+        {entreprises.length > 0 ? (
+          <div className="px-5 pb-3">
+            <label className="label" htmlFor="entreprise-courante">
+              Entreprise
+            </label>
+            <select
+              id="entreprise-courante"
+              className="input text-sm"
+              value={entrepriseCouranteId}
+              onChange={(e) => choisirEntreprise(e.target.value)}
             >
-              {({ isActive }) => (
-                <>
-                  <lien.icone
-                    className={clsx(
-                      'h-4 w-4 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110',
-                      isActive ? 'text-white' : 'text-ink-400 group-hover:text-brand-600'
-                    )}
-                    aria-hidden
-                  />
-                  <span className="flex-1 truncate">{lien.libelle}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
+              {entreprises.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.raisonSociale}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
 
-          <div className="mt-6 rounded-2xl bg-ink-900 p-4 text-white">
+        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
+          {GROUPES.map((groupe) => {
+            const liensVisibles = groupe.liens.filter(lienVisible);
+            if (liensVisibles.length === 0) return null;
+
+            return (
+              <div key={groupe.titre}>
+                <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{groupe.titre}</p>
+                <div className="space-y-1">
+                  {liensVisibles.map((lien) => {
+                    const cible = lien.chemin ? (entrepriseCouranteId ? lien.chemin(entrepriseCouranteId) : null) : lien.vers;
+
+                    if (!cible) {
+                      return (
+                        <span
+                          key={lien.libelle}
+                          className="lien-app lien-app-inactif cursor-not-allowed opacity-40"
+                          title="Sélectionnez d’abord une entreprise"
+                        >
+                          <lien.icone className="h-4 w-4 shrink-0 text-ink-400" aria-hidden />
+                          <span className="flex-1 truncate">{lien.libelle}</span>
+                        </span>
+                      );
+                    }
+
+                    return (
+                      <NavLink
+                        key={lien.libelle}
+                        to={cible}
+                        end={lien.fin}
+                        onClick={() => setOuvert(false)}
+                        className={({ isActive }) => clsx('lien-app group', isActive ? 'lien-app-actif' : 'lien-app-inactif')}
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <lien.icone
+                              className={clsx(
+                                'h-4 w-4 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110',
+                                isActive ? 'text-white' : 'text-ink-400 group-hover:text-brand-600'
+                              )}
+                              aria-hidden
+                            />
+                            <span className="flex-1 truncate">{lien.libelle}</span>
+                          </>
+                        )}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="rounded-2xl bg-ink-900 p-4 text-white">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <LifeBuoy className="h-4 w-4 text-brand-300" aria-hidden />
               Besoin d’un accompagnement ?
