@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -21,6 +22,15 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AutorisationService {
+
+    /**
+     * Rôles autorisés à administrer une entreprise cliente : sa fiche, ses
+     * sites et les accès de ses collaborateurs (RG05). Le personnel interne
+     * Smartex intervient au nom de Smartex ; EMPLOYE et VISITEUR restent en
+     * consultation/dépôt.
+     */
+    public static final Set<String> ROLES_ADMINISTRATION_ENTREPRISE =
+            Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "RESPONSABLE_ENTREPRISE");
 
     @Inject
     UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
@@ -42,6 +52,23 @@ public class AutorisationService {
         if (!possedePermission(utilisateurId, entrepriseId, codePermission)) {
             throw new ForbiddenException(
                     "Permission refusée : '%s' requise sur l'entreprise %s".formatted(codePermission, entrepriseId));
+        }
+    }
+
+    /**
+     * Vérifie le rôle porté sur l'entreprise, pas seulement le rattachement.
+     * Le modèle de permissions fines (role_permission) n'est pas alimenté
+     * pour les rôles clients : les opérations d'administration d'entreprise
+     * s'appuient donc sur le code de rôle, mais toujours via ce service —
+     * jamais par un test ad hoc dans une ressource.
+     */
+    public void exigerRoleSurEntreprise(UUID utilisateurId, UUID entrepriseId, Set<String> codesRoles) {
+        boolean autorise = utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
+                .filter(r -> r.getEntreprise().getId().equals(entrepriseId))
+                .anyMatch(r -> codesRoles.contains(r.getRole().getCode()));
+        if (!autorise) {
+            throw new ForbiddenException(
+                    "Rôle insuffisant sur l'entreprise %s : %s requis".formatted(entrepriseId, codesRoles));
         }
     }
 

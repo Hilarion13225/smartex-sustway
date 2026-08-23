@@ -17,4 +17,9 @@ public class EntrepriseRepository implements PanacheRepositoryBase<Entreprise, U
     public boolean identifiantLegalExiste(String identifiantLegal) {
         return count("identifiantLegal", identifiantLegal) > 0;
     }
+
+    /** Variante pour la modification : l'entreprise en cours d'édition ne se contredit pas elle-même (RG02). */
+    public boolean identifiantLegalExistePourUneAutre(String identifiantLegal, UUID entrepriseId) {
+        return count("identifiantLegal = ?1 and id <> ?2", identifiantLegal, entrepriseId) > 0;
+    }
 }

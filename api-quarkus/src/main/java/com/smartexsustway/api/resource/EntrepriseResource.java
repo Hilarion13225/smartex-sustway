@@ -21,6 +21,7 @@ import com.smartexsustway.api.resource.dto.EntrepriseAvecAbonnementDto;
 import com.smartexsustway.api.resource.dto.AbonnementDto;
 import com.smartexsustway.api.resource.dto.EntrepriseCreateRequest;
 import com.smartexsustway.api.resource.dto.EntrepriseDto;
+import com.smartexsustway.api.resource.dto.EntrepriseUpdateRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.tenant.TenantContext;
@@ -33,6 +34,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -92,6 +94,56 @@ public class EntrepriseResource {
         if (entreprise == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+        return Response.ok(EntrepriseDto.depuis(entreprise)).build();
+    }
+
+    /**
+     * Mise à jour de la fiche entreprise, réservée au responsable de
+     * l'entreprise et au personnel Smartex : un collaborateur rattaché
+     * (EMPLOYE) a bien accès aux données, mais pas à l'identité légale.
+     */
+    @PUT
+    @Path("/{id}")
+    @Transactional
+    public Response modifier(@PathParam("id") UUID id, @Valid EntrepriseUpdateRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, id);
+        autorisationService.exigerRoleSurEntreprise(
+                utilisateurId, id, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
+
+        Entreprise entreprise = entrepriseRepository.findById(id);
+        if (entreprise == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if (entrepriseRepository.identifiantLegalExistePourUneAutre(requete.identifiantLegal(), id)) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ErreurDto("Une autre entreprise porte déjà cet identifiant légal"))
+                    .build();
+        }
+
+        entreprise.setRaisonSociale(requete.raisonSociale());
+        entreprise.setIdentifiantLegal(requete.identifiantLegal());
+
+        if (requete.secteurCode() == null) {
+            entreprise.setSecteur(null);
+        } else {
+            Secteur secteur = secteurRepository.parCode(requete.secteurCode())
+                    .orElseThrow(() -> new BadRequestException("Secteur inconnu : " + requete.secteurCode()));
+            entreprise.setSecteur(secteur);
+        }
+
+        if (requete.taille() == null) {
+            entreprise.setTaille(null);
+        } else {
+            try {
+                entreprise.setTaille(TailleEntreprise.valueOf(requete.taille()));
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Taille d'entreprise invalide : " + requete.taille());
+            }
+        }
+
+        auditLogService.journaliser(utilisateurId, id, "ENTREPRISE_MODIFIEE", "entreprise", id);
+
         return Response.ok(EntrepriseDto.depuis(entreprise)).build();
     }
 

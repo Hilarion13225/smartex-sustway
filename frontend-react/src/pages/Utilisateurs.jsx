@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, KeyRound, Minus, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Check, KeyRound, Minus, Pencil, ShieldCheck, UserMinus, UserPlus, Users } from 'lucide-react';
 import Revele from '../components/Revele';
+import SustwayLoader from '../components/SustwayLoader';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
-import { api } from '../lib/apiClient';
+import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { PERMISSIONS_PAR_ROLE, ROLE_LIBELLE, possedePermission } from '../auth/permissions';
 import { formaterDate } from '../lib/export';
@@ -23,6 +24,9 @@ const PERMISSIONS_LIBELLE = {
 
 const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
+/** Rôles qu'une entreprise cliente attribue elle-même — les rôles internes Smartex n'en font pas partie. */
+const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'EMPLOYE', 'VISITEUR'];
+
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
  * chaque rôle peut réellement faire compte tenu de la formule souscrite
@@ -31,25 +35,45 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
  */
 export default function Utilisateurs() {
   const { entrepriseId } = useParams();
-  const { entreprises, utilisateur } = useApiAuth();
+  const { entreprises, utilisateur, peut } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [membres, setMembres] = useState(null);
+  const [sites, setSites] = useState([]);
   const [abonnement, setAbonnement] = useState(null);
   const [chargement, setChargement] = useState(true);
+  const [formulaireOuvert, setFormulaireOuvert] = useState(false);
+  const [membreEnEdition, setMembreEnEdition] = useState(null);
+  const [erreur, setErreur] = useState(null);
 
-  useEffect(() => {
+  const rafraichir = useCallback(() => {
     setChargement(true);
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/membres`).catch(() => []),
       api.get(`/api/v1/entreprises/${entrepriseId}/abonnement`).catch(() => null),
+      api.get(`/api/v1/entreprises/${entrepriseId}/sites`).catch(() => []),
     ])
-      .then(([listeMembres, abo]) => {
+      .then(([listeMembres, abo, listeSites]) => {
         setMembres(listeMembres);
         setAbonnement(abo);
+        setSites(listeSites);
       })
       .finally(() => setChargement(false));
   }, [entrepriseId]);
+
+  useEffect(() => {
+    rafraichir();
+  }, [rafraichir]);
+
+  async function revoquer(membre) {
+    setErreur(null);
+    try {
+      await api.delete(`/api/v1/entreprises/${entrepriseId}/membres/${membre.id}`);
+      rafraichir();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    }
+  }
 
   const rolesPresents = useMemo(() => {
     const codes = new Set((membres ?? []).map((m) => m.roleCode).filter((code) => PERMISSIONS_PAR_ROLE[code]));
@@ -61,6 +85,7 @@ export default function Utilisateurs() {
   }
 
   const formule = abonnement?.formuleCode;
+  const peutAdministrer = peut('entreprise:modifier', formule);
 
   return (
     <>
@@ -73,7 +98,46 @@ export default function Utilisateurs() {
         icone={Users}
         titre="Utilisateurs et permissions"
         description={`${entreprise.raisonSociale} — accès accordés et droits effectifs de chaque rôle sous la formule ${abonnement?.formuleNom ?? '—'}.`}
+        actions={
+          peutAdministrer ? (
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => {
+                setMembreEnEdition(null);
+                setFormulaireOuvert(true);
+              }}
+            >
+              <UserPlus className="h-4 w-4" aria-hidden />
+              Ajouter un collaborateur
+            </button>
+          ) : null
+        }
       />
+
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+
+      {formulaireOuvert ? (
+        <Revele>
+          <Card className="mb-6 p-5">
+            <CardHeader
+              titre={membreEnEdition ? 'Modifier un accès' : 'Accorder un accès'}
+              icone={UserPlus}
+              sousTitre="Le collaborateur doit déjà posséder un compte Smartex Sustway ; l'accès peut être limité à un site."
+            />
+            <FormulaireMembre
+              entrepriseId={entrepriseId}
+              membre={membreEnEdition}
+              sites={sites}
+              onTermine={() => {
+                setFormulaireOuvert(false);
+                setMembreEnEdition(null);
+              }}
+              onEnregistre={rafraichir}
+            />
+          </Card>
+        </Revele>
+      ) : null}
 
       {chargement ? (
         <Loader message="Chargement des accès…" />
@@ -102,7 +166,17 @@ export default function Utilisateurs() {
             <Card className="mb-6 p-0">
               <CardHeader titre="Accès à l’entreprise" icone={Users} sousTitre="Rattachements RG05 actifs" />
               {membres.length > 0 ? (
-                <Tableau entetes={['Utilisateur', 'Rôle', 'Périmètre', '2FA', 'Depuis', 'Statut']}>
+                <Tableau
+                  entetes={[
+                    'Utilisateur',
+                    'Rôle',
+                    'Périmètre',
+                    '2FA',
+                    'Depuis',
+                    'Statut',
+                    ...(peutAdministrer ? ['Actions'] : []),
+                  ]}
+                >
                   {membres.map((m) => (
                     <tr key={m.id} className="transition-colors hover:bg-ink-50/60">
                       <td className="td">
@@ -125,6 +199,35 @@ export default function Utilisateurs() {
                       <td className="td">
                         <Badge ton={m.statut === 'ACTIF' ? 'vert' : 'neutre'}>{m.statut}</Badge>
                       </td>
+                      {peutAdministrer ? (
+                        <td className="td">
+                          {m.utilisateurId === utilisateur?.id || m.statut !== 'ACTIF' ? (
+                            <span className="text-xs text-ink-400">—</span>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="btn-ghost p-1.5"
+                                title="Modifier le rôle ou le périmètre"
+                                onClick={() => {
+                                  setMembreEnEdition(m);
+                                  setFormulaireOuvert(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" aria-hidden />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn-ghost p-1.5 text-rose-600"
+                                title="Retirer l’accès"
+                                onClick={() => revoquer(m)}
+                              >
+                                <UserMinus className="h-4 w-4" aria-hidden />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      ) : null}
                     </tr>
                   ))}
                 </Tableau>
@@ -167,12 +270,114 @@ export default function Utilisateurs() {
 
           <div className="mt-6">
             <Alerte ton="bleu">
-              L’invitation d’un nouveau collaborateur passe encore par l’équipe Smartex : l’API expose la liste des
-              rattachements en lecture, la création d’accès n’est pas ouverte en libre-service.
+              Un accès retiré reste listé avec le statut INACTIF : les dépôts de preuves et évaluations déjà réalisés
+              par ce collaborateur conservent leur traçabilité. Les rôles internes Smartex ne s’attribuent pas depuis
+              cet écran.
             </Alerte>
           </div>
         </>
       )}
     </>
+  );
+}
+
+function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre }) {
+  const [formulaire, setFormulaire] = useState({
+    email: membre?.email ?? '',
+    roleCode: membre?.roleCode ?? 'EMPLOYE',
+    siteId: membre?.siteId ?? '',
+  });
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    setChargement(true);
+    try {
+      const perimetre = { roleCode: formulaire.roleCode, siteId: formulaire.siteId || null };
+      if (membre) {
+        await api.put(`/api/v1/entreprises/${entrepriseId}/membres/${membre.id}`, perimetre);
+      } else {
+        await api.post(`/api/v1/entreprises/${entrepriseId}/membres`, { email: formulaire.email, ...perimetre });
+      }
+      onEnregistre();
+      onTermine();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  return (
+    <form className="mt-4 space-y-3" onSubmit={enregistrer}>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div>
+          <label className="label" htmlFor="membre-email">
+            E-mail du collaborateur
+          </label>
+          <input
+            id="membre-email"
+            type="email"
+            required
+            disabled={Boolean(membre)}
+            className="input"
+            placeholder="collaborateur@entreprise.ci"
+            value={formulaire.email}
+            onChange={(e) => setFormulaire({ ...formulaire, email: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="membre-role">
+            Rôle
+          </label>
+          <select
+            id="membre-role"
+            className="input"
+            value={formulaire.roleCode}
+            onChange={(e) => setFormulaire({ ...formulaire, roleCode: e.target.value })}
+          >
+            {ROLES_ATTRIBUABLES.map((code) => (
+              <option key={code} value={code}>
+                {ROLE_LIBELLE[code] ?? code}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label" htmlFor="membre-site">
+            Périmètre
+          </label>
+          <select
+            id="membre-site"
+            className="input"
+            value={formulaire.siteId}
+            onChange={(e) => setFormulaire({ ...formulaire, siteId: e.target.value })}
+          >
+            <option value="">Toute l’entreprise</option>
+            {sites
+              .filter((s) => s.statut === 'ACTIF')
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nom}
+                </option>
+              ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button type="submit" className="btn-primary" disabled={chargement}>
+          {chargement ? <SustwayLoader taille="sm" /> : null}
+          {membre ? 'Enregistrer' : 'Accorder l’accès'}
+        </button>
+        <button type="button" className="btn-ghost" onClick={onTermine}>
+          Annuler
+        </button>
+      </div>
+
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+    </form>
   );
 }

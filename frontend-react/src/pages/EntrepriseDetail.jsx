@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
+  Building2,
   ClipboardList,
   ClipboardEdit,
   FileText,
@@ -9,6 +10,7 @@ import {
   ListChecks,
   ListTodo,
   MapPin,
+  Pencil,
   PlusCircle,
   Smartphone,
   Trash2,
@@ -21,15 +23,22 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 
+const TAILLES = [
+  { code: 'TPE', libelle: 'TPE' },
+  { code: 'PME', libelle: 'PME' },
+  { code: 'ETI', libelle: 'ETI' },
+  { code: 'GRANDE_ENTREPRISE', libelle: 'Grande entreprise' },
+];
+
 /**
- * Détail d'une entreprise : abonnement (avec reprise de paiement si en
- * attente — RG20), gestion des sites (RG04), et accès aux audits RSE
- * (RG10/RG11) — le lien vers la file de revue experte n'apparaît que pour
- * les rôles habilités (EXPERT_REVIEWER/ADMIN_AUDIT/SUPER_ADMIN).
+ * Détail d'une entreprise : fiche légale (RG02), abonnement (avec reprise
+ * de paiement si en attente — RG20), gestion des sites (RG04), et accès aux
+ * audits RSE (RG10/RG11) — le lien vers la file de revue experte n'apparaît
+ * que pour les rôles habilités (EXPERT_REVIEWER/ADMIN_AUDIT/SUPER_ADMIN).
  */
 export default function EntrepriseDetail() {
   const { entrepriseId } = useParams();
-  const { entreprises, recupererAbonnement, payerAbonnement, peut } = useApiAuth();
+  const { entreprises, recupererAbonnement, payerAbonnement, modifierEntreprise, peut } = useApiAuth();
 
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
@@ -38,6 +47,8 @@ export default function EntrepriseDetail() {
 
   const [sites, setSites] = useState(null);
   const [chargementSites, setChargementSites] = useState(true);
+
+  const [editionFiche, setEditionFiche] = useState(false);
 
   const rafraichirAbonnement = useCallback(() => {
     setChargementAbonnement(true);
@@ -65,6 +76,8 @@ export default function EntrepriseDetail() {
     return <Vide message="Entreprise introuvable ou non accessible." />;
   }
 
+  const peutAdministrer = peut('entreprise:modifier', abonnement?.formuleCode);
+
   return (
     <>
       <Link to="/app/entreprises" className="btn-ghost mb-4 -ml-2">
@@ -78,6 +91,12 @@ export default function EntrepriseDetail() {
         description={`${entreprise.identifiantLegal}${entreprise.secteurCode ? ' — ' + entreprise.secteurCode : ''}${entreprise.taille ? ' — ' + entreprise.taille : ''}`}
         actions={
           <>
+            {peutAdministrer ? (
+              <button type="button" className="btn-secondary" onClick={() => setEditionFiche((v) => !v)}>
+                <Pencil className="h-4 w-4" aria-hidden />
+                Modifier la fiche
+              </button>
+            ) : null}
             <Link to={`/app/${entrepriseId}/audits`} className="btn-primary">
               <ClipboardList className="h-4 w-4" aria-hidden />
               Audits RSE
@@ -111,6 +130,23 @@ export default function EntrepriseDetail() {
           </>
         }
       />
+
+      {editionFiche ? (
+        <Revele>
+          <Card className="mb-6 p-5">
+            <CardHeader
+              titre="Fiche entreprise"
+              icone={Building2}
+              sousTitre="Identité légale, secteur et taille — le secteur détermine la criticité des critères du référentiel."
+            />
+            <FormulaireEntreprise
+              entreprise={entreprise}
+              onEnregistrer={(payload) => modifierEntreprise(entrepriseId, payload)}
+              onTermine={() => setEditionFiche(false)}
+            />
+          </Card>
+        </Revele>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Revele>
@@ -149,13 +185,129 @@ export default function EntrepriseDetail() {
               entrepriseId={entrepriseId}
               sites={sites}
               onChange={rafraichirSites}
-              peutModifier={peut('entreprise:modifier', abonnement?.formuleCode)}
+              peutModifier={peutAdministrer}
             />
           )}
           </Card>
         </Revele>
       </div>
     </>
+  );
+}
+
+function FormulaireEntreprise({ entreprise, onEnregistrer, onTermine }) {
+  const { listerSecteurs } = useApiAuth();
+  const [secteurs, setSecteurs] = useState([]);
+  const [formulaire, setFormulaire] = useState({
+    raisonSociale: entreprise.raisonSociale,
+    identifiantLegal: entreprise.identifiantLegal,
+    secteurCode: entreprise.secteurCode ?? '',
+    taille: entreprise.taille ?? '',
+  });
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  useEffect(() => {
+    listerSecteurs()
+      .then(setSecteurs)
+      .catch(() => setSecteurs([]));
+  }, [listerSecteurs]);
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    setChargement(true);
+    try {
+      await onEnregistrer({
+        ...formulaire,
+        secteurCode: formulaire.secteurCode || null,
+        taille: formulaire.taille || null,
+      });
+      onTermine();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  return (
+    <form className="mt-4 space-y-3" onSubmit={enregistrer}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="entreprise-raison-sociale">
+            Raison sociale
+          </label>
+          <input
+            id="entreprise-raison-sociale"
+            required
+            className="input"
+            value={formulaire.raisonSociale}
+            onChange={(e) => setFormulaire({ ...formulaire, raisonSociale: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="entreprise-identifiant-legal">
+            Identifiant légal
+          </label>
+          <input
+            id="entreprise-identifiant-legal"
+            required
+            className="input"
+            value={formulaire.identifiantLegal}
+            onChange={(e) => setFormulaire({ ...formulaire, identifiantLegal: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="entreprise-secteur">
+            Secteur d’activité
+          </label>
+          <select
+            id="entreprise-secteur"
+            className="input"
+            value={formulaire.secteurCode}
+            onChange={(e) => setFormulaire({ ...formulaire, secteurCode: e.target.value })}
+          >
+            <option value="">Non renseigné</option>
+            {secteurs.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.nom}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label" htmlFor="entreprise-taille">
+            Taille
+          </label>
+          <select
+            id="entreprise-taille"
+            className="input"
+            value={formulaire.taille}
+            onChange={(e) => setFormulaire({ ...formulaire, taille: e.target.value })}
+          >
+            <option value="">Non renseignée</option>
+            {TAILLES.map((t) => (
+              <option key={t.code} value={t.code}>
+                {t.libelle}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button type="submit" className="btn-primary" disabled={chargement}>
+          {chargement ? <SustwayLoader taille="sm" /> : null}
+          Enregistrer
+        </button>
+        <button type="button" className="btn-ghost" onClick={onTermine}>
+          Annuler
+        </button>
+      </div>
+
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+    </form>
   );
 }
 
@@ -225,20 +377,52 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
   );
 }
 
+const SITE_VIDE = { nom: '', adresse: '', ville: '', codePostal: '', paysCodeIso2: 'CI' };
+
 function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
-  const [formulaire, setFormulaire] = useState({ nom: '', adresse: '', ville: '', codePostal: '', paysCodeIso2: 'CI' });
+  const [siteEnEdition, setSiteEnEdition] = useState(null);
+  const [formulaire, setFormulaire] = useState(SITE_VIDE);
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState(null);
 
-  async function creerSite(e) {
+  function ouvrirCreation() {
+    setSiteEnEdition(null);
+    setFormulaire(SITE_VIDE);
+    setErreur(null);
+    setAfficherFormulaire(true);
+  }
+
+  function ouvrirEdition(site) {
+    setSiteEnEdition(site);
+    setFormulaire({
+      nom: site.nom,
+      adresse: site.adresse ?? '',
+      ville: site.ville ?? '',
+      codePostal: site.codePostal ?? '',
+      paysCodeIso2: site.paysCodeIso2 ?? 'CI',
+    });
+    setErreur(null);
+    setAfficherFormulaire(true);
+  }
+
+  function fermerFormulaire() {
+    setAfficherFormulaire(false);
+    setSiteEnEdition(null);
+    setFormulaire(SITE_VIDE);
+  }
+
+  async function enregistrerSite(e) {
     e.preventDefault();
     setErreur(null);
     setChargement(true);
     try {
-      await api.post(`/api/v1/entreprises/${entrepriseId}/sites`, formulaire);
-      setFormulaire({ nom: '', adresse: '', ville: '', codePostal: '', paysCodeIso2: 'CI' });
-      setAfficherFormulaire(false);
+      if (siteEnEdition) {
+        await api.put(`/api/v1/entreprises/${entrepriseId}/sites/${siteEnEdition.id}`, formulaire);
+      } else {
+        await api.post(`/api/v1/entreprises/${entrepriseId}/sites`, formulaire);
+      }
+      fermerFormulaire();
       onChange();
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
@@ -271,14 +455,24 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
               <div className="flex items-center gap-2">
                 <Badge ton={s.statut === 'ACTIF' ? 'vert' : 'neutre'}>{s.statut}</Badge>
                 {s.statut !== 'ARCHIVE' && peutModifier ? (
-                  <button
-                    type="button"
-                    className="btn-ghost p-1.5 text-rose-600"
-                    title="Désactiver"
-                    onClick={() => desactiverSite(s.id)}
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden />
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="btn-ghost p-1.5"
+                      title="Modifier le site"
+                      onClick={() => ouvrirEdition(s)}
+                    >
+                      <Pencil className="h-4 w-4" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost p-1.5 text-rose-600"
+                      title="Désactiver"
+                      onClick={() => desactiverSite(s.id)}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                    </button>
+                  </>
                 ) : null}
               </div>
             </li>
@@ -289,7 +483,7 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
       )}
 
       {!peutModifier ? null : afficherFormulaire ? (
-        <form className="space-y-3 rounded-lg border border-ink-200 p-3" onSubmit={creerSite}>
+        <form className="space-y-3 rounded-lg border border-ink-200 p-3" onSubmit={enregistrerSite}>
           {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
@@ -343,15 +537,15 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
           <div className="flex gap-2">
             <button type="submit" className="btn-primary" disabled={chargement}>
               {chargement ? <SustwayLoader taille="sm" /> : null}
-              Créer le site
+              {siteEnEdition ? 'Enregistrer le site' : 'Créer le site'}
             </button>
-            <button type="button" className="btn-ghost" onClick={() => setAfficherFormulaire(false)}>
+            <button type="button" className="btn-ghost" onClick={fermerFormulaire}>
               Annuler
             </button>
           </div>
         </form>
       ) : (
-        <button type="button" className="btn-secondary" onClick={() => setAfficherFormulaire(true)}>
+        <button type="button" className="btn-secondary" onClick={ouvrirCreation}>
           <PlusCircle className="h-4 w-4" aria-hidden />
           Ajouter un site
         </button>
