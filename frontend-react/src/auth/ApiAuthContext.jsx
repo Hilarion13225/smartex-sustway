@@ -184,6 +184,31 @@ export function ApiAuthProvider({ children }) {
     return reponse;
   }, []);
 
+  // --- Profil & sécurité (compte déjà connecté) ---------------------------
+
+  const modifierProfil = useCallback(async (payload) => {
+    const u = await api.put('/api/v1/utilisateurs/moi', payload);
+    setUtilisateur(u);
+    return u;
+  }, []);
+
+  const changerMotDePasse = useCallback(async (ancienMotDePasse, nouveauMotDePasse) => {
+    return api.put('/api/v1/utilisateurs/moi/mot-de-passe', { ancienMotDePasse, nouveauMotDePasse });
+  }, []);
+
+  // --- Mot de passe oublié (pas encore connecté) --------------------------
+
+  const demanderReinitialisationMotDePasse = useCallback(async (email) => {
+    return api.post('/api/v1/auth/mot-de-passe-oublie', { email }, { avecAuth: false });
+  }, []);
+
+  const reinitialiserMotDePasse = useCallback(async (token, motDePasse) => {
+    const reponse = await api.post('/api/v1/auth/reinitialiser-mot-de-passe', { token, motDePasse }, { avecAuth: false });
+    ecrireToken(reponse.token);
+    setToken(reponse.token);
+    return reponse;
+  }, []);
+
   /**
    * `plan` (formule de l'entreprise concernée par l'action) est fourni par
    * l'appelant plutôt que lu d'un état global : contrairement au prototype
@@ -224,6 +249,10 @@ export function ApiAuthProvider({ children }) {
       listerSecteurs,
       consulterInvitation,
       accepterInvitation,
+      modifierProfil,
+      changerMotDePasse,
+      demanderReinitialisationMotDePasse,
+      reinitialiserMotDePasse,
       rafraichirProfil: chargerProfil,
     }),
     [
@@ -251,6 +280,10 @@ export function ApiAuthProvider({ children }) {
       listerSecteurs,
       consulterInvitation,
       accepterInvitation,
+      modifierProfil,
+      changerMotDePasse,
+      demanderReinitialisationMotDePasse,
+      reinitialiserMotDePasse,
       chargerProfil,
     ]
   );

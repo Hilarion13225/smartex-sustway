@@ -42,6 +42,7 @@ public class JwtService {
     private static final Duration DUREE_VALIDITE_VERIFICATION_EMAIL = Duration.ofHours(24);
     private static final Duration DUREE_VALIDITE_PRE_AUTH_2FA = Duration.ofMinutes(5);
     private static final Duration DUREE_VALIDITE_ACTIVATION_SMS = Duration.ofMinutes(10);
+    private static final Duration DUREE_VALIDITE_REINITIALISATION_MDP = Duration.ofHours(1);
 
     private static final String CLAIM_PURPOSE = "purpose";
     private static final String CLAIM_CODE_HASH = "code_hash";
@@ -50,6 +51,7 @@ public class JwtService {
     public static final String PURPOSE_EMAIL_VERIFICATION = "EMAIL_VERIFICATION";
     public static final String PURPOSE_PRE_AUTH_2FA = "PRE_AUTH_2FA";
     public static final String PURPOSE_ACTIVATION_SMS_2FA = "ACTIVATION_SMS_2FA";
+    public static final String PURPOSE_PASSWORD_RESET = "PASSWORD_RESET";
 
     // --- Session (connexion normale) ------------------------------------
 
@@ -104,6 +106,24 @@ public class JwtService {
 
     public TokenAvecCodeHash validerTokenActivationSms(String token) throws ParseException {
         return validerTokenAvecCodeHash(token, PURPOSE_ACTIVATION_SMS_2FA);
+    }
+
+    // --- Mot de passe oublié ------------------------------------------------
+
+    /**
+     * Durée volontairement plus courte que la vérification email (1h contre
+     * 24h) : ce token permet de reprendre la main sur le compte, il doit
+     * rester valable le moins longtemps possible. Comme les autres tokens à
+     * but limité de ce service, il n'est pas invalidé après un premier
+     * usage — le presenter à nouveau dans l'heure permettrait de refixer le
+     * même mot de passe, sans gain pour un attaquant qui ne le possède pas.
+     */
+    public String genererTokenReinitialisationMotDePasse(UUID utilisateurId) {
+        return genererTokenAvecCodeHash(utilisateurId, PURPOSE_PASSWORD_RESET, null, DUREE_VALIDITE_REINITIALISATION_MDP);
+    }
+
+    public UUID validerTokenReinitialisationMotDePasse(String token) throws ParseException {
+        return validerTokenAvecCodeHash(token, PURPOSE_PASSWORD_RESET).utilisateurId();
     }
 
     // --- Mécanique commune --------------------------------------------------

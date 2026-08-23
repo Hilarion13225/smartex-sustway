@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { KeyRound, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { KeyRound, Save, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Card, CardHeader, PageTitre } from '../components/ui';
@@ -13,15 +13,14 @@ export default function Profil() {
       <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification (RG36)." />
 
       <div className="grid gap-6 lg:grid-cols-2">
+        <SectionProfil />
+        <SectionMotDePasse />
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card className="p-5">
-          <CardHeader titre="Profil" icone={ShieldCheck} />
+          <CardHeader titre="Compte" icone={ShieldCheck} />
           <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-ink-500">Nom complet</dt>
-              <dd className="font-medium">
-                {utilisateur?.prenom} {utilisateur?.nom}
-              </dd>
-            </div>
             <div>
               <dt className="text-ink-500">Email</dt>
               <dd className="font-medium">{utilisateur?.email}</dd>
@@ -30,16 +29,205 @@ export default function Profil() {
               <dt className="text-ink-500">Statut du compte</dt>
               <dd className="font-medium">{utilisateur?.statut}</dd>
             </div>
-            <div>
-              <dt className="text-ink-500">2FA</dt>
-              <dd className="font-medium">{utilisateur?.deuxfaActive ? `Active (${utilisateur.deuxfaMethode})` : 'Inactive'}</dd>
-            </div>
           </dl>
         </Card>
 
         <SectionDeuxFa />
       </div>
     </>
+  );
+}
+
+/** Chaque compte modifie ses propres nom/prénom/téléphone, quel que soit son rôle — jamais l'email (lié à RG36). */
+function SectionProfil() {
+  const { utilisateur, modifierProfil } = useApiAuth();
+  const [formulaire, setFormulaire] = useState({ nom: '', prenom: '', telephone: '' });
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const [succes, setSucces] = useState(null);
+
+  useEffect(() => {
+    if (utilisateur) {
+      setFormulaire({
+        nom: utilisateur.nom ?? '',
+        prenom: utilisateur.prenom ?? '',
+        telephone: utilisateur.telephone ?? '',
+      });
+    }
+  }, [utilisateur]);
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    setSucces(null);
+    setChargement(true);
+    try {
+      await modifierProfil(formulaire);
+      setSucces('Profil mis à jour.');
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  return (
+    <Card className="p-5">
+      <CardHeader titre="Mes informations" icone={UserCog} sousTitre="Visible par vos collaborateurs sur les pages de l’entreprise." />
+
+      {erreur ? (
+        <div className="mt-3">
+          <Alerte ton="rouge">{erreur}</Alerte>
+        </div>
+      ) : null}
+      {succes ? (
+        <div className="mt-3">
+          <Alerte ton="vert">{succes}</Alerte>
+        </div>
+      ) : null}
+
+      <form className="mt-4 space-y-3" onSubmit={enregistrer}>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="profil-prenom">
+              Prénom
+            </label>
+            <input
+              id="profil-prenom"
+              required
+              className="input"
+              value={formulaire.prenom}
+              onChange={(e) => setFormulaire({ ...formulaire, prenom: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="profil-nom">
+              Nom
+            </label>
+            <input
+              id="profil-nom"
+              required
+              className="input"
+              value={formulaire.nom}
+              onChange={(e) => setFormulaire({ ...formulaire, nom: e.target.value })}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="profil-telephone">
+            Téléphone (optionnel — utilisé pour la 2FA par SMS)
+          </label>
+          <input
+            id="profil-telephone"
+            className="input"
+            placeholder="+225 07 00 00 00 00"
+            value={formulaire.telephone}
+            onChange={(e) => setFormulaire({ ...formulaire, telephone: e.target.value })}
+          />
+        </div>
+        <button type="submit" className="btn-primary" disabled={chargement}>
+          {chargement ? <SustwayLoader taille="sm" /> : <Save className="h-4 w-4" aria-hidden />}
+          Enregistrer
+        </button>
+      </form>
+    </Card>
+  );
+}
+
+function SectionMotDePasse() {
+  const { changerMotDePasse } = useApiAuth();
+  const [formulaire, setFormulaire] = useState({ ancien: '', nouveau: '', confirmation: '' });
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+  const [succes, setSucces] = useState(null);
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    setSucces(null);
+
+    if (formulaire.nouveau !== formulaire.confirmation) {
+      setErreur('La confirmation ne correspond pas au nouveau mot de passe.');
+      return;
+    }
+
+    setChargement(true);
+    try {
+      await changerMotDePasse(formulaire.ancien, formulaire.nouveau);
+      setSucces('Mot de passe modifié.');
+      setFormulaire({ ancien: '', nouveau: '', confirmation: '' });
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  return (
+    <Card className="p-5">
+      <CardHeader titre="Mot de passe" icone={KeyRound} sousTitre="Confirmez votre mot de passe actuel pour le modifier." />
+
+      {erreur ? (
+        <div className="mt-3">
+          <Alerte ton="rouge">{erreur}</Alerte>
+        </div>
+      ) : null}
+      {succes ? (
+        <div className="mt-3">
+          <Alerte ton="vert">{succes}</Alerte>
+        </div>
+      ) : null}
+
+      <form className="mt-4 space-y-3" onSubmit={enregistrer}>
+        <div>
+          <label className="label" htmlFor="mdp-actuel">
+            Mot de passe actuel
+          </label>
+          <input
+            id="mdp-actuel"
+            type="password"
+            required
+            className="input"
+            value={formulaire.ancien}
+            onChange={(e) => setFormulaire({ ...formulaire, ancien: e.target.value })}
+          />
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="mdp-nouveau">
+              Nouveau mot de passe
+            </label>
+            <input
+              id="mdp-nouveau"
+              type="password"
+              required
+              minLength={10}
+              className="input"
+              value={formulaire.nouveau}
+              onChange={(e) => setFormulaire({ ...formulaire, nouveau: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="mdp-confirmation">
+              Confirmer
+            </label>
+            <input
+              id="mdp-confirmation"
+              type="password"
+              required
+              minLength={10}
+              className="input"
+              value={formulaire.confirmation}
+              onChange={(e) => setFormulaire({ ...formulaire, confirmation: e.target.value })}
+            />
+          </div>
+        </div>
+        <button type="submit" className="btn-primary" disabled={chargement}>
+          {chargement ? <SustwayLoader taille="sm" /> : <KeyRound className="h-4 w-4" aria-hidden />}
+          Modifier le mot de passe
+        </button>
+      </form>
+    </Card>
   );
 }
 

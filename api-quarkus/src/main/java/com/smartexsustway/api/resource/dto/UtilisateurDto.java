@@ -10,6 +10,7 @@ public record UtilisateurDto(
         String nom,
         String prenom,
         String email,
+        String telephone,
         boolean emailVerifie,
         boolean deuxfaActive,
         String deuxfaMethode,
@@ -17,7 +18,7 @@ public record UtilisateurDto(
 ) {
     public static UtilisateurDto depuis(Utilisateur u) {
         return new UtilisateurDto(
-                u.getId(), u.getNom(), u.getPrenom(), u.getEmail(),
+                u.getId(), u.getNom(), u.getPrenom(), u.getEmail(), u.getTelephone(),
                 u.isEmailVerifie(), u.isDeuxfaActive(),
                 u.getDeuxfaMethode() != null ? u.getDeuxfaMethode().name() : null,
                 u.getStatut().name()

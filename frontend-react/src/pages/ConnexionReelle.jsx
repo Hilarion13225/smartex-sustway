@@ -110,9 +110,14 @@ export default function ConnexionReelle() {
           </div>
 
           <div>
-            <label className="label" htmlFor="mdp-connexion">
-              Mot de passe
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="label mb-0" htmlFor="mdp-connexion">
+                Mot de passe
+              </label>
+              <Link to="/mot-de-passe-oublie" className="text-xs font-medium text-brand-700 hover:underline">
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 id="mdp-connexion"

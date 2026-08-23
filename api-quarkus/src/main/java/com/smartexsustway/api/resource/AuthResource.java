@@ -13,6 +13,8 @@ import com.smartexsustway.api.resource.dto.ConnexionRequest;
 import com.smartexsustway.api.resource.dto.ConnexionResponse;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.InscriptionRequest;
+import com.smartexsustway.api.resource.dto.MotDePasseOublieRequest;
+import com.smartexsustway.api.resource.dto.ReinitialiserMotDePasseRequest;
 import com.smartexsustway.api.resource.dto.UtilisateurDto;
 import com.smartexsustway.api.security.CodeNumeriqueGenerator;
 import com.smartexsustway.api.security.JwtService;
@@ -152,6 +154,49 @@ public class AuthResource {
         auditLogService.journaliser(utilisateur.getId(), null, "EMAIL_VERIFIE", "utilisateur", utilisateur.getId());
 
         return Response.ok(UtilisateurDto.depuis(utilisateur)).build();
+    }
+
+    /**
+     * Ne révèle jamais si l'adresse correspond à un compte (même logique
+     * anti-énumération que /connexion) : la réponse est identique que
+     * l'email existe ou non, seul l'envoi (ou non) de l'email diffère.
+     */
+    @POST
+    @Path("/mot-de-passe-oublie")
+    public Response motDePasseOublie(@Valid MotDePasseOublieRequest requete) {
+        utilisateurRepository.parEmail(requete.email()).ifPresent(utilisateur -> {
+            String token = jwtService.genererTokenReinitialisationMotDePasse(utilisateur.getId());
+            String lien = frontendBaseUrl + "/reinitialiser-mot-de-passe?token=" + token;
+            LOG.infof("Lien de réinitialisation de mot de passe pour %s : %s", utilisateur.getEmail(), lien);
+            emailService.envoyerReinitialisationMotDePasse(utilisateur.getEmail(), utilisateur.getPrenom(), lien);
+            auditLogService.journaliser(utilisateur.getId(), null, "MOT_DE_PASSE_OUBLIE_DEMANDE", "utilisateur", utilisateur.getId());
+        });
+        return Response.noContent().build();
+    }
+
+    /** Choix du nouveau mot de passe depuis le lien reçu ; connecte directement pour éviter une double saisie. */
+    @POST
+    @Path("/reinitialiser-mot-de-passe")
+    @Transactional
+    public Response reinitialiserMotDePasse(@Valid ReinitialiserMotDePasseRequest requete) {
+        UUID utilisateurId;
+        try {
+            utilisateurId = jwtService.validerTokenReinitialisationMotDePasse(requete.token());
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErreurDto("Lien de réinitialisation invalide ou expiré"))
+                    .build();
+        }
+
+        Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId);
+        if (utilisateur == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        utilisateur.setMotDePasseHash(passwordService.hacher(requete.motDePasse()));
+        auditLogService.journaliser(utilisateur.getId(), null, "MOT_DE_PASSE_REINITIALISE", "utilisateur", utilisateur.getId());
+
+        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur))).build();
     }
 
     /**

@@ -15,6 +15,8 @@ import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import VerificationEmail from './pages/VerificationEmail';
 import AccepterInvitation from './pages/AccepterInvitation';
+import MotDePasseOublie from './pages/MotDePasseOublie';
+import ReinitialiserMotDePasse from './pages/ReinitialiserMotDePasse';
 import TableauDeBord from './pages/TableauDeBord';
 import Entreprises from './pages/Entreprises';
 import EntrepriseDetail from './pages/EntrepriseDetail';
@@ -66,6 +68,8 @@ export default function App() {
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/verification-email" element={<VerificationEmail />} />
           <Route path="/invitation/:token" element={<AccepterInvitation />} />
+          <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
+          <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
           <Route element={<RouteProtegee />}>
             <Route path="/app" element={<Layout />}>
               <Route index element={<TableauDeBord />} />
