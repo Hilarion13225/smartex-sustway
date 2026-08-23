@@ -109,4 +109,87 @@ public class EmailService {
             LOG.warnf(e, "Échec de l'envoi de l'email de vérification à %s (l'inscription reste valide)", destinataire);
         }
     }
+
+    /** RG05 — invitation d'un collaborateur sans compte existant (voir Invitation, MembreEntrepriseResource). */
+    public void envoyerInvitationEntreprise(String destinataire, String entrepriseNom, String roleNom, String lienAcceptation) {
+        String sujet = entrepriseNom + " vous invite sur Smartex Sustway";
+
+        String texte = """
+                Bonjour,
+
+                %s vous invite à rejoindre son espace Smartex Sustway en tant que %s.
+
+                Pour créer votre compte et accepter l'invitation (valable 7 jours) :
+                %s
+
+                Si vous ne connaissez pas cette entreprise, vous pouvez ignorer cet email sans risque.
+
+                — L'équipe technique Smartex Expertises
+                Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+                """.formatted(entrepriseNom, roleNom, lienAcceptation);
+
+        String html = """
+                <!doctype html>
+                <html lang="fr">
+                  <body style="margin:0;padding:0;background-color:#f6f7f9;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+                    <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background-color:#f6f7f9;padding:32px 16px;">
+                      <tr>
+                        <td align="center">
+                          <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eceef2;">
+                            <tr>
+                              <td style="background-color:#128257;padding:24px 32px;">
+                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">Smartex Sustway</span><br/>
+                                <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:32px;">
+                                <p style="margin:0 0 16px;color:#1f2533;font-size:16px;line-height:1.5;">Bonjour,</p>
+                                <p style="margin:0 0 24px;color:#1f2533;font-size:15px;line-height:1.6;">
+                                  <strong>%s</strong> vous invite à rejoindre son espace <strong>Smartex Sustway</strong>
+                                  en tant que <strong>%s</strong>.
+                                </p>
+                                <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+                                  <tr>
+                                    <td style="border-radius:10px;background-color:#128257;">
+                                      <a href="%s" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:10px;">
+                                        Créer mon compte
+                                      </a>
+                                    </td>
+                                  </tr>
+                                </table>
+                                <p style="margin:0 0 8px;color:#63728e;font-size:13px;line-height:1.5;">
+                                  Ce lien est valable 7 jours. Si le bouton ne fonctionne pas, copiez ce lien dans
+                                  votre navigateur :
+                                </p>
+                                <p style="margin:0 0 24px;word-break:break-all;">
+                                  <a href="%s" style="color:#106848;font-size:12px;">%s</a>
+                                </p>
+                                <hr style="border:none;border-top:1px solid #eceef2;margin:0 0 20px;" />
+                                <p style="margin:0;color:#8290a9;font-size:12px;line-height:1.6;">
+                                  Si vous ne connaissez pas cette entreprise, vous pouvez ignorer cet email sans
+                                  risque : aucun compte ne sera créé sans votre confirmation.
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="background-color:#f6f7f9;padding:20px 32px;text-align:center;">
+                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique Smartex Expertises</p>
+                                <p style="margin:4px 0 0;color:#aeb7c8;font-size:11px;">Email automatique, merci de ne pas y répondre.</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """.formatted(entrepriseNom, roleNom, lienAcceptation, lienAcceptation, lienAcceptation);
+
+        try {
+            mailer.send(Mail.withText(destinataire, sujet, texte).setHtml(html));
+        } catch (Exception e) {
+            LOG.warnf(e, "Échec de l'envoi de l'email d'invitation à %s (l'invitation reste valide)", destinataire);
+        }
+    }
 }

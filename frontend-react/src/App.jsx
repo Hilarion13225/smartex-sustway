@@ -14,6 +14,7 @@ import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import VerificationEmail from './pages/VerificationEmail';
+import AccepterInvitation from './pages/AccepterInvitation';
 import TableauDeBord from './pages/TableauDeBord';
 import Entreprises from './pages/Entreprises';
 import EntrepriseDetail from './pages/EntrepriseDetail';
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/connexion" element={<ConnexionReelle />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/verification-email" element={<VerificationEmail />} />
+          <Route path="/invitation/:token" element={<AccepterInvitation />} />
           <Route element={<RouteProtegee />}>
             <Route path="/app" element={<Layout />}>
               <Route index element={<TableauDeBord />} />

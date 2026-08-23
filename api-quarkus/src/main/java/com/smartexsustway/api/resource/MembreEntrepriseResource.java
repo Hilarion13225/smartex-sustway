@@ -2,17 +2,22 @@ package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.Entreprise;
+import com.smartexsustway.api.domain.entity.Invitation;
 import com.smartexsustway.api.domain.entity.Role;
 import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
 import com.smartexsustway.api.domain.enums.StatutGenerique;
+import com.smartexsustway.api.domain.enums.StatutInvitation;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
+import com.smartexsustway.api.domain.repository.InvitationRepository;
 import com.smartexsustway.api.domain.repository.RoleRepository;
 import com.smartexsustway.api.domain.repository.SiteRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.notification.EmailService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.resource.dto.InvitationDto;
 import com.smartexsustway.api.resource.dto.MembreCreateRequest;
 import com.smartexsustway.api.resource.dto.MembreEntrepriseDto;
 import com.smartexsustway.api.resource.dto.MembreUpdateRequest;
@@ -35,16 +40,22 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.security.SecureRandom;
+import java.time.OffsetDateTime;
+import java.util.HexFormat;
 import java.util.Set;
 import java.util.UUID;
 
 /**
  * RG05 — utilisateurs rattachés à une entreprise et rôle porté par chacun.
  *
- * Le rattachement se fait sur un compte déjà inscrit, désigné par son
- * e-mail : l'entreprise accorde un accès, elle ne crée pas de compte à la
- * place de l'intéressé (pas d'e-mail d'invitation à ce stade).
+ * Deux cas selon que le collaborateur possède déjà un compte Smartex
+ * Sustway : {@link #ajouter} le rattache directement s'il existe, sinon
+ * bascule sur {@link #inviter} — une invitation par e-mail portant le
+ * rôle/site choisis à l'avance, appliqués automatiquement à l'acceptation
+ * (voir Invitation, InvitationResource).
  *
  * Retirer un accès le passe en INACTIF plutôt que de le supprimer : les
  * dépôts de preuves et évaluations déjà réalisés par ce collaborateur
@@ -67,14 +78,21 @@ public class MembreEntrepriseResource {
     private static final Set<String> ROLES_ATTRIBUABLES =
             Set.of("RESPONSABLE_ENTREPRISE", "EMPLOYE", "VISITEUR");
 
+    private static final int DUREE_VALIDITE_INVITATION_JOURS = 7;
+
     @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject EntrepriseRepository entrepriseRepository;
     @Inject SiteRepository siteRepository;
     @Inject RoleRepository roleRepository;
+    @Inject InvitationRepository invitationRepository;
+    @Inject EmailService emailService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
+
+    @ConfigProperty(name = "smartex.frontend.base-url", defaultValue = "http://localhost:5173")
+    String frontendBaseUrl;
 
     @GET
     @Transactional
@@ -97,10 +115,11 @@ public class MembreEntrepriseResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Utilisateur collaborateur = utilisateurRepository.parEmail(requete.email())
-                .orElseThrow(() -> new NotFoundException(
-                        "Aucun compte Smartex Sustway avec l'e-mail " + requete.email()
-                                + " — le collaborateur doit d'abord s'inscrire."));
+        var collaborateurExistant = utilisateurRepository.parEmail(requete.email());
+        if (collaborateurExistant.isEmpty()) {
+            return inviter(entreprise, requete);
+        }
+        Utilisateur collaborateur = collaborateurExistant.get();
 
         boolean dejaRattache = !utilisateurEntrepriseRepository
                 .actifsParUtilisateurEtEntreprise(collaborateur.getId(), entrepriseId).isEmpty();
@@ -130,6 +149,72 @@ public class MembreEntrepriseResource {
                 rattachement.getId());
 
         return Response.status(Response.Status.CREATED).entity(MembreEntrepriseDto.depuis(rattachement)).build();
+    }
+
+    @GET
+    @Path("/invitations")
+    @Transactional
+    public Response listerInvitations(@PathParam("entrepriseId") UUID entrepriseId) {
+        exigerAdministrationDesAcces(entrepriseId);
+
+        var invitations = invitationRepository.enAttenteParEntreprise(entrepriseId).stream()
+                .map(InvitationDto::depuis)
+                .toList();
+        return Response.ok(invitations).build();
+    }
+
+    @DELETE
+    @Path("/invitations/{invitationId}")
+    @Transactional
+    public Response revoquerInvitation(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("invitationId") UUID invitationId) {
+        UUID utilisateurId = exigerAdministrationDesAcces(entrepriseId);
+
+        Invitation invitation = invitationRepository.findByIdOptional(invitationId)
+                .filter(i -> i.getEntreprise().getId().equals(entrepriseId))
+                .orElseThrow(() -> new NotFoundException("Invitation introuvable pour cette entreprise : " + invitationId));
+
+        invitation.setStatut(StatutInvitation.REVOQUEE);
+        auditLogService.journaliser(utilisateurId, entrepriseId, "INVITATION_REVOQUEE", "invitation", invitationId);
+
+        return Response.noContent().build();
+    }
+
+    /**
+     * Le collaborateur n'a pas encore de compte : on fige le rôle/site
+     * choisis dans une invitation plutôt que d'échouer en 404 comme avant
+     * (le responsable devait alors demander à l'intéressé de s'inscrire
+     * d'abord, puis relancer l'ajout).
+     */
+    private Response inviter(Entreprise entreprise, MembreCreateRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+
+        if (invitationRepository.invitationEnAttenteExiste(entreprise.getId(), requete.email())) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(new ErreurDto("Une invitation est déjà en attente pour cet e-mail sur cette entreprise"))
+                    .build();
+        }
+
+        Role role = trouverRoleAttribuable(requete.roleCode());
+        Site site = requete.siteId() == null ? null : trouverSiteDeLEntreprise(entreprise.getId(), requete.siteId());
+        Utilisateur invitePar = utilisateurRepository.findById(utilisateurId);
+
+        String token = genererTokenInvitation();
+        Invitation invitation = new Invitation(entreprise, requete.email(), role, site, token, invitePar,
+                OffsetDateTime.now().plusDays(DUREE_VALIDITE_INVITATION_JOURS));
+        invitationRepository.persist(invitation);
+
+        String lien = frontendBaseUrl + "/invitation/" + token;
+        emailService.envoyerInvitationEntreprise(requete.email(), entreprise.getRaisonSociale(), role.getNom(), lien);
+
+        auditLogService.journaliser(utilisateurId, entreprise.getId(), "INVITATION_ENVOYEE", "invitation", invitation.getId());
+
+        return Response.status(Response.Status.ACCEPTED).entity(InvitationDto.depuis(invitation)).build();
+    }
+
+    private static String genererTokenInvitation() {
+        byte[] octets = new byte[32];
+        new SecureRandom().nextBytes(octets);
+        return HexFormat.of().formatHex(octets);
     }
 
     @PUT

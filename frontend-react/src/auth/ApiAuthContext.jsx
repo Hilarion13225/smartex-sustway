@@ -169,6 +169,21 @@ export function ApiAuthProvider({ children }) {
     return api.get('/api/v1/secteurs', { avecAuth: false });
   }, []);
 
+  // --- Invitations (RG05 : collaborateur sans compte existant) -----------
+
+  const consulterInvitation = useCallback(async (token) => {
+    return api.get(`/api/v1/invitations/${encodeURIComponent(token)}`, { avecAuth: false });
+  }, []);
+
+  const accepterInvitation = useCallback(async (token, payload) => {
+    const reponse = await api.post(`/api/v1/invitations/${encodeURIComponent(token)}/accepter`, payload, {
+      avecAuth: false,
+    });
+    ecrireToken(reponse.token);
+    setToken(reponse.token);
+    return reponse;
+  }, []);
+
   /**
    * `plan` (formule de l'entreprise concernée par l'action) est fourni par
    * l'appelant plutôt que lu d'un état global : contrairement au prototype
@@ -207,6 +222,8 @@ export function ApiAuthProvider({ children }) {
       payerAbonnement,
       listerFormules,
       listerSecteurs,
+      consulterInvitation,
+      accepterInvitation,
       rafraichirProfil: chargerProfil,
     }),
     [
@@ -232,6 +249,8 @@ export function ApiAuthProvider({ children }) {
       payerAbonnement,
       listerFormules,
       listerSecteurs,
+      consulterInvitation,
+      accepterInvitation,
       chargerProfil,
     ]
   );

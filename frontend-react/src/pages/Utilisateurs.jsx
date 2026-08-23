@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, KeyRound, Minus, Pencil, ShieldCheck, UserMinus, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Check, Hourglass, KeyRound, Minus, Pencil, ShieldCheck, UserMinus, UserPlus, Users, XCircle } from 'lucide-react';
 import Revele from '../components/Revele';
 import SustwayLoader from '../components/SustwayLoader';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
@@ -39,22 +39,26 @@ export default function Utilisateurs() {
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [membres, setMembres] = useState(null);
+  const [invitations, setInvitations] = useState([]);
   const [sites, setSites] = useState([]);
   const [abonnement, setAbonnement] = useState(null);
   const [chargement, setChargement] = useState(true);
   const [formulaireOuvert, setFormulaireOuvert] = useState(false);
   const [membreEnEdition, setMembreEnEdition] = useState(null);
   const [erreur, setErreur] = useState(null);
+  const [messageSucces, setMessageSucces] = useState(null);
 
   const rafraichir = useCallback(() => {
     setChargement(true);
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/membres`).catch(() => []),
+      api.get(`/api/v1/entreprises/${entrepriseId}/membres/invitations`).catch(() => []),
       api.get(`/api/v1/entreprises/${entrepriseId}/abonnement`).catch(() => null),
       api.get(`/api/v1/entreprises/${entrepriseId}/sites`).catch(() => []),
     ])
-      .then(([listeMembres, abo, listeSites]) => {
+      .then(([listeMembres, listeInvitations, abo, listeSites]) => {
         setMembres(listeMembres);
+        setInvitations(listeInvitations);
         setAbonnement(abo);
         setSites(listeSites);
       })
@@ -69,6 +73,16 @@ export default function Utilisateurs() {
     setErreur(null);
     try {
       await api.delete(`/api/v1/entreprises/${entrepriseId}/membres/${membre.id}`);
+      rafraichir();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    }
+  }
+
+  async function revoquerInvitation(invitation) {
+    setErreur(null);
+    try {
+      await api.delete(`/api/v1/entreprises/${entrepriseId}/membres/invitations/${invitation.id}`);
       rafraichir();
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
@@ -116,6 +130,7 @@ export default function Utilisateurs() {
       />
 
       {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+      {messageSucces ? <Alerte ton="vert">{messageSucces}</Alerte> : null}
 
       {formulaireOuvert ? (
         <Revele>
@@ -123,7 +138,7 @@ export default function Utilisateurs() {
             <CardHeader
               titre={membreEnEdition ? 'Modifier un accès' : 'Accorder un accès'}
               icone={UserPlus}
-              sousTitre="Le collaborateur doit déjà posséder un compte Smartex Sustway ; l'accès peut être limité à un site."
+              sousTitre="S'il n'a pas encore de compte Smartex Sustway, une invitation par email lui est envoyée ; l'accès peut être limité à un site."
             />
             <FormulaireMembre
               entrepriseId={entrepriseId}
@@ -133,7 +148,14 @@ export default function Utilisateurs() {
                 setFormulaireOuvert(false);
                 setMembreEnEdition(null);
               }}
-              onEnregistre={rafraichir}
+              onEnregistre={(invitationEnvoyee, email) => {
+                setMessageSucces(
+                  invitationEnvoyee
+                    ? `Invitation envoyée à ${email} — l'accès sera actif dès qu'iel aura créé son compte.`
+                    : null
+                );
+                rafraichir();
+              }}
             />
           </Card>
         </Revele>
@@ -239,6 +261,45 @@ export default function Utilisateurs() {
             </Card>
           </Revele>
 
+          {invitations.length > 0 ? (
+            <Revele delai={100}>
+              <Card className="mb-6 p-0">
+                <CardHeader
+                  titre="Invitations en attente"
+                  icone={Hourglass}
+                  sousTitre="Le rôle et le site seront appliqués automatiquement dès la création du compte."
+                />
+                <Tableau
+                  entetes={['E-mail', 'Rôle', 'Périmètre', 'Envoyée le', 'Expire le', ...(peutAdministrer ? [''] : [])]}
+                >
+                  {invitations.map((i) => (
+                    <tr key={i.id} className="transition-colors hover:bg-ink-50/60">
+                      <td className="td font-medium text-ink-900">{i.email}</td>
+                      <td className="td">
+                        <Badge ton="bleu">{ROLE_LIBELLE[i.roleCode] ?? i.roleNom}</Badge>
+                      </td>
+                      <td className="td text-sm text-ink-600">{i.siteNom ?? 'Toute l’entreprise'}</td>
+                      <td className="td text-sm text-ink-600">{formaterDate(i.createdAt)}</td>
+                      <td className="td text-sm text-ink-600">{formaterDate(i.expireAt)}</td>
+                      {peutAdministrer ? (
+                        <td className="td text-right">
+                          <button
+                            type="button"
+                            className="btn-ghost p-1.5 text-rose-600"
+                            title="Annuler l’invitation"
+                            onClick={() => revoquerInvitation(i)}
+                          >
+                            <XCircle className="h-4 w-4" aria-hidden />
+                          </button>
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </Tableau>
+              </Card>
+            </Revele>
+          ) : null}
+
           <Revele delai={120}>
             <Card className="p-0">
               <CardHeader
@@ -298,10 +359,14 @@ function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre
       const perimetre = { roleCode: formulaire.roleCode, siteId: formulaire.siteId || null };
       if (membre) {
         await api.put(`/api/v1/entreprises/${entrepriseId}/membres/${membre.id}`, perimetre);
+        onEnregistre(false);
       } else {
-        await api.post(`/api/v1/entreprises/${entrepriseId}/membres`, { email: formulaire.email, ...perimetre });
+        const reponse = await api.post(`/api/v1/entreprises/${entrepriseId}/membres`, { email: formulaire.email, ...perimetre });
+        // Le collaborateur n'avait pas encore de compte : une invitation a
+        // été envoyée à la place d'un rattachement direct (InvitationDto
+        // porte expireAt, absent de MembreEntrepriseDto).
+        onEnregistre('expireAt' in reponse, formulaire.email);
       }
-      onEnregistre();
       onTermine();
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
