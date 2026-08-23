@@ -77,7 +77,9 @@ public class NonConformeResource {
                                    @PathParam("nonConformeId") UUID nonConformeId, @Valid NonConformeStatutRequestDto requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
-        trouverAuditDeLEntreprise(entrepriseId, auditId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "audit:modifier");
 
         NonConforme nonConforme = trouverNonConformeDeLaMission(auditId, nonConformeId);
 

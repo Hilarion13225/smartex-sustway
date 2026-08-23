@@ -7,6 +7,7 @@ import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.enums.StatutScanDocument;
+import com.smartexsustway.api.domain.repository.AbonnementRepository;
 import com.smartexsustway.api.domain.repository.DocumentRepository;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
 import com.smartexsustway.api.domain.repository.SiteRepository;
@@ -68,6 +69,7 @@ public class DocumentResource {
     );
 
     @Inject EntrepriseRepository entrepriseRepository;
+    @Inject AbonnementRepository abonnementRepository;
     @Inject SiteRepository siteRepository;
     @Inject DocumentRepository documentRepository;
     @Inject UtilisateurRepository utilisateurRepository;
@@ -100,6 +102,11 @@ public class DocumentResource {
         if (entreprise == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        String formuleCode = abonnementRepository.leplusRecentParEntreprise(entrepriseId)
+                .map(a -> a.getFormule().getCode())
+                .orElse(null);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
 
         if (fichier == null) {
             return erreur(400, "Aucun fichier reçu (champ 'fichier' attendu)");

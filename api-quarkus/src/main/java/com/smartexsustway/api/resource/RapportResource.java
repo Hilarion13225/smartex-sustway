@@ -53,8 +53,10 @@ public class RapportResource {
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "rapport:consulter");
 
         var rapports = rapportRepository.parAudit(audit.getId()).stream().map(RapportDto::depuis).toList();
         return Response.ok(rapports).build();
@@ -68,6 +70,7 @@ public class RapportResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "rapport:consulter");
 
         TypeRapport type;
         FormatRapport format;
@@ -110,8 +113,10 @@ public class RapportResource {
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response telecharger(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
                                  @PathParam("rapportId") UUID rapportId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "rapport:consulter");
 
         Rapport rapport = rapportRepository.parIdEtAudit(rapportId, audit.getId())
                 .orElseThrow(() -> new NotFoundException("Rapport introuvable pour cette mission"));
@@ -125,6 +130,10 @@ public class RapportResource {
                 .type(typeMime)
                 .header("Content-Disposition", "attachment; filename=\"" + nomFichier + "\"")
                 .build();
+    }
+
+    private static String formuleCode(Audit audit) {
+        return audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
     }
 
     private Audit trouverAuditDeLEntreprise(UUID entrepriseId, UUID auditId) {

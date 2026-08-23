@@ -143,6 +143,7 @@ public class AuditResource {
                     .entity(new ErreurDto("RG20 : un abonnement actif est requis pour lancer un audit"))
                     .build();
         }
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, abonnement.getFormule().getCode(), "audit:creer");
 
         Referentiel referentiel = referentielRepository.parCode(requete.referentielCode())
                 .orElseThrow(() -> new BadRequestException("Référentiel inconnu : " + requete.referentielCode()));

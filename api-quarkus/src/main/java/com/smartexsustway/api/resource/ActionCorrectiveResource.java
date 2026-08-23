@@ -67,6 +67,7 @@ public class ActionCorrectiveResource {
                            @PathParam("nonConformeId") UUID nonConformeId, @Valid ActionCorrectiveCreateRequest requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(auditId), "audit:modifier");
         NonConforme nonConforme = trouverNonConformeDeLaMission(entrepriseId, auditId, nonConformeId);
 
         PrioriteAction priorite = PrioriteAction.MOYENNE;
@@ -106,6 +107,7 @@ public class ActionCorrectiveResource {
                                    @Valid ActionCorrectiveStatutRequestDto requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(auditId), "audit:modifier");
         NonConforme nonConforme = trouverNonConformeDeLaMission(entrepriseId, auditId, nonConformeId);
 
         ActionCorrective action = actionCorrectiveRepository.parIdEtNonConforme(actionId, nonConforme.getId())
@@ -122,6 +124,11 @@ public class ActionCorrectiveResource {
         auditLogService.journaliser(utilisateurId, entrepriseId, "ACTION_CORRECTIVE_STATUT_CHANGE", "action_corrective", action.getId());
 
         return Response.ok(ActionCorrectiveDto.depuis(action)).build();
+    }
+
+    private String formuleCode(UUID auditId) {
+        Audit audit = auditRepository.findById(auditId);
+        return audit == null || audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
     }
 
     private NonConforme trouverNonConformeDeLaMission(UUID entrepriseId, UUID auditId, UUID nonConformeId) {

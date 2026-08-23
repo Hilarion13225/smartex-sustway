@@ -51,7 +51,9 @@ public class IndicePreparationResource {
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, "bailleur:consulter");
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
 
         var indices = indicePreparationRepository.parAudit(audit.getId()).stream()
@@ -67,6 +69,7 @@ public class IndicePreparationResource {
                               Map<String, String> requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, "bailleur:consulter");
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
 
         if (!estFormuleAvancees(audit)) {
