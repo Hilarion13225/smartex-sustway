@@ -147,6 +147,12 @@ export function ApiAuthProvider({ children }) {
     return reponse; // { entreprise, abonnement }
   }, []);
 
+  const modifierEntreprise = useCallback(async (entrepriseId, payload) => {
+    const entreprise = await api.put(`/api/v1/entreprises/${entrepriseId}`, payload);
+    setEntreprises((prev) => prev.map((e) => (e.id === entrepriseId ? entreprise : e)));
+    return entreprise;
+  }, []);
+
   const recupererAbonnement = useCallback(async (entrepriseId) => {
     return api.get(`/api/v1/entreprises/${entrepriseId}/abonnement`);
   }, []);
@@ -196,6 +202,7 @@ export function ApiAuthProvider({ children }) {
       confirmerActivationSmsDeuxFa,
       desactiverDeuxFa,
       creerEntreprise,
+      modifierEntreprise,
       recupererAbonnement,
       payerAbonnement,
       listerFormules,
@@ -220,6 +227,7 @@ export function ApiAuthProvider({ children }) {
       confirmerActivationSmsDeuxFa,
       desactiverDeuxFa,
       creerEntreprise,
+      modifierEntreprise,
       recupererAbonnement,
       payerAbonnement,
       listerFormules,

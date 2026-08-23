@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlarmClock, ArrowLeft, CheckCircle2, Download, ListTodo, TriangleAlert } from 'lucide-react';
+import { AlarmClock, ArrowLeft, CheckCircle2, Download, ListTodo, PlusCircle, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
+import SustwayLoader from '../components/SustwayLoader';
 import { COULEURS, GraphiqueAnneau } from '../components/charts';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -23,6 +24,8 @@ const STATUT_TON = {
   TERMINEE: 'violet',
   VALIDEE: 'vert',
 };
+
+const PRIORITES = ['BASSE', 'MOYENNE', 'HAUTE', 'CRITIQUE'];
 
 const PRIORITE_TON = {
   CRITIQUE: 'rouge',
@@ -47,8 +50,9 @@ function estEnRetard(action) {
 /**
  * RG18 — pilotage transverse du plan d'actions correctives : toutes les
  * actions de l'entreprise, toutes missions confondues, avec échéances,
- * responsables et avancement. La saisie d'une action reste rattachée à sa
- * non-conformité (page Non-conformités) ; cet écran sert au suivi.
+ * responsables et avancement. Une action reste toujours rattachée à une
+ * non-conformité : la création depuis cet écran commence donc par choisir
+ * la non-conformité qu'elle traite.
  */
 export default function PlanActions() {
   const { entrepriseId } = useParams();
@@ -56,9 +60,11 @@ export default function PlanActions() {
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [lignes, setLignes] = useState([]);
+  const [nonConformites, setNonConformites] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
   const [filtreStatut, setFiltreStatut] = useState('TOUS');
+  const [formulaireOuvert, setFormulaireOuvert] = useState(false);
 
   const charger = useCallback(async () => {
     setChargement(true);
@@ -81,10 +87,11 @@ export default function PlanActions() {
               })
           );
 
-          return parNc.flat();
+          return { lignes: parNc.flat(), nonConformites: nonConformites.map((nc) => ({ nonConformite: nc, audit })) };
         })
       );
-      setLignes(parAudit.flat());
+      setLignes(parAudit.flatMap((r) => r.lignes));
+      setNonConformites(parAudit.flatMap((r) => r.nonConformites));
       setErreur(null);
     } catch (e) {
       setErreur(e instanceof ApiError ? e.message : 'Impossible de charger le plan d’actions.');
@@ -153,14 +160,40 @@ export default function PlanActions() {
         titre="Plan d’actions correctives"
         description={`${entreprise.raisonSociale} — suivi transverse des actions issues des non-conformités de toutes les missions.`}
         actions={
-          lignes.length > 0 ? (
-            <button type="button" className="btn-secondary" onClick={exporter}>
-              <Download className="h-4 w-4" aria-hidden />
-              Exporter en CSV
-            </button>
-          ) : null
+          <>
+            {peutPiloter && nonConformites.length > 0 ? (
+              <button type="button" className="btn-primary" onClick={() => setFormulaireOuvert((v) => !v)}>
+                <PlusCircle className="h-4 w-4" aria-hidden />
+                Nouvelle action
+              </button>
+            ) : null}
+            {lignes.length > 0 ? (
+              <button type="button" className="btn-secondary" onClick={exporter}>
+                <Download className="h-4 w-4" aria-hidden />
+                Exporter en CSV
+              </button>
+            ) : null}
+          </>
         }
       />
+
+      {formulaireOuvert ? (
+        <Revele>
+          <Card className="mb-6 p-5">
+            <CardHeader
+              titre="Nouvelle action corrective"
+              icone={PlusCircle}
+              sousTitre="L’action est rattachée à la non-conformité qu’elle traite (RG18)."
+            />
+            <FormulaireAction
+              entrepriseId={entrepriseId}
+              nonConformites={nonConformites}
+              onTermine={() => setFormulaireOuvert(false)}
+              onCree={charger}
+            />
+          </Card>
+        </Revele>
+      ) : null}
 
       {erreur ? (
         <div className="mb-6">
@@ -171,7 +204,7 @@ export default function PlanActions() {
       {chargement ? (
         <Loader message="Consolidation des actions correctives…" />
       ) : lignes.length === 0 ? (
-        <Vide message="Aucune action corrective enregistrée. Ouvrez une non-conformité pour définir son plan d’actions." />
+        <Vide message="Aucune action corrective enregistrée. Créez-en une depuis « Nouvelle action » ou depuis une non-conformité." />
       ) : (
         <>
           <Revele>
@@ -326,5 +359,139 @@ export default function PlanActions() {
         </>
       )}
     </>
+  );
+}
+
+function FormulaireAction({ entrepriseId, nonConformites, onTermine, onCree }) {
+  const [formulaire, setFormulaire] = useState({
+    cible: '',
+    titre: '',
+    description: '',
+    dateEcheance: '',
+    priorite: 'MOYENNE',
+  });
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function enregistrer(e) {
+    e.preventDefault();
+    setErreur(null);
+    const cible = nonConformites.find((c) => `${c.audit.id}:${c.nonConformite.id}` === formulaire.cible);
+    if (!cible) {
+      setErreur('Sélectionnez la non-conformité traitée par cette action.');
+      return;
+    }
+    setChargement(true);
+    try {
+      await api.post(
+        `/api/v1/entreprises/${entrepriseId}/audits/${cible.audit.id}/non-conformites/${cible.nonConformite.id}/actions`,
+        {
+          titre: formulaire.titre,
+          description: formulaire.description,
+          priorite: formulaire.priorite,
+          dateEcheance: formulaire.dateEcheance || null,
+        }
+      );
+      onCree();
+      onTermine();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  return (
+    <form className="mt-4 space-y-3" onSubmit={enregistrer}>
+      <div>
+        <label className="label" htmlFor="action-non-conformite">
+          Non-conformité traitée
+        </label>
+        <select
+          id="action-non-conformite"
+          required
+          className="input"
+          value={formulaire.cible}
+          onChange={(e) => setFormulaire({ ...formulaire, cible: e.target.value })}
+        >
+          <option value="">Sélectionner…</option>
+          {nonConformites.map(({ nonConformite, audit }) => (
+            <option key={nonConformite.id} value={`${audit.id}:${nonConformite.id}`}>
+              {audit.nom} — {nonConformite.critereCode} · {nonConformite.titre}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="label" htmlFor="action-titre">
+          Titre de l’action
+        </label>
+        <input
+          id="action-titre"
+          required
+          className="input"
+          placeholder="Formaliser la politique RH…"
+          value={formulaire.titre}
+          onChange={(e) => setFormulaire({ ...formulaire, titre: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <label className="label" htmlFor="action-description">
+          Description
+        </label>
+        <textarea
+          id="action-description"
+          className="input"
+          value={formulaire.description}
+          onChange={(e) => setFormulaire({ ...formulaire, description: e.target.value })}
+        />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="action-echeance">
+            Échéance
+          </label>
+          <input
+            id="action-echeance"
+            type="date"
+            className="input"
+            value={formulaire.dateEcheance}
+            onChange={(e) => setFormulaire({ ...formulaire, dateEcheance: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="action-priorite">
+            Priorité
+          </label>
+          <select
+            id="action-priorite"
+            className="input"
+            value={formulaire.priorite}
+            onChange={(e) => setFormulaire({ ...formulaire, priorite: e.target.value })}
+          >
+            {PRIORITES.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button type="submit" className="btn-primary" disabled={chargement}>
+          {chargement ? <SustwayLoader taille="sm" /> : null}
+          Créer l’action
+        </button>
+        <button type="button" className="btn-ghost" onClick={onTermine}>
+          Annuler
+        </button>
+      </div>
+
+      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+    </form>
   );
 }
