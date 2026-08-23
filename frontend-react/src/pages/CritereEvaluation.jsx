@@ -4,9 +4,11 @@ import {
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
+  ChevronDown,
   ClipboardCheck,
   Eraser,
   FileText,
+  History,
   Lightbulb,
   ListChecks,
   MessageSquareText,
@@ -155,6 +157,7 @@ export default function CritereEvaluation() {
                   auditCritereId={auditCritereId}
                   peutEvaluer={preuvesDuCritere.length > 0 || declaratifRenseigne}
                   derniereEvaluation={derniereEvaluation}
+                  evaluationsPrecedentes={(evaluations ?? []).slice(1)}
                   onChange={rafraichir}
                 />
               </Card>
@@ -413,7 +416,15 @@ function PreuvesSection({ entrepriseId, auditId, auditCritereId, preuves, onChan
   );
 }
 
-function EvaluationSection({ entrepriseId, auditId, auditCritereId, peutEvaluer, derniereEvaluation, onChange }) {
+function EvaluationSection({
+  entrepriseId,
+  auditId,
+  auditCritereId,
+  peutEvaluer,
+  derniereEvaluation,
+  evaluationsPrecedentes,
+  onChange,
+}) {
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState(null);
 
@@ -448,6 +459,41 @@ function EvaluationSection({ entrepriseId, auditId, auditCritereId, peutEvaluer,
       ) : null}
 
       {derniereEvaluation ? <ResultatEvaluation evaluation={derniereEvaluation} /> : <Vide message="Aucune évaluation pour l’instant." />}
+
+      {evaluationsPrecedentes.length > 0 ? (
+        <HistoriqueEvaluations evaluations={evaluationsPrecedentes} />
+      ) : null}
+    </div>
+  );
+}
+
+function HistoriqueEvaluations({ evaluations }) {
+  const [ouvert, setOuvert] = useState(false);
+
+  return (
+    <div className="rounded-xl border border-ink-100">
+      <button
+        type="button"
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-ink-700"
+        aria-expanded={ouvert}
+        onClick={() => setOuvert((precedent) => !precedent)}
+      >
+        <span className="flex items-center gap-2">
+          <History className="h-4 w-4 text-ink-400" aria-hidden />
+          Historique des évaluations ({evaluations.length})
+        </span>
+        <ChevronDown className={`h-4 w-4 text-ink-400 ${ouvert ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+
+      {ouvert ? (
+        <ul className="space-y-3 border-t border-ink-100 p-4">
+          {evaluations.map((evaluation) => (
+            <li key={evaluation.id}>
+              <ResultatEvaluation evaluation={evaluation} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
