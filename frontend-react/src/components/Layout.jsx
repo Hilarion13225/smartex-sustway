@@ -4,10 +4,14 @@ import {
   BookOpen,
   Building2,
   ClipboardList,
+  ClipboardX,
+  Columns3,
+  Cpu,
   ExternalLink,
   FileText,
   History,
   LayoutDashboard,
+  Leaf,
   LifeBuoy,
   ListTodo,
   LogOut,
@@ -46,7 +50,17 @@ const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', '
 const GROUPES = [
   {
     titre: 'Pilotage',
-    liens: [{ vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true }],
+    liens: [
+      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
+      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
+      {
+        chemin: (id) => `/app/${id}/financements-verts`,
+        libelle: 'Financements verts',
+        icone: Leaf,
+        permission: 'bailleur:consulter',
+      },
+    ],
   },
   {
     titre: 'Audit',
@@ -54,12 +68,14 @@ const GROUPES = [
       { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FileText },
+      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Cpu },
       {
         chemin: (id) => `/app/${id}/revues-expertes`,
         libelle: 'Revue experte',
         icone: UserCheck,
         permission: 'revue:traiter',
       },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
       { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
     ],
   },

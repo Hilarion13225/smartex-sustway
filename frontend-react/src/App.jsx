@@ -21,7 +21,12 @@ import AuditsListe from './pages/AuditsListe';
 import AuditDetail from './pages/AuditDetail';
 import AuditScore from './pages/AuditScore';
 import NonConformites from './pages/NonConformites';
+import NonConformitesEntreprise from './pages/NonConformitesEntreprise';
 import Rapports from './pages/Rapports';
+import RapportsEntreprise from './pages/RapportsEntreprise';
+import FinancementsVerts from './pages/FinancementsVerts';
+import PipelineIA from './pages/PipelineIA';
+import ComparaisonEntreprises from './pages/ComparaisonEntreprises';
 import ReferentielsListe from './pages/ReferentielsListe';
 import ReferentielDetail from './pages/ReferentielDetail';
 import IndicePreparation from './pages/IndicePreparation';
@@ -70,6 +75,10 @@ export default function App() {
               <Route path=":entrepriseId/utilisateurs" element={<Utilisateurs />} />
               <Route path=":entrepriseId/journal" element={<Journal />} />
               <Route path=":entrepriseId/plan-actions" element={<PlanActions />} />
+              <Route path=":entrepriseId/non-conformites" element={<NonConformitesEntreprise />} />
+              <Route path=":entrepriseId/rapports" element={<RapportsEntreprise />} />
+              <Route path=":entrepriseId/financements-verts" element={<FinancementsVerts />} />
+              <Route path=":entrepriseId/pipeline-ia" element={<PipelineIA />} />
               <Route path=":entrepriseId/audits" element={<AuditsListe />} />
               <Route path=":entrepriseId/audits/:auditId" element={<AuditDetail />} />
               <Route path=":entrepriseId/audits/:auditId/score" element={<AuditScore />} />
@@ -79,6 +88,7 @@ export default function App() {
               <Route path=":entrepriseId/audits/:auditId/criteres/:auditCritereId" element={<CritereEvaluation />} />
               <Route path=":entrepriseId/revues-expertes" element={<RevueExperteQueue />} />
               <Route path="profil" element={<Profil />} />
+              <Route path="comparaison" element={<ComparaisonEntreprises />} />
               <Route path="referentiels" element={<ReferentielsListe />} />
               <Route path="referentiels/:code" element={<ReferentielDetail />} />
             </Route>
