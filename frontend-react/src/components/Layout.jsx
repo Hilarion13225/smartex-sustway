@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -29,6 +29,9 @@ import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
+
+/** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
+const SEUIL_RECHERCHE_ENTREPRISE = 6;
 
 /**
  * Rôles habilités à administrer une entreprise (abonnement, journal) —
@@ -118,7 +121,25 @@ export default function Layout() {
   const [entrepriseCouranteId, setEntrepriseCouranteId] = useState(
     () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
   );
+  const [filtreEntreprise, setFiltreEntreprise] = useState('');
   const navigate = useNavigate();
+
+  // Filtre par raison sociale / identifiant légal — l'entreprise déjà
+  // sélectionnée reste toujours proposée même si elle ne correspond plus au
+  // filtre, pour ne jamais faire disparaître silencieusement le contexte
+  // courant de la liste affichée.
+  const entreprisesFiltrees = useMemo(() => {
+    const requete = filtreEntreprise.trim().toLowerCase();
+    if (!requete) return entreprises;
+    const correspondantes = entreprises.filter(
+      (e) => e.raisonSociale.toLowerCase().includes(requete) || e.identifiantLegal?.toLowerCase().includes(requete)
+    );
+    const courante = entreprises.find((e) => e.id === entrepriseCouranteId);
+    if (courante && !correspondantes.some((e) => e.id === courante.id)) {
+      return [courante, ...correspondantes];
+    }
+    return correspondantes;
+  }, [entreprises, filtreEntreprise, entrepriseCouranteId]);
 
   // Si l'entreprise mémorisée n'est plus dans la liste (accès révoqué,
   // nouvel appareil...) ou qu'aucune n'est encore choisie, on retombe sur
@@ -173,13 +194,23 @@ export default function Layout() {
             <label className="label" htmlFor="entreprise-courante">
               Entreprise
             </label>
+            {entreprises.length > SEUIL_RECHERCHE_ENTREPRISE ? (
+              <input
+                type="search"
+                className="input mb-1.5 text-sm"
+                placeholder="Rechercher une entreprise…"
+                value={filtreEntreprise}
+                onChange={(e) => setFiltreEntreprise(e.target.value)}
+                aria-controls="entreprise-courante"
+              />
+            ) : null}
             <select
               id="entreprise-courante"
               className="input text-sm"
               value={entrepriseCouranteId}
               onChange={(e) => choisirEntreprise(e.target.value)}
             >
-              {entreprises.map((e) => (
+              {entreprisesFiltrees.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.raisonSociale}
                 </option>

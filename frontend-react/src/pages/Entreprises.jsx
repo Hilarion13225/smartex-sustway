@@ -1,15 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Building2, CheckCircle2, Clock, PlusCircle, Sparkles, X } from 'lucide-react';
+import { ArrowRight, Building2, CheckCircle2, Clock, PlusCircle, Search, Sparkles, X } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Badge, Card, PageTitre } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 
+/** Au-delà de ce nombre d'entreprises, la page affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
+const SEUIL_RECHERCHE = 6;
+
 /** RG24/RG25 : la création exige une formule payante (Free refusée par l'API). */
 export default function Entreprises() {
   const { entreprises, creerEntreprise } = useApiAuth();
+  const [recherche, setRecherche] = useState('');
 
   const [secteurs, setSecteurs] = useState([]);
   const [formulaire, setFormulaire] = useState({
@@ -51,6 +55,14 @@ export default function Entreprises() {
 
   const nombreActives = entreprises.filter((e) => e.statut === 'ACTIF').length;
   const nombreEnAttente = entreprises.length - nombreActives;
+
+  const entreprisesFiltrees = useMemo(() => {
+    const requete = recherche.trim().toLowerCase();
+    if (!requete) return entreprises;
+    return entreprises.filter(
+      (e) => e.raisonSociale.toLowerCase().includes(requete) || e.identifiantLegal?.toLowerCase().includes(requete)
+    );
+  }, [entreprises, recherche]);
 
   const statistiques = [
     { libelle: 'Entreprises suivies', valeur: entreprises.length, icone: Building2, ton: 'bleu' },
@@ -210,34 +222,55 @@ export default function Entreprises() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {entreprises.map((e, index) => (
-            <Revele key={e.id} delai={index * 70}>
-              <Link to={`/app/${e.id}`} className="carte-app group block h-full">
-                <span
-                  className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-halo-brand opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  aria-hidden
-                />
-                <div className="relative flex items-start justify-between gap-3">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
-                    <Building2 className="h-5 w-5" aria-hidden />
-                  </span>
-                  <ArrowRight
-                    className="h-4 w-4 text-ink-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-brand-600"
-                    aria-hidden
-                  />
-                </div>
-                <p className="relative mt-4 font-semibold text-ink-900">{e.raisonSociale}</p>
-                <p className="relative mt-0.5 text-xs text-ink-500">{e.identifiantLegal}</p>
-                <div className="relative mt-3 flex flex-wrap gap-2">
-                  {e.secteurCode ? <Badge>{e.secteurCode}</Badge> : null}
-                  {e.taille ? <Badge>{e.taille}</Badge> : null}
-                  <Badge ton={e.statut === 'ACTIF' ? 'vert' : 'neutre'}>{e.statut}</Badge>
-                </div>
-              </Link>
-            </Revele>
-          ))}
-        </div>
+        <>
+          {entreprises.length > SEUIL_RECHERCHE ? (
+            <div className="relative mb-4 max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden />
+              <input
+                type="search"
+                className="input pl-9"
+                placeholder="Rechercher par raison sociale ou identifiant légal…"
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+              />
+            </div>
+          ) : null}
+
+          {entreprisesFiltrees.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-10 text-center text-sm text-ink-500">
+              Aucune entreprise ne correspond à « {recherche} ».
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {entreprisesFiltrees.map((e, index) => (
+                <Revele key={e.id} delai={index * 70}>
+                  <Link to={`/app/${e.id}`} className="carte-app group block h-full">
+                    <span
+                      className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-halo-brand opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      aria-hidden
+                    />
+                    <div className="relative flex items-start justify-between gap-3">
+                      <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
+                        <Building2 className="h-5 w-5" aria-hidden />
+                      </span>
+                      <ArrowRight
+                        className="h-4 w-4 text-ink-300 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-brand-600"
+                        aria-hidden
+                      />
+                    </div>
+                    <p className="relative mt-4 font-semibold text-ink-900">{e.raisonSociale}</p>
+                    <p className="relative mt-0.5 text-xs text-ink-500">{e.identifiantLegal}</p>
+                    <div className="relative mt-3 flex flex-wrap gap-2">
+                      {e.secteurCode ? <Badge>{e.secteurCode}</Badge> : null}
+                      {e.taille ? <Badge>{e.taille}</Badge> : null}
+                      <Badge ton={e.statut === 'ACTIF' ? 'vert' : 'neutre'}>{e.statut}</Badge>
+                    </div>
+                  </Link>
+                </Revele>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </>
   );
