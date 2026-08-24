@@ -22,6 +22,7 @@ import com.smartexsustway.api.domain.repository.AuditSiteRepository;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
 import com.smartexsustway.api.domain.repository.QuestionRepository;
 import com.smartexsustway.api.domain.repository.ReferentielRepository;
+import com.smartexsustway.api.domain.repository.ScoreHistoriqueRepository;
 import com.smartexsustway.api.domain.repository.SiteRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
@@ -33,6 +34,7 @@ import com.smartexsustway.api.resource.dto.AuditCritereDto;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.resource.dto.ScoreHistoriqueDto;
 import com.smartexsustway.api.resource.dto.SiteDto;
 import com.smartexsustway.api.scoring.AuditScoreService;
 import com.smartexsustway.api.security.AutorisationService;
@@ -89,6 +91,7 @@ public class AuditResource {
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
     @Inject SiteRepository siteRepository;
+    @Inject ScoreHistoriqueRepository scoreHistoriqueRepository;
     @Inject AuditSiteRepository auditSiteRepository;
     @Inject AuditAuditeurRepository auditAuditeurRepository;
     @Inject QuestionnaireService questionnaireService;
@@ -141,6 +144,19 @@ public class AuditResource {
 
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
         return Response.ok(auditScoreService.calculer(audit)).build();
+    }
+
+    /** RG32 : évolution du score global de la mission dans le temps — un point par jour où une évaluation validée l'a fait varier (voir ScoreHistoriqueService). */
+    @GET
+    @Path("/{auditId}/score-historique")
+    public Response scoreHistorique(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        var historique = scoreHistoriqueRepository.parAudit(audit.getId()).stream()
+                .map(ScoreHistoriqueDto::depuis)
+                .toList();
+        return Response.ok(historique).build();
     }
 
     @POST

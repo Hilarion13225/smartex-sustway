@@ -7,8 +7,10 @@ import {
   Download,
   Gauge,
   LayoutDashboard,
+  Leaf,
   TriangleAlert,
   UserCheck,
+  Wallet,
 } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
@@ -16,6 +18,15 @@ import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../c
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
+
+const NIVEAUX_ENGAGEMENT = [
+  '1 — Totalement inactive',
+  '2 — Hésitante',
+  '3 — Réactive',
+  '4 — Active',
+  '5 — Fortement active',
+];
+const TONS_FORMULE = { FREE: 'neutre', STANDARD: 'bleu', AVANCEES: 'vert' };
 
 const NIVEAUX_NC = ['CRITIQUE', 'MAJEURE', 'MODEREE', 'MINEURE'];
 const COULEURS_NC = [COULEURS.rouge, COULEURS.ambre, '#eab308', COULEURS.gris];
@@ -36,10 +47,12 @@ function tonScore(score) {
  * agrégées côté client faute d'endpoint d'agrégation multi-entreprises.
  */
 export default function TableauDeBord() {
-  const { entreprises, utilisateur, peut } = useApiAuth();
+  const { entreprises, utilisateur, peut, recupererAbonnement } = useApiAuth();
 
   const [missions, setMissions] = useState([]);
   const [revues, setRevues] = useState([]);
+  const [indices, setIndices] = useState([]);
+  const [abonnements, setAbonnements] = useState([]);
   const [chargement, setChargement] = useState(true);
 
   const charger = useCallback(async () => {
@@ -59,7 +72,8 @@ export default function TableauDeBord() {
         );
       })
     );
-    setMissions(parEntreprise.flat());
+    const toutesMissions = parEntreprise.flat();
+    setMissions(toutesMissions);
 
     if (peut('revue:traiter')) {
       const files = await Promise.all(
@@ -75,8 +89,31 @@ export default function TableauDeBord() {
       setRevues([]);
     }
 
+    // RG41 : réservé à la formule Avancées — les missions dans une autre
+    // formule ne portent de toute façon jamais d'indice, inutile de tenter
+    // l'appel (qui échouerait en 403).
+    const missionsAvancees = toutesMissions.filter((m) => m.audit.formuleCode === 'AVANCEES');
+    const indicesResultats = await Promise.all(
+      missionsAvancees.map((m) =>
+        api
+          .get(`/api/v1/entreprises/${m.entreprise.id}/audits/${m.audit.id}/indice-preparation`)
+          .then((liste) => liste.map((i) => ({ ...i, entreprise: m.entreprise })))
+          .catch(() => [])
+      )
+    );
+    setIndices(indicesResultats.flat());
+
+    const abonnementsResultats = await Promise.all(
+      entreprises.map((entreprise) =>
+        recupererAbonnement(entreprise.id)
+          .then((abonnement) => ({ entreprise, abonnement }))
+          .catch(() => null)
+      )
+    );
+    setAbonnements(abonnementsResultats.filter(Boolean));
+
     setChargement(false);
-  }, [entreprises, peut]);
+  }, [entreprises, peut, recupererAbonnement]);
 
   useEffect(() => {
     charger();
@@ -126,6 +163,33 @@ export default function TableauDeBord() {
   const prioritaires = [...ouvertes]
     .sort((a, b) => Number(b.risqueAttendu ?? 0) - Number(a.risqueAttendu ?? 0))
     .slice(0, 8);
+
+  /** Somme des histogrammes par niveau (1-5) de toutes les missions notées — même donnée que le score, juste sous un autre angle (répartition plutôt que moyenne). */
+  const repartitionEngagement = useMemo(() => {
+    const total = [0, 0, 0, 0, 0];
+    missionsNotees.forEach((m) => {
+      (m.score.repartitionNiveaux ?? []).forEach((n, index) => {
+        total[index] += n;
+      });
+    });
+    return total;
+  }, [missionsNotees]);
+
+  const indiceMoyen = indices.length
+    ? indices.reduce((total, i) => total + Number(i.score), 0) / indices.length
+    : null;
+
+  /** Score moyen par entreprise — pertinent seulement au-delà d'une seule entreprise (voir gating à l'affichage). */
+  const parEntrepriseNotee = useMemo(() => {
+    const cumul = new Map();
+    missionsNotees.forEach((m) => {
+      const courant = cumul.get(m.entreprise.id) ?? { nom: m.entreprise.raisonSociale, total: 0, nombre: 0 };
+      courant.total += Number(m.score.scoreGlobal);
+      courant.nombre += 1;
+      cumul.set(m.entreprise.id, courant);
+    });
+    return [...cumul.values()].map((v) => ({ nom: v.nom, score: v.total / v.nombre }));
+  }, [missionsNotees]);
 
   function exporter() {
     exporterCsv(
@@ -199,6 +263,15 @@ export default function TableauDeBord() {
                 icone={UserCheck}
                 ton="ambre"
               />
+              {indices.length > 0 ? (
+                <StatCard
+                  libelle="Indice de préparation IFC/SFI"
+                  valeur={`${indiceMoyen.toFixed(2)} / 5`}
+                  detail={`Moyenne sur ${indices.length} indice${indices.length > 1 ? 's' : ''} calculé${indices.length > 1 ? 's' : ''} (formule Avancées)`}
+                  icone={Leaf}
+                  ton={tonScore(indiceMoyen)}
+                />
+              ) : null}
             </div>
           </Revele>
 
@@ -286,8 +359,77 @@ export default function TableauDeBord() {
                       )}
                     </div>
                   </Card>
+
+                  <Card>
+                    <CardHeader
+                      titre="Répartition des niveaux d’engagement"
+                      icone={Gauge}
+                      sousTitre="Échelle de Likert 1 à 5, tous critères évalués confondus"
+                    />
+                    <div className="h-72 p-5">
+                      {missionsNotees.length > 0 ? (
+                        <GraphiqueBarres
+                          horizontal
+                          labels={NIVEAUX_ENGAGEMENT}
+                          series={[{ label: 'Critères', data: repartitionEngagement, couleur: COULEURS.brand }]}
+                        />
+                      ) : (
+                        <Vide message="Aucune évaluation validée pour l’instant." />
+                      )}
+                    </div>
+                  </Card>
+
+                  {entreprises.length > 1 ? (
+                    <Card>
+                      <CardHeader
+                        titre="Portefeuille d’entreprises"
+                        icone={Building2}
+                        sousTitre="Score moyen sur 5, une entreprise par barre"
+                      />
+                      <div className="h-72 p-5">
+                        {parEntrepriseNotee.length > 0 ? (
+                          <GraphiqueBarres
+                            horizontal
+                            max={5}
+                            labels={parEntrepriseNotee.map((e) => e.nom)}
+                            series={[
+                              {
+                                label: 'Score moyen',
+                                data: parEntrepriseNotee.map((e) => Number(e.score.toFixed(2))),
+                                couleur: COULEURS.violet,
+                              },
+                            ]}
+                          />
+                        ) : (
+                          <Vide message="Aucune entreprise notée pour l’instant." />
+                        )}
+                      </div>
+                    </Card>
+                  ) : null}
                 </div>
               </Revele>
+
+              {entreprises.length > 1 && abonnements.length > 0 ? (
+                <Revele delai={100}>
+                  <Card className="mb-6 p-0">
+                    <CardHeader titre="Abonnements actifs" icone={Wallet} sousTitre="Formule et périodicité de chaque entreprise" />
+                    <Tableau entetes={['Entreprise', 'Formule', 'Périodicité', 'Statut']}>
+                      {abonnements.map(({ entreprise, abonnement }) => (
+                        <tr key={entreprise.id} className="transition-colors hover:bg-ink-50/60">
+                          <td className="td">{entreprise.raisonSociale}</td>
+                          <td className="td">
+                            <Badge ton={TONS_FORMULE[abonnement.formuleCode] ?? 'neutre'}>{abonnement.formuleNom}</Badge>
+                          </td>
+                          <td className="td text-sm text-ink-600">{abonnement.periodicite ?? '—'}</td>
+                          <td className="td">
+                            <Badge ton={abonnement.statut === 'ACTIF' ? 'vert' : 'neutre'}>{abonnement.statut}</Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </Tableau>
+                  </Card>
+                </Revele>
+              ) : null}
 
               <Revele delai={120}>
                 <Card className="mb-6 p-0">

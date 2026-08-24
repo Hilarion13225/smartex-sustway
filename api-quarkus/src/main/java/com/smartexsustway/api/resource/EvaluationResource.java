@@ -22,6 +22,7 @@ import com.smartexsustway.api.ia.EvaluerCritereResponseDto;
 import com.smartexsustway.api.ia.IaEvaluationClient;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.EvaluationDto;
+import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.stockage.StorageService;
 import com.smartexsustway.api.tenant.TenantContext;
@@ -74,6 +75,7 @@ public class EvaluationResource {
     @Inject EvaluationRepository evaluationRepository;
     @Inject RevueExperteRepository revueExperteRepository;
     @Inject NonConformiteService nonConformiteService;
+    @Inject ScoreHistoriqueService scoreHistoriqueService;
     @Inject StorageService storageService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
@@ -192,6 +194,7 @@ public class EvaluationResource {
         evaluationRepository.persistAndFlush(evaluation);
 
         boolean revueDeclenchee = declencherRevueExperteSiNecessaire(audit, evaluation, probabilite, (short) niveau, confiance);
+        scoreHistoriqueService.enregistrer(audit);
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_IA_CREEE", "evaluation", evaluation.getId());
 

@@ -14,6 +14,7 @@ import {
   PlusCircle,
   RotateCcw,
   Smartphone,
+  TrendingUp,
   Trash2,
   Users,
   Wallet,
@@ -22,7 +23,9 @@ import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
+import { COULEURS, GraphiqueLigne } from '../components/charts';
 import { api, ApiError } from '../lib/apiClient';
+import { formaterDate } from '../lib/export';
 
 const TAILLES = [
   { code: 'TPE', libelle: 'TPE' },
@@ -192,8 +195,87 @@ export default function EntrepriseDetail() {
           </Card>
         </Revele>
       </div>
+
+      <Revele delai={160}>
+        <Card className="mt-6 p-5">
+          <CardHeader
+            titre="Évolution du score"
+            icone={TrendingUp}
+            sousTitre="Score global de chaque mission dans le temps (RG32), comparé à la moyenne du secteur quand elle est disponible."
+          />
+          <div className="h-72 pt-4">
+            <EvolutionScoreSection entrepriseId={entrepriseId} secteurCode={entreprise.secteurCode} />
+          </div>
+        </Card>
+      </Revele>
     </>
   );
+}
+
+function EvolutionScoreSection({ entrepriseId, secteurCode }) {
+  const [missions, setMissions] = useState(null);
+  const [benchmark, setBenchmark] = useState(null);
+  const [chargement, setChargement] = useState(true);
+
+  useEffect(() => {
+    setChargement(true);
+    api
+      .get(`/api/v1/entreprises/${entrepriseId}/audits`)
+      .then((audits) =>
+        Promise.all(
+          audits.map((audit) =>
+            api
+              .get(`/api/v1/entreprises/${entrepriseId}/audits/${audit.id}/score-historique`)
+              .then((historique) => ({ audit, historique }))
+          )
+        )
+      )
+      .then((resultats) => setMissions(resultats.filter((m) => m.historique.length > 0)))
+      .catch(() => setMissions([]))
+      .finally(() => setChargement(false));
+  }, [entrepriseId]);
+
+  useEffect(() => {
+    if (!secteurCode) {
+      setBenchmark(null);
+      return;
+    }
+    api
+      .get(`/api/v1/secteurs/${secteurCode}/benchmark`)
+      .then(setBenchmark)
+      .catch(() => setBenchmark(null));
+  }, [secteurCode]);
+
+  if (chargement) return <Loader message="Chargement de l’évolution du score…" />;
+
+  if (!missions || missions.length === 0) {
+    return (
+      <Vide message="Pas encore d’historique de score — l’évolution apparaît dès qu’une évaluation est validée sur une mission." />
+    );
+  }
+
+  const dates = [...new Set(missions.flatMap((m) => m.historique.map((h) => h.date)))].sort();
+  const palette = [COULEURS.brand, COULEURS.bleu, COULEURS.violet, COULEURS.ambre];
+
+  const series = missions.map((m, index) => ({
+    label: m.audit.nom,
+    couleur: palette[index % palette.length],
+    data: dates.map((date) => {
+      const point = m.historique.find((h) => h.date === date);
+      return point ? Number(point.scoreGlobal) : null;
+    }),
+  }));
+
+  if (benchmark && benchmark.scoreMoyen !== null) {
+    series.push({
+      label: `Moyenne du secteur (${benchmark.nombreEntreprises} entreprises)`,
+      couleur: COULEURS.gris,
+      pointille: true,
+      data: dates.map(() => Number(benchmark.scoreMoyen)),
+    });
+  }
+
+  return <GraphiqueLigne labels={dates.map(formaterDate)} series={series} />;
 }
 
 function FormulaireEntreprise({ entreprise, onEnregistrer, onTermine }) {

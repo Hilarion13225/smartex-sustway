@@ -11,7 +11,7 @@ import {
   RadialLinearScale,
   Tooltip,
 } from 'chart.js';
-import { Bar, Doughnut, Radar } from 'react-chartjs-2';
+import { Bar, Doughnut, Line, Radar } from 'react-chartjs-2';
 
 ChartJS.register(
   ArcElement,
@@ -95,6 +95,40 @@ export function GraphiqueRadar({ labels, series }) {
             pointLabels: { font: { size: 10 } },
             ticks: { stepSize: 1, font: { size: 9 } },
           },
+        },
+      }}
+    />
+  );
+}
+
+/**
+ * `pointille` marque une série de référence (ex. moyenne sectorielle,
+ * jamais mesurée directement) plutôt qu'une trajectoire réelle — même
+ * distinction visuelle que "cible interne" dans les maquettes de
+ * référence, mais nommée génériquement puisque réutilisée pour tout repère.
+ */
+export function GraphiqueLigne({ labels, series }) {
+  return (
+    <Line
+      data={{
+        labels,
+        datasets: series.map((serie) => ({
+          label: serie.label,
+          data: serie.data,
+          borderColor: serie.couleur,
+          backgroundColor: serie.couleur,
+          borderDash: serie.pointille ? [6, 4] : undefined,
+          borderWidth: 2,
+          pointRadius: 3,
+          spanGaps: true,
+          tension: 0.25,
+        })),
+      }}
+      options={{
+        ...communes,
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+          y: { grid: { color: '#eceef2' }, ticks: { font: { size: 11 } }, suggestedMin: 0, suggestedMax: 5 },
         },
       }}
     />

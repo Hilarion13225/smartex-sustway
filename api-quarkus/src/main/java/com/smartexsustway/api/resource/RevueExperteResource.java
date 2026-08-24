@@ -14,6 +14,7 @@ import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.RevueExperteDto;
 import com.smartexsustway.api.resource.dto.TraiterRevueRequestDto;
+import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
@@ -58,6 +59,7 @@ public class RevueExperteResource {
     @Inject RevueExperteRepository revueExperteRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject NonConformiteService nonConformiteService;
+    @Inject ScoreHistoriqueService scoreHistoriqueService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
@@ -144,6 +146,7 @@ public class RevueExperteResource {
         evaluation.setStatut(StatutEvaluation.VALIDEE);
         evaluation.setJustification(requete.commentaire());
         nonConformiteService.genererSiNecessaire(evaluation);
+        scoreHistoriqueService.enregistrer(evaluation.getAuditCritere().getAudit());
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "REVUE_EXPERTE_TRAITEE", "revue_experte", revue.getId());
 
