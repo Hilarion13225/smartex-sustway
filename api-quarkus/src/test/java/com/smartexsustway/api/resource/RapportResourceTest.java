@@ -1,5 +1,9 @@
 package com.smartexsustway.api.resource;
 
+import com.smartexsustway.api.domain.repository.EntrepriseRepository;
+import com.smartexsustway.api.domain.repository.RoleRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.resource.support.UtilisateurDeTest;
 import com.smartexsustway.api.security.JwtService;
 import io.quarkus.test.junit.QuarkusTest;
@@ -13,19 +17,25 @@ import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 
-/** Module 12 — génération et téléchargement du rapport de synthèse (CSV/PDF) d'une mission. */
+/** Module 12 — génération et téléchargement des rapports (SYNTHESE, DETAILLE, PLAN_ACTION, INDICE_FINANCEMENTS_VERTS) d'une mission. */
 @QuarkusTest
 class RapportResourceTest {
 
-    @Inject
-    JwtService jwtService;
+    @Inject JwtService jwtService;
+    @Inject EntrepriseRepository entrepriseRepository;
+    @Inject RoleRepository roleRepository;
+    @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
+    @Inject UtilisateurRepository utilisateurRepository;
 
     private record Contexte(String token, String entrepriseId, String auditId) {}
 
     private Contexte creerContexte() {
+        return creerContexte("STANDARD");
+    }
+
+    private Contexte creerContexte(String formuleCode) {
         var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
 
         String entrepriseId = given()
@@ -34,7 +44,7 @@ class RapportResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Rapport Test",
                         "identifiantLegal", "RCCM-RPT-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
+                        "formuleCode", formuleCode,
                         "periodicite", "ANNUELLE"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
@@ -134,13 +144,13 @@ class RapportResourceTest {
     }
 
     @Test
-    void generer_typeNonSupporte_estRejete() {
+    void generer_typeInconnu_estRejete() {
         var ctx = creerContexte();
 
         given()
                 .header("Authorization", "Bearer " + ctx.token())
                 .contentType(ContentType.JSON)
-                .body(Map.of("type", "PLAN_ACTION", "format", "PDF"))
+                .body(Map.of("type", "INEXISTANT", "format", "PDF"))
                 .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
                 .then()
                 .statusCode(400);
@@ -171,5 +181,143 @@ class RapportResourceTest {
                 .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
                 .then()
                 .statusCode(403);
+    }
+
+    // --- PLAN_ACTION (rapport:consulter, comme SYNTHESE — le client voit déjà ses propres actions correctives) ---
+
+    @Test
+    void genererPlanAction_csv_produitUnFichierNonVide() {
+        var ctx = creerContexte();
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "PLAN_ACTION", "format", "CSV"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(201)
+                .body("type", equalTo("PLAN_ACTION"))
+                .extract().path("id");
+    }
+
+    // --- DETAILLE (rapport:detaille — réservé au personnel interne Smartex, absent du rôle RESPONSABLE_ENTREPRISE) ---
+
+    @Test
+    void genererDetaille_responsableEntreprise_estRefuse() {
+        var ctx = creerContexte();
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "DETAILLE", "format", "CSV"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void genererDetaille_staffInterne_reussitEtListeChaqueCritere() {
+        var ctx = creerContexte();
+        String tokenStaff = UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
+                utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
+
+        // Accès global SUPER_ADMIN (aucun rattachement à ctx.entrepriseId() n'est posé ici) — voir AutorisationService.estSuperAdminGlobal.
+        String rapportId = given()
+                .header("Authorization", "Bearer " + tokenStaff)
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "DETAILLE", "format", "CSV"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(201)
+                .body("type", equalTo("DETAILLE"))
+                .extract().path("id");
+
+        given()
+                .header("Authorization", "Bearer " + tokenStaff)
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId()
+                        + "/rapports/" + rapportId + "/telechargement")
+                .then()
+                .statusCode(200)
+                // Le référentiel SMARTEX_SUSTWAY a plus de 80 critères : la table détaillée contient bien plus de lignes que la synthèse.
+                .body(org.hamcrest.Matchers.containsString("Domaine;Critère;Libellé;Criticité;Coefficient"));
+    }
+
+    @Test
+    void telecharger_rapportDetaille_estRefuseSansPermission() {
+        var ctx = creerContexte();
+        String tokenStaff = UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
+                utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
+
+        String rapportId = given()
+                .header("Authorization", "Bearer " + tokenStaff)
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "DETAILLE", "format", "CSV"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then().statusCode(201)
+                .extract().path("id");
+
+        // ctx.token() (RESPONSABLE_ENTREPRISE) a rapport:consulter mais pas rapport:detaille :
+        // le téléchargement doit rester bloqué même si le rapport existe déjà.
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId()
+                        + "/rapports/" + rapportId + "/telechargement")
+                .then()
+                .statusCode(403);
+    }
+
+    // --- INDICE_FINANCEMENTS_VERTS (bailleur:consulter + formule Avancées de l'audit, RG41/RG42) ---
+
+    @Test
+    void genererIndiceFinancementsVerts_sansBailleurCode_estRejete() {
+        var ctx = creerContexte("AVANCEES");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "INDICE_FINANCEMENTS_VERTS", "format", "CSV"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void genererIndiceFinancementsVerts_formuleStandard_estRefuseeParRG41() {
+        var ctx = creerContexte("STANDARD");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "INDICE_FINANCEMENTS_VERTS", "format", "CSV", "bailleurCode", "IFC_SFI"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(403);
+    }
+
+    @Test
+    void genererIndiceFinancementsVerts_formuleAvancees_reussit() {
+        var ctx = creerContexte("AVANCEES");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "INDICE_FINANCEMENTS_VERTS", "format", "CSV", "bailleurCode", "IFC_SFI"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(201)
+                .body("type", equalTo("INDICE_FINANCEMENTS_VERTS"));
+    }
+
+    @Test
+    void genererIndiceFinancementsVerts_bailleurInconnu_est404() {
+        var ctx = creerContexte("AVANCEES");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("type", "INDICE_FINANCEMENTS_VERTS", "format", "CSV", "bailleurCode", "INEXISTANT"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
+                .then()
+                .statusCode(404);
     }
 }

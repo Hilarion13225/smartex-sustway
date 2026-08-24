@@ -10,10 +10,10 @@ import { formaterDate } from '../lib/export';
 const TONS_STATUT_AUDIT = { BROUILLON: 'neutre', EN_COURS: 'bleu', TERMINE: 'vert', CLOTURE: 'neutre' };
 
 /**
- * Vue transverse : un rapport de synthèse (module 12) porte toujours sur
- * UNE mission précise (score + non-conformités de cette mission à cette
- * date) — cette page ne fait donc que lister les missions et renvoyer vers
- * la génération/le téléchargement du rapport de chacune.
+ * Vue transverse : un rapport (module 12 — synthèse, détaillé, plan
+ * d'actions ou indice financements verts) porte toujours sur UNE mission
+ * précise — cette page ne fait donc que lister les missions et renvoyer
+ * vers la génération/le téléchargement des rapports de chacune.
  */
 export default function RapportsEntreprise() {
   const { entrepriseId } = useParams();
@@ -45,7 +45,7 @@ export default function RapportsEntreprise() {
       <PageTitre
         icone={FileText}
         titre="Rapports RSE"
-        description={`${entreprise.raisonSociale} — un rapport de synthèse par mission (score global/par domaine + non-conformités).`}
+        description={`${entreprise.raisonSociale} — synthèse, plan d'actions et rapports détaillés, mission par mission.`}
       />
 
       {chargement ? (
