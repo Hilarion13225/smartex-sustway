@@ -69,15 +69,12 @@ Stack : **Quarkus** (api-quarkus, Java 21) + **Python/FastAPI** (services-ia-pyt
 L'utilisateur a fourni un ancien frontend TSX avec données mockées, extrait dans :
 `C:\Users\yaoko\Downloads\Projet_Smartex\ancien-frontend-tsx\smartex-sustway-tsx\`
 
-C'est un **prototype de design/UX**, pas du code à copier tel quel (aucun appel API réel, données 100% mockées dans `src/data/mock.ts`). Il sert de référence pour :
+C'est un **prototype de design/UX**, pas du code à copier tel quel (aucun appel API réel, données 100% mockées dans `src/data/mock.ts`). Il a servi de référence pour :
 - Le modèle de permissions centralisé (`src/auth/permissions.ts`, `src/auth/AuthContext.tsx`) — **porté**, voir 3.6.
 - La structure de navigation (3 groupes : Pilotage / Audit / Administration) — **partiellement portée** (nav actuelle plus simple, pas de restructuration complète en groupes).
 - Les graphiques (`src/components/charts.tsx`) — **porté**, voir 3.7.
-- Des pages **pas encore portées** :
-  - **`Journal.tsx`** — journal d'audit (liste des `audit_log`, déjà alimenté côté backend par `AuditLogService`, mais **aucun endpoint REST ni page frontend** pour le consulter). Permission `journal:consulter`, réservée au staff interne.
-  - **`Comparaison.tsx`** — comparaison de plusieurs entreprises côte à côte (score, benchmark sectoriel, indice bailleur). `GET /api/v1/entreprises` renvoie désormais TOUTES les entreprises pour un SUPER_ADMIN global (voir §4.3) — reste à construire côté frontend.
-  - **`Utilisateurs.tsx`** — page informative (liste des comptes + matrice rôle→permissions), réservée SUPER_ADMIN. Purement frontend, faisable rapidement.
-  - **`Abonnement.tsx`**, **`Actions.tsx`** (plan d'actions correctives transverse, différent de la vue par non-conformité déjà construite), **`Pipeline.tsx`** (visualisation de l'exécution des agents IA), **`Preuves.tsx`** (bibliothèque de documents indépendante, différente du dépôt par critère déjà construit), **`Entreprises.tsx`/`Audits.tsx`/`AuditDetail.tsx`/`Dashboard.tsx`** portfolio (vue consolidée cross-entreprises pour le staff) — non explorés en détail cette session, à regarder si besoin.
+
+Toutes les pages du prototype ont désormais un équivalent réel côté API (branché sur les vraies données, plus de mock) : `Journal.jsx` (journal d'audit), `ComparaisonEntreprises.jsx`, `Utilisateurs.jsx`, `Abonnement.jsx`, `PlanActions.jsx` (plan d'actions correctives transverse, RG18 — distinct de la vue par non-conformité), `PipelineIA.jsx`, `Documents.jsx` (bibliothèque documentaire de l'entreprise, distincte du dépôt de preuve par critère). `TableauDeBord.jsx` joue le rôle de vue portefeuille consolidée cross-entreprises pour le staff (voir son propre docstring : agrégation faite côté client faute d'endpoint d'agrégation multi-entreprises côté API — à surveiller niveau performance maintenant que SUPER_ADMIN peut voir des dizaines d'entreprises, voir §4.3). Aucune page du prototype ne reste à porter.
 
 ### 4.1 Divergence de fond identifiée (pas corrigée, en attente d'arbitrage si applicable)
 Le prototype réserve `entreprise:creer` à SUPER_ADMIN/ADMIN_AUDIT (modèle "staff onboarde les clients"). Le vrai backend fonctionne en **auto-inscription** (RG05 : le créateur devient responsable). **Tranché avec l'utilisateur : garder l'auto-inscription actuelle.** `entreprise:creer` est dans le modèle de permissions pour RESPONSABLE_ENTREPRISE mais volontairement pas utilisé pour gater `Entreprises.jsx`.
