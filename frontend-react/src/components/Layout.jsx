@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Building2,
@@ -134,6 +134,7 @@ export default function Layout() {
   );
   const [filtreEntreprise, setFiltreEntreprise] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Filtre par raison sociale / identifiant légal — l'entreprise déjà
   // sélectionnée reste toujours proposée même si elle ne correspond plus au
@@ -162,9 +163,29 @@ export default function Layout() {
     }
   }, [entreprises, entrepriseCouranteId]);
 
+  /**
+   * Si la page courante dépend de l'entreprise (ex. /app/{id}/documents),
+   * bascule vers l'équivalent pour la nouvelle entreprise plutôt que de
+   * laisser affichées les données de l'ancienne — sans ça, seuls les
+   * PROCHAINS clics dans le menu tenaient compte du changement, la page
+   * ouverte restait figée sur l'ancienne entreprise. Un segment au-delà du
+   * premier (ex. un auditId dans /audits/{auditId}/score) appartient à
+   * l'ancienne entreprise et n'a aucun sens pour la nouvelle : on retombe
+   * alors sur la page de liste correspondante plutôt que de propager un id
+   * invalide.
+   */
+  function cheminEquivalent(pathname, ancienId, nouvelId) {
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments[0] !== 'app' || segments[1] !== ancienId) return null;
+    const reste = segments.slice(2);
+    return reste.length === 0 ? `/app/${nouvelId}` : `/app/${nouvelId}/${reste[0]}`;
+  }
+
   function choisirEntreprise(id) {
+    const cible = cheminEquivalent(location.pathname, entrepriseCouranteId, id);
     setEntrepriseCouranteId(id);
     localStorage.setItem(CLE_ENTREPRISE_COURANTE, id);
+    if (cible) navigate(cible);
   }
 
   if (!utilisateur) return null;
