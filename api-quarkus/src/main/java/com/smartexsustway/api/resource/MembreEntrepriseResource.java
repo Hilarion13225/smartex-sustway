@@ -74,9 +74,16 @@ public class MembreEntrepriseResource {
      * Rôles qu'une entreprise cliente peut attribuer elle-même : les rôles
      * internes Smartex (SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER) auditent
      * au nom de Smartex et ne s'accordent pas depuis un espace client.
+     *
+     * EMPLOYE retiré (décision produit) : dans cette première version, seul
+     * le responsable de l'entreprise est audité — un rôle "collaborateur"
+     * distinct pourra revenir dans une version ultérieure si pertinent. Le
+     * rôle EMPLOYE lui-même n'est pas supprimé en base (voir V15, permission
+     * preuve:deposer/rapport:consulter) pour ne pas casser les rattachements
+     * déjà existants ni compliquer sa réintroduction.
      */
     private static final Set<String> ROLES_ATTRIBUABLES =
-            Set.of("RESPONSABLE_ENTREPRISE", "EMPLOYE", "VISITEUR");
+            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR");
 
     private static final int DUREE_VALIDITE_INVITATION_JOURS = 7;
 

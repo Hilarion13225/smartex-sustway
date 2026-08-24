@@ -24,8 +24,13 @@ const PERMISSIONS_LIBELLE = {
 
 const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
-/** Rôles qu'une entreprise cliente attribue elle-même — les rôles internes Smartex n'en font pas partie. */
-const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'EMPLOYE', 'VISITEUR'];
+/**
+ * Rôles qu'une entreprise cliente attribue elle-même — les rôles internes
+ * Smartex n'en font pas partie. EMPLOYE retiré (décision produit, v1 :
+ * seul le responsable de l'entreprise est audité) — voir même commentaire
+ * côté API, MembreEntrepriseResource.ROLES_ATTRIBUABLES.
+ */
+const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR'];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
@@ -345,7 +350,7 @@ export default function Utilisateurs() {
 function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre }) {
   const [formulaire, setFormulaire] = useState({
     email: membre?.email ?? '',
-    roleCode: membre?.roleCode ?? 'EMPLOYE',
+    roleCode: membre?.roleCode ?? 'VISITEUR',
     siteId: membre?.siteId ?? '',
   });
   const [chargement, setChargement] = useState(false);

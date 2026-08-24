@@ -106,6 +106,10 @@ public class EvaluationResource {
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
 
         Audit audit = trouverAudit(entrepriseId, auditId);
+        // Même permission que le dépôt de preuve/questionnaire (ReponseQuestionResource) :
+        // lancer l'évaluation est la suite naturelle de la collecte, pas une action distincte.
+        String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         List<Preuve> preuves = preuveRepository.parAuditCritere(auditCritereId);

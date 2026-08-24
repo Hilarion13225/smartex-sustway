@@ -6,10 +6,16 @@
  *
  * PERMISSIONS_PAR_ROLE fixe ce qu'un rôle peut faire en théorie.
  * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule, mais
- * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE, EMPLOYE,
- * VISITEUR) — le personnel interne Smartex (SUPER_ADMIN, ADMIN_AUDIT,
- * EXPERT_REVIEWER) n'est jamais bridé par la formule d'un client : il
- * audite/administre au nom de Smartex, pas au nom de l'entreprise.
+ * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE, VISITEUR)
+ * — le personnel interne Smartex (SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER)
+ * n'est jamais bridé par la formule d'un client : il audite/administre au
+ * nom de Smartex, pas au nom de l'entreprise.
+ *
+ * EMPLOYE retiré du modèle (décision produit) : dans cette première
+ * version, seul le responsable de l'entreprise est audité. Le rôle reste
+ * défini côté API (table role, permission preuve:deposer/rapport:consulter
+ * — voir V15) pour ne rien casser côté rattachements déjà existants et
+ * simplifier une réintroduction dans une version ultérieure si pertinent.
  */
 
 /**
@@ -58,7 +64,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'rapport:consulter',
     'bailleur:consulter',
   ],
-  EMPLOYE: ['preuve:deposer', 'rapport:consulter'],
   VISITEUR: ['rapport:consulter'],
 };
 
@@ -76,7 +81,6 @@ export const ROLE_LIBELLE = {
   ADMIN_AUDIT: 'Administrateur métier',
   EXPERT_REVIEWER: 'Expert RSE',
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
-  EMPLOYE: 'Collaborateur',
   VISITEUR: 'Visiteur (démonstration)',
   AUCUN_ROLE_ATTRIBUE: 'Free',
 };

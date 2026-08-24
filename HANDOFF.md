@@ -111,8 +111,16 @@ Stack Docker complète tournant localement (`docker compose up -d` depuis la rac
 | SUPER_ADMIN | `moussa.traore.7tlfsudl@example.com` | `MotDePasse123!` |
 | ADMIN_AUDIT | `fatou.kone.okyncmgq@example.com` | `MotDePasse123!` |
 | EXPERT_REVIEWER | `ibrahima.sow.0fsleo5l@example.com` | `MotDePasse123!` |
-| EMPLOYE | `mariam.ba.6yhinyvy@example.com` | `MotDePasse123!` |
 | VISITEUR | `cheikh.ndiaye.su4tvb74@example.com` | `MotDePasse123!` |
+
+> Le rôle EMPLOYE a été retiré des rôles attribuables (décision produit :
+> en v1, seul le responsable de l'entreprise est audité). L'ancien compte
+> de test `mariam.ba.6yhinyvy@example.com` a son rattachement passé à
+> INACTIF plutôt que supprimé — le rôle EMPLOYE reste défini en base
+> (table `role`, permissions `preuve:deposer`/`rapport:consulter` via
+> V15) pour une réintroduction simple si pertinent dans une version
+> ultérieure. Voir les commentaires dans `MembreEntrepriseResource.java`
+> et `auth/permissions.js`.
 
 Aucun endpoint n'existe pour attribuer un rôle à un compte existant — seul le créateur d'une entreprise devient automatiquement RESPONSABLE_ENTREPRISE (RG05). Les 5 autres rôles ont été rattachés directement en base (`INSERT INTO utilisateur_entreprise ...`), suivant le même contournement que les scripts PowerShell déjà présents dans le repo (`test_backoffice_crud.ps1`, `test_criticite_secteur.ps1`, etc.).
 

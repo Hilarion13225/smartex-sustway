@@ -77,6 +77,11 @@ public class ReponseQuestionResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+        // RG09 : renseigner le questionnaire déclaratif est une forme de
+        // dépôt de preuve (complète les documents) — même permission.
+        String formuleCode = auditCritere.getAudit().getFormuleAbonnement() == null
+                ? null : auditCritere.getAudit().getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
 
         if (requete == null) {
             throw new BadRequestException("Corps de requête manquant");
