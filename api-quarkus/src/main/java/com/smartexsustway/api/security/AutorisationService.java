@@ -37,9 +37,12 @@ public class AutorisationService {
     /**
      * Personnel interne Smartex : audite/administre au nom de Smartex, donc
      * jamais bridé par la formule souscrite par le client (miroir exact de
-     * ROLES_INTERNES_SMARTEX côté frontend, auth/permissions.js).
+     * ROLES_INTERNES_SMARTEX côté frontend, auth/permissions.js). Public
+     * car réutilisé ailleurs (ex. AuditResource) pour valider qu'un
+     * utilisateur affecté comme auditeur d'une mission (RG06) porte bien un
+     * rôle interne, pas un rôle client.
      */
-    private static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "EXPERT_REVIEWER");
+    public static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "EXPERT_REVIEWER");
 
     /**
      * Permissions retirées selon la formule souscrite — rôles côté client

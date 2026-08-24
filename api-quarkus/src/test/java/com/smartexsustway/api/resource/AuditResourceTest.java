@@ -1,13 +1,22 @@
 package com.smartexsustway.api.resource;
 
+import com.smartexsustway.api.domain.entity.Entreprise;
+import com.smartexsustway.api.domain.entity.Role;
+import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
+import com.smartexsustway.api.domain.repository.EntrepriseRepository;
+import com.smartexsustway.api.domain.repository.RoleRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.resource.support.UtilisateurDeTest;
 import com.smartexsustway.api.security.JwtService;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -24,10 +33,23 @@ import static org.hamcrest.Matchers.hasSize;
 @QuarkusTest
 class AuditResourceTest {
 
-    @Inject
-    JwtService jwtService;
+    @Inject JwtService jwtService;
+    @Inject EntrepriseRepository entrepriseRepository;
+    @Inject RoleRepository roleRepository;
+    @Inject UtilisateurRepository utilisateurRepository;
+    @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
 
     private record Contexte(String token, String entrepriseId) {}
+
+    /** Rattache un candidat déjà créé à une entreprise EXISTANTE avec le rôle donné — contournement DB, comme UtilisateurDeTest.creerAvecRole, mais ciblé sur l'entreprise du test plutôt que sur une entreprise support jetable. */
+    private void rattacher(String utilisateurId, String entrepriseId, String roleCode) {
+        QuarkusTransaction.requiringNew().run(() -> {
+            Role role = roleRepository.parCode(roleCode).orElseThrow();
+            var utilisateur = utilisateurRepository.findById(UUID.fromString(utilisateurId));
+            Entreprise entreprise = entrepriseRepository.findById(UUID.fromString(entrepriseId));
+            utilisateurEntrepriseRepository.persist(new UtilisateurEntreprise(utilisateur, entreprise, null, role));
+        });
+    }
 
     private String creerEntreprise(String token) {
         return given()
@@ -204,5 +226,150 @@ class AuditResourceTest {
                 .when().get("/api/v1/entreprises/" + ctxA.entrepriseId() + "/audits")
                 .then()
                 .statusCode(403);
+    }
+
+    // --- RG12 : sites couverts par la mission -------------------------------
+
+    private String creerAudit(Contexte ctx, String nom) {
+        return given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("referentielCode", "SMARTEX_SUSTWAY", "nom", nom, "dateDebut", LocalDate.now().toString()))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits")
+                .then().statusCode(201)
+                .extract().path("id");
+    }
+
+    private String creerSite(Contexte ctx, String nom) {
+        return given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("paysCodeIso2", "CI", "nom", nom))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/sites")
+                .then().statusCode(201)
+                .extract().path("id");
+    }
+
+    @Test
+    void sites_definirPuisRemplacerLePerimetre_reussit() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Audit Multi-site");
+        String siteA = creerSite(ctx, "Siège");
+        String siteB = creerSite(ctx, "Usine Nord");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("siteIds", List.of(siteA, siteB)))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/sites")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(2));
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/sites")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(2));
+
+        // Remplacement (sémantique PUT, pas d'ajout incrémental) : un seul site désormais.
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("siteIds", List.of(siteA)))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/sites")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(1))
+                .body("[0].id", equalTo(siteA));
+    }
+
+    @Test
+    void sites_dUneAutreEntreprise_estRejete() {
+        var ctxA = creerEntrepriseAvecAbonnementActif();
+        var ctxB = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctxA, "Audit A");
+        String siteDeB = creerSite(ctxB, "Site étranger");
+
+        given()
+                .header("Authorization", "Bearer " + ctxA.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("siteIds", List.of(siteDeB)))
+                .when().put("/api/v1/entreprises/" + ctxA.entrepriseId() + "/audits/" + auditId + "/sites")
+                .then()
+                .statusCode(400);
+    }
+
+    // --- RG06 : équipe affectée à la mission --------------------------------
+
+    @Test
+    void auditeurs_affecterUnRoleClient_estRejete() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Audit Équipe");
+        var visiteur = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(visiteur.id, ctx.entrepriseId(), "VISITEUR");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("roleMission", "OBSERVATEUR"))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + visiteur.id)
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
+    void auditeurs_affecterRetirer_staffRattache_reussit() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Audit Équipe 2");
+        var expert = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(expert.id, ctx.entrepriseId(), "EXPERT_REVIEWER");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("roleMission", "EXPERT_REVIEWER"))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + expert.id)
+                .then()
+                .statusCode(200)
+                .body("utilisateurId", equalTo(expert.id))
+                .body("roleMission", equalTo("EXPERT_REVIEWER"));
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(1));
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().delete("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + expert.id)
+                .then()
+                .statusCode(204);
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs")
+                .then()
+                .statusCode(200)
+                .body("$", hasSize(0));
+    }
+
+    @Test
+    void auditeurs_roleMissionInconnu_estRejete() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Audit Équipe 3");
+        var admin = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(admin.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("roleMission", "INEXISTANT"))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + admin.id)
+                .then()
+                .statusCode(400);
     }
 }

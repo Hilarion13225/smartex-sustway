@@ -10,20 +10,30 @@ import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.Question;
 import com.smartexsustway.api.domain.entity.Referentiel;
+import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
+import com.smartexsustway.api.domain.enums.RoleMissionAuditeur;
 import com.smartexsustway.api.domain.repository.AbonnementRepository;
+import com.smartexsustway.api.domain.repository.AuditAuditeurRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
+import com.smartexsustway.api.domain.repository.AuditSiteRepository;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
 import com.smartexsustway.api.domain.repository.QuestionRepository;
 import com.smartexsustway.api.domain.repository.ReferentielRepository;
+import com.smartexsustway.api.domain.repository.SiteRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.referentiel.QuestionnaireService;
+import com.smartexsustway.api.resource.dto.AffecterAuditeurRequest;
+import com.smartexsustway.api.resource.dto.AuditAuditeurDto;
 import com.smartexsustway.api.resource.dto.AuditCreateRequest;
 import com.smartexsustway.api.resource.dto.AuditCritereDto;
 import com.smartexsustway.api.resource.dto.AuditDto;
+import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.resource.dto.SiteDto;
 import com.smartexsustway.api.scoring.AuditScoreService;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.tenant.TenantContext;
@@ -33,9 +43,11 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -43,6 +55,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -52,11 +65,12 @@ import java.util.UUID;
  * dans AUDIT_CRITERE/AUDIT_QUESTION — un audit en cours ne change pas de
  * périmètre si le référentiel évolue ensuite.
  *
- * Portée volontairement réduite pour ce sous-lot (phase D, 1/3) :
- * l'affectation d'auditeurs (AUDIT_AUDITEUR) et le multi-site (AUDIT_SITE)
- * ne sont pas encore exposés — le nécessaire pour composer et créer une
- * mission mono-site est déjà une base solide, l'affectation d'équipe
- * viendra avec la collecte de preuves (sous-lot 2).
+ * RG12 (sites)/RG06 (auditeurs) : périmètre de sites et équipe affectée à
+ * une mission, exposés via AUDIT_SITE/AUDIT_AUDITEUR — voir
+ * AuditSiteRepository/AuditAuditeurRepository. Lecture ouverte à tout
+ * rattachement (comme le reste de cette ressource), écriture réservée à
+ * audit:modifier (même garde que ActionCorrectiveResource/NonConformeResource
+ * pour les autres mutations attachées à une mission).
  */
 @Path("/api/v1/entreprises/{entrepriseId}/audits")
 @Produces(MediaType.APPLICATION_JSON)
@@ -73,6 +87,10 @@ public class AuditResource {
     @Inject AuditQuestionRepository auditQuestionRepository;
     @Inject QuestionRepository questionRepository;
     @Inject UtilisateurRepository utilisateurRepository;
+    @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
+    @Inject SiteRepository siteRepository;
+    @Inject AuditSiteRepository auditSiteRepository;
+    @Inject AuditAuditeurRepository auditAuditeurRepository;
     @Inject QuestionnaireService questionnaireService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
@@ -176,6 +194,130 @@ public class AuditResource {
         return Response.status(Response.Status.CREATED)
                 .entity(AuditDto.depuis(audit, criteresApplicables.size()))
                 .build();
+    }
+
+    // --- RG12 : sites couverts par la mission -------------------------------
+
+    @GET
+    @Path("/{auditId}/sites")
+    public Response sites(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+
+        var sites = auditSiteRepository.siteIdsPourAudit(audit.getId()).stream()
+                .map(id -> siteRepository.findById(id))
+                .filter(Objects::nonNull)
+                .map(SiteDto::depuis)
+                .toList();
+        return Response.ok(sites).build();
+    }
+
+    /** RG12 : remplace l'intégralité du périmètre de sites de la mission (sémantique PUT, pas d'ajout incrémental). */
+    @PUT
+    @Path("/{auditId}/sites")
+    @Transactional
+    public Response definirSites(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
+                                  @Valid AuditSitesRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "audit:modifier");
+
+        for (UUID siteId : requete.siteIds()) {
+            Site site = siteRepository.findById(siteId);
+            if (site == null || !site.getEntreprise().getId().equals(entrepriseId)) {
+                return erreur(400, "Site introuvable pour cette entreprise : " + siteId);
+            }
+        }
+
+        auditSiteRepository.definir(audit.getId(), requete.siteIds());
+        auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_SITES_DEFINIS", "audit", audit.getId());
+
+        var sites = requete.siteIds().stream().map(id -> SiteDto.depuis(siteRepository.findById(id))).toList();
+        return Response.ok(sites).build();
+    }
+
+    // --- RG06 : équipe affectée à la mission --------------------------------
+
+    @GET
+    @Path("/{auditId}/auditeurs")
+    public Response auditeurs(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+
+        var equipe = auditAuditeurRepository.listerPourAudit(audit.getId()).stream()
+                .map(ligne -> auditeurDto(UUID.fromString((String) ligne[0]), (String) ligne[1]))
+                .filter(Objects::nonNull)
+                .toList();
+        return Response.ok(equipe).build();
+    }
+
+    /**
+     * RG06 : seul le personnel interne Smartex peut être affecté comme
+     * auditeur d'une mission — un rattachement client (RESPONSABLE_ENTREPRISE,
+     * VISITEUR) est la partie auditée, pas l'équipe qui audite.
+     */
+    @PUT
+    @Path("/{auditId}/auditeurs/{auditeurId}")
+    @Transactional
+    public Response affecterAuditeur(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
+                                      @PathParam("auditeurId") UUID auditeurId, @Valid AffecterAuditeurRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "audit:modifier");
+
+        RoleMissionAuditeur roleMission;
+        try {
+            roleMission = RoleMissionAuditeur.valueOf(requete.roleMission());
+        } catch (IllegalArgumentException e) {
+            return erreur(400, "Rôle de mission inconnu : " + requete.roleMission());
+        }
+
+        boolean staffRattache = utilisateurEntrepriseRepository.parUtilisateur(auditeurId).stream()
+                .anyMatch(r -> r.getEntreprise().getId().equals(entrepriseId)
+                        && AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
+        if (!staffRattache) {
+            return erreur(400, "Cet utilisateur doit être rattaché à l'entreprise avec un rôle interne Smartex "
+                    + "(SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER) pour être affecté à une mission");
+        }
+
+        auditAuditeurRepository.affecter(audit.getId(), auditeurId, roleMission.name());
+        auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_AUDITEUR_AFFECTE", "audit", audit.getId());
+
+        return Response.ok(auditeurDto(auditeurId, roleMission.name())).build();
+    }
+
+    @DELETE
+    @Path("/{auditId}/auditeurs/{auditeurId}")
+    @Transactional
+    public Response retirerAuditeur(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
+                                     @PathParam("auditeurId") UUID auditeurId) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "audit:modifier");
+
+        auditAuditeurRepository.retirer(audit.getId(), auditeurId);
+        auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_AUDITEUR_RETIRE", "audit", audit.getId());
+
+        return Response.noContent().build();
+    }
+
+    private AuditAuditeurDto auditeurDto(UUID auditeurId, String roleMission) {
+        Utilisateur u = utilisateurRepository.findById(auditeurId);
+        if (u == null) {
+            return null;
+        }
+        return new AuditAuditeurDto(auditeurId, u.getNom(), u.getPrenom(), u.getEmail(), roleMission);
+    }
+
+    private static String formuleCode(Audit audit) {
+        return audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+    }
+
+    private static Response erreur(int statut, String message) {
+        return Response.status(statut).entity(new ErreurDto(message)).build();
     }
 
     private Audit trouverAuditDeLEntreprise(UUID entrepriseId, UUID auditId) {
