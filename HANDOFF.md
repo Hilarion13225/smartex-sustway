@@ -33,8 +33,8 @@ Stack : **Quarkus** (api-quarkus, Java 21) + **Python/FastAPI** (services-ia-pyt
 ### 3.3 Rapports (module 12) — CSV + PDF
 - Table `rapport` existait, jamais alimentée.
 - **Nouvelle dépendance** : `com.github.librepdf:openpdf:3.0.5` (génération PDF pure Java, package `org.openpdf.text.*`).
-- **`RapportGenerationService`** : réutilise `AuditScoreService` (même chiffre affiché partout). Seul le type `SYNTHESE` est implémenté (DETAILLE, PLAN_ACTION, INDICE_FINANCEMENTS_VERTS restent à faire — rejetés en 400). Format EXCEL rejeté en 400 (non implémenté).
-- **Endpoints** : `RapportResource` (génération, liste, téléchargement authentifié).
+- **`RapportGenerationService`** : réutilise `AuditScoreService` (même chiffre affiché partout). Les 4 types sont implémentés : `SYNTHESE` (score + non-conformités), `DETAILLE` (idem + une ligne par critère de l'audit), `PLAN_ACTION` (une ligne par action corrective, RG18), `INDICE_FINANCEMENTS_VERTS` (recalcule via `IndicePreparationService`, RG42, + détail des critères tagués pour le bailleur choisi). Format EXCEL toujours rejeté en 400 (non implémenté).
+- **Endpoints** : `RapportResource` (génération, liste, téléchargement authentifié) — garde par type, pas une seule vérification `rapport:consulter` générique : `DETAILLE` exige `rapport:detaille` (réservé au personnel interne Smartex), `INDICE_FINANCEMENTS_VERTS` reprend la garde de `IndicePreparationResource` (`bailleur:consulter` + formule Avancées de l'audit), appliquée aussi au téléchargement pour ne pas laisser un rapport déjà généré moins gardé que sa création.
 - **Frontend** : `Rapports.jsx` + `telechargerFichierProtege()` dans `apiClient.js` (un lien `<a href>` classique ne peut pas porter le token JWT, d'où un fetch manuel + blob).
 - **Bug corrigé en cours de route** : incohérence de formatage décimal (BigDecimal.ZERO scale 0 vs scale 4 du calcul normal) — corrigé avec un helper `formaterScore()`.
 
