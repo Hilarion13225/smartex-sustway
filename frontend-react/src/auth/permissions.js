@@ -49,7 +49,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'audit:creer',
     'audit:modifier',
     'preuve:deposer',
-    'revue:traiter',
     'rapport:consulter',
     'rapport:detaille',
     'bailleur:consulter',

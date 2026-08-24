@@ -63,7 +63,7 @@ public class RevueExperteResource {
     @Inject TenantContext tenantContext;
 
     @GET
-    @RolesAllowed({"EXPERT_REVIEWER", "ADMIN_AUDIT", "SUPER_ADMIN"})
+    @RolesAllowed({"EXPERT_REVIEWER", "SUPER_ADMIN"})
     public Response fileAttente(@PathParam("entrepriseId") UUID entrepriseId) {
         autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
 
@@ -76,7 +76,7 @@ public class RevueExperteResource {
     @POST
     @Path("/{revueId}/prendre-en-charge")
     @Transactional
-    @RolesAllowed("EXPERT_REVIEWER")
+    @RolesAllowed({"EXPERT_REVIEWER", "SUPER_ADMIN"})
     public Response prendreEnCharge(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("revueId") UUID revueId) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
@@ -107,7 +107,7 @@ public class RevueExperteResource {
     @Path("/{revueId}/traiter")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed("EXPERT_REVIEWER")
+    @RolesAllowed({"EXPERT_REVIEWER", "SUPER_ADMIN"})
     public Response traiter(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("revueId") UUID revueId,
                              TraiterRevueRequestDto requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
