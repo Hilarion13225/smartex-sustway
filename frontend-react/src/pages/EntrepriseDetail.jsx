@@ -12,6 +12,7 @@ import {
   MapPin,
   Pencil,
   PlusCircle,
+  RotateCcw,
   Smartphone,
   Trash2,
   Users,
@@ -439,6 +440,14 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
     }
   }
 
+  async function reactiverSite(siteId) {
+    try {
+      await api.post(`/api/v1/entreprises/${entrepriseId}/sites/${siteId}/reactivation`);
+    } finally {
+      onChange();
+    }
+  }
+
   return (
     <div className="space-y-4">
       {sites && sites.length > 0 ? (
@@ -454,6 +463,16 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
               </div>
               <div className="flex items-center gap-2">
                 <Badge ton={s.statut === 'ACTIF' ? 'vert' : 'neutre'}>{s.statut}</Badge>
+                {peutModifier && s.statut === 'ARCHIVE' ? (
+                  <button
+                    type="button"
+                    className="btn-ghost p-1.5 text-brand-600"
+                    title="Réactiver"
+                    onClick={() => reactiverSite(s.id)}
+                  >
+                    <RotateCcw className="h-4 w-4" aria-hidden />
+                  </button>
+                ) : null}
                 {s.statut !== 'ARCHIVE' && peutModifier ? (
                   <>
                     <button

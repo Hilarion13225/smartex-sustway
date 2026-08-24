@@ -124,6 +124,39 @@ class SiteResourceTest {
     }
 
     @Test
+    void reactiverSite_lePasseDeNouveauEnStatutActif() {
+        var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
+        String entrepriseId = creerEntreprise(utilisateur.token);
+
+        String siteId = given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .contentType(ContentType.JSON)
+                .body(Map.of("nom", "Site à réactiver", "paysCodeIso2", "CI"))
+                .when().post("/api/v1/entreprises/" + entrepriseId + "/sites")
+                .then().statusCode(201)
+                .extract().path("id");
+
+        given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .when().delete("/api/v1/entreprises/" + entrepriseId + "/sites/" + siteId)
+                .then().statusCode(204);
+
+        given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .when().post("/api/v1/entreprises/" + entrepriseId + "/sites/" + siteId + "/reactivation")
+                .then()
+                .statusCode(200)
+                .body("statut", equalTo("ACTIF"));
+
+        given()
+                .header("Authorization", "Bearer " + utilisateur.token)
+                .when().get("/api/v1/entreprises/" + entrepriseId + "/sites/" + siteId)
+                .then()
+                .statusCode(200)
+                .body("statut", equalTo("ACTIF"));
+    }
+
+    @Test
     void isolationMultiTenant_unUtilisateurNeVoitPasLesSitesDunAutre() {
         var utilisateurA = UtilisateurDeTest.creerEtConnecter(jwtService);
         var utilisateurB = UtilisateurDeTest.creerEtConnecter(jwtService);

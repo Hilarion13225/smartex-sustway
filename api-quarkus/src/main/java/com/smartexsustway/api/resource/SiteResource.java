@@ -135,6 +135,30 @@ public class SiteResource {
     }
 
     /**
+     * Symétrique de {@link #desactiver} — sans ça, un site archivé par
+     * erreur n'a aucun chemin de retour hors intervention manuelle en base.
+     * {@code @Consumes(WILDCARD)} : ne consomme aucun corps, contrairement
+     * au reste de la ressource (@Consumes JSON porté par la classe) — sans
+     * ce override, un appel sans en-tête Content-Type est rejeté en 415
+     * avant même d'atteindre la méthode.
+     */
+    @POST
+    @Path("/{siteId}/reactivation")
+    @Consumes(MediaType.WILDCARD)
+    @Transactional
+    public Response reactiver(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("siteId") UUID siteId) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+
+        Site site = trouverSiteDeLEntreprise(entrepriseId, siteId);
+        site.setStatut(StatutGenerique.ACTIF);
+
+        auditLogService.journaliser(utilisateurId, entrepriseId, "SITE_REACTIVE", "site", site.getId());
+
+        return Response.ok(SiteDto.depuis(site)).build();
+    }
+
+    /**
      * Charge le site et vérifie qu'il appartient bien à l'entreprise du
      * chemin — sans ce contrôle, un utilisateur rattaché à l'entreprise A
      * pourrait accéder au site d'une entreprise B en devinant son UUID
