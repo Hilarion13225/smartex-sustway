@@ -75,7 +75,7 @@ C'est un **prototype de design/UX**, pas du code à copier tel quel (aucun appel
 - Les graphiques (`src/components/charts.tsx`) — **porté**, voir 3.7.
 - Des pages **pas encore portées** :
   - **`Journal.tsx`** — journal d'audit (liste des `audit_log`, déjà alimenté côté backend par `AuditLogService`, mais **aucun endpoint REST ni page frontend** pour le consulter). Permission `journal:consulter`, réservée au staff interne.
-  - **`Comparaison.tsx`** — comparaison de plusieurs entreprises côte à côte (score, benchmark sectoriel, indice bailleur). Nécessiterait un nouvel endpoint backend listant TOUTES les entreprises pour le staff (n'existe pas — `GET /api/v1/entreprises` ne renvoie que les entreprises de l'utilisateur courant).
+  - **`Comparaison.tsx`** — comparaison de plusieurs entreprises côte à côte (score, benchmark sectoriel, indice bailleur). `GET /api/v1/entreprises` renvoie désormais TOUTES les entreprises pour un SUPER_ADMIN global (voir §4.3) — reste à construire côté frontend.
   - **`Utilisateurs.tsx`** — page informative (liste des comptes + matrice rôle→permissions), réservée SUPER_ADMIN. Purement frontend, faisable rapidement.
   - **`Abonnement.tsx`**, **`Actions.tsx`** (plan d'actions correctives transverse, différent de la vue par non-conformité déjà construite), **`Pipeline.tsx`** (visualisation de l'exécution des agents IA), **`Preuves.tsx`** (bibliothèque de documents indépendante, différente du dépôt par critère déjà construit), **`Entreprises.tsx`/`Audits.tsx`/`AuditDetail.tsx`/`Dashboard.tsx`** portfolio (vue consolidée cross-entreprises pour le staff) — non explorés en détail cette session, à regarder si besoin.
 
@@ -84,6 +84,9 @@ Le prototype réserve `entreprise:creer` à SUPER_ADMIN/ADMIN_AUDIT (modèle "st
 
 ### 4.2 Autre divergence tranchée
 Le modèle générique du prototype dit que le staff Smartex (SUPER_ADMIN/ADMIN_AUDIT/EXPERT_REVIEWER) ne devrait jamais être bridé par la formule d'un client pour `bailleur:consulter`. **Tranché avec l'utilisateur : non, restriction stricte sur la formule de l'audit, staff inclus.** `IndicePreparation.jsx` n'utilise donc PAS `peut('bailleur:consulter', ...)` — juste une vérification directe de `audit.formuleCode === 'AVANCEES'`.
+
+### 4.3 SUPER_ADMIN : accès global tranché avec l'utilisateur
+Jusqu'ici, même SUPER_ADMIN avait besoin d'un rattachement `utilisateur_entreprise` explicite pour agir sur une entreprise donnée, comme n'importe quel autre rôle. **Tranché avec l'utilisateur : SUPER_ADMIN a désormais un accès global complet (lecture ET écriture) à toutes les entreprises de la plateforme, sans rattachement préalable requis.** Implémenté via `AutorisationService.estSuperAdminGlobal(utilisateurId)` (vrai dès qu'un rattachement, sur n'importe quelle entreprise, porte le rôle SUPER_ADMIN) : toutes les méthodes de contrôle du service court-circuitent dessus, et `EntrepriseResource.mesEntreprises()` renvoie la liste complète des entreprises pour un SUPER_ADMIN global au lieu de ses seuls rattachements. Les autres rôles internes (ADMIN_AUDIT, EXPERT_REVIEWER) restent bornés à leurs rattachements explicites — ce choix ne concerne que SUPER_ADMIN.
 
 ## 5. Environnement de test (état actuel)
 
