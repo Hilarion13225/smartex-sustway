@@ -64,6 +64,9 @@ Stack : **Quarkus** (api-quarkus, Java 21) + **Python/FastAPI** (services-ia-pyt
 - **`frontend-react/src/components/charts.jsx`** : porté du prototype (Chart.js), `GraphiqueRadar`, `GraphiqueBarres`, `GraphiqueAnneau`. Couleurs identiques à la palette Tailwind du projet (brand-600 = #128257 des deux côtés).
 - **Non porté** : `GraphiqueLigne` (évolution du score dans le temps — pas de stockage d'historique de scores dans le backend réel) et le benchmark sectoriel cross-entreprises (pas d'agrégation cross-tenant dans le backend réel). Ajouter ces deux visuels nécessiterait soit inventer des données, soit un vrai chantier backend d'agrégation.
 
+### 3.8 Affectation d'auditeurs et multi-site (RG06/RG12)
+Les tables `audit_site` et `audit_auditeur` existaient dans le schéma depuis la V1 mais n'étaient exploitées par aucun code — `AuditResource` documentait explicitement ce report à un sous-lot ultérieur. Désormais implémenté : `GET/PUT /entreprises/{id}/audits/{id}/sites` (remplacement complet du périmètre de sites, sémantique PUT) et `GET/PUT/DELETE /entreprises/{id}/audits/{id}/auditeurs/{id}` (équipe affectée, un rôle de mission par personne — AUDITEUR_PRINCIPAL/SECONDAIRE/EXPERT_REVIEWER/OBSERVATEUR). Seul un utilisateur rattaché à l'entreprise avec un rôle interne Smartex (SUPER_ADMIN/ADMIN_AUDIT/EXPERT_REVIEWER) peut être affecté comme auditeur — un rôle client est refusé, la partie auditée n'est pas l'équipe qui audite. `AuditSiteRepository`/`AuditAuditeurRepository` utilisent des requêtes natives (clés primaires composites), même choix que `CritereBailleurRepository`. Frontend : deux cartes dans `AuditDetail.jsx`.
+
 ## 4. Le prototype de référence (TypeScript, données mockées)
 
 L'utilisateur a fourni un ancien frontend TSX avec données mockées, extrait dans :
