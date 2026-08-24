@@ -120,7 +120,7 @@ export default function CritereEvaluation() {
               <CardHeader
                 titre="Questionnaire & scénario"
                 icone={ListChecks}
-                sousTitre="RG09 — réponses déclaratives et description de la situation, analysées avec les preuves"
+                sousTitre="Réponses déclaratives et description de la situation, analysées avec les preuves"
               />
               <SaisieSection
                 entrepriseId={entrepriseId}
@@ -136,7 +136,7 @@ export default function CritereEvaluation() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Revele>
               <Card className="h-full p-5">
-                <CardHeader titre="Preuves" icone={FileText} sousTitre="RG15 — un document peut servir à plusieurs critères" />
+                <CardHeader titre="Preuves" icone={FileText} sousTitre="Un document peut servir à plusieurs critères" />
                 <PreuvesSection
                   entrepriseId={entrepriseId}
                   auditId={auditId}

@@ -183,7 +183,7 @@ public class RapportResource {
             case INDICE_FINANCEMENTS_VERTS -> {
                 autorisationService.exigerPermission(utilisateurId, entrepriseId, "bailleur:consulter");
                 if (!estFormuleAvancees(audit)) {
-                    return erreur(403, "RG41 : l'indice de préparation bailleur est réservé à la formule Avancées");
+                    return erreur(403, "L'indice de préparation bailleur est réservé à la formule Avancées");
                 }
             }
         }

@@ -174,7 +174,7 @@ public class AuditResource {
         Abonnement abonnement = abonnementRepository.leplusRecentParEntreprise(entrepriseId).orElse(null);
         if (abonnement == null || !abonnement.estActif()) {
             return Response.status(Response.Status.FORBIDDEN)
-                    .entity(new ErreurDto("RG20 : un abonnement actif est requis pour lancer un audit"))
+                    .entity(new ErreurDto("Un abonnement actif est requis pour lancer un audit"))
                     .build();
         }
         autorisationService.exigerPermission(utilisateurId, entrepriseId, abonnement.getFormule().getCode(), "audit:creer");

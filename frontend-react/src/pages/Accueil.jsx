@@ -344,7 +344,7 @@ export default function Accueil() {
       {/* ------------------------------------------------------------ Formules */}
       <SectionFormules
         titre="Choisissez votre formule avant l’inscription"
-        description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes (RG24). La formule Free est un mode de démonstration : aucune création d’entreprise n’est possible avec elle (RG25)."
+        description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes. La formule Free est un mode de démonstration : aucune création d’entreprise n’est possible avec elle."
       />
 
       <AppelAction />

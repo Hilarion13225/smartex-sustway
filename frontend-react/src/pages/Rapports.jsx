@@ -20,8 +20,8 @@ const LIBELLE_TYPE = {
 const DESCRIPTION_TYPE = {
   SYNTHESE: 'Score global/par domaine + non-conformités de la mission.',
   DETAILLE: "Synthèse complétée de l'évaluation détaillée de chaque critère — réservé au personnel Smartex.",
-  PLAN_ACTION: "Une ligne par action corrective, rattachée à sa non-conformité (RG18).",
-  INDICE_FINANCEMENTS_VERTS: "Alignement avec les critères tagués d'un bailleur (RG41/RG42) — réservé à la formule Avancées.",
+  PLAN_ACTION: "Une ligne par action corrective, rattachée à sa non-conformité.",
+  INDICE_FINANCEMENTS_VERTS: "Alignement avec les critères tagués d'un bailleur — réservé à la formule Avancées.",
 };
 
 /** Module 12 — génération et téléchargement des rapports d'une mission (RG32, non-conformités, RG18, RG41/RG42). */

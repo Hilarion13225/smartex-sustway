@@ -61,7 +61,7 @@ export default function VerificationEmail() {
             ? 'Vérification impossible'
             : 'Vérification en cours…'
       }
-      description="RG36 — votre compte n’est activé qu’après vérification de l’email."
+      description="Votre compte n’est activé qu’après vérification de l’email."
       atouts={ATOUTS}
     >
       <div className="flex flex-col items-center gap-5 py-4 text-center">

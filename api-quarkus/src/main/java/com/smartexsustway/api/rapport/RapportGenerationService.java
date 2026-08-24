@@ -344,7 +344,7 @@ public class RapportGenerationService {
         return construirePdf(audit, "Indice de préparation aux financements verts", (document, polices) -> {
             document.add(carteIndice(bailleur, indice, polices));
             document.add(new Paragraph(
-                    "RG42 — cet indice mesure un alignement avec les critères tagués pour ce bailleur, pas une garantie d'éligibilité au financement.",
+                    "Cet indice mesure un alignement avec les critères tagués pour ce bailleur, pas une garantie d'éligibilité au financement.",
                     polices.avertissement()));
             document.add(Chunk.NEWLINE);
 
@@ -619,7 +619,7 @@ public class RapportGenerationService {
     }
 
     private void ajouterPiedDePage(Document document, Polices polices) throws DocumentException {
-        Paragraph pied = new Paragraph("Smartex Sustway — Généré automatiquement, RG14 (traçabilité).", polices.avertissement());
+        Paragraph pied = new Paragraph("Smartex Sustway — Généré automatiquement.", polices.avertissement());
         pied.setSpacingBefore(14);
         pied.setAlignment(Element.ALIGN_CENTER);
         document.add(pied);

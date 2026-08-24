@@ -264,7 +264,7 @@ export default function Inscription() {
         <div>
           <h2 className="text-lg font-semibold text-ink-900">Choix de la formule</h2>
           <p className="mt-1 text-sm text-ink-500">
-            La formule est choisie avant la création du compte (RG24) et détermine immédiatement les fonctionnalités
+            La formule est choisie avant la création du compte et détermine immédiatement les fonctionnalités
             actives.
           </p>
           <div className="mt-5 space-y-3">
@@ -312,7 +312,7 @@ export default function Inscription() {
           {estFree ? (
             <div className="mt-5">
               <Alerte ton="ambre">
-                RG25 — la formule Free est un mode de démonstration : aucune entreprise ne sera créée, seul le compte
+                La formule Free est un mode de démonstration : aucune entreprise ne sera créée, seul le compte
                 utilisateur sera activé.
               </Alerte>
             </div>
@@ -496,7 +496,7 @@ export default function Inscription() {
       {etape === 'verification' ? (
         <div>
           <h2 className="text-lg font-semibold text-ink-900">Vérification de l’adresse email</h2>
-          <p className="mt-1 text-sm text-ink-500">RG36 — le compte n’est activé qu’après vérification de l’email.</p>
+          <p className="mt-1 text-sm text-ink-500">Le compte n’est activé qu’après vérification de l’email.</p>
           <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
             <Mail className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
             <p className="text-sm font-semibold text-brand-800">
@@ -605,7 +605,7 @@ export default function Inscription() {
 
             {estFree ? (
               <Alerte ton="ambre">
-                Compte en mode démonstration (RG25) : aucune entreprise n’a été créée. Vous pouvez changer de formule
+                Compte en mode démonstration : aucune entreprise n’a été créée. Vous pouvez changer de formule
                 ultérieurement.
               </Alerte>
             ) : null}

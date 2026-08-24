@@ -10,7 +10,7 @@ export default function Profil() {
 
   return (
     <>
-      <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification (RG36)." />
+      <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification." />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionProfil />
@@ -332,7 +332,7 @@ function SectionDeuxFa() {
 
   return (
     <Card className="p-5">
-      <CardHeader titre="Double authentification" icone={KeyRound} sousTitre="Optionnelle — SMS ou application d’authentification (RG36)." />
+      <CardHeader titre="Double authentification" icone={KeyRound} sousTitre="Optionnelle — SMS ou application d’authentification." />
 
       {erreur ? (
         <div className="mt-3">

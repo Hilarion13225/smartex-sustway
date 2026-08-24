@@ -79,7 +79,7 @@ export default function NonConformitesEntreprise() {
       <PageTitre
         icone={ClipboardX}
         titre="Non-conformités"
-        description={`${entreprise.raisonSociale} — écarts détectés sur toutes les missions, avec leur niveau de priorité (RG17/RG18).`}
+        description={`${entreprise.raisonSociale} — écarts détectés sur toutes les missions, avec leur niveau de priorité.`}
         actions={
           lignes.length > 0 ? (
             <button type="button" className="btn-secondary" onClick={exporter}>

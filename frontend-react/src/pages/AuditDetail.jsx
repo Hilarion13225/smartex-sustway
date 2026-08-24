@@ -199,7 +199,7 @@ export default function AuditDetail() {
           <Revele>
             <div className="mb-6 grid gap-4 lg:grid-cols-2">
               <Card className="p-5">
-                <CardHeader titre="Sites de la mission" sousTitre="RG12 — sites de l'entreprise couverts par cette mission." icone={MapPin} />
+                <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />
                 {sitesEntreprise.length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500">
                     Aucun site actif pour cette entreprise — la mission porte sur l'entreprise entière.
@@ -238,7 +238,7 @@ export default function AuditDetail() {
               </Card>
 
               <Card className="p-5">
-                <CardHeader titre="Équipe affectée" sousTitre="RG06 — auditeurs et experts Smartex affectés à cette mission." icone={Users} />
+                <CardHeader titre="Équipe affectée" sousTitre="Auditeurs et experts Smartex affectés à cette mission." icone={Users} />
                 {equipe.length === 0 ? (
                   <p className="mt-3 text-sm text-ink-500">Aucun membre affecté pour l'instant.</p>
                 ) : (

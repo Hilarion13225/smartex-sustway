@@ -89,7 +89,7 @@ export default function Entreprises() {
       <PageTitre
         icone={Building2}
         titre="Entreprises"
-        description="Chaque entreprise est créée avec un abonnement (RG24) — la formule Free ne permet pas la création (RG25)."
+        description="Chaque entreprise est créée avec un abonnement — la formule Free ne permet pas la création."
         actions={
           peutCreer ? (
             <button type="button" className="btn-vitrine" onClick={() => setAfficherFormulaire((v) => !v)}>

@@ -50,7 +50,7 @@ export default function NonConformites() {
       <PageTitre
         icone={ClipboardX}
         titre="Non-conformités"
-        description="RG17/RG18 — écarts détectés lors des évaluations et plan d’actions correctives associé."
+        description="Écarts détectés lors des évaluations et plan d’actions correctives associé."
       />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}

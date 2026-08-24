@@ -183,7 +183,7 @@ export default function PlanActions() {
             <CardHeader
               titre="Nouvelle action corrective"
               icone={PlusCircle}
-              sousTitre="L’action est rattachée à la non-conformité qu’elle traite (RG18)."
+              sousTitre="L’action est rattachée à la non-conformité qu’elle traite."
             />
             <FormulaireAction
               entrepriseId={entrepriseId}

@@ -182,7 +182,7 @@ export default function Utilisateurs() {
               <StatCard
                 libelle="Double authentification"
                 valeur={`${membres.filter((m) => m.deuxfaActive).length} / ${membres.length}`}
-                detail="Comptes protégés par la 2FA (RG36)"
+                detail="Comptes protégés par la 2FA"
                 icone={KeyRound}
                 ton={membres.every((m) => m.deuxfaActive) ? 'vert' : 'ambre'}
               />
@@ -191,7 +191,7 @@ export default function Utilisateurs() {
 
           <Revele delai={80}>
             <Card className="mb-6 p-0">
-              <CardHeader titre="Accès à l’entreprise" icone={Users} sousTitre="Rattachements RG05 actifs" />
+              <CardHeader titre="Accès à l’entreprise" icone={Users} sousTitre="Rattachements actifs" />
               {membres.length > 0 ? (
                 <Tableau
                   entetes={[

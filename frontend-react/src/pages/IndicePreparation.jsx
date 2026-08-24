@@ -70,7 +70,7 @@ export default function IndicePreparation() {
           <PageTitre
             icone={Leaf}
             titre="Indice de préparation — financements verts"
-            description="RG41/RG42/RG43 — alignement mesuré aux exigences d’un bailleur, restreint aux critères tagués (back-office). Un indice élevé mesure un alignement, ce n’est jamais une garantie d’éligibilité."
+            description="Alignement mesuré aux exigences d’un bailleur, restreint aux critères tagués (back-office). Un indice élevé mesure un alignement, ce n’est jamais une garantie d’éligibilité."
           />
 
           {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}

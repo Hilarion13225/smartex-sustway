@@ -73,7 +73,7 @@ public class IndicePreparationResource {
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
 
         if (!estFormuleAvancees(audit)) {
-            return erreur(403, "RG41 : l'indice de préparation bailleur est réservé à la formule Avancées");
+            return erreur(403, "L'indice de préparation bailleur est réservé à la formule Avancées");
         }
 
         String bailleurCode = requete == null ? null : requete.get("bailleurCode");

@@ -83,7 +83,7 @@ export default function ReferentielDetail() {
             <Card className="mb-6">
               <CardHeader
                 titre="Domaines"
-                sousTitre="RG08 — un référentiel se décompose en plusieurs domaines"
+                sousTitre="Un référentiel se décompose en plusieurs domaines"
                 action={
                   <button type="button" className="btn-secondary" onClick={() => setAfficherFormulaireDomaine((v) => !v)}>
                     <PlusCircle className="h-4 w-4" aria-hidden />
@@ -121,7 +121,7 @@ export default function ReferentielDetail() {
             <Card>
               <CardHeader
                 titre="Critères"
-                sousTitre="RG09 — chaque critère appartient à un domaine et porte une criticité"
+                sousTitre="Chaque critère appartient à un domaine et porte une criticité"
                 action={
                   <button
                     type="button"
@@ -616,7 +616,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange }) {
 
             <div className="mt-5 border-t border-ink-200 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-500">
-                Criticité par secteur (RG37)
+                Criticité par secteur
               </p>
               {overrides === null ? (
                 <SustwayLoader taille="sm" />
@@ -632,7 +632,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange }) {
 
             <div className="mt-5 border-t border-ink-200 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-500">
-                Financements verts — bailleur (RG39)
+                Financements verts — bailleur
               </p>
               {tagsBailleur === null ? (
                 <SustwayLoader taille="sm" />

@@ -88,7 +88,7 @@ export default function AuditScore() {
           <PageTitre
             icone={Gauge}
             titre={`Tableau de bord — ${audit.nom}`}
-            description={`${audit.referentielCode} — score pondéré RG32, calculé sur les critères actifs et applicables de la mission.`}
+            description={`${audit.referentielCode} — score pondéré, calculé sur les critères actifs et applicables de la mission.`}
             actions={<Badge ton="bleu">{audit.statut}</Badge>}
           />
 
@@ -197,7 +197,7 @@ export default function AuditScore() {
 
           <Revele delai={120}>
             <Card>
-              <CardHeader titre="Score par domaine — détail" sousTitre="RG32 — même méthode de calcul que le score global, restreinte au domaine." />
+              <CardHeader titre="Score par domaine — détail" sousTitre="Même méthode de calcul que le score global, restreinte au domaine." />
               {score.domaines.length > 0 ? (
                 <div className="divide-y divide-ink-100 px-5">
                   {score.domaines.map((d) => (

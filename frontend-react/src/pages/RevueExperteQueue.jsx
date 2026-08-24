@@ -63,7 +63,7 @@ export default function RevueExperteQueue() {
       <PageTitre
         icone={ClipboardEdit}
         titre="File de revue experte"
-        description="RG22/RG38 — évaluations dont la confiance IA est sous le seuil, en formule Avancées."
+        description="Évaluations dont la confiance IA est sous le seuil, en formule Avancées."
       />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}

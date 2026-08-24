@@ -243,7 +243,7 @@ export default function TableauDeBord() {
               <StatCard
                 libelle="Score moyen"
                 valeur={scoreMoyen === null ? '—' : `${scoreMoyen.toFixed(2)} / 5`}
-                detail="Moyenne des missions déjà notées (RG32)"
+                detail="Moyenne des missions déjà notées"
                 icone={Gauge}
                 ton={scoreMoyen === null ? 'neutre' : tonScore(scoreMoyen)}
               />
@@ -259,7 +259,7 @@ export default function TableauDeBord() {
                 valeur={peut('revue:traiter') ? revues.filter((r) => r.statut === 'EN_ATTENTE').length : '—'}
                 detail={
                   peut('revue:traiter')
-                    ? 'Confiance IA inférieure à 80 % (RG16)'
+                    ? 'Confiance IA inférieure à 80 %'
                     : 'Réservé aux experts et administrateurs'
                 }
                 icone={UserCheck}
@@ -322,7 +322,7 @@ export default function TableauDeBord() {
                   </Card>
 
                   <Card>
-                    <CardHeader titre="Score par mission" icone={ClipboardCheck} sousTitre="Score pondéré RG32" />
+                    <CardHeader titre="Score par mission" icone={ClipboardCheck} sousTitre="Score pondéré" />
                     <div className="h-72 p-5">
                       {missionsNotees.length > 0 ? (
                         <GraphiqueBarres

@@ -201,7 +201,7 @@ export default function EntrepriseDetail() {
           <CardHeader
             titre="Évolution du score"
             icone={TrendingUp}
-            sousTitre="Score global de chaque mission dans le temps (RG32), comparé à la moyenne du secteur quand elle est disponible."
+            sousTitre="Score global de chaque mission dans le temps, comparé à la moyenne du secteur quand elle est disponible."
           />
           <div className="h-72 pt-4">
             <EvolutionScoreSection entrepriseId={entrepriseId} secteurCode={entreprise.secteurCode} />
