@@ -74,14 +74,23 @@ public class EntrepriseResource {
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
+    /**
+     * SUPER_ADMIN a un accès global (voir AutorisationService.estSuperAdminGlobal) :
+     * il doit pouvoir naviguer vers n'importe quelle entreprise de la
+     * plateforme, pas seulement celles où il a un rattachement explicite —
+     * sinon les vérifications assouplies côté AutorisationService seraient
+     * inatteignables depuis l'interface.
+     */
     @GET
     public Response mesEntreprises() {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
-        List<EntrepriseDto> resultat = utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
-                .map(UtilisateurEntreprise::getEntreprise)
-                .distinct()
-                .map(EntrepriseDto::depuis)
-                .toList();
+        List<EntrepriseDto> resultat = autorisationService.estSuperAdminGlobal(utilisateurId)
+                ? entrepriseRepository.listAll().stream().map(EntrepriseDto::depuis).toList()
+                : utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
+                        .map(UtilisateurEntreprise::getEntreprise)
+                        .distinct()
+                        .map(EntrepriseDto::depuis)
+                        .toList();
         return Response.ok(resultat).build();
     }
 
