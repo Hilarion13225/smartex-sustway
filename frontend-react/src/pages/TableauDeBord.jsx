@@ -89,10 +89,12 @@ export default function TableauDeBord() {
       setRevues([]);
     }
 
-    // RG41 : réservé à la formule Avancées — les missions dans une autre
-    // formule ne portent de toute façon jamais d'indice, inutile de tenter
-    // l'appel (qui échouerait en 403).
-    const missionsAvancees = toutesMissions.filter((m) => m.audit.formuleCode === 'AVANCEES');
+    // RG41 : réservé à la formule Avancées ET à la permission bailleur:consulter
+    // (absente de VISITEUR) — sans ce second filtre, l'appel est tenté quand
+    // même et échoue systématiquement en 403 pour ce rôle.
+    const missionsAvancees = peut('bailleur:consulter')
+      ? toutesMissions.filter((m) => m.audit.formuleCode === 'AVANCEES')
+      : [];
     const indicesResultats = await Promise.all(
       missionsAvancees.map((m) =>
         api
