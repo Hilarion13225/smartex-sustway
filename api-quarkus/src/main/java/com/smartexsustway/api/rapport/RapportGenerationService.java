@@ -27,10 +27,12 @@ import org.openpdf.text.Font;
 import org.openpdf.text.PageSize;
 import org.openpdf.text.Paragraph;
 import org.openpdf.text.Phrase;
+import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.PdfPCell;
 import org.openpdf.text.pdf.PdfPTable;
 import org.openpdf.text.pdf.PdfWriter;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,11 +48,29 @@ import java.util.UUID;
  * calcul que le tableau de bord, RG32) : le rapport ne doit jamais afficher
  * un chiffre différent de l'écran. INDICE_FINANCEMENTS_VERTS recalcule
  * l'indice via IndicePreparationService pour la même raison (RG42).
+ *
+ * Le PDF reprend la palette de marque du frontend (components/charts.jsx —
+ * COULEURS) : même vert (#128257) pour le score global, même code couleur
+ * par niveau (vert/bleu/ambre/rouge) qu'à l'écran, pour qu'un rapport
+ * exporté ne soit jamais visuellement en décalage avec l'application.
  */
 @ApplicationScoped
 public class RapportGenerationService {
 
     private static final DateTimeFormatter FORMAT_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    // --- Palette (miroir de components/charts.jsx → COULEURS) --------------
+    private static final Color BRAND = new Color(18, 130, 87);
+    private static final Color BRAND_FONCE = new Color(11, 80, 54);
+    private static final Color BRAND_CLAIR = new Color(232, 247, 240);
+    private static final Color BLEU = new Color(37, 99, 235);
+    private static final Color AMBRE = new Color(217, 119, 6);
+    private static final Color ROUGE = new Color(225, 29, 72);
+    private static final Color GRIS_CLAIR = new Color(247, 248, 250);
+    private static final Color GRIS_BORDURE = new Color(228, 232, 238);
+    private static final Color ENCRE = new Color(15, 23, 42);
+    private static final Color ENCRE_ATTENUEE = new Color(100, 116, 139);
+    private static final Color BLANC = Color.WHITE;
 
     @Inject AuditScoreService auditScoreService;
     @Inject NonConformeRepository nonConformeRepository;
@@ -138,26 +158,31 @@ public class RapportGenerationService {
     private byte[] genererSynthesePdf(Audit audit, AuditScoreDto score, List<NonConforme> nonConformites) {
         return construirePdf(audit, "Rapport de synthèse", (document, polices) -> {
             sectionScorePdf(document, polices, score);
-
-            document.add(new Paragraph("Non-conformités (" + nonConformites.size() + ")", polices.sousTitre()));
-            if (nonConformites.isEmpty()) {
-                document.add(new Paragraph("Aucune non-conformité détectée à ce stade de la mission.", polices.normal()));
-            } else {
-                PdfPTable table = new PdfPTable(4);
-                table.setWidthPercentage(100);
-                for (String entete : List.of("Critère", "Niveau", "Statut", "Actions correctives")) {
-                    table.addCell(celluleEntete(entete, polices.enTeteTableau()));
-                }
-                for (NonConforme nc : nonConformites) {
-                    int nombreActions = actionCorrectiveRepository.parNonConforme(nc.getId()).size();
-                    table.addCell(cellule(nc.getEvaluation().getAuditCritere().getCritere().getCode() + " — " + nc.getTitre(), polices.normal()));
-                    table.addCell(cellule(nc.getNiveau().name(), polices.normal()));
-                    table.addCell(cellule(nc.getStatut().name(), polices.normal()));
-                    table.addCell(cellule(String.valueOf(nombreActions), polices.normal()));
-                }
-                document.add(table);
-            }
+            sectionNonConformitesPdf(document, polices, nonConformites);
         });
+    }
+
+    private void sectionNonConformitesPdf(Document document, Polices polices, List<NonConforme> nonConformites) throws DocumentException {
+        document.add(titreSection("Non-conformités (" + nonConformites.size() + ")", polices));
+        if (nonConformites.isEmpty()) {
+            document.add(carteVide("Aucune non-conformité détectée à ce stade de la mission.", polices));
+            return;
+        }
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100);
+        for (String entete : List.of("Critère", "Niveau", "Statut", "Actions correctives")) {
+            table.addCell(celluleEntete(entete, polices.enTeteTableau()));
+        }
+        int index = 0;
+        for (NonConforme nc : nonConformites) {
+            int nombreActions = actionCorrectiveRepository.parNonConforme(nc.getId()).size();
+            boolean paire = index++ % 2 == 1;
+            table.addCell(cellule(nc.getEvaluation().getAuditCritere().getCritere().getCode() + " — " + nc.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(celluleBadge(nc.getNiveau().name(), couleurNiveauNonConformite(nc.getNiveau().name()), paire));
+            table.addCell(cellule(nc.getStatut().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(String.valueOf(nombreActions), polices.normal(), paire, Element.ALIGN_RIGHT));
+        }
+        document.add(table);
     }
 
     // --- DETAILLE -------------------------------------------------------------
@@ -190,22 +215,24 @@ public class RapportGenerationService {
         return construirePdf(audit, "Rapport détaillé", (document, polices) -> {
             sectionScorePdf(document, polices, score);
 
-            document.add(new Paragraph("Détail par critère (" + auditCriteres.size() + ")", polices.sousTitre()));
+            document.add(titreSection("Détail par critère (" + auditCriteres.size() + ")", polices));
             PdfPTable table = new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f, 3f});
             table.setWidthPercentage(100);
             for (String entete : List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source", "Justification")) {
                 table.addCell(celluleEntete(entete, polices.enTeteTableau()));
             }
+            int index = 0;
             for (AuditCritere ac : auditCriteres) {
                 Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
-                table.addCell(cellule(ac.getCritere().getDomaine().getNom(), polices.normal()));
-                table.addCell(cellule(ac.getCritere().getCode(), polices.normal()));
-                table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal()));
-                table.addCell(cellule(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—", polices.normal()));
-                table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal()));
-                table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal()));
-                table.addCell(cellule(derniere != null ? derniere.getSource().name() : "—", polices.normal()));
-                table.addCell(cellule(derniere != null && derniere.getJustification() != null ? derniere.getJustification() : "—", polices.normal()));
+                boolean paire = index++ % 2 == 1;
+                table.addCell(cellule(ac.getCritere().getDomaine().getNom(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal(), paire, Element.ALIGN_RIGHT));
+                table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(derniere != null ? derniere.getSource().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(derniere != null && derniere.getJustification() != null ? derniere.getJustification() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
             }
             document.add(table);
         });
@@ -241,9 +268,9 @@ public class RapportGenerationService {
 
     private byte[] genererPlanActionPdf(Audit audit, List<NonConforme> nonConformites) {
         return construirePdf(audit, "Plan d'actions correctives", (document, polices) -> {
-            document.add(new Paragraph("Actions correctives (" + nonConformites.size() + " non-conformités)", polices.sousTitre()));
+            document.add(titreSection("Actions correctives (" + nonConformites.size() + " non-conformités)", polices));
             if (nonConformites.isEmpty()) {
-                document.add(new Paragraph("Aucune non-conformité détectée à ce stade de la mission.", polices.normal()));
+                document.add(carteVide("Aucune non-conformité détectée à ce stade de la mission.", polices));
                 return;
             }
             PdfPTable table = new PdfPTable(new float[] {2.5f, 1f, 2.5f, 1.8f, 1.3f, 1.3f, 1.2f});
@@ -251,27 +278,30 @@ public class RapportGenerationService {
             for (String entete : List.of("Non-conformité", "Critère", "Action", "Responsable", "Échéance", "Statut", "Priorité")) {
                 table.addCell(celluleEntete(entete, polices.enTeteTableau()));
             }
+            int index = 0;
             for (NonConforme nc : nonConformites) {
                 List<ActionCorrective> actions = actionCorrectiveRepository.parNonConforme(nc.getId());
                 String critere = nc.getEvaluation().getAuditCritere().getCritere().getCode();
                 if (actions.isEmpty()) {
-                    table.addCell(cellule(nc.getTitre(), polices.normal()));
-                    table.addCell(cellule(critere, polices.normal()));
-                    table.addCell(cellule("Aucune action définie", polices.normal()));
-                    table.addCell(cellule("—", polices.normal()));
-                    table.addCell(cellule("—", polices.normal()));
-                    table.addCell(cellule("—", polices.normal()));
-                    table.addCell(cellule("—", polices.normal()));
+                    boolean paire = index++ % 2 == 1;
+                    table.addCell(cellule(nc.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(critere, polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("Aucune action définie", polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("—", polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("—", polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("—", polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("—", polices.normal(), paire, Element.ALIGN_LEFT));
                     continue;
                 }
                 for (ActionCorrective action : actions) {
-                    table.addCell(cellule(nc.getTitre(), polices.normal()));
-                    table.addCell(cellule(critere, polices.normal()));
-                    table.addCell(cellule(action.getTitre(), polices.normal()));
-                    table.addCell(cellule(nomResponsable(action), polices.normal()));
-                    table.addCell(cellule(action.getDateEcheance() != null ? action.getDateEcheance().format(FORMAT_DATE) : "—", polices.normal()));
-                    table.addCell(cellule(action.getStatut().name(), polices.normal()));
-                    table.addCell(cellule(action.getPriorite().name(), polices.normal()));
+                    boolean paire = index++ % 2 == 1;
+                    table.addCell(cellule(nc.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(critere, polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(action.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(nomResponsable(action), polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(action.getDateEcheance() != null ? action.getDateEcheance().format(FORMAT_DATE) : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(celluleBadge(action.getStatut().name(), BLEU, paire));
+                    table.addCell(celluleBadge(action.getPriorite().name(), couleurPriorite(action.getPriorite().name()), paire));
                 }
             }
             document.add(table);
@@ -312,16 +342,15 @@ public class RapportGenerationService {
 
     private byte[] genererIndicePdf(Audit audit, Bailleur bailleur, IndicePreparation indice, List<AuditCritere> auditCriteres) {
         return construirePdf(audit, "Indice de préparation aux financements verts", (document, polices) -> {
-            document.add(new Paragraph("Bailleur : " + bailleur.getCode() + " — " + bailleur.getNom(), polices.sousTitre()));
-            document.add(new Paragraph("Indice de préparation : " + formaterScore(indice.getScore()) + " / 5", polices.normal()));
+            document.add(carteIndice(bailleur, indice, polices));
             document.add(new Paragraph(
-                    "RG42 : cet indice mesure un alignement avec les critères tagués pour ce bailleur, pas une garantie d'éligibilité au financement.",
-                    polices.normal()));
+                    "RG42 — cet indice mesure un alignement avec les critères tagués pour ce bailleur, pas une garantie d'éligibilité au financement.",
+                    polices.avertissement()));
             document.add(Chunk.NEWLINE);
 
-            document.add(new Paragraph("Critères applicables (" + auditCriteres.size() + ")", polices.sousTitre()));
+            document.add(titreSection("Critères applicables (" + auditCriteres.size() + ")", polices));
             if (auditCriteres.isEmpty()) {
-                document.add(new Paragraph("Aucun critère n'est encore tagué comme applicable à ce bailleur.", polices.normal()));
+                document.add(carteVide("Aucun critère n'est encore tagué comme applicable à ce bailleur.", polices));
                 return;
             }
             PdfPTable table = new PdfPTable(new float[] {1.3f, 3f, 2f, 1.3f, 1.3f, 1.5f});
@@ -329,17 +358,40 @@ public class RapportGenerationService {
             for (String entete : List.of("Critère", "Libellé", "Domaine", "Criticité", "Niveau /5", "Statut évaluation")) {
                 table.addCell(celluleEntete(entete, polices.enTeteTableau()));
             }
+            int index = 0;
             for (AuditCritere ac : auditCriteres) {
                 Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
-                table.addCell(cellule(ac.getCritere().getCode(), polices.normal()));
-                table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal()));
-                table.addCell(cellule(ac.getCritere().getDomaine().getNom(), polices.normal()));
-                table.addCell(cellule(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—", polices.normal()));
-                table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal()));
-                table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal()));
+                boolean paire = index++ % 2 == 1;
+                table.addCell(cellule(ac.getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCritere().getDomaine().getNom(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal(), paire, Element.ALIGN_RIGHT));
+                table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
             }
             document.add(table);
         });
+    }
+
+    /** Même esprit que la carte "Score global" (gros chiffre coloré + méta) mais centrée sur le bailleur plutôt que le score par domaine. */
+    private PdfPTable carteIndice(Bailleur bailleur, IndicePreparation indice, Polices polices) {
+        Color couleur = couleurNiveau(indice.getScore());
+        PdfPTable carte = new PdfPTable(new float[] {1.3f, 2f});
+        carte.setWidthPercentage(100);
+
+        PdfPCell celluleChiffre = celluleCarte();
+        Paragraph chiffre = new Paragraph();
+        chiffre.add(new Chunk(formaterScore(indice.getScore()), new Font(Font.HELVETICA, 32, Font.BOLD, couleur)));
+        chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        celluleChiffre.addElement(chiffre);
+        carte.addCell(celluleChiffre);
+
+        PdfPCell celluleDetail = celluleCarte();
+        celluleDetail.addElement(new Paragraph(bailleur.getNom() + " (" + bailleur.getCode() + ")", polices.sousTitre()));
+        celluleDetail.addElement(new Paragraph("Calculé le " + FORMAT_DATE.format(indice.getDateCalcul()), polices.meta()));
+        carte.addCell(celluleDetail);
+
+        return carte;
     }
 
     // --- Blocs communs (en-tête, score) -------------------------------------
@@ -372,28 +424,106 @@ public class RapportGenerationService {
     }
 
     private void sectionScorePdf(Document document, Polices polices, AuditScoreDto score) throws DocumentException {
-        document.add(new Paragraph("Score global", polices.sousTitre()));
-        document.add(new Paragraph(
-                "Score : " + formaterScore(score.scoreGlobal()) + " / 5 — Évalués : " + score.nombreCriteresEvalues() + " / "
-                        + score.nombreCriteresTotal() + " — En revue experte : " + score.nombreCriteresEnRevue()
-                        + " — Non évalués : " + score.nombreCriteresNonEvalues(),
-                polices.normal()));
+        document.add(titreSection("Score global", polices));
+        document.add(carteScoreGlobal(score, polices));
         document.add(Chunk.NEWLINE);
 
-        document.add(new Paragraph("Score par domaine", polices.sousTitre()));
+        document.add(titreSection("Score par domaine", polices));
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100);
         for (String entete : List.of("Domaine", "Score /5", "Évalués", "Total")) {
             table.addCell(celluleEntete(entete, polices.enTeteTableau()));
         }
+        int index = 0;
         for (AuditScoreDto.DomaineScoreDto d : score.domaines()) {
-            table.addCell(cellule(d.domaineNom() + " (" + d.domaineCode() + ")", polices.normal()));
-            table.addCell(cellule(formaterScore(d.score()), polices.normal()));
-            table.addCell(cellule(String.valueOf(d.nombreCriteresEvalues()), polices.normal()));
-            table.addCell(cellule(String.valueOf(d.nombreCriteresTotal()), polices.normal()));
+            boolean paire = index++ % 2 == 1;
+            table.addCell(cellule(d.domaineNom() + " (" + d.domaineCode() + ")", polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(celluleScoreColore(formaterScore(d.score()), couleurNiveau(d.score()), paire));
+            table.addCell(cellule(String.valueOf(d.nombreCriteresEvalues()), polices.normal(), paire, Element.ALIGN_RIGHT));
+            table.addCell(cellule(String.valueOf(d.nombreCriteresTotal()), polices.normal(), paire, Element.ALIGN_RIGHT));
         }
         document.add(table);
         document.add(Chunk.NEWLINE);
+    }
+
+    /** Gros chiffre coloré selon le niveau (même code couleur que tonScore() côté frontend) + les 3 compteurs d'avancement en regard. */
+    private PdfPTable carteScoreGlobal(AuditScoreDto score, Polices polices) {
+        Color couleur = couleurNiveau(score.scoreGlobal());
+        PdfPTable carte = new PdfPTable(new float[] {1.3f, 2f});
+        carte.setWidthPercentage(100);
+
+        PdfPCell celluleChiffre = celluleCarte();
+        Paragraph chiffre = new Paragraph();
+        chiffre.add(new Chunk(formaterScore(score.scoreGlobal()), new Font(Font.HELVETICA, 34, Font.BOLD, couleur)));
+        chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        celluleChiffre.addElement(chiffre);
+        carte.addCell(celluleChiffre);
+
+        PdfPCell celluleDetail = celluleCarte();
+        celluleDetail.addElement(new Paragraph("Évalués : " + score.nombreCriteresEvalues() + " / " + score.nombreCriteresTotal(), polices.normal()));
+        celluleDetail.addElement(new Paragraph("En revue experte : " + score.nombreCriteresEnRevue(), polices.normal()));
+        celluleDetail.addElement(new Paragraph("Non évalués : " + score.nombreCriteresNonEvalues(), polices.normal()));
+        carte.addCell(celluleDetail);
+
+        return carte;
+    }
+
+    private static PdfPCell celluleCarte() {
+        PdfPCell cellule = new PdfPCell();
+        cellule.setBackgroundColor(GRIS_CLAIR);
+        cellule.setBorder(Rectangle.NO_BORDER);
+        cellule.setPadding(12);
+        cellule.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cellule;
+    }
+
+    /** Encadré discret pour un état "vide" (aucune non-conformité, aucun critère tagué…) — même ton que le composant Vide du frontend. */
+    private static PdfPTable carteVide(String message, Polices polices) {
+        PdfPCell cellule = celluleCarte();
+        cellule.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cellule.addElement(new Paragraph(message, polices.meta()));
+        PdfPTable table = new PdfPTable(1);
+        table.setWidthPercentage(100);
+        table.addCell(cellule);
+        return table;
+    }
+
+    private static Paragraph titreSection(String texte, Polices polices) {
+        Paragraph p = new Paragraph(texte, polices.sousTitre());
+        p.setSpacingBefore(4);
+        p.setSpacingAfter(6);
+        return p;
+    }
+
+    /**
+     * Même seuils que tonScore() dans TableauDeBord.jsx/EntrepriseDetail.jsx
+     * (frontend) : vert ≥4, bleu ≥3, ambre ≥2, rouge sinon — un rapport ne
+     * doit jamais raconter une histoire de couleur différente de l'écran.
+     */
+    private static Color couleurNiveau(BigDecimal score) {
+        double valeur = score.doubleValue();
+        if (valeur >= 4) return BRAND;
+        if (valeur >= 3) return BLEU;
+        if (valeur >= 2) return AMBRE;
+        return ROUGE;
+    }
+
+    private static Color couleurNiveauNonConformite(String niveau) {
+        return switch (niveau) {
+            case "CRITIQUE" -> ROUGE;
+            case "MAJEURE" -> AMBRE;
+            case "MODEREE" -> BLEU;
+            default -> ENCRE_ATTENUEE;
+        };
+    }
+
+    private static Color couleurPriorite(String priorite) {
+        return switch (priorite) {
+            case "CRITIQUE" -> ROUGE;
+            case "HAUTE" -> AMBRE;
+            case "MOYENNE" -> BLEU;
+            default -> ENCRE_ATTENUEE;
+        };
     }
 
     private static String echapper(String valeur) {
@@ -417,7 +547,15 @@ public class RapportGenerationService {
 
     // --- Construction PDF partagée ------------------------------------------
 
-    private record Polices(Font titre, Font sousTitre, Font normal, Font enTeteTableau) {}
+    private record Polices(
+            Font titre,
+            Font sousTitre,
+            Font normal,
+            Font enTeteTableau,
+            Font meta,
+            Font scoreUnite,
+            Font badge,
+            Font avertissement) {}
 
     @FunctionalInterface
     private interface CorpsPdf {
@@ -425,29 +563,28 @@ public class RapportGenerationService {
     }
 
     private byte[] construirePdf(Audit audit, String titreRapport, CorpsPdf corps) {
-        Document document = new Document(PageSize.A4, 40, 40, 50, 50);
+        Document document = new Document(PageSize.A4, 40, 40, 40, 40);
         ByteArrayOutputStream flux = new ByteArrayOutputStream();
         try {
             PdfWriter.getInstance(document, flux);
             document.open();
 
             Polices polices = new Polices(
-                    new Font(Font.HELVETICA, 18, Font.BOLD),
-                    new Font(Font.HELVETICA, 13, Font.BOLD),
-                    new Font(Font.HELVETICA, 10, Font.NORMAL),
-                    new Font(Font.HELVETICA, 9, Font.BOLD));
+                    new Font(Font.HELVETICA, 19, Font.BOLD, BRAND_FONCE),
+                    new Font(Font.HELVETICA, 13, Font.BOLD, ENCRE),
+                    new Font(Font.HELVETICA, 10, Font.NORMAL, ENCRE),
+                    new Font(Font.HELVETICA, 9, Font.BOLD, BLANC),
+                    new Font(Font.HELVETICA, 9, Font.NORMAL, ENCRE_ATTENUEE),
+                    new Font(Font.HELVETICA, 12, Font.NORMAL, ENCRE_ATTENUEE),
+                    new Font(Font.HELVETICA, 8, Font.BOLD, BLANC),
+                    new Font(Font.HELVETICA, 9, Font.ITALIC, ENCRE_ATTENUEE));
 
-            document.add(new Paragraph(titreRapport + " — " + audit.getNom(), polices.titre()));
-            document.add(new Paragraph(
-                    "Référentiel " + audit.getReferentiel().getCode() + " — Entreprise " + audit.getEntreprise().getRaisonSociale(),
-                    polices.normal()));
-            document.add(new Paragraph(
-                    "Début le " + audit.getDateDebut().format(FORMAT_DATE) + " — Statut " + audit.getStatut(),
-                    polices.normal()));
+            document.add(carteEnTete(audit, titreRapport, polices));
             document.add(Chunk.NEWLINE);
 
             corps.ecrire(document, polices);
 
+            ajouterPiedDePage(document, polices);
             document.close();
         } catch (DocumentException e) {
             throw new RapportGenerationException("Échec de génération du rapport PDF", e);
@@ -455,16 +592,96 @@ public class RapportGenerationService {
         return flux.toByteArray();
     }
 
+    /** Bandeau d'en-tête : fond vert clair de marque, titre + mission en avant, méta (référentiel/entreprise/date/statut) en dessous. */
+    private PdfPTable carteEnTete(Audit audit, String titreRapport, Polices polices) {
+        PdfPTable enTete = new PdfPTable(1);
+        enTete.setWidthPercentage(100);
+
+        PdfPCell carte = new PdfPCell();
+        carte.setBackgroundColor(BRAND_CLAIR);
+        carte.setBorder(Rectangle.BOTTOM);
+        carte.setBorderWidth(2f);
+        carte.setBorderColor(BRAND);
+        carte.setPadding(16);
+        carte.addElement(new Paragraph(titreRapport, polices.titre()));
+        carte.addElement(new Paragraph(audit.getNom(), new Font(Font.HELVETICA, 12, Font.NORMAL, ENCRE)));
+        Paragraph meta = new Paragraph();
+        meta.setSpacingBefore(6);
+        meta.add(new Chunk("Référentiel " + audit.getReferentiel().getCode(), polices.meta()));
+        meta.add(new Chunk("   •   ", polices.meta()));
+        meta.add(new Chunk(audit.getEntreprise().getRaisonSociale(), polices.meta()));
+        meta.add(new Chunk("   •   Début le " + audit.getDateDebut().format(FORMAT_DATE), polices.meta()));
+        meta.add(new Chunk("   •   Statut " + audit.getStatut(), polices.meta()));
+        carte.addElement(meta);
+        enTete.addCell(carte);
+
+        return enTete;
+    }
+
+    private void ajouterPiedDePage(Document document, Polices polices) throws DocumentException {
+        Paragraph pied = new Paragraph("Smartex Sustway — Généré automatiquement, RG14 (traçabilité).", polices.avertissement());
+        pied.setSpacingBefore(14);
+        pied.setAlignment(Element.ALIGN_CENTER);
+        document.add(pied);
+    }
+
     private static PdfPCell celluleEntete(String texte, Font police) {
         PdfPCell cellule = new PdfPCell(new Phrase(texte, police));
+        cellule.setBackgroundColor(BRAND);
+        cellule.setBorder(Rectangle.NO_BORDER);
         cellule.setHorizontalAlignment(Element.ALIGN_LEFT);
-        cellule.setPadding(4);
+        cellule.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cellule.setPadding(6);
         return cellule;
     }
 
-    private static PdfPCell cellule(String texte, Font police) {
+    /** Ligne zébrée (fond gris très clair une ligne sur deux) et bordure fine, plus lisible qu'une bordure noire uniforme sur un tableau long. */
+    private static PdfPCell cellule(String texte, Font police, boolean ligneImpaire, int alignement) {
         PdfPCell cellule = new PdfPCell(new Phrase(texte, police));
-        cellule.setPadding(4);
+        cellule.setBackgroundColor(ligneImpaire ? GRIS_CLAIR : BLANC);
+        cellule.setBorder(Rectangle.BOTTOM);
+        cellule.setBorderWidth(0.5f);
+        cellule.setBorderColor(GRIS_BORDURE);
+        cellule.setHorizontalAlignment(alignement);
+        cellule.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cellule.setPadding(6);
         return cellule;
+    }
+
+    /** Score/note coloré selon son niveau (même principe que la carte Score global), centré, pour une colonne "Score" ou "Niveau /5" dans un tableau. */
+    private static PdfPCell celluleScoreColore(String texte, Color couleur, boolean ligneImpaire) {
+        PdfPCell cellule = cellule(texte, new Font(Font.HELVETICA, 10, Font.BOLD, couleur), ligneImpaire, Element.ALIGN_CENTER);
+        return cellule;
+    }
+
+    /** Pastille colorée (fond clair + texte de la même teinte) pour un statut/niveau/priorité — équivalent PDF du composant Badge du frontend. */
+    private static PdfPCell celluleBadge(String texte, Color couleur, boolean ligneImpaire) {
+        PdfPCell cellule = new PdfPCell();
+        cellule.setBackgroundColor(ligneImpaire ? GRIS_CLAIR : BLANC);
+        cellule.setBorder(Rectangle.BOTTOM);
+        cellule.setBorderWidth(0.5f);
+        cellule.setBorderColor(GRIS_BORDURE);
+        cellule.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cellule.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cellule.setPadding(6);
+
+        PdfPTable pastille = new PdfPTable(1);
+        pastille.setWidthPercentage(70);
+        PdfPCell interieur = new PdfPCell(new Phrase(texte, new Font(Font.HELVETICA, 8, Font.BOLD, couleur)));
+        interieur.setBackgroundColor(teinteClaire(couleur));
+        interieur.setBorder(Rectangle.NO_BORDER);
+        interieur.setHorizontalAlignment(Element.ALIGN_CENTER);
+        interieur.setPadding(3);
+        pastille.addCell(interieur);
+        cellule.addElement(pastille);
+        return cellule;
+    }
+
+    /** Version très éclaircie d'une couleur de marque, pour servir de fond à une pastille sans écraser le texte coloré posé dessus. */
+    private static Color teinteClaire(Color couleur) {
+        int r = 255 - (255 - couleur.getRed()) / 6;
+        int g = 255 - (255 - couleur.getGreen()) / 6;
+        int b = 255 - (255 - couleur.getBlue()) / 6;
+        return new Color(r, g, b);
     }
 }
