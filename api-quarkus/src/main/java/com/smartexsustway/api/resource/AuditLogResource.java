@@ -45,7 +45,12 @@ public class AuditLogResource {
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId,
                             @QueryParam("page") @DefaultValue("0") int page,
                             @QueryParam("taille") @DefaultValue("50") int taille) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        // Outil de redevabilité pour qui gère la relation avec l'entreprise
+        // (staff pilote + responsable client), pas un outil de travail pour
+        // un rôle scopé à une tâche précise (EXPERT_REVIEWER, VISITEUR...).
+        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
 
         int tailleEffective = Math.min(Math.max(taille, 1), TAILLE_MAX);
         var entrees = auditLogRepository.parEntreprise(entrepriseId, Math.max(page, 0), tailleEffective);
