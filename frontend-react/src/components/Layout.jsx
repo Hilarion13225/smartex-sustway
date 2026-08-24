@@ -52,6 +52,23 @@ const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', '
  */
 const GROUPES = [
   {
+    // Groupe dédié plutôt qu'un lien noyé dans Audit : pour EXPERT_REVIEWER,
+    // c'est l'outil de travail principal (les autres liens du groupe Audit
+    // sont accessibles en consultation mais sans aucune action possible
+    // pour ce rôle) — le mettre en tête maximise sa visibilité, exactement
+    // comme SUPER_ADMIN le voit déjà en premier grâce à ce même critère de
+    // permission.
+    titre: 'Revue experte',
+    liens: [
+      {
+        chemin: (id) => `/app/${id}/revues-expertes`,
+        libelle: 'File d’attente',
+        icone: UserCheck,
+        permission: 'revue:traiter',
+      },
+    ],
+  },
+  {
     titre: 'Pilotage',
     liens: [
       { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
@@ -72,12 +89,6 @@ const GROUPES = [
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FileText },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Cpu },
-      {
-        chemin: (id) => `/app/${id}/revues-expertes`,
-        libelle: 'Revue experte',
-        icone: UserCheck,
-        permission: 'revue:traiter',
-      },
       { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
       { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
     ],
