@@ -135,7 +135,10 @@ services:
       SMARTEX_DB_PASSWORD: smartex
       SMARTEX_REDIS_URL: redis://redis:6379
       SMARTEX_IA_SERVICE_URL: http://services-ia-python:8000
-      SMARTEX_CORS_ORIGINS: http://localhost:5175
+      # Les deux origines sont acceptees : localhost (poste de dev) et l'IP
+      # locale du poste sur le Wi-Fi (test depuis un telephone sur le meme
+      # reseau) - a ajuster si l'IP change (voir "ipconfig"/Get-NetIPAddress).
+      SMARTEX_CORS_ORIGINS: http://localhost:5175,http://192.168.1.7:5175
       SMARTEX_API_BASE_URL: http://localhost:8090
       # Identifiants Brevo lus depuis votre environnement/fichier .env local
       # (docker compose les substitue automatiquement s'ils sont exportés,
@@ -174,7 +177,10 @@ services:
     container_name: smartex-frontend
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:8090
+      # IP locale (Wi-Fi) plutot que "localhost" : depuis le telephone, "localhost"
+      # designerait le telephone lui-meme, pas ce poste. Fonctionne aussi depuis
+      # ce poste (le trafic vers sa propre IP locale est route normalement).
+      VITE_API_BASE_URL: http://192.168.1.7:8090
     ports:
       # Hôte 5175 : 5173 et 5174 sont déjà occupés par des processus Node
       # natifs hors Docker (autres projets sur cette machine) — voir README.
