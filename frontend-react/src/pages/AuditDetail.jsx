@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin, Search } from 'lucide-react';
+import clsx from 'clsx';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -29,6 +30,7 @@ export default function AuditDetail() {
   const [criteres, setCriteres] = useState(null);
   const [chargement, setChargement] = useState(true);
   const [recherche, setRecherche] = useState('');
+  const [ongletCriteres, setOngletCriteres] = useState('A_EVALUER');
 
   const [sitesEntreprise, setSitesEntreprise] = useState([]);
   const [sitesAudit, setSitesAudit] = useState([]);
@@ -84,14 +86,25 @@ export default function AuditDetail() {
     }
   }
 
+  // RG34/RG35 : deux volets — un critère non évalué reste le travail à
+  // faire, un critère évalué devient une trace de ce qui a déjà été traité ;
+  // les mélanger dans une seule liste noyait l'un dans l'autre dès que la
+  // mission avançait.
+  const nombreParStatut = useMemo(() => {
+    const compte = { A_EVALUER: 0, EVALUE: 0 };
+    (criteres ?? []).forEach((c) => {
+      if (c.statut in compte) compte[c.statut] += 1;
+    });
+    return compte;
+  }, [criteres]);
+
   const criteresFiltres = useMemo(() => {
     if (!criteres) return [];
     const q = recherche.trim().toLowerCase();
-    if (!q) return criteres;
-    return criteres.filter(
-      (c) => c.critereCode.toLowerCase().includes(q) || c.critereLibelle.toLowerCase().includes(q)
-    );
-  }, [criteres, recherche]);
+    return criteres
+      .filter((c) => c.statut === ongletCriteres)
+      .filter((c) => !q || c.critereCode.toLowerCase().includes(q) || c.critereLibelle.toLowerCase().includes(q));
+  }, [criteres, recherche, ongletCriteres]);
 
   if (!entreprise) {
     return <Vide message="Entreprise introuvable ou non accessible." />;
@@ -144,9 +157,17 @@ export default function AuditDetail() {
               <Card className="p-5">
                 <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />
                 {sitesEntreprise.length === 0 ? (
-                  <p className="mt-3 text-sm text-ink-500">
-                    Aucun site actif pour cette entreprise — la mission porte sur l'entreprise entière.
-                  </p>
+                  <div className="mt-3">
+                    <p className="text-sm text-ink-500">
+                      Aucun site actif pour cette entreprise — la mission porte sur l'entreprise entière.
+                    </p>
+                    {peutModifier ? (
+                      <Link to={`/app/${entrepriseId}`} className="btn-secondary mt-3">
+                        <MapPin className="h-4 w-4" aria-hidden />
+                        Ajouter un site à l'entreprise
+                      </Link>
+                    ) : null}
+                  </div>
                 ) : (
                   <>
                     <div className="mt-3 space-y-2">
@@ -184,6 +205,36 @@ export default function AuditDetail() {
 
           <Revele delai={60}>
             <Card className="p-0">
+              <div className="flex flex-wrap gap-2 border-b border-ink-100 px-5 pt-4">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={ongletCriteres === 'A_EVALUER'}
+                  onClick={() => setOngletCriteres('A_EVALUER')}
+                  className={clsx(
+                    'rounded-t-lg px-3 pb-3 text-sm font-medium transition-colors',
+                    ongletCriteres === 'A_EVALUER'
+                      ? 'border-b-2 border-brand-600 text-brand-700'
+                      : 'border-b-2 border-transparent text-ink-500 hover:text-ink-700'
+                  )}
+                >
+                  Non évalués ({nombreParStatut.A_EVALUER})
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={ongletCriteres === 'EVALUE'}
+                  onClick={() => setOngletCriteres('EVALUE')}
+                  className={clsx(
+                    'rounded-t-lg px-3 pb-3 text-sm font-medium transition-colors',
+                    ongletCriteres === 'EVALUE'
+                      ? 'border-b-2 border-brand-600 text-brand-700'
+                      : 'border-b-2 border-transparent text-ink-500 hover:text-ink-700'
+                  )}
+                >
+                  Évalués ({nombreParStatut.EVALUE})
+                </button>
+              </div>
               <div className="flex items-center gap-2 border-b border-ink-100 px-5 py-3">
                 <Search className="h-4 w-4 text-ink-400" aria-hidden />
                 <input
@@ -197,7 +248,7 @@ export default function AuditDetail() {
               {criteresFiltres.length > 0 ? (
                 <Tableau entetes={['Code', 'Critère', 'Criticité', 'Statut', '']}>
                   {criteresFiltres.map((c) => (
-                    <tr key={c.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={c.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td font-mono text-xs text-ink-500">{c.critereCode}</td>
                       <td className="td max-w-md">
                         <p className="font-medium text-ink-900">{c.critereLibelle}</p>
@@ -227,7 +278,11 @@ export default function AuditDetail() {
                     message={
                       criteres && criteres.length === 0
                         ? 'Ce référentiel ne compte aucun critère actif — choisissez-en un autre pour un prochain audit.'
-                        : 'Aucun critère ne correspond à cette recherche.'
+                        : recherche
+                          ? 'Aucun critère ne correspond à cette recherche.'
+                          : ongletCriteres === 'A_EVALUER'
+                            ? 'Tous les critères ont été évalués — rien en attente ici.'
+                            : 'Aucun critère évalué pour l’instant.'
                     }
                   />
                 </div>

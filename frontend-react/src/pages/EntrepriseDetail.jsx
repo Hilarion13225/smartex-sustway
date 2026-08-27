@@ -3,12 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Building2,
-  ClipboardList,
-  ClipboardEdit,
-  FileText,
-  History,
   ListChecks,
-  ListTodo,
   MapPin,
   Pencil,
   PlusCircle,
@@ -42,7 +37,7 @@ const TAILLES = [
  */
 export default function EntrepriseDetail() {
   const { entrepriseId } = useParams();
-  const { entreprises, recupererAbonnement, payerAbonnement, modifierEntreprise, peut } = useApiAuth();
+  const { entreprises, recupererAbonnement, payerAbonnement, modifierEntreprise, peut, roleCourant } = useApiAuth();
 
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
@@ -101,34 +96,14 @@ export default function EntrepriseDetail() {
                 Modifier la fiche
               </button>
             ) : null}
-            <Link to={`/app/${entrepriseId}/audits`} className="btn-primary">
-              <ClipboardList className="h-4 w-4" aria-hidden />
-              Audits RSE
-            </Link>
-            <Link to={`/app/${entrepriseId}/documents`} className="btn-secondary">
-              <FileText className="h-4 w-4" aria-hidden />
-              Documents
-            </Link>
-            <Link to={`/app/${entrepriseId}/questionnaire`} className="btn-secondary">
+            <Link to={`/app/${entrepriseId}/questionnaire`} className="btn-primary">
               <ListChecks className="h-4 w-4" aria-hidden />
               Questionnaire
             </Link>
-            <Link to={`/app/${entrepriseId}/plan-actions`} className="btn-secondary">
-              <ListTodo className="h-4 w-4" aria-hidden />
-              Plan d’actions
-            </Link>
-            <Link to={`/app/${entrepriseId}/utilisateurs`} className="btn-secondary">
-              <Users className="h-4 w-4" aria-hidden />
-              Utilisateurs
-            </Link>
-            <Link to={`/app/${entrepriseId}/journal`} className="btn-secondary">
-              <History className="h-4 w-4" aria-hidden />
-              Journal
-            </Link>
-            {peut('revue:traiter') ? (
-              <Link to={`/app/${entrepriseId}/revues-expertes`} className="btn-secondary">
-                <ClipboardEdit className="h-4 w-4" aria-hidden />
-                Revue experte
+            {roleCourant !== 'RESPONSABLE_ENTREPRISE' ? (
+              <Link to={`/app/${entrepriseId}/utilisateurs`} className="btn-secondary">
+                <Users className="h-4 w-4" aria-hidden />
+                Utilisateurs
               </Link>
             ) : null}
           </>
@@ -537,7 +512,7 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
           {sites.map((s) => (
             <li
               key={s.id}
-              className="flex items-center justify-between rounded-xl border border-ink-100 bg-white p-3 text-sm transition duration-300 hover:border-brand-200 hover:shadow-sm"
+              className="flex items-center justify-between rounded-xl border border-ink-100 bg-surface p-3 text-sm transition duration-300 hover:border-brand-200 hover:shadow-sm"
             >
               <div>
                 <p className="font-medium">{s.nom}</p>

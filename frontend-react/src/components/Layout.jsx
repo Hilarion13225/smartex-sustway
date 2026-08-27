@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Building2,
+  ChevronDown,
   ClipboardList,
   ClipboardX,
   Columns3,
@@ -24,11 +25,13 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import BasculeTheme from './BasculeTheme';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
+const CLE_GROUPES_REPLIES = 'smartex.sidebarGroupesReplies';
 
 /** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
 const SEUIL_RECHERCHE_ENTREPRISE = 6;
@@ -133,8 +136,34 @@ export default function Layout() {
     () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
   );
   const [filtreEntreprise, setFiltreEntreprise] = useState('');
+  const [groupesReplies, setGroupesReplies] = useState(() => {
+    try {
+      const brut = localStorage.getItem(CLE_GROUPES_REPLIES);
+      return brut ? new Set(JSON.parse(brut)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
   const navigate = useNavigate();
   const location = useLocation();
+
+  /** Repli/dépli d'une section de la sidebar (ex. Pilotage, Audit) — mémorisé par titre de section, persiste entre sessions. */
+  function basculerGroupe(titre) {
+    setGroupesReplies((precedent) => {
+      const suivant = new Set(precedent);
+      if (suivant.has(titre)) {
+        suivant.delete(titre);
+      } else {
+        suivant.add(titre);
+      }
+      try {
+        localStorage.setItem(CLE_GROUPES_REPLIES, JSON.stringify([...suivant]));
+      } catch {
+        // Stockage indisponible (navigation privée...) : le repli reste fonctionnel pour la session en cours, juste non mémorisé.
+      }
+      return suivant;
+    });
+  }
 
   // Filtre par raison sociale / identifiant légal — l'entreprise déjà
   // sélectionnée reste toujours proposée même si elle ne correspond plus au
@@ -202,7 +231,7 @@ export default function Layout() {
     <div className="flex h-full bg-ink-50">
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-ink-100 bg-white transition-transform duration-300 lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-ink-100 bg-surface transition-transform duration-300 lg:static lg:translate-x-0',
           ouvert ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -255,10 +284,23 @@ export default function Layout() {
           {GROUPES.map((groupe) => {
             const liensVisibles = groupe.liens.filter(lienVisible);
             if (liensVisibles.length === 0) return null;
+            const replie = groupesReplies.has(groupe.titre);
 
             return (
               <div key={groupe.titre}>
-                <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">{groupe.titre}</p>
+                <button
+                  type="button"
+                  onClick={() => basculerGroupe(groupe.titre)}
+                  aria-expanded={!replie}
+                  className="flex w-full items-center justify-between rounded-lg px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
+                >
+                  <span>{groupe.titre}</span>
+                  <ChevronDown
+                    className={clsx('h-3.5 w-3.5 shrink-0 transition-transform duration-200', replie && '-rotate-90')}
+                    aria-hidden
+                  />
+                </button>
+                {replie ? null : (
                 <div className="space-y-1">
                   {liensVisibles.map((lien) => {
                     const cible = lien.chemin ? (entrepriseCouranteId ? lien.chemin(entrepriseCouranteId) : null) : lien.vers;
@@ -300,11 +342,13 @@ export default function Layout() {
                     );
                   })}
                 </div>
+                )}
               </div>
             );
           })}
 
-          <div className="rounded-2xl bg-ink-900 p-4 text-white">
+          {/* Encart volontairement toujours sombre, couleur figée (pas --ink-900, réactive au thème). */}
+          <div className="rounded-2xl bg-[#1f2533] p-4 text-white">
             <p className="flex items-center gap-2 text-sm font-semibold">
               <LifeBuoy className="h-4 w-4 text-brand-300" aria-hidden />
               Besoin d’un accompagnement ?
@@ -352,13 +396,13 @@ export default function Layout() {
 
       {ouvert ? (
         <div
-          className="fixed inset-0 z-30 bg-ink-900/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setOuvert(false)}
         />
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-100 bg-white/85 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-100 bg-surface/85 px-4 py-3 backdrop-blur lg:px-8">
           <button type="button" className="btn-ghost p-1.5 lg:hidden" onClick={() => setOuvert(true)} aria-label="Ouvrir le menu">
             <Menu className="h-5 w-5" aria-hidden />
           </button>
@@ -366,7 +410,8 @@ export default function Layout() {
             <p className="truncate text-sm font-semibold text-ink-900">Bonjour {utilisateur.prenom}</p>
             <p className="truncate text-xs text-ink-500">{dateDuJour()}</p>
           </div>
-          <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 sm:inline-flex">
+          <BasculeTheme />
+          <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30 sm:inline-flex">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
             Espace sécurisé
           </span>
