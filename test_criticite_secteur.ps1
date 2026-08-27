@@ -9,7 +9,7 @@
 # =====================================================================
 
 $ErrorActionPreference = "Stop"
-$base = "http://localhost:8080/api/v1"
+$base = "http://localhost:8090/api/v1"
 $motDePasse = "motdepasse123"
 $secteurCode = "AGRO_INDUSTRIE"
 

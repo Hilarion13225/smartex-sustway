@@ -19,7 +19,10 @@ services:
       POSTGRES_PASSWORD: smartex
       POSTGRES_DB: smartex_sustway
     ports:
-      - "5432:5432"
+      # Hôte 5433 : le port 5432 par défaut est déjà occupé sur cette machine
+      # par le Postgres d'un autre projet (cie-smart-prepaid-poc). Le réseau
+      # Docker interne continue d'utiliser 5432 (voir SMARTEX_DB_URL ci-dessous).
+      - "5433:5432"
     volumes:
       - smartex_postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d/01-migrations:ro
@@ -53,8 +56,11 @@ services:
       MINIO_ROOT_USER: smartex
       MINIO_ROOT_PASSWORD: smartex_minio_secret
     ports:
-      - "9000:9000"   # API S3
-      - "9001:9001"   # Console web
+      # Hôte 9002/9003 : 9000/9001 déjà occupés sur cette machine par un
+      # autre projet local (cie-smart-prepaid-poc). Le réseau Docker interne
+      # continue d'utiliser 9000/9001 (voir SMARTEX_S3_ENDPOINT ci-dessous).
+      - "9002:9000"   # API S3
+      - "9003:9001"   # Console web
     volumes:
       - smartex_minio_data:/data
     healthcheck:
@@ -129,8 +135,8 @@ services:
       SMARTEX_DB_PASSWORD: smartex
       SMARTEX_REDIS_URL: redis://redis:6379
       SMARTEX_IA_SERVICE_URL: http://services-ia-python:8000
-      SMARTEX_CORS_ORIGINS: http://localhost:5173
-      SMARTEX_API_BASE_URL: http://localhost:8080
+      SMARTEX_CORS_ORIGINS: http://localhost:5175
+      SMARTEX_API_BASE_URL: http://localhost:8090
       # Identifiants Brevo lus depuis votre environnement/fichier .env local
       # (docker compose les substitue automatiquement s'ils sont exportés,
       # sinon la valeur par défaut vide désactive l'envoi réel — voir
@@ -148,7 +154,9 @@ services:
       SMARTEX_CLAMAV_HOST: clamav
       SMARTEX_CLAMAV_PORT: 3310
     ports:
-      - "8080:8080"
+      # Hôte 8090 : le port 8080 par défaut est déjà occupé sur cette machine
+      # par le backend d'un autre projet (cie-smart-prepaid-poc).
+      - "8090:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -166,9 +174,11 @@ services:
     container_name: smartex-frontend
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: http://localhost:8080
+      VITE_API_BASE_URL: http://localhost:8090
     ports:
-      - "5173:5173"
+      # Hôte 5175 : 5173 et 5174 sont déjà occupés par des processus Node
+      # natifs hors Docker (autres projets sur cette machine) — voir README.
+      - "5175:5173"
     volumes:
       - ./frontend-react/src:/app/src
     depends_on:

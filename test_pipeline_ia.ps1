@@ -8,7 +8,7 @@
 # cascade d'erreurs illisibles masquant la cause reelle).
 $ErrorActionPreference = "Stop"
 
-$base = "http://localhost:8080/api/v1"
+$base = "http://localhost:8090/api/v1"
 
 Write-Host "`n=== 1. Inscription + connexion ===" -ForegroundColor Cyan
 $email = "test.ia.$(Get-Random)@example.com"

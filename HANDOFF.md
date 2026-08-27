@@ -97,17 +97,22 @@ Stack Docker complète tournant localement (`docker compose up -d` depuis la rac
 
 | Service | Port |
 |---|---|
-| Frontend React (Vite dev) | http://localhost:5173 |
-| API Quarkus | http://localhost:8080 |
+| Frontend React (Vite dev) | http://localhost:5175 |
+| API Quarkus | http://localhost:8090 |
 | Services IA Python | http://localhost:8000 |
-| PostgreSQL | 5432 (smartex/smartex/smartex_sustway) |
-| MinIO (S3) | 9000 (API) / 9001 (console) |
+| PostgreSQL | 5433 (smartex/smartex/smartex_sustway) |
+| MinIO (S3) | 9002 (API) / 9003 (console) |
 | Redis | 6379 |
 | ClamAV | 3310 |
 
+Ports hôte décalés depuis les valeurs par défaut (5173/8080/5432) : un autre projet local
+(`cie-smart-prepaid-poc`) les occupe déjà sur cette machine. Le réseau Docker interne entre les
+conteneurs Smartex Sustway continue d'utiliser les ports standards (5173/8080/5432) — seuls les
+mappings côté hôte, dans `docker-compose.yml`, ont changé.
+
 **Après toute modification du backend Java**, il faut reconstruire l'image et redémarrer : `docker compose build api-quarkus && docker compose up -d api-quarkus`.
 
-**Le conteneur frontend sert parfois du code Vite obsolète** après des éditions rapides (rechargement à chaud désynchronisé) — un `docker compose restart frontend-react` résout systématiquement le problème. Vérifier avec `curl http://localhost:5173/src/App.jsx | grep <nom-du-nouveau-composant>` avant de tester dans le navigateur.
+**Le conteneur frontend sert parfois du code Vite obsolète** après des éditions rapides (rechargement à chaud désynchronisé) — un `docker compose restart frontend-react` résout systématiquement le problème. Vérifier avec `curl http://localhost:5175/src/App.jsx | grep <nom-du-nouveau-composant>` avant de tester dans le navigateur.
 
 ### Comptes de test (entreprise "Sustway Test SARL", audit "Audit E2E Non-Conformités", formule Avancées)
 

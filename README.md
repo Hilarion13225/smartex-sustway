@@ -26,10 +26,11 @@ docker compose up -d
 # 2. Vérifier que tout est démarré
 docker compose ps
 
-# Frontend      → http://localhost:5173
-# API Quarkus   → http://localhost:8080/api/v1        (healthcheck : /q/health)
+# Frontend      → http://localhost:5175
+# API Quarkus   → http://localhost:8090/api/v1        (healthcheck : /q/health)
+# (ports décalés de 5173/8080 : occupés sur cette machine par un autre projet local)
 # Services IA   → http://localhost:8000/health          (doc interactive : /docs)
-# MinIO console → http://localhost:9001  (smartex / smartex_minio_secret)
+# MinIO console → http://localhost:9003  (smartex / smartex_minio_secret)
 # Adminer (optionnel) → docker compose --profile tools up -d adminer → http://localhost:8081
 ```
 

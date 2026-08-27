@@ -5,7 +5,7 @@
 # =====================================================================
 
 $ErrorActionPreference = "Stop"
-$base = "http://localhost:8080/api/v1"
+$base = "http://localhost:8090/api/v1"
 $motDePasse = "motdepasse123"
 
 # Remplacez par l'id d'une entreprise existante si besoin (n'importe
