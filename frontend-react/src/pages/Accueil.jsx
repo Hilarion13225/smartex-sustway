@@ -91,13 +91,13 @@ const PARCOURS = [
   },
   {
     icone: FileSearch,
-    titre: 'Déposez vos preuves',
-    texte: 'Politiques, procédures, indicateurs : chaque document est rattaché au critère qu’il justifie.',
+    titre: 'Répondez, preuve à l’appui si possible',
+    texte: 'Chaque critère se répond directement ; un document n’est pas obligatoire, mais une fois vérifié par l’IA, il certifie la véracité de votre réponse.',
   },
   {
     icone: Bot,
     titre: 'Laissez l’IA évaluer',
-    texte: 'Les agents produisent une probabilité de conformité, un niveau d’engagement et un indice de confiance.',
+    texte: 'Les agents vérifient la cohérence entre réponse et preuve quand elle existe, puis produisent une probabilité de conformité, un niveau d’engagement et un indice de confiance.',
   },
   {
     icone: LineChart,
