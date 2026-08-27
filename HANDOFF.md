@@ -139,11 +139,11 @@ Aucun endpoint n'existe pour attribuer un rôle à un compte existant — seul l
 
 ## 6. État des tests
 
-**Backend** : 103/103 tests passent (`mvn test` depuis `api-quarkus/`). Nouveaux fichiers de test ajoutés cette session : `NonConformeResourceTest`, `RapportResourceTest`, `BackOfficeReferentielResourceTest`, `IndicePreparationResourceTest`.
+**Backend** (vérifié le 2026-08-27) : 122/122 tests passent via `mvn test` (en pointant `SMARTEX_DB_URL`/`SMARTEX_S3_ENDPOINT` vers les ports remappés, voir section 5). Une classe (`AbonnementResourceTest`) échoue de façon reproductible au démarrage de Quarkus (~34s puis erreur d'authentification DB) quand elle tourne seule ou en tête de suite depuis l'hôte Windows via le port publié Docker — les 122 autres tests passent avec les mêmes identifiants, donc ce n'est probablement pas un vrai bug de code mais un accroc réseau Docker Desktop/Windows au moment du tout premier boot. Pas encore root-causé ; à revérifier si ça bloque un jour la CI.
 
 **Frontend** : `npm run lint` (oxlint) et `npm run build` propres après chaque changement.
 
-**Pas de test automatisé pour** : la génération automatique de non-conformités (dépend du pipeline IA réel, non mockable facilement dans ces tests) ni pour `RevueExperteResource` (aucun test JUnit n'existe pour cette ressource, gap pré-existant avant cette session).
+**Pas de test automatisé pour** : la génération automatique de non-conformités (dépend du pipeline IA réel, non mockable facilement dans ces tests) ni pour `RevueExperteResource` (aucun test JUnit n'existe pour cette ressource, gap pré-existant).
 
 ## 7. Nettoyage effectué
 
@@ -169,10 +169,35 @@ Un référentiel `TEST_BACKOFFICE_629131061` existe encore en base — **pas cr�
 - `components/Layout.jsx`, `pages/{EntrepriseDetail,AuditsListe,CritereEvaluation,RevueExperteQueue}.jsx` (gating via `peut()`)
 - `lib/apiClient.js` (ajout `telechargerFichierProtege`)
 
+### 8.1 Fichiers ajoutés/modifiés après la rédaction initiale de ce document
+
+Couvre les sections 3.8, 3.9, la refonte visuelle des PDF, le nettoyage des références RG##,
+l'audit UX par rôle et le remappage des ports Docker (voir git log pour l'historique complet des
+commits, `HEAD` = `e7f354f` au moment de la rédaction).
+
+**Backend** :
+- `domain/entity/ScoreHistorique.java`, `domain/repository/ScoreHistoriqueRepository.java`, `scoring/ScoreHistoriqueService.java`, `resource/dto/{ScoreHistoriqueDto,SecteurBenchmarkDto}.java`
+- `resource/{AuditResource,EvaluationResource,RevueExperteResource,SecteurResource}.java` (endpoints sites/auditeurs/score-historique/benchmark)
+- `domain/repository/{AuditSiteRepository,AuditAuditeurRepository}.java`
+- `rapport/RapportGenerationService.java` (refonte visuelle complète des PDF — palette de couleurs, cartes, zebra-striping)
+- `resource/{IndicePreparationResource,RapportResource}.java`, `resource/dto/ErreurDto` (messages nettoyés des codes RG##)
+- `db/migration/V17__score_historique.sql`
+- Tests : `ScoreHistoriqueResourceTest.java`
+
+**Frontend** :
+- `components/charts.jsx` (ajout `GraphiqueLigne`), `components/Layout.jsx` (groupe "Revue experte" dédié, navigation auto au changement d'entreprise via `cheminEquivalent`)
+- `pages/{EntrepriseDetail,TableauDeBord,Entreprises}.jsx` (widgets tableau de bord, évolution du score/benchmark, gating du bouton "Nouvelle entreprise", correction du filtre `bailleur:consulter`)
+- ~19 fichiers de pages nettoyés des références RG## visibles (liste complète : voir le message de commit `5528b0e`)
+
+**Infra** :
+- `docker-compose.yml` : ports hôte décalés (5175/8090/5433/9002-9003) pour éviter les collisions avec d'autres projets locaux sur cette machine — le réseau Docker interne reste inchangé
+- `README.md`, scripts `test_*.ps1`/`archiver_referentiel_test.ps1` mis à jour en conséquence
+
 ## 9. Pour reprendre proprement
 
-1. Vérifier que Docker tourne : `docker compose ps` depuis la racine du repo.
+1. Vérifier que Docker tourne : `docker compose ps` depuis la racine du repo (voir section 5 pour les ports — ils sont décalés des valeurs par défaut sur cette machine).
 2. Si le frontend semble servir du code ancien : `docker compose restart frontend-react`.
 3. Se connecter avec un des comptes de la section 5 pour explorer l'état actuel.
 4. Le prototype de référence reste disponible à `C:\Users\yaoko\Downloads\Projet_Smartex\ancien-frontend-tsx\smartex-sustway-tsx\` pour comparer la logique métier/rôles avant d'ajouter de nouvelles pages.
-5. L'ensemble du travail de cette session est déjà commité : commit `253812e` (« Finalisation de la 1er version », branche `main`, à jour avec `origin/main`). Seul `HANDOFF.md` (ce fichier) reste non suivi au moment de la rédaction.
+5. L'ensemble du travail est commité et poussé sur `main` (à jour avec `origin/main`) — dernier commit au moment de la rédaction : `e7f354f` (« Decale les ports hote de la stack pour eviter les collisions locales »), qui fait suite à `5528b0e` (nettoyage des références RG## visibles côté utilisateur), lui-même postérieur à l'ensemble des fonctionnalités décrites en section 3 (agrégation des scores, non-conformités, rapports, back-office référentiel, indice IFC/SFI, permissions, affectation d'auditeurs/multi-site, évolution du score/benchmark sectoriel).
+6. Pour lancer `mvn test` en local (hors Docker) : exporter `SMARTEX_DB_URL=jdbc:postgresql://localhost:5433/smartex_sustway` et `SMARTEX_S3_ENDPOINT=http://localhost:9002` (les valeurs par défaut dans `application.properties` pointent encore sur les ports standards 5432/9000, occupés sur cette machine par d'autres services — voir section 5).
