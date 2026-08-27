@@ -173,7 +173,7 @@ export default function Questionnaire() {
               {criteresFiltres.length > 0 ? (
                 <Tableau entetes={['Code', 'Critère', 'Domaine', 'Criticité', 'Applicabilité']}>
                   {criteresFiltres.map((c) => (
-                    <tr key={c.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={c.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td font-mono text-xs text-ink-500">{c.code}</td>
                       <td className="td max-w-md">
                         <p className="font-medium text-ink-900">{c.libelle}</p>

@@ -135,7 +135,7 @@ export default function NonConformitesEntreprise() {
               </div>
               <Tableau entetes={['Mission', 'Critère', 'Titre', 'Niveau', 'Statut', 'Détectée le', '']}>
                 {lignesFiltrees.map(({ nc, audit }) => (
-                  <tr key={nc.id} className="transition-colors hover:bg-ink-50/60">
+                  <tr key={nc.id} className="transition-colors hover:bg-ink-100/60">
                     <td className="td text-sm text-ink-600">{audit.nom}</td>
                     <td className="td font-mono text-xs text-ink-500">{nc.critereCode}</td>
                     <td className="td font-medium text-ink-900">{nc.titre}</td>

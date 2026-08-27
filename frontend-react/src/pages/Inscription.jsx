@@ -462,8 +462,8 @@ export default function Inscription() {
                       className={clsx(
                         'btn rounded-xl border transition duration-300',
                         periodicite === option
-                          ? 'border-brand-500 bg-white text-brand-700 shadow-glow'
-                          : 'border-ink-200 bg-white/60 text-ink-600 hover:border-brand-200'
+                          ? 'border-brand-500 bg-surface text-brand-700 shadow-glow'
+                          : 'border-ink-200 bg-surface/60 text-ink-600 hover:border-brand-200'
                       )}
                       onClick={() => setPeriodicite(option)}
                     >
@@ -543,7 +543,7 @@ export default function Inscription() {
                     'flex flex-col items-center gap-2 rounded-2xl border p-4 text-sm font-medium transition duration-300 motion-safe:hover:-translate-y-0.5',
                     paiementFournisseur === moyen.code
                       ? 'border-brand-500 bg-brand-50/60 text-brand-700 shadow-glow'
-                      : 'border-ink-200 bg-white text-ink-600 hover:border-brand-200'
+                      : 'border-ink-200 bg-surface text-ink-600 hover:border-brand-200'
                   )}
                   onClick={() => setPaiementFournisseur(moyen.code)}
                 >
@@ -581,7 +581,7 @@ export default function Inscription() {
           </div>
 
           <div className="mt-6 space-y-3">
-            <div className="rounded-2xl border border-ink-100 bg-white p-4">
+            <div className="rounded-2xl border border-ink-100 bg-surface p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
                 <Mail className="h-4 w-4 text-brand-600" aria-hidden />
                 Compte {formulaire.email}
@@ -590,7 +590,7 @@ export default function Inscription() {
             </div>
 
             {!estFree && entrepriseCreee ? (
-              <div className="rounded-2xl border border-ink-100 bg-white p-4">
+              <div className="rounded-2xl border border-ink-100 bg-surface p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
                   <Building2 className="h-4 w-4 text-brand-600" aria-hidden />
                   {entrepriseCreee.raisonSociale}

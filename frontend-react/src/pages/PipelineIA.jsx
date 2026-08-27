@@ -115,7 +115,7 @@ export default function PipelineIA() {
             <Card>
               <Tableau entetes={['Mission', 'Évalués', 'En revue', 'Non évalués', '']}>
                 {lignes.map(({ audit, score }) => (
-                  <tr key={audit.id} className="transition-colors hover:bg-ink-50/60">
+                  <tr key={audit.id} className="transition-colors hover:bg-ink-100/60">
                     <td className="td font-medium text-ink-900">{audit.nom}</td>
                     <td className="td">{score ? `${score.nombreCriteresEvalues} / ${score.nombreCriteresTotal}` : '—'}</td>
                     <td className="td">{score?.nombreCriteresEnRevue ?? '—'}</td>

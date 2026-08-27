@@ -138,7 +138,7 @@ export default function Documents() {
               {documentsFiltres.length > 0 ? (
                 <Tableau entetes={['Document', 'Site', 'Taille', 'Analyse', 'Déposé le', '']}>
                   {documentsFiltres.map((d) => (
-                    <tr key={d.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={d.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td">
                         <p className="font-medium text-ink-900">{d.nomOriginal}</p>
                         <p className="text-xs text-ink-500">{d.typeMime}</p>

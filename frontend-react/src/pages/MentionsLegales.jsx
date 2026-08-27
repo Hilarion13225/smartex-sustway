@@ -60,7 +60,7 @@ export default function MentionsLegales() {
         <div className="space-y-8">
           {SECTIONS.map((section, index) => (
             <Revele key={section.titre} delai={index * 70}>
-              <article className="rounded-2xl border border-ink-100 bg-white p-6 shadow-soft">
+              <article className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-soft">
                 <h2 className="text-lg font-semibold text-ink-900">{section.titre}</h2>
                 <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-600">
                   {section.contenu.map((paragraphe) => (

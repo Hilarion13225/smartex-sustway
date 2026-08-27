@@ -1,5 +1,6 @@
 import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ApiAuthProvider } from './auth/ApiAuthContext';
+import { ThemeProvider } from './theme/ThemeContext';
 import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
@@ -52,6 +53,7 @@ function RouteProtegee() {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <ApiAuthProvider>
       <Router>
         <Routes>
@@ -103,5 +105,6 @@ export default function App() {
         </Routes>
       </Router>
     </ApiAuthProvider>
+    </ThemeProvider>
   );
 }

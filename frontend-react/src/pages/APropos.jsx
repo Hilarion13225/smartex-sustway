@@ -123,8 +123,8 @@ export default function APropos() {
           <ul className="space-y-4">
             {ENGAGEMENTS.map((engagement, index) => (
               <Revele key={engagement} delai={index * 100}>
-                <li className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700 ring-1 ring-brand-100">
+                <li className="flex items-start gap-3 rounded-2xl border border-ink-100 bg-surface p-5 shadow-soft transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">
                     {index + 1}
                   </span>
                   <p className="text-sm leading-relaxed text-ink-600">{engagement}</p>

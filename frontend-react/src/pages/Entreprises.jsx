@@ -214,7 +214,7 @@ export default function Entreprises() {
       ) : null}
 
       {entreprises.length === 0 ? (
-        <div className="relative overflow-hidden rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-14 text-center">
+        <div className="relative overflow-hidden rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-14 text-center">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-halo-brand motion-safe:animate-apparition-douce"
             aria-hidden
@@ -247,7 +247,7 @@ export default function Entreprises() {
           ) : null}
 
           {entreprisesFiltrees.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink-200 bg-white px-6 py-10 text-center text-sm text-ink-500">
+            <p className="rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-10 text-center text-sm text-ink-500">
               Aucune entreprise ne correspond à « {recherche} ».
             </p>
           ) : (

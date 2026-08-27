@@ -84,7 +84,7 @@ export default function ReferentielsListe() {
           <Card>
             <Tableau entetes={['Code', 'Nom', 'Type', 'Version', 'Statut', '']}>
               {referentiels.map((r) => (
-                <tr key={r.id} className="transition-colors hover:bg-ink-50/60">
+                <tr key={r.id} className="transition-colors hover:bg-ink-100/60">
                   <td className="td font-mono text-xs text-ink-500">{r.code}</td>
                   <td className="td font-medium text-ink-900">{r.nom}</td>
                   <td className="td">{r.type}</td>

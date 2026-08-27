@@ -148,7 +148,7 @@ export default function Journal() {
           {entreesFiltrees.length > 0 ? (
             <Tableau entetes={['Horodatage', 'Utilisateur', 'Action', 'Entité', 'Identifiant']}>
               {entreesFiltrees.map((e) => (
-                <tr key={e.id} className="transition-colors hover:bg-ink-50/60">
+                <tr key={e.id} className="transition-colors hover:bg-ink-100/60">
                   <td className="td whitespace-nowrap text-sm text-ink-600">{formaterDateHeure(e.createdAt)}</td>
                   <td className="td text-sm text-ink-700">{e.utilisateurNom ?? 'Système'}</td>
                   <td className="td font-medium text-ink-900">{e.action}</td>

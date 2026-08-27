@@ -298,7 +298,7 @@ export default function PlanActions() {
                   entetes={['Action', 'Non-conformité', 'Priorité', 'Responsable', 'Échéance', 'Statut', '']}
                 >
                   {lignesFiltrees.map(({ action, nonConformite, audit }) => (
-                    <tr key={action.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={action.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td">
                         <p className="font-medium text-ink-900">{action.titre}</p>
                         <p className="text-xs text-ink-500">{audit.nom}</p>

@@ -204,7 +204,7 @@ export default function Rapports() {
               <Card>
                 <Tableau entetes={['Type', 'Format', 'Généré le', 'Par', '']}>
                   {rapports.map((r) => (
-                    <tr key={r.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={r.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td">{LIBELLE_TYPE[r.type] ?? r.type}</td>
                       <td className="td">
                         <Badge ton={TONS_FORMAT[r.format] ?? 'neutre'}>{r.format}</Badge>

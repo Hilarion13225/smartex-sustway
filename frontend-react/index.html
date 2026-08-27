@@ -11,6 +11,22 @@
       rel="stylesheet"
     />
     <title>Smartex Sustway — Évaluation RSE intelligente</title>
+    <script>
+      // Applique le thème AVANT le premier rendu React (évite un flash de
+      // thème clair au chargement si l'utilisateur a choisi sombre/système).
+      // Miroir exact de la logique de src/theme/ThemeContext.jsx.
+      (function () {
+        try {
+          var preference = localStorage.getItem('smartex.theme') || 'systeme';
+          var sombre =
+            preference === 'sombre' ||
+            (preference === 'systeme' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (sombre) document.documentElement.classList.add('dark');
+        } catch (e) {
+          // localStorage indisponible (navigation privée stricte...) : reste en clair.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

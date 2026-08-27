@@ -223,7 +223,7 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
     <form className="space-y-5" onSubmit={enregistrer}>
       <ul className="space-y-4">
         {questions.map((q) => (
-          <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-white p-4">
+          <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <p className="text-sm font-medium text-ink-900">{q.libelle}</p>
               <Badge ton={q.statut === 'REPONDU' ? 'vert' : 'neutre'}>{q.statut}</Badge>
@@ -369,7 +369,7 @@ function PreuvesSection({ entrepriseId, auditId, auditCritereId, preuves, onChan
       {preuves.length > 0 ? (
         <ul className="space-y-2">
           {preuves.map((p) => (
-            <li key={p.id} className="rounded-xl border border-ink-100 bg-white p-3 text-sm">
+            <li key={p.id} className="rounded-xl border border-ink-100 bg-surface p-3 text-sm">
               <p className="font-medium text-ink-900">{p.documentNomOriginal}</p>
               {p.description ? <p className="text-xs text-ink-500">{p.description}</p> : null}
             </li>

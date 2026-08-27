@@ -207,7 +207,7 @@ function ActionCorrectiveItem({ action, entrepriseId, auditId, nonConformeId, on
   }
 
   return (
-    <li className="rounded-xl border border-ink-100 bg-white p-3 text-sm">
+    <li className="rounded-xl border border-ink-100 bg-surface p-3 text-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="font-medium text-ink-900">{action.titre}</p>

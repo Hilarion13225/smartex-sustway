@@ -55,7 +55,7 @@ export default function RapportsEntreprise() {
           <Card>
             <Tableau entetes={['Mission', 'Référentiel', 'Statut', 'Début', '']}>
               {audits.map((a) => (
-                <tr key={a.id} className="transition-colors hover:bg-ink-50/60">
+                <tr key={a.id} className="transition-colors hover:bg-ink-100/60">
                   <td className="td font-medium text-ink-900">{a.nom}</td>
                   <td className="td">{a.referentielCode}</td>
                   <td className="td">

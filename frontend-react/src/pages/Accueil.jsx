@@ -167,7 +167,7 @@ export default function Accueil() {
             <dl className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
               {CHIFFRES.map((stat, index) => (
                 <Revele key={stat.libelle} delai={index * 120}>
-                  <div className="group rounded-2xl border border-ink-100 bg-white/80 px-4 py-4 shadow-soft backdrop-blur transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-1">
+                  <div className="group rounded-2xl border border-ink-100 bg-surface/80 px-4 py-4 shadow-soft backdrop-blur transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-1">
                     <div className="flex items-center justify-between gap-2">
                       <dt className="text-xs uppercase tracking-wide text-ink-500">{stat.libelle}</dt>
                       <stat.icone className="h-4 w-4 text-brand-500 transition-transform duration-300 group-hover:scale-110" aria-hidden />
@@ -225,13 +225,13 @@ export default function Accueil() {
         </div>
 
         {/* Bandeau défilant des domaines évalués */}
-        <div className="relative border-y border-ink-100 bg-white/70 py-4">
+        <div className="relative border-y border-ink-100 bg-surface/70 py-4">
           <div className="masque-lateral overflow-hidden">
             <div className="flex w-max gap-3 motion-safe:animate-defilement">
               {[...DOMAINES, ...DOMAINES].map((domaine, index) => (
                 <span
                   key={`${domaine}-${index}`}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-ink-100 bg-white px-4 py-1.5 text-xs font-medium text-ink-600"
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-ink-100 bg-surface px-4 py-1.5 text-xs font-medium text-ink-600"
                 >
                   <Sparkles className="h-3.5 w-3.5 text-brand-500" aria-hidden />
                   {domaine}
@@ -309,7 +309,7 @@ export default function Accueil() {
       <section className="border-y border-ink-100 bg-ink-50 py-20">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Revele>
-            <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-white p-12 shadow-soft">
+            <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-surface p-12 shadow-soft">
               <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
               <img
                 src={logoSmartexSustway}

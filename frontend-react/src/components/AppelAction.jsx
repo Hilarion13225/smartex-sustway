@@ -10,7 +10,8 @@ export default function AppelAction({
   return (
     <section className="mx-auto max-w-6xl px-5 pb-20">
       <Revele>
-        <div className="relative overflow-hidden rounded-3xl bg-ink-900 px-6 py-14 text-center shadow-soft sm:px-12">
+        {/* Bandeau volontairement toujours sombre (contraste fort), couleur figée plutôt que la variable --ink-900 (réactive au thème). */}
+        <div className="relative overflow-hidden rounded-3xl bg-[#1f2533] px-6 py-14 text-center shadow-soft sm:px-12">
           <span
             className="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-brand-500/25 blur-3xl motion-safe:animate-respiration"
             aria-hidden
@@ -21,7 +22,7 @@ export default function AppelAction({
           />
           <div className="relative">
             <h2 className="mx-auto max-w-2xl text-3xl font-semibold text-white sm:text-4xl">{titre}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-ink-300">{texte}</p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#aeb7c8]">{texte}</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/inscription" className="btn-vitrine group">
                 Créer un compte

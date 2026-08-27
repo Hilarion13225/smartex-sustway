@@ -67,7 +67,7 @@ export default function Faq() {
             const actif = ouvert === index;
             return (
               <Revele key={element.question} delai={index * 60}>
-                <li className="overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft transition-colors duration-300 hover:border-brand-200">
+                <li className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-soft transition-colors duration-300 hover:border-brand-200">
                   <button
                     type="button"
                     className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"

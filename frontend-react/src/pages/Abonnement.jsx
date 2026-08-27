@@ -169,7 +169,7 @@ export default function Abonnement() {
               {paiements.length > 0 ? (
                 <Tableau entetes={['Date', 'Fournisseur', 'Référence', 'Montant', 'Statut']}>
                   {paiements.map((p) => (
-                    <tr key={p.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={p.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td text-sm text-ink-600">{formaterDateHeure(p.datePaiement)}</td>
                       <td className="td">{FOURNISSEURS[p.fournisseur] ?? p.fournisseur}</td>
                       <td className="td font-mono text-xs text-ink-500">{p.reference}</td>

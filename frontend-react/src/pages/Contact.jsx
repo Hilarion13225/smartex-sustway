@@ -191,7 +191,7 @@ export default function Contact() {
         <div className="space-y-4">
           {COORDONNEES.map((element, index) => (
             <Revele key={element.libelle} delai={index * 90}>
-              <div className="group flex items-start gap-4 rounded-2xl border border-ink-100 bg-white p-5 shadow-soft transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
+              <div className="group flex items-start gap-4 rounded-2xl border border-ink-100 bg-surface p-5 shadow-soft transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
                 <span className="puce-icone">
                   <element.icone className="h-5 w-5" aria-hidden />
                 </span>

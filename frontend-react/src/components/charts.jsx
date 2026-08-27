@@ -12,6 +12,7 @@ import {
   Tooltip,
 } from 'chart.js';
 import { Bar, Doughnut, Line, Radar } from 'react-chartjs-2';
+import { useTheme } from '../theme/ThemeContext';
 
 ChartJS.register(
   ArcElement,
@@ -37,15 +38,33 @@ export const COULEURS = {
   gris: '#94a3b8',
 };
 
-const communes = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { labels: { boxWidth: 10, font: { size: 11 } } },
-  },
-};
+/**
+ * Chart.js dessine sur un <canvas> : les couleurs sont des valeurs passées à
+ * l'API JS, pas des classes CSS — `dark:` n'a donc aucune prise ici. Chaque
+ * graphique lit le thème actif via useTheme() et recalcule ses couleurs de
+ * grille/texte/légende en conséquence (les couleurs des séries elles-mêmes,
+ * COULEURS ci-dessus, restent vives dans les deux thèmes, comme un badge de
+ * couleur reste identifiable quel que soit le fond).
+ */
+function useOptionsCommunes() {
+  const { estSombre } = useTheme();
+  const texte = estSombre ? '#a8b1c5' : '#4d5a74';
+  const grille = estSombre ? 'rgba(255, 255, 255, 0.08)' : '#eceef2';
+  return {
+    texte,
+    grille,
+    communes: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { boxWidth: 10, font: { size: 11 }, color: texte } },
+      },
+    },
+  };
+}
 
 export function GraphiqueBarres({ labels, series, horizontal = false, max }) {
+  const { communes, texte, grille } = useOptionsCommunes();
   return (
     <Bar
       data={{
@@ -62,8 +81,17 @@ export function GraphiqueBarres({ labels, series, horizontal = false, max }) {
         ...communes,
         indexAxis: horizontal ? 'y' : 'x',
         scales: {
-          x: { grid: { display: horizontal }, ticks: { font: { size: 11 } }, max: horizontal ? max : undefined },
-          y: { grid: { color: '#eceef2' }, ticks: { font: { size: 11 } }, max: horizontal ? undefined : max, beginAtZero: true },
+          x: {
+            grid: { display: horizontal, color: grille },
+            ticks: { font: { size: 11 }, color: texte },
+            max: horizontal ? max : undefined,
+          },
+          y: {
+            grid: { color: grille },
+            ticks: { font: { size: 11 }, color: texte },
+            max: horizontal ? undefined : max,
+            beginAtZero: true,
+          },
         },
       }}
     />
@@ -71,6 +99,7 @@ export function GraphiqueBarres({ labels, series, horizontal = false, max }) {
 }
 
 export function GraphiqueRadar({ labels, series }) {
+  const { communes, texte, grille } = useOptionsCommunes();
   return (
     <Radar
       data={{
@@ -90,10 +119,10 @@ export function GraphiqueRadar({ labels, series }) {
           r: {
             suggestedMin: 0,
             suggestedMax: 5,
-            angleLines: { color: '#eceef2' },
-            grid: { color: '#eceef2' },
-            pointLabels: { font: { size: 10 } },
-            ticks: { stepSize: 1, font: { size: 9 } },
+            angleLines: { color: grille },
+            grid: { color: grille },
+            pointLabels: { font: { size: 10 }, color: texte },
+            ticks: { stepSize: 1, font: { size: 9 }, color: texte, backdropColor: 'transparent' },
           },
         },
       }}
@@ -108,6 +137,7 @@ export function GraphiqueRadar({ labels, series }) {
  * référence, mais nommée génériquement puisque réutilisée pour tout repère.
  */
 export function GraphiqueLigne({ labels, series }) {
+  const { communes, texte, grille } = useOptionsCommunes();
   return (
     <Line
       data={{
@@ -127,8 +157,13 @@ export function GraphiqueLigne({ labels, series }) {
       options={{
         ...communes,
         scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-          y: { grid: { color: '#eceef2' }, ticks: { font: { size: 11 } }, suggestedMin: 0, suggestedMax: 5 },
+          x: { grid: { display: false }, ticks: { font: { size: 11 }, color: texte } },
+          y: {
+            grid: { color: grille },
+            ticks: { font: { size: 11 }, color: texte },
+            suggestedMin: 0,
+            suggestedMax: 5,
+          },
         },
       }}
     />
@@ -136,13 +171,14 @@ export function GraphiqueLigne({ labels, series }) {
 }
 
 export function GraphiqueAnneau({ labels, data, couleurs }) {
+  const { communes, texte } = useOptionsCommunes();
   return (
     <Doughnut
       data={{ labels, datasets: [{ data, backgroundColor: couleurs, borderWidth: 0, hoverOffset: 6 }] }}
       options={{
         ...communes,
         cutout: '62%',
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: texte } } },
       }}
     />
   );

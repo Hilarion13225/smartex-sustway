@@ -71,7 +71,7 @@ export default function FinancementsVerts() {
           <Card>
             <Tableau entetes={['Mission', 'Formule', 'Indices calculés', '']}>
               {lignes.map(({ audit, indices }) => (
-                <tr key={audit.id} className="transition-colors hover:bg-ink-50/60">
+                <tr key={audit.id} className="transition-colors hover:bg-ink-100/60">
                   <td className="td font-medium text-ink-900">{audit.nom}</td>
                   <td className="td">
                     <Badge ton={audit.formuleCode === 'AVANCEES' ? 'vert' : 'neutre'}>{audit.formuleCode ?? '—'}</Badge>

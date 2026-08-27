@@ -74,7 +74,7 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
 
           <Revele delai={120} className="carte-auth p-6 sm:p-8">
             {badge ? (
-              <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100">
+              <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">
                 {badge}
               </span>
             ) : null}

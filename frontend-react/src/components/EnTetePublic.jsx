@@ -4,6 +4,7 @@ import { ArrowRight, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
 import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
 import { SMARTEX } from '../config/smartex';
+import BasculeTheme from './BasculeTheme';
 
 const LIENS = [
   { vers: '/', libelle: 'Accueil', fin: true },
@@ -30,7 +31,7 @@ export default function EnTetePublic() {
     <header
       className={clsx(
         'sticky top-0 z-40 border-b transition-all duration-300',
-        defile ? 'border-ink-100 bg-white/85 shadow-soft backdrop-blur-xl' : 'border-transparent bg-white/60 backdrop-blur'
+        defile ? 'border-ink-100 bg-surface/85 shadow-soft backdrop-blur-xl' : 'border-transparent bg-surface/60 backdrop-blur'
       )}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
@@ -55,6 +56,7 @@ export default function EnTetePublic() {
         </nav>
 
         <div className="hidden items-center gap-2 sm:flex">
+          <BasculeTheme className="mr-1" />
           <Link to="/connexion" className="btn-vitrine-clair">
             Se connecter
           </Link>
@@ -77,7 +79,7 @@ export default function EnTetePublic() {
 
       <div
         className={clsx(
-          'overflow-hidden border-ink-100 bg-white/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 lg:hidden',
+          'overflow-hidden border-ink-100 bg-surface/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 lg:hidden',
           ouvert ? 'max-h-96 border-t opacity-100' : 'max-h-0 opacity-0'
         )}
       >
@@ -91,13 +93,19 @@ export default function EnTetePublic() {
               className={({ isActive }) =>
                 clsx(
                   'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-700 hover:bg-ink-50'
+                  isActive
+                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400'
+                    : 'text-ink-700 hover:bg-ink-100'
                 )
               }
             >
               {lien.libelle}
             </NavLink>
           ))}
+          <div className="mt-2 flex items-center justify-between gap-2 sm:hidden">
+            <span className="text-xs font-medium uppercase tracking-wide text-ink-500">Thème</span>
+            <BasculeTheme />
+          </div>
           <div className="mt-2 flex flex-col gap-2 sm:hidden">
             <Link to="/connexion" className="btn-vitrine-clair" onClick={() => setOuvert(false)}>
               Se connecter

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -16,18 +17,27 @@ export default {
           800: '#10533b',
           900: '#0e4432',
         },
+        // Défini via des variables CSS (voir index.css, :root et .dark) plutôt
+        // qu'en hexadécimal fixe : la même classe `bg-ink-50`/`text-ink-900`
+        // change alors de sens selon le thème actif, sans qu'aucune des ~40
+        // pages qui les utilisent n'ait besoin d'un préfixe `dark:` — un
+        // changement centralisé plutôt qu'une réécriture de chaque page.
         ink: {
-          50: '#f6f7f9',
-          100: '#eceef2',
-          200: '#d4d9e2',
-          300: '#aeb7c8',
-          400: '#8290a9',
-          500: '#63728e',
-          600: '#4d5a74',
-          700: '#3f495e',
-          800: '#373f50',
-          900: '#1f2533',
+          50: 'rgb(var(--ink-50) / <alpha-value>)',
+          100: 'rgb(var(--ink-100) / <alpha-value>)',
+          200: 'rgb(var(--ink-200) / <alpha-value>)',
+          300: 'rgb(var(--ink-300) / <alpha-value>)',
+          400: 'rgb(var(--ink-400) / <alpha-value>)',
+          500: 'rgb(var(--ink-500) / <alpha-value>)',
+          600: 'rgb(var(--ink-600) / <alpha-value>)',
+          700: 'rgb(var(--ink-700) / <alpha-value>)',
+          800: 'rgb(var(--ink-800) / <alpha-value>)',
+          900: 'rgb(var(--ink-900) / <alpha-value>)',
         },
+        // Fond des cartes/inputs/boutons clairs : blanc pur en clair, une
+        // surface légèrement plus claire que le fond de page en sombre —
+        // remplace les `bg-white` littéraux, qui eux ne s'inversent jamais.
+        surface: 'rgb(var(--surface) / <alpha-value>)',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Segoe UI', 'sans-serif'],

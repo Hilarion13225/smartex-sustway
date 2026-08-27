@@ -101,7 +101,7 @@ export default function IndicePreparation() {
                 {indices && indices.length > 0 ? (
                   <ul className="space-y-2">
                     {indices.map((i) => (
-                      <li key={i.id} className="rounded-xl border border-ink-100 bg-white p-4">
+                      <li key={i.id} className="rounded-xl border border-ink-100 bg-surface p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-medium text-ink-900">{i.bailleurNom}</p>
                           <p className="text-lg font-semibold text-ink-900">{Number(i.score).toFixed(2)} / 5</p>

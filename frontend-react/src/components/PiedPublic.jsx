@@ -32,7 +32,10 @@ const COLONNES = [
 /** Pied de page de la vitrine publique. */
 export default function PiedPublic() {
   return (
-    <footer className="relative overflow-hidden border-t border-ink-100 bg-ink-900 text-ink-300">
+    // Pied de page volontairement toujours sombre, couleurs figées plutôt
+    // que les variables --ink-* (réactives au thème) qui l'auraient rendu
+    // clair en mode sombre.
+    <footer className="relative overflow-hidden border-t border-[#eceef2]/10 bg-[#1f2533] text-[#aeb7c8]">
       <div
         className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl motion-safe:animate-respiration"
         aria-hidden
@@ -44,10 +47,10 @@ export default function PiedPublic() {
               <img src={logoSmartexSustway} alt={SMARTEX.produit} className="h-10 w-auto" />
               <span className="leading-tight">
                 <span className="block text-sm font-semibold text-white">{SMARTEX.produit}</span>
-                <span className="block text-xs text-ink-400">{SMARTEX.accroche}</span>
+                <span className="block text-xs text-[#8290a9]">{SMARTEX.accroche}</span>
               </span>
             </div>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-400">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8290a9]">
               {SMARTEX.produit} est la plateforme d’évaluation RSE éditée par {SMARTEX.editeur}. {SMARTEX.baseline}
             </p>
             <ul className="mt-5 space-y-2 text-sm">
@@ -100,7 +103,7 @@ export default function PiedPublic() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-ink-400">
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-[#8290a9]">
           <p>
             © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
           </p>

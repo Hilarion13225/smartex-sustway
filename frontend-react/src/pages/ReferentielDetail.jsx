@@ -194,7 +194,7 @@ function DomaineRow({ domaine, referentielCode, onChange }) {
   }
 
   return (
-    <div className="rounded-xl border border-ink-100 bg-white p-3">
+    <div className="rounded-xl border border-ink-100 bg-surface p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <span className="font-mono text-xs text-ink-500">{domaine.code}</span>
@@ -516,7 +516,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange }) {
 
   return (
     <>
-      <tr className="transition-colors hover:bg-ink-50/60">
+      <tr className="transition-colors hover:bg-ink-100/60">
         <td className="td font-mono text-xs text-ink-500">{critere.code}</td>
         <td className="td max-w-sm">{critere.libelle}</td>
         <td className="td">{critere.domaineCode}</td>
@@ -686,7 +686,7 @@ function CriticiteSecteurPanel({ critereId, overrides, secteurs, onChange }) {
       {overrides.length > 0 ? (
         <ul className="space-y-1">
           {overrides.map((o) => (
-            <li key={o.secteurCode} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm">
+            <li key={o.secteurCode} className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-sm">
               <span>
                 {o.secteurNom} → <Badge ton={TONS_CRITICITE[o.criticiteCode] ?? 'neutre'}>{o.criticiteCode}</Badge>
               </span>
@@ -778,7 +778,7 @@ function BailleurTagPanel({ critereId, tags, bailleurs, onChange }) {
       {tags.length > 0 ? (
         <ul className="space-y-1">
           {tags.filter((t) => t.applicable).map((t) => (
-            <li key={t.bailleurCode} className="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm">
+            <li key={t.bailleurCode} className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-sm">
               <span>Compte pour l’indice de préparation {t.bailleurNom}</span>
               <button type="button" className="btn-ghost text-xs" onClick={() => retirer(t.bailleurCode)}>
                 Retirer
