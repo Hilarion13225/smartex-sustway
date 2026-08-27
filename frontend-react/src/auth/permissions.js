@@ -31,9 +31,19 @@
  * première entreprise, précisément l'action qui établit le rôle.
  */
 export const PERMISSIONS_PAR_ROLE = {
+  // RG05 : ni SUPER_ADMIN ni ADMIN_AUDIT n'ont "entreprise:creer" — le
+  // personnel Smartex administre/audite les entreprises de ses clients, il
+  // ne les crée pas à leur place (voir EntrepriseResource.creer, refus 403
+  // pour tout rôle interne). Miroir exact de cette contrainte backend.
+  // "membres:gerer" (ajouter/modifier/révoquer un accès collaborateur) est
+  // volontairement réservée à SUPER_ADMIN seul — décision produit : même
+  // RESPONSABLE_ENTREPRISE ne gère plus son équipe en libre-service. Miroir
+  // exact de AutorisationService.ROLES_GESTION_MEMBRES côté backend, à ne
+  // pas confondre avec "entreprise:modifier" (fiche entreprise, restée plus
+  // largement accordée).
   SUPER_ADMIN: [
-    'entreprise:creer',
     'entreprise:modifier',
+    'membres:gerer',
     'audit:creer',
     'audit:modifier',
     'preuve:deposer',
@@ -44,7 +54,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'bailleur:consulter',
   ],
   ADMIN_AUDIT: [
-    'entreprise:creer',
     'entreprise:modifier',
     'audit:creer',
     'audit:modifier',

@@ -26,13 +26,26 @@ import java.util.UUID;
 public class AutorisationService {
 
     /**
-     * Rôles autorisés à administrer une entreprise cliente : sa fiche, ses
-     * sites et les accès de ses collaborateurs (RG05). Le personnel interne
-     * Smartex intervient au nom de Smartex ; EMPLOYE et VISITEUR restent en
-     * consultation/dépôt.
+     * Rôles autorisés à administrer la fiche d'une entreprise cliente et à
+     * consulter son journal d'audit (RG05). Le personnel interne Smartex
+     * intervient au nom de Smartex ; EMPLOYE et VISITEUR restent en
+     * consultation/dépôt. Ne couvre PAS la gestion des comptes/accès
+     * collaborateurs — voir ROLES_GESTION_MEMBRES, volontairement plus
+     * restrictif.
      */
     public static final Set<String> ROLES_ADMINISTRATION_ENTREPRISE =
             Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "RESPONSABLE_ENTREPRISE");
+
+    /**
+     * Rôles autorisés à lister, ajouter, modifier ou révoquer (désactiver)
+     * les comptes/accès d'une entreprise cliente (MembreEntrepriseResource).
+     * Décision produit : même le responsable de l'entreprise (RESPONSABLE_
+     * ENTREPRISE) ne gère plus lui-même son équipe en libre-service — seul
+     * SUPER_ADMIN en a la main, plus restrictif que ROLES_ADMINISTRATION_
+     * ENTREPRISE qui couvre par ailleurs la fiche entreprise et le journal
+     * d'audit (restés inchangés).
+     */
+    public static final Set<String> ROLES_GESTION_MEMBRES = Set.of("SUPER_ADMIN");
 
     /**
      * Personnel interne Smartex : audite/administre au nom de Smartex, donc
@@ -57,7 +70,17 @@ public class AutorisationService {
             "AVANCEES", Set.of()
     );
 
-    private static final String ROLE_SUPER_ADMIN = "SUPER_ADMIN";
+    /**
+     * Rôles à accès global (lecture ET écriture sur TOUTES les entreprises
+     * de la plateforme, sans rattachement explicite requis) : SUPER_ADMIN
+     * pour l'administration de la plateforme, et ADMIN_AUDIT parce qu'en
+     * pratique un seul compte ADMIN_AUDIT gère toutes les missions d'audit
+     * de tous les clients à ce stade du produit — exiger un rattachement
+     * entreprise par entreprise n'aurait aucun sens opérationnel. EXPERT_
+     * REVIEWER n'en fait volontairement pas partie : il reste cantonné aux
+     * entreprises où il est explicitement affecté.
+     */
+    private static final Set<String> ROLES_ACCES_GLOBAL = Set.of("SUPER_ADMIN", "ADMIN_AUDIT");
 
     @Inject
     UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
@@ -69,19 +92,14 @@ public class AutorisationService {
     }
 
     /**
-     * Vrai si l'utilisateur porte le rôle SUPER_ADMIN sur au moins une
-     * entreprise (peu importe laquelle). SUPER_ADMIN a un accès complet
-     * (lecture ET écriture) à TOUTES les entreprises de la plateforme, pas
-     * seulement à celles où il est explicitement rattaché — décision produit
-     * assumée : c'est le rôle d'administration globale de Smartex, il n'a
-     * pas vocation à être cantonné entreprise par entreprise comme les
-     * autres rôles internes (ADMIN_AUDIT, EXPERT_REVIEWER). Toutes les
-     * méthodes de ce service court-circuitent leur vérification habituelle
-     * sur ce cas.
+     * Vrai si l'utilisateur porte un rôle à accès global (voir
+     * ROLES_ACCES_GLOBAL) sur au moins une entreprise (peu importe
+     * laquelle). Toutes les méthodes de ce service court-circuitent leur
+     * vérification habituelle sur ce cas.
      */
-    public boolean estSuperAdminGlobal(UUID utilisateurId) {
+    public boolean estAccesGlobalActif(UUID utilisateurId) {
         return utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
-                .anyMatch(r -> ROLE_SUPER_ADMIN.equals(r.getRole().getCode()));
+                .anyMatch(r -> ROLES_ACCES_GLOBAL.contains(r.getRole().getCode()));
     }
 
     /**
@@ -92,7 +110,7 @@ public class AutorisationService {
      * pour la vérification complète rôle + formule.
      */
     public boolean possedePermission(UUID utilisateurId, UUID entrepriseId, String codePermission) {
-        if (estSuperAdminGlobal(utilisateurId)) {
+        if (estAccesGlobalActif(utilisateurId)) {
             return true;
         }
         return rattachementActif(utilisateurId, entrepriseId)
@@ -117,7 +135,7 @@ public class AutorisationService {
      * traité alors comme le plan le plus restrictif.
      */
     public void exigerPermission(UUID utilisateurId, UUID entrepriseId, String formuleCode, String codePermission) {
-        if (estSuperAdminGlobal(utilisateurId)) {
+        if (estAccesGlobalActif(utilisateurId)) {
             return;
         }
         UtilisateurEntreprise rattachement = rattachementActif(utilisateurId, entrepriseId)
@@ -141,7 +159,7 @@ public class AutorisationService {
      * jamais par un test ad hoc dans une ressource.
      */
     public void exigerRoleSurEntreprise(UUID utilisateurId, UUID entrepriseId, Set<String> codesRoles) {
-        if (estSuperAdminGlobal(utilisateurId)) {
+        if (estAccesGlobalActif(utilisateurId)) {
             return;
         }
         boolean autorise = utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
@@ -157,11 +175,11 @@ public class AutorisationService {
      * Isolation multi-tenant (exigence sécurité CDC §1.4) : vérifie que
      * l'utilisateur est bien rattaché à l'entreprise, indépendamment de la
      * permission. Sert de garde-fou systématique avant tout accès aux
-     * données d'une entreprise. SUPER_ADMIN y échappe (accès global, voir
-     * {@link #estSuperAdminGlobal(UUID)}).
+     * données d'une entreprise. Les rôles à accès global y échappent (voir
+     * {@link #estAccesGlobalActif(UUID)}).
      */
     public void exigerAccesEntreprise(UUID utilisateurId, UUID entrepriseId) {
-        if (estSuperAdminGlobal(utilisateurId)) {
+        if (estAccesGlobalActif(utilisateurId)) {
             return;
         }
         if (!utilisateurEntrepriseRepository.utilisateurRattacheAEntreprise(utilisateurId, entrepriseId)) {

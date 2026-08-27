@@ -16,4 +16,16 @@ public class AuditLogRepository implements PanacheRepositoryBase<AuditLog, UUID>
                 .page(page, taille)
                 .list();
     }
+
+    /**
+     * Même journal, restreint aux entrées dont RESPONSABLE_ENTREPRISE est
+     * lui-même l'auteur — voir AuditLogResource : ce rôle ne voit plus les
+     * activités des autres collaborateurs/du staff sur son entreprise,
+     * seulement les siennes.
+     */
+    public List<AuditLog> parEntrepriseEtUtilisateur(UUID entrepriseId, UUID utilisateurId, int page, int taille) {
+        return find("entrepriseId = ?1 and utilisateurId = ?2 order by createdAt desc", entrepriseId, utilisateurId)
+                .page(page, taille)
+                .list();
+    }
 }

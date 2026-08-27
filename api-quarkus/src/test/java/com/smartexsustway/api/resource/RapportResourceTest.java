@@ -221,7 +221,7 @@ class RapportResourceTest {
         String tokenStaff = UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
                 utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
 
-        // Accès global SUPER_ADMIN (aucun rattachement à ctx.entrepriseId() n'est posé ici) — voir AutorisationService.estSuperAdminGlobal.
+        // Accès global SUPER_ADMIN (aucun rattachement à ctx.entrepriseId() n'est posé ici) — voir AutorisationService.estAccesGlobalActif.
         String rapportId = given()
                 .header("Authorization", "Bearer " + tokenStaff)
                 .contentType(ContentType.JSON)

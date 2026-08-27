@@ -25,12 +25,16 @@ const PERMISSIONS_LIBELLE = {
 const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
 /**
- * Rôles qu'une entreprise cliente attribue elle-même — les rôles internes
- * Smartex n'en font pas partie. EMPLOYE retiré (décision produit, v1 :
- * seul le responsable de l'entreprise est audité) — voir même commentaire
- * côté API, MembreEntrepriseResource.ROLES_ATTRIBUABLES.
+ * Rôles attribuables depuis ce formulaire — miroir exact de
+ * MembreEntrepriseResource.ROLES_ATTRIBUABLES. Cette page n'étant plus
+ * accessible qu'à SUPER_ADMIN (voir accesInterdit plus bas), elle sert
+ * aussi de point d'entrée pour créer les comptes du personnel Smartex
+ * (ADMIN_AUDIT, EXPERT_REVIEWER) par invitation, sans rattachement manuel
+ * en base. SUPER_ADMIN lui-même ne se délègue pas depuis l'application.
+ * EMPLOYE retiré (décision produit, v1 : seul le responsable de
+ * l'entreprise est audité).
  */
-const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR'];
+const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR', 'ADMIN_AUDIT', 'EXPERT_REVIEWER'];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
@@ -40,7 +44,7 @@ const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR'];
  */
 export default function Utilisateurs() {
   const { entrepriseId } = useParams();
-  const { entreprises, utilisateur, peut } = useApiAuth();
+  const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [membres, setMembres] = useState(null);
@@ -53,11 +57,28 @@ export default function Utilisateurs() {
   const [erreur, setErreur] = useState(null);
   const [messageSucces, setMessageSucces] = useState(null);
 
+  // Réservé à SUPER_ADMIN (voir AutorisationService.ROLES_GESTION_MEMBRES) —
+  // ne jamais bypasser la formule ici : "membres:gerer" n'est jamais retiré
+  // par plan pour un rôle interne, donc l'appeler sans `plan` reste sûr.
+  const peutGererMembres = peut('membres:gerer');
+  // RESPONSABLE_ENTREPRISE n'a plus accès à cette ressource du tout, même en
+  // lecture (voir MembreEntrepriseResource.exigerNonResponsableEntreprise) —
+  // inutile de tenter l'appel qui échouerait en 403.
+  const accesInterdit = roleCourant === 'RESPONSABLE_ENTREPRISE';
+
   const rafraichir = useCallback(() => {
+    if (accesInterdit) {
+      setChargement(false);
+      return;
+    }
     setChargement(true);
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/membres`).catch(() => []),
-      api.get(`/api/v1/entreprises/${entrepriseId}/membres/invitations`).catch(() => []),
+      // Inutile de tenter l'appel qui échouerait en 403 pour qui n'a pas
+      // membres:gerer (même bug déjà corrigé une fois pour l'indice IFC/SFI).
+      peutGererMembres
+        ? api.get(`/api/v1/entreprises/${entrepriseId}/membres/invitations`).catch(() => [])
+        : Promise.resolve([]),
       api.get(`/api/v1/entreprises/${entrepriseId}/abonnement`).catch(() => null),
       api.get(`/api/v1/entreprises/${entrepriseId}/sites`).catch(() => []),
     ])
@@ -68,7 +89,7 @@ export default function Utilisateurs() {
         setSites(listeSites);
       })
       .finally(() => setChargement(false));
-  }, [entrepriseId]);
+  }, [entrepriseId, peutGererMembres, accesInterdit]);
 
   useEffect(() => {
     rafraichir();
@@ -103,8 +124,11 @@ export default function Utilisateurs() {
     return <Vide message="Entreprise introuvable ou non accessible." />;
   }
 
+  if (accesInterdit) {
+    return <Vide message="Cette page n'est pas accessible au responsable de l'entreprise." />;
+  }
+
   const formule = abonnement?.formuleCode;
-  const peutAdministrer = peut('entreprise:modifier', formule);
 
   return (
     <>
@@ -118,7 +142,7 @@ export default function Utilisateurs() {
         titre="Utilisateurs et permissions"
         description={`${entreprise.raisonSociale} — accès accordés et droits effectifs de chaque rôle sous la formule ${abonnement?.formuleNom ?? '—'}.`}
         actions={
-          peutAdministrer ? (
+          peutGererMembres ? (
             <button
               type="button"
               className="btn-primary"
@@ -201,11 +225,11 @@ export default function Utilisateurs() {
                     '2FA',
                     'Depuis',
                     'Statut',
-                    ...(peutAdministrer ? ['Actions'] : []),
+                    ...(peutGererMembres ? ['Actions'] : []),
                   ]}
                 >
                   {membres.map((m) => (
-                    <tr key={m.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={m.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td">
                         <p className="font-medium text-ink-900">
                           {m.prenom} {m.nom}
@@ -226,7 +250,7 @@ export default function Utilisateurs() {
                       <td className="td">
                         <Badge ton={m.statut === 'ACTIF' ? 'vert' : 'neutre'}>{m.statut}</Badge>
                       </td>
-                      {peutAdministrer ? (
+                      {peutGererMembres ? (
                         <td className="td">
                           {m.utilisateurId === utilisateur?.id || m.statut !== 'ACTIF' ? (
                             <span className="text-xs text-ink-400">—</span>
@@ -275,10 +299,10 @@ export default function Utilisateurs() {
                   sousTitre="Le rôle et le site seront appliqués automatiquement dès la création du compte."
                 />
                 <Tableau
-                  entetes={['E-mail', 'Rôle', 'Périmètre', 'Envoyée le', 'Expire le', ...(peutAdministrer ? [''] : [])]}
+                  entetes={['E-mail', 'Rôle', 'Périmètre', 'Envoyée le', 'Expire le', ...(peutGererMembres ? [''] : [])]}
                 >
                   {invitations.map((i) => (
-                    <tr key={i.id} className="transition-colors hover:bg-ink-50/60">
+                    <tr key={i.id} className="transition-colors hover:bg-ink-100/60">
                       <td className="td font-medium text-ink-900">{i.email}</td>
                       <td className="td">
                         <Badge ton="bleu">{ROLE_LIBELLE[i.roleCode] ?? i.roleNom}</Badge>
@@ -286,7 +310,7 @@ export default function Utilisateurs() {
                       <td className="td text-sm text-ink-600">{i.siteNom ?? 'Toute l’entreprise'}</td>
                       <td className="td text-sm text-ink-600">{formaterDate(i.createdAt)}</td>
                       <td className="td text-sm text-ink-600">{formaterDate(i.expireAt)}</td>
-                      {peutAdministrer ? (
+                      {peutGererMembres ? (
                         <td className="td text-right">
                           <button
                             type="button"
@@ -314,7 +338,7 @@ export default function Utilisateurs() {
               />
               <Tableau entetes={['Permission', ...rolesPresents.map((code) => ROLE_LIBELLE[code] ?? code)]}>
                 {TOUTES_PERMISSIONS.map((permission) => (
-                  <tr key={permission} className="transition-colors hover:bg-ink-50/60">
+                  <tr key={permission} className="transition-colors hover:bg-ink-100/60">
                     <td className="td">
                       <p className="text-sm text-ink-900">{PERMISSIONS_LIBELLE[permission]}</p>
                       <p className="font-mono text-xs text-ink-400">{permission}</p>

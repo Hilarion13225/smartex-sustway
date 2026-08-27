@@ -61,6 +61,12 @@ import java.util.UUID;
  * dépôts de preuves et évaluations déjà réalisés par ce collaborateur
  * restent rattachables à lui (traçabilité CDC §1.4).
  *
+ * Décision produit : la gestion des comptes/accès (ajouter, modifier,
+ * révoquer) n'est plus en libre-service pour le client — même RESPONSABLE_
+ * ENTREPRISE ne peut plus y toucher, seul SUPER_ADMIN le peut (voir
+ * AutorisationService.ROLES_GESTION_MEMBRES). La lecture ({@link #lister})
+ * reste ouverte à tout rattachement actif, elle seule.
+ *
  * {@code @Transactional} est nécessaire même en lecture : le DTO lit la
  * collection {@code role.permissions}, chargée en LAZY.
  */
@@ -71,9 +77,16 @@ import java.util.UUID;
 public class MembreEntrepriseResource {
 
     /**
-     * Rôles qu'une entreprise cliente peut attribuer elle-même : les rôles
-     * internes Smartex (SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER) auditent
-     * au nom de Smartex et ne s'accordent pas depuis un espace client.
+     * Rôles attribuables via cet endpoint. Historiquement réservé aux rôles
+     * client (RESPONSABLE_ENTREPRISE, VISITEUR) — un rôle interne Smartex ne
+     * s'accordait pas depuis un espace client. Élargi à ADMIN_AUDIT et
+     * EXPERT_REVIEWER : cet endpoint est désormais exclusivement accessible
+     * à SUPER_ADMIN (voir exigerAdministrationDesAcces/ROLES_GESTION_MEMBRES,
+     * RESPONSABLE_ENTREPRISE n'y a même plus accès en lecture), donc c'est
+     * devenu le point d'entrée officiel par lequel SUPER_ADMIN crée les
+     * comptes du personnel Smartex — plus besoin d'un rattachement manuel en
+     * base. SUPER_ADMIN lui-même reste volontairement exclu : ce rôle ne se
+     * délègue pas depuis l'application.
      *
      * EMPLOYE retiré (décision produit) : dans cette première version, seul
      * le responsable de l'entreprise est audité — un rôle "collaborateur"
@@ -83,9 +96,11 @@ public class MembreEntrepriseResource {
      * déjà existants ni compliquer sa réintroduction.
      */
     private static final Set<String> ROLES_ATTRIBUABLES =
-            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR");
+            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR", "ADMIN_AUDIT", "EXPERT_REVIEWER");
 
     private static final int DUREE_VALIDITE_INVITATION_JOURS = 7;
+
+    private static final String ROLE_RESPONSABLE_ENTREPRISE = "RESPONSABLE_ENTREPRISE";
 
     @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
     @Inject UtilisateurRepository utilisateurRepository;
@@ -104,7 +119,9 @@ public class MembreEntrepriseResource {
     @GET
     @Transactional
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        exigerNonResponsableEntreprise(utilisateurId, entrepriseId);
 
         var membres = utilisateurEntrepriseRepository.parEntreprise(entrepriseId).stream()
                 .map(MembreEntrepriseDto::depuis)
@@ -265,8 +282,24 @@ public class MembreEntrepriseResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         autorisationService.exigerRoleSurEntreprise(
-                utilisateurId, entrepriseId, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
+                utilisateurId, entrepriseId, AutorisationService.ROLES_GESTION_MEMBRES);
         return utilisateurId;
+    }
+
+    /**
+     * Décision produit : RESPONSABLE_ENTREPRISE n'a plus accès du tout à
+     * cette ressource, même en lecture — ni la liste des collaborateurs, ni
+     * la matrice de permissions qui s'appuie dessus côté frontend. Les
+     * autres rôles rattachés (staff Smartex, VISITEUR) gardent l'accès en
+     * lecture inchangé.
+     */
+    private void exigerNonResponsableEntreprise(UUID utilisateurId, UUID entrepriseId) {
+        boolean estResponsableEntreprise = utilisateurEntrepriseRepository
+                .actifsParUtilisateurEtEntreprise(utilisateurId, entrepriseId).stream()
+                .anyMatch(r -> ROLE_RESPONSABLE_ENTREPRISE.equals(r.getRole().getCode()));
+        if (estResponsableEntreprise) {
+            throw new ForbiddenException("Le responsable de l'entreprise n'a pas accès à la gestion des utilisateurs");
+        }
     }
 
     /**

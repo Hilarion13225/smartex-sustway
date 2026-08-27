@@ -1,7 +1,9 @@
 package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.domain.entity.Utilisateur;
+import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
 import com.smartexsustway.api.domain.repository.AuditLogRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.resource.dto.AuditLogDto;
 import com.smartexsustway.api.security.AutorisationService;
@@ -36,8 +38,11 @@ public class AuditLogResource {
 
     private static final int TAILLE_MAX = 200;
 
+    private static final String ROLE_RESPONSABLE_ENTREPRISE = "RESPONSABLE_ENTREPRISE";
+
     @Inject AuditLogRepository auditLogRepository;
     @Inject UtilisateurRepository utilisateurRepository;
+    @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
     @Inject AutorisationService autorisationService;
     @Inject TenantContext tenantContext;
 
@@ -53,7 +58,20 @@ public class AuditLogResource {
         autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
 
         int tailleEffective = Math.min(Math.max(taille, 1), TAILLE_MAX);
-        var entrees = auditLogRepository.parEntreprise(entrepriseId, Math.max(page, 0), tailleEffective);
+
+        // RESPONSABLE_ENTREPRISE ne voit que ses propres activités, jamais
+        // celles des autres collaborateurs ni du staff Smartex sur son
+        // entreprise — décision produit. Le staff (SUPER_ADMIN/ADMIN_AUDIT,
+        // qui passent la vérification ci-dessus) garde le journal complet,
+        // c'est leur outil de redevabilité sur la relation client.
+        boolean estResponsableEntreprise = utilisateurEntrepriseRepository
+                .actifsParUtilisateurEtEntreprise(utilisateurId, entrepriseId).stream()
+                .map(UtilisateurEntreprise::getRole)
+                .anyMatch(role -> ROLE_RESPONSABLE_ENTREPRISE.equals(role.getCode()));
+
+        var entrees = estResponsableEntreprise
+                ? auditLogRepository.parEntrepriseEtUtilisateur(entrepriseId, utilisateurId, Math.max(page, 0), tailleEffective)
+                : auditLogRepository.parEntreprise(entrepriseId, Math.max(page, 0), tailleEffective);
 
         // Résolution groupée des auteurs : une entrée sur deux partage le
         // même utilisateur, autant éviter un findById par ligne.

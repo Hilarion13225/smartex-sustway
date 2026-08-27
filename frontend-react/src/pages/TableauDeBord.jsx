@@ -177,6 +177,14 @@ export default function TableauDeBord() {
     return total;
   }, [missionsNotees]);
 
+  // Vue portefeuille (multi-entreprises, staff) vs vue mission (une seule
+  // entreprise, cas ADMIN_AUDIT rattaché à un seul client ou compte client
+  // classique) : au-delà de ce booléen, on retire toute mention/colonne
+  // "Entreprise" devenue redondante quand elle est toujours la même.
+  const plusieursEntreprises = entreprises.length > 1;
+
+  const missionsEnCours = missions.filter((m) => m.audit.statut === 'EN_COURS').length;
+
   const indiceMoyen = indices.length
     ? indices.reduce((total, i) => total + Number(i.score), 0) / indices.length
     : null;
@@ -194,18 +202,21 @@ export default function TableauDeBord() {
   }, [missionsNotees]);
 
   function exporter() {
+    const entetesBase = ['Mission', 'Référentiel', 'Statut', 'Score global', 'Critères évalués', 'Non-conformités ouvertes'];
     exporterCsv(
       'tableau-de-bord-smartex-sustway.csv',
-      ['Entreprise', 'Mission', 'Référentiel', 'Statut', 'Score global', 'Critères évalués', 'Non-conformités ouvertes'],
-      missions.map((m) => [
-        m.entreprise.raisonSociale,
-        m.audit.nom,
-        m.audit.referentielCode,
-        m.audit.statut,
-        m.score ? Number(m.score.scoreGlobal).toFixed(2) : '—',
-        m.score ? `${m.score.nombreCriteresEvalues}/${m.score.nombreCriteresTotal}` : '—',
-        m.nonConformites.filter((nc) => nc.statut !== 'CLOTUREE').length,
-      ])
+      plusieursEntreprises ? ['Entreprise', ...entetesBase] : entetesBase,
+      missions.map((m) => {
+        const ligne = [
+          m.audit.nom,
+          m.audit.referentielCode,
+          m.audit.statut,
+          m.score ? Number(m.score.scoreGlobal).toFixed(2) : '—',
+          m.score ? `${m.score.nombreCriteresEvalues}/${m.score.nombreCriteresTotal}` : '—',
+          m.nonConformites.filter((nc) => nc.statut !== 'CLOTUREE').length,
+        ];
+        return plusieursEntreprises ? [m.entreprise.raisonSociale, ...ligne] : ligne;
+      })
     );
   }
 
@@ -214,7 +225,11 @@ export default function TableauDeBord() {
       <PageTitre
         icone={LayoutDashboard}
         titre={`Tableau de bord${utilisateur ? ` — ${utilisateur.prenom} ${utilisateur.nom}` : ''}`}
-        description="Vue consolidée de vos entreprises, de l’avancement des missions d’audit et des écarts à traiter en priorité."
+        description={
+          plusieursEntreprises
+            ? 'Vue consolidée de vos entreprises, de l’avancement des missions d’audit et des écarts à traiter en priorité.'
+            : 'Avancement de vos missions d’audit et écarts à traiter en priorité.'
+        }
         actions={
           missions.length > 0 ? (
             <button type="button" className="btn-secondary" onClick={exporter}>
@@ -233,13 +248,23 @@ export default function TableauDeBord() {
         <>
           <Revele>
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <StatCard
-                libelle="Entreprises suivies"
-                valeur={entreprises.length}
-                detail={`${missions.length} mission${missions.length > 1 ? 's' : ''} d’audit`}
-                icone={Building2}
-                ton="bleu"
-              />
+              {plusieursEntreprises ? (
+                <StatCard
+                  libelle="Entreprises suivies"
+                  valeur={entreprises.length}
+                  detail={`${missions.length} mission${missions.length > 1 ? 's' : ''} d’audit`}
+                  icone={Building2}
+                  ton="bleu"
+                />
+              ) : (
+                <StatCard
+                  libelle="Missions suivies"
+                  valeur={missions.length}
+                  detail={`${missionsEnCours} en cours`}
+                  icone={ClipboardCheck}
+                  ton="bleu"
+                />
+              )}
               <StatCard
                 libelle="Score moyen"
                 valeur={scoreMoyen === null ? '—' : `${scoreMoyen.toFixed(2)} / 5`}
@@ -417,7 +442,7 @@ export default function TableauDeBord() {
                     <CardHeader titre="Abonnements actifs" icone={Wallet} sousTitre="Formule et périodicité de chaque entreprise" />
                     <Tableau entetes={['Entreprise', 'Formule', 'Périodicité', 'Statut']}>
                       {abonnements.map(({ entreprise, abonnement }) => (
-                        <tr key={entreprise.id} className="transition-colors hover:bg-ink-50/60">
+                        <tr key={entreprise.id} className="transition-colors hover:bg-ink-100/60">
                           <td className="td">{entreprise.raisonSociale}</td>
                           <td className="td">
                             <Badge ton={TONS_FORMULE[abonnement.formuleCode] ?? 'neutre'}>{abonnement.formuleNom}</Badge>
@@ -440,10 +465,16 @@ export default function TableauDeBord() {
                     icone={ClipboardCheck}
                     sousTitre="Avancement et score de chaque campagne d’évaluation"
                   />
-                  <Tableau entetes={['Entreprise', 'Mission', 'Statut', 'Avancement', 'Score', '']}>
+                  <Tableau
+                    entetes={
+                      plusieursEntreprises
+                        ? ['Entreprise', 'Mission', 'Statut', 'Avancement', 'Score', '']
+                        : ['Mission', 'Statut', 'Avancement', 'Score', '']
+                    }
+                  >
                     {missions.map((m) => (
-                      <tr key={m.audit.id} className="transition-colors hover:bg-ink-50/60">
-                        <td className="td">{m.entreprise.raisonSociale}</td>
+                      <tr key={m.audit.id} className="transition-colors hover:bg-ink-100/60">
+                        {plusieursEntreprises ? <td className="td">{m.entreprise.raisonSociale}</td> : null}
                         <td className="td">
                           <p className="font-medium text-ink-900">{m.audit.nom}</p>
                           <p className="text-xs text-ink-500">
@@ -500,11 +531,13 @@ export default function TableauDeBord() {
                     />
                     <Tableau entetes={['Critère', 'Non-conformité', 'Niveau', 'Risque attendu', 'Actions', '']}>
                       {prioritaires.map((nc) => (
-                        <tr key={nc.id} className="transition-colors hover:bg-ink-50/60">
+                        <tr key={nc.id} className="transition-colors hover:bg-ink-100/60">
                           <td className="td font-mono text-xs text-ink-500">{nc.critereCode}</td>
                           <td className="td max-w-md">
                             <p className="font-medium text-ink-900">{nc.titre}</p>
-                            <p className="text-xs text-ink-500">{nc.mission.entreprise.raisonSociale}</p>
+                            {plusieursEntreprises ? (
+                              <p className="text-xs text-ink-500">{nc.mission.entreprise.raisonSociale}</p>
+                            ) : null}
                           </td>
                           <td className="td">
                             <Badge ton={TONS_NIVEAU_NC[nc.niveau] ?? 'neutre'}>{nc.niveau}</Badge>

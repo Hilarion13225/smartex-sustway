@@ -75,16 +75,17 @@ public class EntrepriseResource {
     @Inject TenantContext tenantContext;
 
     /**
-     * SUPER_ADMIN a un accès global (voir AutorisationService.estSuperAdminGlobal) :
-     * il doit pouvoir naviguer vers n'importe quelle entreprise de la
-     * plateforme, pas seulement celles où il a un rattachement explicite —
-     * sinon les vérifications assouplies côté AutorisationService seraient
+     * SUPER_ADMIN et ADMIN_AUDIT ont un accès global (voir
+     * AutorisationService.estAccesGlobalActif) : ils doivent pouvoir
+     * naviguer vers n'importe quelle entreprise de la plateforme, pas
+     * seulement celles où ils ont un rattachement explicite — sinon les
+     * vérifications assouplies côté AutorisationService seraient
      * inatteignables depuis l'interface.
      */
     @GET
     public Response mesEntreprises() {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
-        List<EntrepriseDto> resultat = autorisationService.estSuperAdminGlobal(utilisateurId)
+        List<EntrepriseDto> resultat = autorisationService.estAccesGlobalActif(utilisateurId)
                 ? entrepriseRepository.listAll().stream().map(EntrepriseDto::depuis).toList()
                 : utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
                         .map(UtilisateurEntreprise::getEntreprise)
@@ -156,9 +157,27 @@ public class EntrepriseResource {
         return Response.ok(EntrepriseDto.depuis(entreprise)).build();
     }
 
+    /**
+     * RG05 : auto-inscription — seul un compte sans rôle interne Smartex
+     * (nouvelle inscription sans rattachement, ou déjà RESPONSABLE_ENTREPRISE/
+     * VISITEUR côté client) peut créer une entreprise. Le personnel Smartex
+     * (SUPER_ADMIN/ADMIN_AUDIT/EXPERT_REVIEWER) audite/administre les
+     * entreprises de ses clients, il n'a pas vocation à les créer à leur
+     * place — ce n'est pas une question de formule (RG21/RESTRICTIONS_PAR_PLAN),
+     * donc pas géré par exigerPermission, mais un contrôle de rôle direct,
+     * même logique que AuditResource.affecterAuditeur.
+     */
     @POST
     @Transactional
     public Response creer(@Valid EntrepriseCreateRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        boolean estStaffInterne = utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
+                .anyMatch(r -> AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
+        if (estStaffInterne) {
+            throw new ForbiddenException(
+                    "Le personnel interne Smartex ne peut pas créer d'entreprise pour un client (RG05)");
+        }
+
         if (entrepriseRepository.identifiantLegalExiste(requete.identifiantLegal())) {
             return Response.status(Response.Status.CONFLICT)
                     .entity(new ErreurDto("Une entreprise avec cet identifiant légal existe déjà"))
@@ -208,7 +227,6 @@ public class EntrepriseResource {
         abonnementRepository.persist(abonnement);
 
         // L'utilisateur qui crée l'entreprise en devient responsable (RG05).
-        UUID utilisateurId = tenantContext.utilisateurCourantId();
         Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId);
         Role roleResponsable = roleRepository.parCode("RESPONSABLE_ENTREPRISE")
                 .orElseThrow(() -> new IllegalStateException(
