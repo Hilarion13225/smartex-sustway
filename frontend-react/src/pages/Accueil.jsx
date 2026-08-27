@@ -9,7 +9,6 @@ import {
   Gauge,
   Leaf,
   LineChart,
-  PlayCircle,
   ShieldCheck,
   Sparkles,
   Target,
@@ -152,14 +151,16 @@ export default function Accueil() {
               aux financements verts.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link to="/inscription" className="btn-vitrine group text-base">
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <Link to="/inscription" className="btn-vitrine group px-4">
                 Choisir une formule
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
               </Link>
-              <Link to="/services" className="btn-vitrine-clair group text-base">
-                <PlayCircle className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110" aria-hidden />
+              <Link to="/services" className="btn-vitrine-clair group px-4">
                 Découvrir la méthode
+              </Link>
+              <Link to="/connexion" className="btn-vitrine-fantome group px-4">
+                Se connecter
               </Link>
             </div>
 

@@ -71,6 +71,9 @@
   .btn-vitrine-clair {
     @apply btn rounded-full border border-ink-200 bg-white px-5 py-2.5 text-ink-700 transition duration-300 hover:border-brand-300 hover:text-brand-700 motion-safe:hover:-translate-y-0.5;
   }
+  .btn-vitrine-fantome {
+    @apply btn rounded-full border border-transparent px-5 py-2.5 text-ink-600 transition duration-300 hover:bg-brand-50 hover:text-brand-700 motion-safe:hover:-translate-y-0.5;
+  }
   .lien-nav {
     @apply relative rounded-lg px-3 py-2 text-sm font-medium text-ink-600 transition-colors hover:text-brand-700;
   }
