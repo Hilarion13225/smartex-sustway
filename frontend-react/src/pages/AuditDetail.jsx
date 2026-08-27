@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin, Search, UserPlus, Users, X } from 'lucide-react';
+import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin, Search } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -16,15 +16,6 @@ const TONS_CRITICITE = {
 const TONS_STATUT_CRITERE = {
   A_EVALUER: 'neutre',
   EVALUE: 'vert',
-};
-
-const ROLES_INTERNES_SMARTEX = ['SUPER_ADMIN', 'ADMIN_AUDIT', 'EXPERT_REVIEWER'];
-
-const LIBELLE_ROLE_MISSION = {
-  AUDITEUR_PRINCIPAL: 'Auditeur principal',
-  AUDITEUR_SECONDAIRE: 'Auditeur secondaire',
-  EXPERT_REVIEWER: 'Expert reviewer',
-  OBSERVATEUR: 'Observateur',
 };
 
 /** RG34/RG35 : questionnaire figé de la mission — liste des critères à évaluer. */
@@ -44,12 +35,7 @@ export default function AuditDetail() {
   const [selectionSites, setSelectionSites] = useState([]);
   const [sauvegardeSitesEnCours, setSauvegardeSitesEnCours] = useState(false);
 
-  const [membres, setMembres] = useState([]);
-  const [equipe, setEquipe] = useState([]);
-  const [nouvelAuditeurId, setNouvelAuditeurId] = useState('');
-  const [nouveauRoleMission, setNouveauRoleMission] = useState('AUDITEUR_PRINCIPAL');
-  const [actionEquipeEnCours, setActionEquipeEnCours] = useState(false);
-  const [erreurEquipe, setErreurEquipe] = useState(null);
+  const [erreurSites, setErreurSites] = useState(null);
 
   const rafraichir = useCallback(() => {
     setChargement(true);
@@ -58,17 +44,13 @@ export default function AuditDetail() {
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres`),
       api.get(`/api/v1/entreprises/${entrepriseId}/sites`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/sites`),
-      api.get(`/api/v1/entreprises/${entrepriseId}/membres`),
-      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/auditeurs`),
     ])
-      .then(([a, c, se, sa, m, e]) => {
+      .then(([a, c, se, sa]) => {
         setAudit(a);
         setCriteres(c);
         setSitesEntreprise(se.filter((s) => s.statut === 'ACTIF'));
         setSitesAudit(sa);
         setSelectionSites(sa.map((s) => s.id));
-        setMembres(m);
-        setEquipe(e);
       })
       .catch(() => {
         setAudit(null);
@@ -83,23 +65,12 @@ export default function AuditDetail() {
 
   const peutModifier = peut('audit:modifier', audit?.formuleCode);
 
-  const candidatsAuditeurs = useMemo(
-    () =>
-      membres.filter(
-        (m) =>
-          m.statut === 'ACTIF' &&
-          ROLES_INTERNES_SMARTEX.includes(m.roleCode) &&
-          !equipe.some((eq) => eq.utilisateurId === m.utilisateurId)
-      ),
-    [membres, equipe]
-  );
-
   function basculerSite(siteId) {
     setSelectionSites((prec) => (prec.includes(siteId) ? prec.filter((id) => id !== siteId) : [...prec, siteId]));
   }
 
   async function enregistrerSites() {
-    setErreurEquipe(null);
+    setErreurSites(null);
     setSauvegardeSitesEnCours(true);
     try {
       const sites = await api.put(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/sites`, {
@@ -107,37 +78,9 @@ export default function AuditDetail() {
       });
       setSitesAudit(sites);
     } catch (err) {
-      setErreurEquipe(err instanceof ApiError ? err.message : 'Erreur inattendue');
+      setErreurSites(err instanceof ApiError ? err.message : 'Erreur inattendue');
     } finally {
       setSauvegardeSitesEnCours(false);
-    }
-  }
-
-  async function affecterAuditeur() {
-    if (!nouvelAuditeurId) return;
-    setErreurEquipe(null);
-    setActionEquipeEnCours(true);
-    try {
-      await api.put(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/auditeurs/${nouvelAuditeurId}`, {
-        roleMission: nouveauRoleMission,
-      });
-      const e = await api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/auditeurs`);
-      setEquipe(e);
-      setNouvelAuditeurId('');
-    } catch (err) {
-      setErreurEquipe(err instanceof ApiError ? err.message : 'Erreur inattendue');
-    } finally {
-      setActionEquipeEnCours(false);
-    }
-  }
-
-  async function retirerAuditeur(utilisateurId) {
-    setErreurEquipe(null);
-    try {
-      await api.delete(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/auditeurs/${utilisateurId}`);
-      setEquipe((prec) => prec.filter((eq) => eq.utilisateurId !== utilisateurId));
-    } catch (err) {
-      setErreurEquipe(err instanceof ApiError ? err.message : 'Erreur inattendue');
     }
   }
 
@@ -194,10 +137,10 @@ export default function AuditDetail() {
             }
           />
 
-          {erreurEquipe ? <Alerte ton="rouge">{erreurEquipe}</Alerte> : null}
+          {erreurSites ? <Alerte ton="rouge">{erreurSites}</Alerte> : null}
 
           <Revele>
-            <div className="mb-6 grid gap-4 lg:grid-cols-2">
+            <div className="mb-6 lg:max-w-xl">
               <Card className="p-5">
                 <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />
                 {sitesEntreprise.length === 0 ? (
@@ -235,91 +178,6 @@ export default function AuditDetail() {
                     ) : null}
                   </>
                 )}
-              </Card>
-
-              <Card className="p-5">
-                <CardHeader titre="Équipe affectée" sousTitre="Auditeurs et experts Smartex affectés à cette mission." icone={Users} />
-                {equipe.length === 0 ? (
-                  <p className="mt-3 text-sm text-ink-500">Aucun membre affecté pour l'instant.</p>
-                ) : (
-                  <ul className="mt-3 space-y-2">
-                    {equipe.map((eq) => (
-                      <li key={eq.utilisateurId} className="flex items-center justify-between gap-2 rounded-lg border border-ink-100 px-3 py-2 text-sm">
-                        <span className="min-w-0 truncate">
-                          {eq.prenom} {eq.nom}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <Badge ton="bleu">{LIBELLE_ROLE_MISSION[eq.roleMission] ?? eq.roleMission}</Badge>
-                          {peutModifier ? (
-                            <button
-                              type="button"
-                              className="btn-ghost p-1"
-                              aria-label={`Retirer ${eq.prenom} ${eq.nom}`}
-                              onClick={() => retirerAuditeur(eq.utilisateurId)}
-                            >
-                              <X className="h-4 w-4" aria-hidden />
-                            </button>
-                          ) : null}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {peutModifier ? (
-                  candidatsAuditeurs.length === 0 ? (
-                    <p className="mt-4 text-xs text-ink-500">
-                      Aucun autre membre du personnel Smartex (SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER) disponible à affecter.
-                    </p>
-                  ) : (
-                    <div className="mt-4 flex flex-wrap items-end gap-2">
-                      <div className="min-w-[10rem] flex-1">
-                        <label className="label" htmlFor="nouvel-auditeur">
-                          Ajouter un membre
-                        </label>
-                        <select
-                          id="nouvel-auditeur"
-                          className="input text-sm"
-                          value={nouvelAuditeurId}
-                          onChange={(e) => setNouvelAuditeurId(e.target.value)}
-                        >
-                          <option value="">Choisir…</option>
-                          {candidatsAuditeurs.map((m) => (
-                            <option key={m.utilisateurId} value={m.utilisateurId}>
-                              {m.prenom} {m.nom} ({m.roleCode})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="w-44">
-                        <label className="label" htmlFor="role-mission">
-                          Rôle sur la mission
-                        </label>
-                        <select
-                          id="role-mission"
-                          className="input text-sm"
-                          value={nouveauRoleMission}
-                          onChange={(e) => setNouveauRoleMission(e.target.value)}
-                        >
-                          {Object.entries(LIBELLE_ROLE_MISSION).map(([code, libelle]) => (
-                            <option key={code} value={code}>
-                              {libelle}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        disabled={!nouvelAuditeurId || actionEquipeEnCours}
-                        onClick={affecterAuditeur}
-                      >
-                        <UserPlus className="h-4 w-4" aria-hidden />
-                        Affecter
-                      </button>
-                    </div>
-                  )
-                ) : null}
               </Card>
             </div>
           </Revele>

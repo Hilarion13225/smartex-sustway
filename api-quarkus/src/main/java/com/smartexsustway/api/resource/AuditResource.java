@@ -70,9 +70,16 @@ import java.util.UUID;
  * RG12 (sites)/RG06 (auditeurs) : périmètre de sites et équipe affectée à
  * une mission, exposés via AUDIT_SITE/AUDIT_AUDITEUR — voir
  * AuditSiteRepository/AuditAuditeurRepository. Lecture ouverte à tout
- * rattachement (comme le reste de cette ressource), écriture réservée à
- * audit:modifier (même garde que ActionCorrectiveResource/NonConformeResource
- * pour les autres mutations attachées à une mission).
+ * rattachement (comme le reste de cette ressource). Écriture des sites
+ * réservée à audit:modifier (même garde que ActionCorrectiveResource/
+ * NonConformeResource pour les autres mutations attachées à une mission) —
+ * le client garde la main sur le périmètre de sa propre mission. Écriture de
+ * l'équipe affectée réservée au personnel interne Smartex (ROLES_INTERNES_
+ * SMARTEX), pas au client : ce n'est plus une permission de formule mais un
+ * rôle, voir affecterAuditeur/retirerAuditeur. Aucune affectation automatique
+ * pour l'instant (un seul ADMIN_AUDIT gère toutes les missions à ce stade du
+ * produit) — l'équipe reste à affecter manuellement par le staff, pas de
+ * garniture d'écran côté frontend en attendant (voir AuditDetail.jsx).
  */
 @Path("/api/v1/entreprises/{entrepriseId}/audits")
 @Produces(MediaType.APPLICATION_JSON)
@@ -271,7 +278,13 @@ public class AuditResource {
     /**
      * RG06 : seul le personnel interne Smartex peut être affecté comme
      * auditeur d'une mission — un rattachement client (RESPONSABLE_ENTREPRISE,
-     * VISITEUR) est la partie auditée, pas l'équipe qui audite.
+     * VISITEUR) est la partie auditée, pas l'équipe qui audite. Et depuis
+     * cette décision produit, seul le personnel interne peut lui-même
+     * effectuer cette affectation manuellement (au-delà de l'affectation
+     * automatique à la création, voir AffectationAutomatiqueService) — le
+     * client ne choisit plus son auditeur, exigerRoleSurEntreprise plutôt
+     * que la permission générique audit:modifier (que le client possède
+     * encore, pour son propre périmètre de sites — voir definirSites).
      */
     @PUT
     @Path("/{auditId}/auditeurs/{auditeurId}")
@@ -281,7 +294,7 @@ public class AuditResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "audit:modifier");
+        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_INTERNES_SMARTEX);
 
         RoleMissionAuditeur roleMission;
         try {
@@ -312,7 +325,7 @@ public class AuditResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode(audit), "audit:modifier");
+        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_INTERNES_SMARTEX);
 
         auditAuditeurRepository.retirer(audit.getId(), auditeurId);
         auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_AUDITEUR_RETIRE", "audit", audit.getId());
