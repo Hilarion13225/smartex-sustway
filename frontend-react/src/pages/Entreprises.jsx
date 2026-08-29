@@ -22,7 +22,6 @@ export default function Entreprises() {
     secteurCode: '',
     taille: 'PME',
     formuleCode: 'STANDARD',
-    periodicite: 'ANNUELLE',
   });
   const [afficherFormulaire, setAfficherFormulaire] = useState(entreprises.length === 0);
   const [chargement, setChargement] = useState(false);
@@ -188,20 +187,6 @@ export default function Entreprises() {
                 >
                   <option value="STANDARD">Standard</option>
                   <option value="AVANCEES">Avancées</option>
-                </select>
-              </div>
-              <div>
-                <label className="label" htmlFor="periodicite">
-                  Périodicité
-                </label>
-                <select
-                  id="periodicite"
-                  className="input"
-                  value={formulaire.periodicite}
-                  onChange={(e) => setFormulaire({ ...formulaire, periodicite: e.target.value })}
-                >
-                  <option value="MENSUELLE">Mensuelle</option>
-                  <option value="ANNUELLE">Annuelle</option>
                 </select>
               </div>
             </div>

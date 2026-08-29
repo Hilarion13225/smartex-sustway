@@ -49,8 +49,7 @@ class ScoreHistoriqueResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Score Historique",
                         "identifiantLegal", identifiantLegal,
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

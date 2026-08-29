@@ -40,8 +40,7 @@ class PreuveResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Preuve Test",
                         "identifiantLegal", "RCCM-PRV-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

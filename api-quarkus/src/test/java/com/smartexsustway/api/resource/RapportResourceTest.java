@@ -44,8 +44,7 @@ class RapportResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Rapport Test",
                         "identifiantLegal", "RCCM-RPT-" + UUID.randomUUID(),
-                        "formuleCode", formuleCode,
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", formuleCode))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

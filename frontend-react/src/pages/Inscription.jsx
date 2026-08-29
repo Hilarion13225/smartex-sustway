@@ -60,7 +60,6 @@ export default function Inscription() {
   const [formules, setFormules] = useState([]);
   const [secteurs, setSecteurs] = useState([]);
   const [plan, setPlan] = useState('STANDARD');
-  const [periodicite, setPeriodicite] = useState('ANNUELLE');
   const [paiementFournisseur, setPaiementFournisseur] = useState('PI_SPI');
 
   const [formulaire, setFormulaire] = useState({
@@ -99,7 +98,7 @@ export default function Inscription() {
 
   const formuleChoisie = formules.find((f) => f.code === plan);
   const estFree = plan === 'FREE';
-  const montant = periodicite === 'ANNUELLE' ? formuleChoisie?.prixAnnuel : formuleChoisie?.prixMensuel;
+  const montant = formuleChoisie?.prix;
 
   const etapes = estFree
     ? [
@@ -142,15 +141,25 @@ export default function Inscription() {
   // page sonde discrètement en arrière-plan (tentative de connexion toutes
   // les 3s) pour détecter l'activation et enchaîner seule sur la suite,
   // sans que l'utilisateur ait à revenir cliquer quoi que ce soit ici.
+  //
+  // setTimeout auto-programmé plutôt que setInterval : creerEntreprise()
+  // peut dépasser 3s (hashage du mot de passe, appel IA de scoring...), et
+  // un setInterval relancerait un sondage concurrent avant la fin du
+  // premier — son connecter() reposerait alors un jeton AUCUN_ROLE_ATTRIBUE
+  // par-dessus le jeton RESPONSABLE_ENTREPRISE fraîchement obtenu, laissant
+  // le compte bloqué sans permission malgré une entreprise bien créée (bug
+  // constaté en test réel). Le prochain sondage n'est reprogrammé qu'une
+  // fois le précédent entièrement résolu.
   useEffect(() => {
     if (etape !== 'verification') return undefined;
 
     let annule = false;
-    const minuteur = setInterval(async () => {
+    let minuteur;
+
+    const sonder = async () => {
       try {
         const connexion = await connecter(formulaire.email, formulaire.motDePasse);
         if (annule) return;
-        clearInterval(minuteur);
 
         if (connexion.deuxFaRequise) {
           // Cas limite : ne devrait pas arriver pour un compte tout juste créé
@@ -171,7 +180,6 @@ export default function Inscription() {
           secteurCode: formulaire.secteurCode || undefined,
           taille: formulaire.taille || undefined,
           formuleCode: plan,
-          periodicite,
         });
         if (annule) return;
         setEntrepriseCreee(entreprise);
@@ -181,17 +189,21 @@ export default function Inscription() {
         if (annule) return;
         // 403 = compte pas encore actif : c'est l'état normal tant que
         // l'email n'a pas été vérifié, on continue simplement d'attendre.
-        if (err instanceof ApiError && err.statut === 403) return;
-        clearInterval(minuteur);
+        if (err instanceof ApiError && err.statut === 403) {
+          minuteur = setTimeout(sonder, 3000);
+          return;
+        }
         setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
       } finally {
         if (!annule) setChargement(false);
       }
-    }, 3000);
+    };
+
+    minuteur = setTimeout(sonder, 3000);
 
     return () => {
       annule = true;
-      clearInterval(minuteur);
+      clearTimeout(minuteur);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etape]);
@@ -295,7 +307,7 @@ export default function Inscription() {
                       ) : null}
                     </span>
                     <span className="text-sm font-medium text-brand-700">
-                      {Number(option.prixMensuel) === 0 ? 'Gratuit' : `${formaterMontant(option.prixMensuel)} / mois`}
+                      {Number(option.prix) === 0 ? 'Gratuit' : formaterMontant(option.prix)}
                     </span>
                   </span>
                   <span className="mt-1 block text-sm text-ink-500">{option.description}</span>
@@ -452,27 +464,9 @@ export default function Inscription() {
               <div className="mt-6 rounded-2xl border border-ink-100 bg-ink-50/60 p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
                   <CreditCard className="h-4 w-4 text-brand-600" aria-hidden />
-                  Périodicité de facturation
+                  Montant à régler après vérification de l’email
                 </p>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {['MENSUELLE', 'ANNUELLE'].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      className={clsx(
-                        'btn rounded-xl border transition duration-300',
-                        periodicite === option
-                          ? 'border-brand-500 bg-surface text-brand-700 shadow-glow'
-                          : 'border-ink-200 bg-surface/60 text-ink-600 hover:border-brand-200'
-                      )}
-                      onClick={() => setPeriodicite(option)}
-                    >
-                      {option === 'MENSUELLE' ? 'Mensuelle' : 'Annuelle'}
-                    </button>
-                  ))}
-                </div>
                 <p className="mt-3 text-sm text-ink-600">
-                  Montant à régler après vérification de l’email :{' '}
                   <span className="font-semibold text-ink-900">{montant != null ? formaterMontant(montant) : '—'}</span>
                 </p>
               </div>
@@ -520,9 +514,7 @@ export default function Inscription() {
       {etape === 'paiement' ? (
         <form onSubmit={soumettrePaiement}>
           <h2 className="text-lg font-semibold text-ink-900">Paiement de l’abonnement</h2>
-          <p className="mt-1 text-sm text-ink-500">
-            Formule {formuleChoisie?.nom}, facturation {periodicite === 'ANNUELLE' ? 'annuelle' : 'mensuelle'}.
-          </p>
+          <p className="mt-1 text-sm text-ink-500">Formule {formuleChoisie?.nom}.</p>
           <div className="mt-4">
             <Alerte ton="ambre">
               Intégration PI-SPI/Wave non finalisée (le CDC indique que ces modalités restent à cadrer avec Smartex

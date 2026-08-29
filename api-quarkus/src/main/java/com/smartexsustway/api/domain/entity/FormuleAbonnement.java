@@ -30,11 +30,8 @@ public class FormuleAbonnement {
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
-    @Column(name = "prix_mensuel", precision = 10, scale = 2)
-    private BigDecimal prixMensuel;
-
-    @Column(name = "prix_annuel", precision = 10, scale = 2)
-    private BigDecimal prixAnnuel;
+    @Column(name = "prix", precision = 10, scale = 2)
+    private BigDecimal prix;
 
     @Column(name = "active", nullable = false)
     private boolean active = true;
@@ -59,12 +56,8 @@ public class FormuleAbonnement {
         return description;
     }
 
-    public BigDecimal getPrixMensuel() {
-        return prixMensuel;
-    }
-
-    public BigDecimal getPrixAnnuel() {
-        return prixAnnuel;
+    public BigDecimal getPrix() {
+        return prix;
     }
 
     public boolean isActive() {

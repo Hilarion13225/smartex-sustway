@@ -43,10 +43,7 @@ public class PaiementService {
     PaiementRepository paiementRepository;
 
     public Paiement initierEtTraiter(Abonnement abonnement, FournisseurPaiement fournisseur) {
-        BigDecimal montant = abonnement.getPeriodicite() != null
-                && abonnement.getPeriodicite().name().equals("ANNUELLE")
-                ? abonnement.getFormule().getPrixAnnuel()
-                : abonnement.getFormule().getPrixMensuel();
+        BigDecimal montant = abonnement.getFormule().getPrix();
 
         String reference = "DEV-" + fournisseur.name() + "-" + UUID.randomUUID();
         Paiement paiement = new Paiement(abonnement, fournisseur, reference, montant);

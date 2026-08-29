@@ -45,8 +45,7 @@ class IndicePreparationResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Indice Test",
                         "identifiantLegal", "RCCM-IDX-" + UUID.randomUUID(),
-                        "formuleCode", formuleCode,
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", formuleCode))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

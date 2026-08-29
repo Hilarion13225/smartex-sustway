@@ -10,7 +10,6 @@ public record AbonnementDto(
         UUID entrepriseId,
         String formuleCode,
         String formuleNom,
-        String periodicite,
         LocalDate dateDebut,
         LocalDate dateFin,
         String statut
@@ -21,7 +20,6 @@ public record AbonnementDto(
                 a.getEntreprise().getId(),
                 a.getFormule().getCode(),
                 a.getFormule().getNom(),
-                a.getPeriodicite() != null ? a.getPeriodicite().name() : null,
                 a.getDateDebut(),
                 a.getDateFin(),
                 a.getStatut().name()

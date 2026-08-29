@@ -54,7 +54,7 @@ public class Paiement {
     private BigDecimal montant;
 
     @Column(name = "devise", nullable = false, length = 3)
-    private String devise = "XOF";
+    private String devise = "EUR";
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

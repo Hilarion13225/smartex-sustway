@@ -1,6 +1,5 @@
 package com.smartexsustway.api.domain.entity;
 
-import com.smartexsustway.api.domain.enums.PeriodiciteFacturation;
 import com.smartexsustway.api.domain.enums.StatutAbonnement;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,11 +46,6 @@ public class Abonnement {
     @JoinColumn(name = "formule_id", nullable = false)
     private FormuleAbonnement formule;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "periodicite", columnDefinition = "periodicite_facturation")
-    private PeriodiciteFacturation periodicite;
-
     @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;
 
@@ -71,10 +65,9 @@ public class Abonnement {
         // JPA
     }
 
-    public Abonnement(Entreprise entreprise, FormuleAbonnement formule, PeriodiciteFacturation periodicite, LocalDate dateDebut) {
+    public Abonnement(Entreprise entreprise, FormuleAbonnement formule, LocalDate dateDebut) {
         this.entreprise = entreprise;
         this.formule = formule;
-        this.periodicite = periodicite;
         this.dateDebut = dateDebut;
     }
 
@@ -88,10 +81,6 @@ public class Abonnement {
 
     public FormuleAbonnement getFormule() {
         return formule;
-    }
-
-    public PeriodiciteFacturation getPeriodicite() {
-        return periodicite;
     }
 
     public LocalDate getDateDebut() {
@@ -119,12 +108,15 @@ public class Abonnement {
         return statut == StatutAbonnement.ACTIF;
     }
 
-    /** Active l'abonnement suite à un paiement réussi, et calcule la date de fin de période. */
+    /**
+     * Active l'abonnement suite à un paiement réussi, et calcule la date de
+     * fin de période. Formule à prix unique, sans choix de périodicité : la
+     * période de facturation est mensuelle par défaut (les prix des formules
+     * restent historiquement des montants mensuels).
+     */
     public void activerSuitePaiement() {
         this.statut = StatutAbonnement.ACTIF;
-        this.dateFin = periodicite == PeriodiciteFacturation.ANNUELLE
-                ? dateDebut.plusYears(1)
-                : dateDebut.plusMonths(1);
+        this.dateFin = dateDebut.plusMonths(1);
     }
 
     public OffsetDateTime getCreatedAt() {

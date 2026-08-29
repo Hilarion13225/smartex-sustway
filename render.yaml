@@ -1,0 +1,84 @@
+# =====================================================================
+# Blueprint Render — hébergement gratuit temporaire (validation avant IONOS)
+# =====================================================================
+# Ce fichier décrit les 2 services backend Docker (API Quarkus + service IA
+# Python). Le frontend est hébergé séparément sur Vercel (mieux adapté à un
+# site statique : pas de mise en veille, CDN — voir vercel.json à la racine
+# de frontend-react/ et le guide "Hébergement gratuit").
+#
+# Postgres, Redis et le stockage documentaire (remplaçant MinIO) sont
+# volontairement EXTERNES : Render n'offre pas de disque persistant gratuit,
+# donc Postgres/Redis/MinIO tels quels ne peuvent pas tourner en conteneur
+# sur le plan gratuit. On utilise à la place 3 services externes gratuits en
+# permanence (Neon, Upstash, Cloudflare R2).
+#
+# ClamAV n'est pas déployé (pas de disque persistant gratuit non plus, base
+# virale trop lourde) — SMARTEX_ANTIVIRUS_ECHEC_BLOQUANT=false fait passer
+# les dépôts de preuve sans scan plutôt que de les bloquer (dégradation déjà
+# prévue dans le code, voir AntivirusService).
+#
+# Import : Render Dashboard → New → Blueprint → sélectionner ce dépôt GitHub.
+# =====================================================================
+
+services:
+  - name: smartex-ia
+    type: web
+    runtime: docker
+    dockerfilePath: ./services-ia-python/Dockerfile
+    dockerContext: ./services-ia-python
+    plan: free
+    envVars:
+      - key: SMARTEX_ENV
+        value: prod
+      - key: SMARTEX_REDIS_URL
+        sync: false # URL Redis Upstash (rediss://...)
+      - key: SMARTEX_S3_ENDPOINT
+        sync: false # endpoint S3 Cloudflare R2
+      - key: SMARTEX_API_QUARKUS_BASE_URL
+        sync: false # URL publique du service smartex-api ci-dessous, une fois connue
+      - key: SMARTEX_GEMINI_API_KEY
+        sync: false
+
+  - name: smartex-api
+    type: web
+    runtime: docker
+    dockerfilePath: ./api-quarkus/Dockerfile
+    dockerContext: ./api-quarkus
+    plan: free
+    envVars:
+      - key: SMARTEX_DB_URL
+        sync: false # JDBC Neon : jdbc:postgresql://<host>/<db>?sslmode=require
+      - key: SMARTEX_DB_USER
+        sync: false
+      - key: SMARTEX_DB_PASSWORD
+        sync: false
+      - key: SMARTEX_REDIS_URL
+        sync: false # URL Redis Upstash (rediss://...)
+      - key: SMARTEX_IA_SERVICE_URL
+        sync: false # URL publique du service smartex-ia ci-dessus, une fois connue
+      - key: SMARTEX_CORS_ORIGINS
+        sync: false # URL publique du site statique smartex-frontend, une fois connue
+      - key: SMARTEX_API_BASE_URL
+        sync: false # URL publique de ce service lui-même (Render vous la donne après création)
+      - key: SMARTEX_FRONTEND_BASE_URL
+        sync: false # URL publique du site statique smartex-frontend (liens email)
+      - key: SMARTEX_MAIL_HOST
+        value: smtp-relay.brevo.com
+      - key: SMARTEX_MAIL_PORT
+        value: 587
+      - key: SMARTEX_MAIL_USERNAME
+        sync: false
+      - key: SMARTEX_MAIL_PASSWORD
+        sync: false
+      - key: SMARTEX_MAIL_FROM
+        sync: false
+      - key: SMARTEX_S3_ENDPOINT
+        sync: false # endpoint S3 Cloudflare R2
+      - key: SMARTEX_S3_ACCESS_KEY
+        sync: false
+      - key: SMARTEX_S3_SECRET_KEY
+        sync: false
+      - key: SMARTEX_S3_BUCKET
+        sync: false
+      - key: SMARTEX_ANTIVIRUS_ECHEC_BLOQUANT
+        value: "false" # pas de ClamAV déployé — dépôts de preuve non bloqués si le scan est indisponible

@@ -27,14 +27,13 @@ class AbonnementResourceTest {
 
     private record EntrepriseCree(String token, String entrepriseId) {}
 
-    private EntrepriseCree creerUtilisateurEtEntreprise(String formuleCode, String periodicite) {
+    private EntrepriseCree creerUtilisateurEtEntreprise(String formuleCode) {
         var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
 
         var corps = new java.util.HashMap<String, String>();
         corps.put("raisonSociale", "Entreprise Abonnement Test");
         corps.put("identifiantLegal", "RCCM-ABO-" + UUID.randomUUID());
         corps.put("formuleCode", formuleCode);
-        if (periodicite != null) corps.put("periodicite", periodicite);
 
         String entrepriseId = given()
                 .header("Authorization", "Bearer " + utilisateur.token)
@@ -49,7 +48,7 @@ class AbonnementResourceTest {
 
     @Test
     void abonnement_creeAvecLEntreprise_estEnAttentePaiement() {
-        var ctx = creerUtilisateurEtEntreprise("STANDARD", "MENSUELLE");
+        var ctx = creerUtilisateurEtEntreprise("STANDARD");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token)
@@ -57,13 +56,12 @@ class AbonnementResourceTest {
                 .then()
                 .statusCode(200)
                 .body("formuleCode", equalTo("STANDARD"))
-                .body("periodicite", equalTo("MENSUELLE"))
                 .body("statut", equalTo("EN_ATTENTE_PAIEMENT"));
     }
 
     @Test
     void payerAbonnement_leFaitPasserAActif() {
-        var ctx = creerUtilisateurEtEntreprise("AVANCEES", "ANNUELLE");
+        var ctx = creerUtilisateurEtEntreprise("AVANCEES");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token)
@@ -87,7 +85,7 @@ class AbonnementResourceTest {
 
     @Test
     void payerAbonnement_dejaActif_estRefuse() {
-        var ctx = creerUtilisateurEtEntreprise("STANDARD", "MENSUELLE");
+        var ctx = creerUtilisateurEtEntreprise("STANDARD");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token)
@@ -106,7 +104,7 @@ class AbonnementResourceTest {
 
     @Test
     void payerAbonnement_fournisseurInvalide_estRejete() {
-        var ctx = creerUtilisateurEtEntreprise("STANDARD", "MENSUELLE");
+        var ctx = creerUtilisateurEtEntreprise("STANDARD");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token)

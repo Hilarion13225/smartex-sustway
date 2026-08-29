@@ -439,15 +439,14 @@ export default function TableauDeBord() {
               {entreprises.length > 1 && abonnements.length > 0 ? (
                 <Revele delai={100}>
                   <Card className="mb-6 p-0">
-                    <CardHeader titre="Abonnements actifs" icone={Wallet} sousTitre="Formule et périodicité de chaque entreprise" />
-                    <Tableau entetes={['Entreprise', 'Formule', 'Périodicité', 'Statut']}>
+                    <CardHeader titre="Abonnements actifs" icone={Wallet} sousTitre="Formule de chaque entreprise" />
+                    <Tableau entetes={['Entreprise', 'Formule', 'Statut']}>
                       {abonnements.map(({ entreprise, abonnement }) => (
                         <tr key={entreprise.id} className="transition-colors hover:bg-ink-100/60">
                           <td className="td">{entreprise.raisonSociale}</td>
                           <td className="td">
                             <Badge ton={TONS_FORMULE[abonnement.formuleCode] ?? 'neutre'}>{abonnement.formuleNom}</Badge>
                           </td>
-                          <td className="td text-sm text-ink-600">{abonnement.periodicite ?? '—'}</td>
                           <td className="td">
                             <Badge ton={abonnement.statut === 'ACTIF' ? 'vert' : 'neutre'}>{abonnement.statut}</Badge>
                           </td>

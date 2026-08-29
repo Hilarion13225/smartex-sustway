@@ -94,8 +94,7 @@ public final class UtilisateurDeTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Support Role Test",
                         "identifiantLegal", "RCCM-ROLE-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

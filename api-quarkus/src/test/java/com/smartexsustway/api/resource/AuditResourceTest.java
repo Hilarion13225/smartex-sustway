@@ -58,8 +58,7 @@ class AuditResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Audit Test",
                         "identifiantLegal", "RCCM-AUD-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

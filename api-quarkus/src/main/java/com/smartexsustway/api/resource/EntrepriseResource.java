@@ -8,7 +8,6 @@ import com.smartexsustway.api.domain.entity.Role;
 import com.smartexsustway.api.domain.entity.Secteur;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
-import com.smartexsustway.api.domain.enums.PeriodiciteFacturation;
 import com.smartexsustway.api.domain.enums.TailleEntreprise;
 import com.smartexsustway.api.domain.repository.AbonnementRepository;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
@@ -24,6 +23,7 @@ import com.smartexsustway.api.resource.dto.EntrepriseDto;
 import com.smartexsustway.api.resource.dto.EntrepriseUpdateRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.security.AutorisationService;
+import com.smartexsustway.api.security.JwtService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -71,6 +71,7 @@ public class EntrepriseResource {
     @Inject FormuleAbonnementRepository formuleAbonnementRepository;
     @Inject AbonnementRepository abonnementRepository;
     @Inject AutorisationService autorisationService;
+    @Inject JwtService jwtService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -196,18 +197,6 @@ public class EntrepriseResource {
                     "La formule Free ne permet pas la création d'entreprise (RG25) — passez en formule Standard ou Avancées.");
         }
 
-        PeriodiciteFacturation periodicite;
-        try {
-            periodicite = requete.periodicite() == null
-                    ? null
-                    : PeriodiciteFacturation.valueOf(requete.periodicite());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Périodicité invalide : " + requete.periodicite() + " (attendu MENSUELLE ou ANNUELLE)");
-        }
-        if (periodicite == null) {
-            throw new BadRequestException("La périodicité (MENSUELLE ou ANNUELLE) est obligatoire pour une formule payante");
-        }
-
         Entreprise entreprise = new Entreprise(requete.raisonSociale(), requete.identifiantLegal());
 
         if (requete.secteurCode() != null) {
@@ -223,7 +212,7 @@ public class EntrepriseResource {
 
         // RG24 : l'abonnement est créé dans la même transaction que l'entreprise —
         // il n'existe jamais d'entreprise sans formule associée, même un court instant.
-        Abonnement abonnement = new Abonnement(entreprise, formule, periodicite, LocalDate.now());
+        Abonnement abonnement = new Abonnement(entreprise, formule, LocalDate.now());
         abonnementRepository.persist(abonnement);
 
         // L'utilisateur qui crée l'entreprise en devient responsable (RG05).
@@ -238,7 +227,15 @@ public class EntrepriseResource {
         auditLogService.journaliser(utilisateurId, entreprise.getId(), "ENTREPRISE_CREEE", "entreprise", entreprise.getId());
         auditLogService.journaliser(utilisateurId, entreprise.getId(), "ABONNEMENT_CREE", "abonnement", abonnement.getId());
 
-        var reponse = new EntrepriseAvecAbonnementDto(EntrepriseDto.depuis(entreprise), AbonnementDto.depuis(abonnement));
+        // Le jeton avec lequel cet appel a été authentifié peut encore porter
+        // le rôle transitoire AUCUN_ROLE_ATTRIBUE (cas de l'auto-inscription :
+        // le compte vient d'être créé, sans aucune entreprise avant celle-ci).
+        // Sans un jeton frais reflétant le rattachement RESPONSABLE_ENTREPRISE
+        // qu'on vient de poser, le frontend resterait bloqué sur un rôle sans
+        // aucune permission jusqu'à une déconnexion/reconnexion manuelle.
+        String nouveauToken = jwtService.genererToken(utilisateur, roleResponsable.getCode(), entreprise.getId().toString());
+
+        var reponse = new EntrepriseAvecAbonnementDto(EntrepriseDto.depuis(entreprise), AbonnementDto.depuis(abonnement), nouveauToken);
         return Response.status(Response.Status.CREATED).entity(reponse).build();
     }
 }

@@ -140,11 +140,20 @@ export function ApiAuthProvider({ children }) {
 
   // --- Entreprises / abonnements / paiements ------------------------------
 
-  /** RG24/RG25 : payload doit inclure formuleCode (+ periodicite si formule payante). */
+  /** RG24/RG25 : payload doit inclure formuleCode. */
   const creerEntreprise = useCallback(async (payload) => {
     const reponse = await api.post('/api/v1/entreprises', payload);
     setEntreprises((prev) => [...prev, reponse.entreprise]);
-    return reponse; // { entreprise, abonnement }
+    // Cas de l'auto-inscription (première entreprise) : le jeton courant
+    // porte encore le rôle transitoire AUCUN_ROLE_ATTRIBUE, sans aucune
+    // permission. L'API renvoie alors un jeton frais reflétant le rôle
+    // RESPONSABLE_ENTREPRISE tout juste acquis — sinon le compte resterait
+    // bloqué jusqu'à une déconnexion/reconnexion manuelle.
+    if (reponse.token) {
+      ecrireToken(reponse.token);
+      setToken(reponse.token);
+    }
+    return reponse; // { entreprise, abonnement, token? }
   }, []);
 
   const modifierEntreprise = useCallback(async (entrepriseId, payload) => {

@@ -20,6 +20,9 @@ COPY --from=build --chown=185 /build/target/quarkus-app/quarkus/ /deployments/qu
 
 EXPOSE 8080
 USER 185
-ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0"
 
-ENTRYPOINT ["java", "-jar", "/deployments/quarkus-run.jar"]
+# $PORT : certains hébergeurs (Render...) imposent leur propre port d'écoute via
+# cette variable, connue seulement au lancement du conteneur — d'où la forme
+# shell (ENV ne fait pas d'interpolation à l'exécution) ; repli sur 8080
+# (valeur docker-compose locale) si absente.
+ENTRYPOINT ["sh", "-c", "java -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=${PORT:-8080} -jar /deployments/quarkus-run.jar"]

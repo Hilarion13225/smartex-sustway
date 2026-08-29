@@ -42,8 +42,7 @@ class NonConformeResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Non-Conformité Test",
                         "identifiantLegal", "RCCM-NC-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

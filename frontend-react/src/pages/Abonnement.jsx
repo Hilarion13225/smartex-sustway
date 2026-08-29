@@ -14,7 +14,7 @@ const FOURNISSEURS = { PI_SPI: 'PI-SPI', WAVE: 'Wave' };
 
 function formaterMontant(montant, devise) {
   if (montant === null || montant === undefined) return '—';
-  return `${Number(montant).toLocaleString('fr-FR')} ${devise ?? 'XOF'}`;
+  return `${Number(montant).toLocaleString('fr-FR')} ${devise ?? 'EUR'}`;
 }
 
 /**
@@ -70,12 +70,7 @@ export default function Abonnement() {
     return <Vide message="Entreprise introuvable ou non accessible." />;
   }
 
-  const montantPeriode =
-    formule && abonnement
-      ? abonnement.periodicite === 'MENSUELLE'
-        ? formule.prixMensuel
-        : formule.prixAnnuel
-      : null;
+  const prixFormule = formule?.prix ?? null;
 
   return (
     <>
@@ -108,9 +103,8 @@ export default function Abonnement() {
                 ton="bleu"
               />
               <StatCard
-                libelle="Périodicité"
-                valeur={abonnement.periodicite ?? '—'}
-                detail={montantPeriode !== null ? formaterMontant(montantPeriode, 'XOF') : undefined}
+                libelle="Prix"
+                valeur={prixFormule !== null ? formaterMontant(prixFormule, 'EUR') : '—'}
                 icone={CalendarClock}
                 ton="neutre"
               />

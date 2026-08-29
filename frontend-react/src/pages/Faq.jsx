@@ -40,7 +40,7 @@ const QUESTIONS = [
   {
     question: 'Quels moyens de paiement sont acceptés ?',
     reponse:
-      'Les formules Standard et Avancées se règlent via PI-SPI et Wave, en facturation mensuelle ou annuelle selon votre choix à l’inscription.',
+      'Les formules Standard et Avancées se règlent via PI-SPI et Wave, à prix fixe mensuel.',
   },
   {
     question: 'Mes documents sont-ils confidentiels ?',

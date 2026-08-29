@@ -10,10 +10,9 @@ public record FormuleAbonnementDto(
         String code,
         String nom,
         String description,
-        BigDecimal prixMensuel,
-        BigDecimal prixAnnuel
+        BigDecimal prix
 ) {
     public static FormuleAbonnementDto depuis(FormuleAbonnement f) {
-        return new FormuleAbonnementDto(f.getId(), f.getCode(), f.getNom(), f.getDescription(), f.getPrixMensuel(), f.getPrixAnnuel());
+        return new FormuleAbonnementDto(f.getId(), f.getCode(), f.getNom(), f.getDescription(), f.getPrix());
     }
 }

@@ -50,7 +50,7 @@ export default function SectionFormules({ titre, description, id = 'formules' })
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {formules.map((formule, index) => {
             const misEnAvant = formule.code === 'AVANCEES';
-            const gratuit = Number(formule.prixMensuel) === 0;
+            const gratuit = Number(formule.prix) === 0;
             return (
               <Revele key={formule.code} delai={index * 110}>
                 <article
@@ -71,16 +71,11 @@ export default function SectionFormules({ titre, description, id = 'formules' })
                   </div>
                   <p className="relative mt-2 text-sm text-ink-500">{formule.description}</p>
                   <p className="relative mt-5 text-4xl font-semibold text-ink-900">
-                    {gratuit ? 'Gratuit' : formaterMontant(formule.prixMensuel)}
-                    {!gratuit ? <span className="text-sm font-normal text-ink-500"> / mois</span> : null}
+                    {gratuit ? 'Gratuit' : formaterMontant(formule.prix)}
                   </p>
-                  {!gratuit ? (
-                    <p className="relative mt-1 text-xs text-ink-500">
-                      ou {formaterMontant(formule.prixAnnuel)} en facturation annuelle
-                    </p>
-                  ) : (
+                  {gratuit ? (
                     <p className="relative mt-1 text-xs text-ink-500">Consultation en mode démonstration uniquement</p>
-                  )}
+                  ) : null}
                   <div className="flex-1" />
                   <button
                     type="button"
@@ -99,7 +94,7 @@ export default function SectionFormules({ titre, description, id = 'formules' })
 
       <p className="mt-8 flex items-center gap-2 text-xs text-ink-500">
         <Lock className="h-3.5 w-3.5" aria-hidden />
-        Paiement des formules Standard et Avancées via PI-SPI et Wave, en facturation mensuelle ou annuelle au choix.
+        Paiement des formules Standard et Avancées via PI-SPI et Wave.
       </p>
     </section>
   );

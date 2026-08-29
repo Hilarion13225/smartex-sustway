@@ -15,8 +15,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 
 /**
  * RG24 : toute création d'entreprise exige une formule d'abonnement valide
- * (formuleCode + periodicite pour les formules payantes) — voir
- * EntrepriseResource.creer. La réponse de création est désormais un DTO
+ * (formuleCode) — voir EntrepriseResource.creer. La réponse de création est désormais un DTO
  * combiné {entreprise, abonnement} (EntrepriseAvecAbonnementDto).
  */
 @QuarkusTest
@@ -36,8 +35,7 @@ class EntrepriseResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Test",
                         "identifiantLegal", identifiantLegal,
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then()
                 .statusCode(201)
@@ -73,8 +71,7 @@ class EntrepriseResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise Test",
                         "identifiantLegal", identifiantLegal,
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201);
 
@@ -84,8 +81,7 @@ class EntrepriseResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Autre Raison Sociale",
                         "identifiantLegal", identifiantLegal,
-                        "formuleCode", "STANDARD",
-                        "periodicite", "ANNUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(409);
     }
@@ -106,21 +102,6 @@ class EntrepriseResourceTest {
     }
 
     @Test
-    void creerEntreprise_formulePayanteSansPeriodicite_estRejetee() {
-        var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
-
-        given()
-                .header("Authorization", "Bearer " + utilisateur.token)
-                .contentType(ContentType.JSON)
-                .body(Map.of(
-                        "raisonSociale", "Entreprise Sans Periodicite",
-                        "identifiantLegal", "RCCM-NOPERIOD-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD"))
-                .when().post("/api/v1/entreprises")
-                .then().statusCode(400);
-    }
-
-    @Test
     void accederAuxEntreprises_sansToken_estRefuse() {
         given().when().get("/api/v1/entreprises").then().statusCode(401);
     }
@@ -136,8 +117,7 @@ class EntrepriseResourceTest {
                 .body(Map.of(
                         "raisonSociale", "Entreprise A",
                         "identifiantLegal", "RCCM-A-" + UUID.randomUUID(),
-                        "formuleCode", "STANDARD",
-                        "periodicite", "MENSUELLE"))
+                        "formuleCode", "STANDARD"))
                 .when().post("/api/v1/entreprises")
                 .then().statusCode(201)
                 .extract().path("entreprise.id");

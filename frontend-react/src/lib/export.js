@@ -21,7 +21,7 @@ export function imprimerRapport() {
   window.print();
 }
 export function formaterMontant(montant) {
-  return `${montant.toLocaleString('fr-FR')} FCFA`;
+  return `${montant.toLocaleString('fr-FR')} €`;
 }
 export function formaterDate(iso) {
   if (!iso || iso === '—') return '—';

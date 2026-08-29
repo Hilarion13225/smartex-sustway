@@ -394,10 +394,6 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
           <dd className="mt-0.5 font-semibold text-ink-900">{abonnement.formuleNom}</dd>
         </div>
         <div className="rounded-xl bg-ink-50/70 p-3">
-          <dt className="text-xs uppercase tracking-wide text-ink-500">Périodicité</dt>
-          <dd className="mt-0.5 font-semibold text-ink-900">{abonnement.periodicite ?? '—'}</dd>
-        </div>
-        <div className="rounded-xl bg-ink-50/70 p-3">
           <dt className="text-xs uppercase tracking-wide text-ink-500">Statut</dt>
           <dd className="mt-1">
             <Badge ton={abonnement.statut === 'ACTIF' ? 'vert' : 'ambre'}>{abonnement.statut}</Badge>
