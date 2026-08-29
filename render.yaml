@@ -32,8 +32,6 @@ services:
         value: prod
       - key: SMARTEX_REDIS_URL
         sync: false # URL Redis Upstash (rediss://...)
-      - key: SMARTEX_S3_ENDPOINT
-        sync: false # endpoint S3 Cloudflare R2
       - key: SMARTEX_API_QUARKUS_BASE_URL
         sync: false # URL publique du service smartex-api ci-dessous, une fois connue
       - key: SMARTEX_GEMINI_API_KEY
@@ -73,7 +71,7 @@ services:
       - key: SMARTEX_MAIL_FROM
         sync: false
       - key: SMARTEX_S3_ENDPOINT
-        sync: false # endpoint S3 Cloudflare R2
+        sync: false # endpoint S3 Cloudflare R2 (forme https://<compte>.r2.cloudflarestorage.com)
       - key: SMARTEX_S3_ACCESS_KEY
         sync: false
       - key: SMARTEX_S3_SECRET_KEY
