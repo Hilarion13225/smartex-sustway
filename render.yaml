@@ -44,6 +44,10 @@ services:
     dockerContext: ./api-quarkus
     plan: free
     envVars:
+      - key: SMARTEX_JWT_PUBLIC_KEY
+        sync: false # contenu PEM complet (BEGIN/END PUBLIC KEY inclus) — clés dédiées à cet hébergement, jamais commitées
+      - key: SMARTEX_JWT_PRIVATE_KEY
+        sync: false # contenu PEM complet (BEGIN/END PRIVATE KEY inclus)
       - key: SMARTEX_DB_URL
         sync: false # JDBC Neon : jdbc:postgresql://<host>/<db>?sslmode=require
       - key: SMARTEX_DB_USER
