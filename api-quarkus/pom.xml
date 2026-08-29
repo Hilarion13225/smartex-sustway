@@ -104,9 +104,12 @@
       <groupId>io.quarkiverse.amazonservices</groupId>
       <artifactId>quarkus-amazon-s3</artifactId>
     </dependency>
+    <!-- Apache plutôt que url-connection-client : ce dernier (HttpsURLConnection du
+         JDK) échoue en handshake_failure contre le TLS de Cloudflare R2 en
+         hébergement réel — jamais rencontré en local (MinIO, HTTP sans TLS). -->
     <dependency>
       <groupId>software.amazon.awssdk</groupId>
-      <artifactId>url-connection-client</artifactId>
+      <artifactId>apache-client</artifactId>
     </dependency>
 
     <!-- Client REST vers les services IA Python (comm. synchrone, décision actée CDC §13) -->
