@@ -155,6 +155,18 @@ export default function Inscription() {
 
     let annule = false;
     let minuteur;
+    // RG20 (formule payante) : une fois l'email vérifié, creerEntreprise()
+    // peut échouer une ou deux fois sans rapport avec une vraie erreur
+    // métier — l'hébergement gratuit (Render...) met l'API en veille après
+    // inactivité, et le tout premier appel après ce réveil peut échouer ou
+    // traîner assez pour dépasser un délai réseau. Sans repli, l'utilisateur
+    // restait bloqué sur cet écran avec un message d'erreur silencieux
+    // (constaté en usage réel) malgré un compte bien vérifié côté serveur.
+    // On retente donc aussi sur ces échecs transitoires, un nombre de fois
+    // limité pour ne pas masquer indéfiniment une vraie erreur (ex. RCCM
+    // déjà utilisé).
+    const TENTATIVES_MAX_ECHEC_TRANSITOIRE = 8;
+    let tentativesEchecTransitoire = 0;
 
     const sonder = async () => {
       try {
@@ -191,6 +203,14 @@ export default function Inscription() {
         // l'email n'a pas été vérifié, on continue simplement d'attendre.
         if (err instanceof ApiError && err.statut === 403) {
           minuteur = setTimeout(sonder, 3000);
+          return;
+        }
+        // Échec après un connecter() réussi (donc après vérification) :
+        // probablement transitoire (voir commentaire de l'effet) — on
+        // retente avec un délai plus long, jusqu'à épuisement du quota.
+        if (tentativesEchecTransitoire < TENTATIVES_MAX_ECHEC_TRANSITOIRE) {
+          tentativesEchecTransitoire += 1;
+          minuteur = setTimeout(sonder, 5000);
           return;
         }
         setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
