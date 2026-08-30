@@ -64,14 +64,8 @@ services:
         sync: false # URL publique de ce service lui-même (Render vous la donne après création)
       - key: SMARTEX_FRONTEND_BASE_URL
         sync: false # URL publique du site statique smartex-frontend (liens email)
-      - key: SMARTEX_MAIL_HOST
-        value: smtp-relay.brevo.com
-      - key: SMARTEX_MAIL_PORT
-        value: 587
-      - key: SMARTEX_MAIL_USERNAME
-        sync: false
-      - key: SMARTEX_MAIL_PASSWORD
-        sync: false
+      - key: SMARTEX_MAIL_API_KEY
+        sync: false # clé API Brevo (Settings -> SMTP & API -> API Keys) — pas les identifiants SMTP, bloqués sur ce plan gratuit
       - key: SMARTEX_MAIL_FROM
         sync: false
       - key: SMARTEX_S3_ENDPOINT

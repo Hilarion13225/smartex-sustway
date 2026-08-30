@@ -93,12 +93,6 @@
       <artifactId>quarkus-redis-client</artifactId>
     </dependency>
 
-    <!-- Envoi d'email (vérification de compte, RG36) -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-mailer</artifactId>
-    </dependency>
-
     <!-- Stockage documentaire S3/MinIO (RG15, exigence sécurité §1.4) -->
     <dependency>
       <groupId>io.quarkiverse.amazonservices</groupId>

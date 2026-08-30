@@ -1,19 +1,35 @@
 package com.smartexsustway.api.notification;
 
-import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 /**
- * Envoi d'emails transactionnels via Brevo (relais SMTP, voir
+ * Envoi d'emails transactionnels via l'API HTTP de Brevo (voir
  * application.properties + .env.example). RG36 : email de vérification de
  * compte à l'inscription.
  *
+ * API HTTP plutôt que relais SMTP (choix initial) : les hébergeurs gratuits
+ * (Render notamment) bloquent le SMTP sortant (ports 25/465/587) pour lutter
+ * contre le spam — une tentative de connexion SMTP y reste bloquée jusqu'au
+ * timeout TCP (~1 min), ce qui expirait toute la transaction d'inscription
+ * (utilisateur jamais persisté malgré le rollback silencieux). L'API REST de
+ * Brevo passe en HTTPS (port 443, jamais bloqué) et résout le problème à la
+ * racine plutôt que de simplement le contourner.
+ *
  * L'échec d'envoi ne fait JAMAIS échouer l'action métier qui le déclenche
  * (ex. inscription) : le compte existe, seul le canal de notification a
- * un problème (credentials manquants, Brevo indisponible...). C'est un
+ * un problème (clé API manquante, Brevo indisponible...). C'est un
  * choix délibéré — un utilisateur ne doit pas perdre son inscription à
  * cause d'un souci d'infrastructure d'envoi d'email, alors qu'il peut
  * encore récupérer son lien de vérification autrement (journal
@@ -23,9 +39,17 @@ import org.jboss.logging.Logger;
 public class EmailService {
 
     private static final Logger LOG = Logger.getLogger(EmailService.class);
+    private static final URI BREVO_ENDPOINT = URI.create("https://api.brevo.com/v3/smtp/email");
+    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final HttpClient HTTP = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
 
-    @Inject
-    Mailer mailer;
+    @ConfigProperty(name = "smartex.mail.brevo-api-key")
+    Optional<String> apiKey;
+
+    @ConfigProperty(name = "smartex.mail.from")
+    String expediteur;
 
     public void envoyerVerificationEmail(String destinataire, String prenom, String lienVerification) {
         String sujet = "Vérifiez votre adresse email — Smartex Sustway";
@@ -103,11 +127,7 @@ public class EmailService {
                 </html>
                 """.formatted(prenom, lienVerification, lienVerification, lienVerification);
 
-        try {
-            mailer.send(Mail.withText(destinataire, sujet, texte).setHtml(html));
-        } catch (Exception e) {
-            LOG.warnf(e, "Échec de l'envoi de l'email de vérification à %s (l'inscription reste valide)", destinataire);
-        }
+        envoyer(destinataire, sujet, texte, html, "l'inscription reste valide");
     }
 
     /** RG05 — invitation d'un collaborateur sans compte existant (voir Invitation, MembreEntrepriseResource). */
@@ -186,11 +206,7 @@ public class EmailService {
                 </html>
                 """.formatted(entrepriseNom, roleNom, lienAcceptation, lienAcceptation, lienAcceptation);
 
-        try {
-            mailer.send(Mail.withText(destinataire, sujet, texte).setHtml(html));
-        } catch (Exception e) {
-            LOG.warnf(e, "Échec de l'envoi de l'email d'invitation à %s (l'invitation reste valide)", destinataire);
-        }
+        envoyer(destinataire, sujet, texte, html, "l'invitation reste valide");
     }
 
     /** Mot de passe oublié — voir AuthResource.motDePasseOublie / JwtService.PURPOSE_PASSWORD_RESET. */
@@ -270,10 +286,36 @@ public class EmailService {
                 </html>
                 """.formatted(prenom, lienReinitialisation, lienReinitialisation, lienReinitialisation);
 
+        envoyer(destinataire, sujet, texte, html, null);
+    }
+
+    private void envoyer(String destinataire, String sujet, String texte, String html, String contexteEchecNonBloquant) {
+        if (apiKey.isEmpty() || apiKey.get().isBlank()) {
+            LOG.warnf("Clé API Brevo non configurée (SMARTEX_MAIL_API_KEY) : email non envoyé à %s", destinataire);
+            return;
+        }
         try {
-            mailer.send(Mail.withText(destinataire, sujet, texte).setHtml(html));
+            Map<String, Object> corps = Map.of(
+                    "sender", Map.of("email", expediteur, "name", "Smartex Sustway"),
+                    "to", List.of(Map.of("email", destinataire)),
+                    "subject", sujet,
+                    "htmlContent", html,
+                    "textContent", texte
+            );
+            HttpRequest requete = HttpRequest.newBuilder(BREVO_ENDPOINT)
+                    .header("api-key", apiKey.get())
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(15))
+                    .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(corps)))
+                    .build();
+            HttpResponse<String> reponse = HTTP.send(requete, HttpResponse.BodyHandlers.ofString());
+            if (reponse.statusCode() >= 300) {
+                LOG.warnf("Échec de l'envoi via l'API Brevo (%d) à %s : %s", reponse.statusCode(), destinataire, reponse.body());
+            }
         } catch (Exception e) {
-            LOG.warnf(e, "Échec de l'envoi de l'email de réinitialisation à %s", destinataire);
+            String suffixe = contexteEchecNonBloquant != null ? " (" + contexteEchecNonBloquant + ")" : "";
+            LOG.warnf(e, "Échec de l'envoi de l'email à %s%s", destinataire, suffixe);
         }
     }
 }

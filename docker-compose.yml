@@ -146,14 +146,11 @@ services:
       # n'est plus le notre depuis le remappage, et sur lequel un autre
       # projet local repond : le clic sur le lien n'active jamais le compte.
       SMARTEX_FRONTEND_BASE_URL: http://localhost:5175
-      # Identifiants Brevo lus depuis votre environnement/fichier .env local
-      # (docker compose les substitue automatiquement s'ils sont exportés,
-      # sinon la valeur par défaut vide désactive l'envoi réel — voir
-      # EmailService, dégradation silencieuse).
-      SMARTEX_MAIL_HOST: ${SMARTEX_MAIL_HOST:-smtp-relay.brevo.com}
-      SMARTEX_MAIL_PORT: ${SMARTEX_MAIL_PORT:-587}
-      SMARTEX_MAIL_USERNAME: ${SMARTEX_MAIL_USERNAME:-}
-      SMARTEX_MAIL_PASSWORD: ${SMARTEX_MAIL_PASSWORD:-}
+      # Clé API Brevo lue depuis votre environnement/fichier .env local (API
+      # HTTP, pas SMTP — voir EmailService pour le pourquoi) ; docker compose
+      # la substitue automatiquement si exportée, sinon la valeur par défaut
+      # vide désactive l'envoi réel — voir EmailService, dégradation silencieuse.
+      SMARTEX_MAIL_API_KEY: ${SMARTEX_MAIL_API_KEY:-}
       SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-no-reply@smartex-sustway.local}
       # Stockage documentaire (S3/MinIO) et antivirus (§1.4)
       SMARTEX_S3_ENDPOINT: http://minio:9000
