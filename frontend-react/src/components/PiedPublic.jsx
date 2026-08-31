@@ -40,7 +40,7 @@ export default function PiedPublic() {
         className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl motion-safe:animate-respiration"
         aria-hidden
       />
-      <div className="relative mx-auto max-w-6xl px-5 py-14">
+      <div className="relative mx-auto max-w-[90rem] px-5 py-14">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             <Logo taille="md" variante="clair" />

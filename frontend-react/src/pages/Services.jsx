@@ -69,7 +69,7 @@ export default function Services() {
         description={`${SMARTEX.editeur} combine l’expertise d’un cabinet et la plateforme ${SMARTEX.produit} pour objectiver, prioriser et documenter votre performance durable.`}
       />
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-[90rem] px-5 py-20">
         <Revele className="max-w-2xl">
           <Badge ton="bleu" icone={Briefcase}>
             Accompagnement Smartex
@@ -96,7 +96,7 @@ export default function Services() {
       </section>
 
       <section className="border-y border-ink-100 bg-ink-50 py-20">
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-[90rem] px-5">
           <Revele className="max-w-2xl">
             <Badge ton="violet" icone={Workflow}>
               Modules de la plateforme

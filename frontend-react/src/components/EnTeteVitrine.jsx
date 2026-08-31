@@ -13,7 +13,7 @@ export default function EnTeteVitrine({ etiquette, icone, titre, description }) 
         className="pointer-events-none absolute -right-20 -top-16 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl motion-safe:animate-respiration"
         aria-hidden
       />
-      <div className="relative mx-auto max-w-6xl px-5 py-16 motion-safe:animate-apparition-bas">
+      <div className="relative mx-auto max-w-[90rem] px-5 py-16 motion-safe:animate-apparition-bas">
         {etiquette ? (
           <Badge ton="vert" icone={icone}>
             {etiquette}

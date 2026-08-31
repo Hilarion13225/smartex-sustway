@@ -34,7 +34,7 @@ export default function EnTetePublic() {
         defile ? 'border-ink-100 bg-surface/85 shadow-soft backdrop-blur-xl' : 'border-transparent bg-surface/60 backdrop-blur'
       )}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
+      <div className="mx-auto flex max-w-[90rem] items-center justify-between gap-4 px-5 py-3.5">
         <Link
           to="/"
           className="group transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
@@ -80,7 +80,7 @@ export default function EnTetePublic() {
           ouvert ? 'max-h-96 border-t opacity-100' : 'max-h-0 opacity-0'
         )}
       >
-        <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-4">
+        <nav className="mx-auto flex max-w-[90rem] flex-col gap-1 px-5 py-4">
           {LIENS.map((lien) => (
             <NavLink
               key={lien.vers}

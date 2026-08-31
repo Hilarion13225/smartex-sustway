@@ -8,7 +8,7 @@ export default function AppelAction({
   texte = 'Créez votre compte en quelques minutes, ou échangez avec un expert Smartex pour cadrer votre périmètre d’évaluation.',
 }) {
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-20">
+    <section className="mx-auto max-w-[90rem] px-5 pb-20">
       <Revele>
         {/* Bandeau volontairement toujours sombre (contraste fort), couleur figée plutôt que la variable --ink-900 (réactive au thème). */}
         <div className="relative overflow-hidden rounded-3xl bg-[#1f2533] px-6 py-14 text-center shadow-soft sm:px-12">

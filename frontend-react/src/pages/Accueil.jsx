@@ -135,7 +135,7 @@ export default function Accueil() {
           aria-hidden
         />
 
-        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
+        <div className="relative mx-auto grid max-w-[90rem] items-center gap-12 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
           <div className="motion-safe:animate-apparition-bas">
             <Badge ton="vert" icone={BadgeCheck}>
               Version 1.5 — volet financements verts intégré
@@ -244,7 +244,7 @@ export default function Accueil() {
 
       {/* ------------------------------------------------------------- Atouts */}
       <section className="bg-ink-50 py-20">
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-[90rem] px-5">
           <Revele className="max-w-2xl">
             <Badge ton="bleu" icone={Sparkles}>
               Ce que la plateforme apporte
@@ -274,7 +274,7 @@ export default function Accueil() {
       </section>
 
       {/* ------------------------------------------------------------ Parcours */}
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-[90rem] px-5 py-20">
         <Revele className="max-w-2xl">
           <Badge ton="ambre" icone={Users}>
             Comment ça marche
@@ -307,7 +307,7 @@ export default function Accueil() {
 
       {/* ------------------------------------------------------------ Éditeur */}
       <section className="border-y border-ink-100 bg-ink-50 py-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Revele>
             <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-surface p-12 shadow-soft">
               <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />

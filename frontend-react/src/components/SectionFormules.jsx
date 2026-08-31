@@ -35,7 +35,7 @@ export default function SectionFormules({ titre, description, id = 'formules' })
   }, [listerFormules]);
 
   return (
-    <section id={id} className="relative mx-auto max-w-6xl scroll-mt-24 px-5 py-20">
+    <section id={id} className="relative mx-auto max-w-[90rem] scroll-mt-24 px-5 py-20">
       <Revele className="max-w-2xl">
         <Badge ton="violet" icone={Sparkles}>
           Tarification

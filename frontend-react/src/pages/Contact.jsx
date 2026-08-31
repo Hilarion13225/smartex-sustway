@@ -80,7 +80,7 @@ export default function Contact() {
         description={`Une question sur ${SMARTEX.produit}, une demande de démonstration ou un projet d’accompagnement : l’équipe ${SMARTEX.editeur} vous répond.`}
       />
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr]">
         <Revele>
           <form onSubmit={soumettre} className="carte-vitrine !p-7" noValidate>
             <Badge ton="vert" icone={Send}>

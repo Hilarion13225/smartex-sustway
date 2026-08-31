@@ -46,7 +46,7 @@ export default function APropos() {
         description={SMARTEX.baseline}
       />
 
-      <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-20 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="mx-auto grid max-w-[90rem] items-center gap-12 px-5 py-20 lg:grid-cols-[1.1fr_0.9fr]">
         <Revele>
           <Badge ton="bleu" icone={Sparkles}>
             Qui sommes-nous
@@ -79,7 +79,7 @@ export default function APropos() {
       </section>
 
       <section className="border-y border-ink-100 bg-ink-50 py-20">
-        <div className="mx-auto max-w-6xl px-5">
+        <div className="mx-auto max-w-[90rem] px-5">
           <Revele className="max-w-2xl">
             <Badge ton="violet" icone={Target}>
               Nos valeurs
@@ -103,7 +103,7 @@ export default function APropos() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-[90rem] px-5 py-20">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Revele>
             <Badge ton="vert" icone={Users}>
