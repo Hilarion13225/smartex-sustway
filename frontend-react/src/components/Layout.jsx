@@ -221,8 +221,10 @@ export default function Layout() {
 
   const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
 
+  const formuleCourante = entreprises.find((e) => e.id === entrepriseCouranteId)?.formuleCode;
+
   function lienVisible(lien) {
-    if (lien.permission && !peut(lien.permission)) return false;
+    if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
     if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
     return true;
   }

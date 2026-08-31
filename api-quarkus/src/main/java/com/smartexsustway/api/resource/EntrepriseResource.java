@@ -86,13 +86,15 @@ public class EntrepriseResource {
     @GET
     public Response mesEntreprises() {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
-        List<EntrepriseDto> resultat = autorisationService.estAccesGlobalActif(utilisateurId)
-                ? entrepriseRepository.listAll().stream().map(EntrepriseDto::depuis).toList()
+        List<Entreprise> entreprises = autorisationService.estAccesGlobalActif(utilisateurId)
+                ? entrepriseRepository.listAll()
                 : utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
                         .map(UtilisateurEntreprise::getEntreprise)
                         .distinct()
-                        .map(EntrepriseDto::depuis)
                         .toList();
+        List<EntrepriseDto> resultat = entreprises.stream()
+                .map(e -> EntrepriseDto.depuis(e, formuleCourante(e.getId())))
+                .toList();
         return Response.ok(resultat).build();
     }
 
@@ -105,7 +107,19 @@ public class EntrepriseResource {
         if (entreprise == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        return Response.ok(EntrepriseDto.depuis(entreprise)).build();
+        return Response.ok(EntrepriseDto.depuis(entreprise, formuleCourante(id))).build();
+    }
+
+    /**
+     * RESTRICTIONS_PAR_PLAN (frontend) a besoin de la formule courante pour
+     * chaque entreprise listée — sans elle, la navigation ne peut pas savoir
+     * quels liens masquer et les affiche tous, quelle que soit la formule
+     * réellement souscrite.
+     */
+    private String formuleCourante(UUID entrepriseId) {
+        return abonnementRepository.leplusRecentParEntreprise(entrepriseId)
+                .map(a -> a.getFormule().getCode())
+                .orElse(null);
     }
 
     /**
