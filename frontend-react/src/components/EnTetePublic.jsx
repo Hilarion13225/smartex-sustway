@@ -37,11 +37,11 @@ export default function EnTetePublic() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
         <Link
           to="/"
-          className="group flex items-center gap-2.5 transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
+          className="group transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
           onClick={() => setOuvert(false)}
         >
           <Logo taille="sm" />
-          <span className="hidden whitespace-nowrap text-xs text-ink-500 md:block">Par {SMARTEX.editeur}</span>
+          <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">Par {SMARTEX.editeur}</p>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
