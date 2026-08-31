@@ -275,7 +275,9 @@ export default function Accueil() {
           <Badge ton="ambre" icone={Users}>
             Comment ça marche
           </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">Quatre étapes, de l’inscription au rapport</h2>
+          <h2 className="mt-4 text-3xl font-semibold text-ink-900">
+            Quatre étapes, de la création d’un compte client à l’édition du rapport de durabilité
+          </h2>
         </Revele>
 
         <div className="relative mt-12">
@@ -336,7 +338,7 @@ export default function Accueil() {
 
       {/* ------------------------------------------------------------ Formules */}
       <SectionFormules
-        titre="Choisissez votre formule avant l’inscription"
+        titre="Choisissez votre formule avant de créer votre compte"
         description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes. La formule Free est un mode de démonstration : aucune création d’entreprise n’est possible avec elle."
       />
 
