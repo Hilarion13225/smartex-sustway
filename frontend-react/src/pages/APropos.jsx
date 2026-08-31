@@ -4,7 +4,7 @@ import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
 import { Badge } from '../components/ui';
 import { SMARTEX } from '../config/smartex';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from '../components/Logo';
 
 const VALEURS = [
   {
@@ -73,11 +73,7 @@ export default function APropos() {
         <Revele delai={140}>
           <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-ink-50 p-12 shadow-soft">
             <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
-            <img
-              src={logoSmartexSustway}
-              alt={`${SMARTEX.produit} par ${SMARTEX.editeur}`}
-              className="relative h-32 w-auto motion-safe:animate-flottement"
-            />
+            <Logo taille="lg" className="relative motion-safe:animate-flottement" />
           </div>
         </Revele>
       </section>

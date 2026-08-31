@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
 import Revele from './Revele';
 
@@ -35,14 +35,9 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
               className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-brand-500/25 blur-3xl motion-safe:animate-respiration"
               aria-hidden
             />
-            <div className="relative flex items-center gap-3">
-              <span className="rounded-xl bg-white/10 p-2 ring-1 ring-white/20">
-                <img src={logoSmartexSustway} alt="" className="h-8 w-auto" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold leading-tight">{SMARTEX.produit}</p>
-                <p className="text-xs text-white/60">Par {SMARTEX.editeur}</p>
-              </div>
+            <div className="relative">
+              <Logo taille="sm" variante="clair" />
+              <p className="mt-1 text-xs text-white/60">Par {SMARTEX.editeur}</p>
             </div>
 
             <div className="relative mt-10">

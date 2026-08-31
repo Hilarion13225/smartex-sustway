@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import clsx from 'clsx';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
 import BasculeTheme from './BasculeTheme';
 
@@ -35,16 +35,13 @@ export default function EnTetePublic() {
       )}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
-        <Link to="/" className="group flex items-center gap-2.5" onClick={() => setOuvert(false)}>
-          <img
-            src={logoSmartexSustway}
-            alt={SMARTEX.produit}
-            className="h-9 w-auto transition-transform duration-500 motion-safe:group-hover:scale-110"
-          />
-          <span className="leading-tight">
-            <span className="block text-sm font-semibold text-ink-900">{SMARTEX.produit}</span>
-            <span className="block text-xs text-ink-500">Par {SMARTEX.editeur}</span>
-          </span>
+        <Link
+          to="/"
+          className="group flex items-center gap-2.5 transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
+          onClick={() => setOuvert(false)}
+        >
+          <Logo taille="sm" />
+          <span className="hidden whitespace-nowrap text-xs text-ink-500 md:block">Par {SMARTEX.editeur}</span>
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">

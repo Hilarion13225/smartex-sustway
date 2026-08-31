@@ -24,7 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import clsx from 'clsx';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
@@ -239,11 +239,8 @@ export default function Layout() {
       >
         <div className="flex items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="rounded-xl bg-brand-50 p-1.5 ring-1 ring-brand-100">
-              <img src={logoSmartexSustway} alt="" className="h-8 w-auto" />
-            </span>
             <div>
-              <p className="text-sm font-semibold leading-tight text-ink-900">{SMARTEX.produit}</p>
+              <Logo taille="sm" />
               <p className="text-xs text-ink-500">Par {SMARTEX.editeur}</p>
             </div>
           </div>

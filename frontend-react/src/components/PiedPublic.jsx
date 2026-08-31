@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ExternalLink, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
 
 const COLONNES = [
@@ -43,13 +43,8 @@ export default function PiedPublic() {
       <div className="relative mx-auto max-w-6xl px-5 py-14">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
-            <div className="flex items-center gap-2.5">
-              <img src={logoSmartexSustway} alt={SMARTEX.produit} className="h-10 w-auto" />
-              <span className="leading-tight">
-                <span className="block text-sm font-semibold text-white">{SMARTEX.produit}</span>
-                <span className="block text-xs text-[#8290a9]">{SMARTEX.accroche}</span>
-              </span>
-            </div>
+            <Logo taille="md" variante="clair" />
+            <p className="mt-1.5 text-xs text-[#8290a9]">{SMARTEX.accroche}</p>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#8290a9]">
               {SMARTEX.produit} est la plateforme d’évaluation RSE éditée par {SMARTEX.editeur}. {SMARTEX.baseline}
             </p>

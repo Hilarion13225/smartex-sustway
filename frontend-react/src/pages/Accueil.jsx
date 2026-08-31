@@ -20,7 +20,7 @@ import CompteurAnime from '../components/CompteurAnime';
 import SectionFormules from '../components/SectionFormules';
 import AppelAction from '../components/AppelAction';
 import { SMARTEX } from '../config/smartex';
-import logoSmartexSustway from '../assets/brand/logo-smartex-sustway.png';
+import Logo from '../components/Logo';
 
 const ATOUTS = [
   {
@@ -311,11 +311,7 @@ export default function Accueil() {
           <Revele>
             <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-surface p-12 shadow-soft">
               <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
-              <img
-                src={logoSmartexSustway}
-                alt={`${SMARTEX.produit} par ${SMARTEX.editeur}`}
-                className="relative h-28 w-auto motion-safe:animate-flottement"
-              />
+              <Logo taille="lg" className="relative motion-safe:animate-flottement" />
             </div>
           </Revele>
           <Revele delai={120}>
