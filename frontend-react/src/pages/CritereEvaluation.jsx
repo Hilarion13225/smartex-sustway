@@ -342,11 +342,11 @@ function PreuvesSection({ entrepriseId, auditId, auditCritereId, preuves, onChan
       donneesFormulaire.append('fichier', fichier);
       const document = await api.post(`/api/v1/entreprises/${entrepriseId}/documents`, donneesFormulaire);
 
-      if (document.statutScan !== 'SAIN') {
-        setErreur(`Document rejeté par le scan antivirus (statut : ${document.statutScan})`);
-        return;
-      }
-
+      // Le backend a déjà rejeté toute menace détectée (statut INFECTE) et tout
+      // échec de scan quand smartex.antivirus.echec-bloquant est actif — un
+      // document renvoyé ici a donc déjà passé ces contrôles ; un statut ERREUR
+      // signifie seulement que le scan était indisponible et volontairement non
+      // bloquant (voir echec-bloquant=false), pas que le document est refusé.
       await api.post(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves`, {
         documentId: document.id,
         description,
