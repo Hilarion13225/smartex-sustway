@@ -565,9 +565,12 @@ export default function Inscription() {
               ))}
             </div>
           </div>
-          <div className="mt-5 flex items-center justify-between rounded-2xl border border-ink-100 bg-ink-50/60 px-4 py-3 text-sm">
-            <span className="text-ink-600">Montant à régler</span>
-            <span className="text-lg font-semibold text-ink-900">{montant != null ? formaterMontant(montant) : '—'}</span>
+          <div className="mt-5 rounded-2xl border border-ink-100 bg-ink-50/60 px-4 py-3 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-ink-600">Montant à régler</span>
+              <span className="text-lg font-semibold text-ink-900">{montant != null ? formaterMontant(montant) : '—'}</span>
+            </div>
+            <p className="mt-1 text-xs text-ink-500">Licence annuelle — accès valable un an à compter du paiement, renouvelable.</p>
           </div>
           <div className="mt-7 flex justify-end">
             <button type="submit" className="btn-vitrine" disabled={chargement}>

@@ -110,13 +110,13 @@ public class Abonnement {
 
     /**
      * Active l'abonnement suite à un paiement réussi, et calcule la date de
-     * fin de période. Formule à prix unique, sans choix de périodicité : la
-     * période de facturation est mensuelle par défaut (les prix des formules
-     * restent historiquement des montants mensuels).
+     * fin de période. Formule à prix unique, sans choix de périodicité : le
+     * règlement couvre une licence annuelle — un an d'accès à compter du
+     * paiement, à renouveler ensuite.
      */
     public void activerSuitePaiement() {
         this.statut = StatutAbonnement.ACTIF;
-        this.dateFin = dateDebut.plusMonths(1);
+        this.dateFin = dateDebut.plusYears(1);
     }
 
     public OffsetDateTime getCreatedAt() {

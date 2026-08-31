@@ -40,7 +40,7 @@ const QUESTIONS = [
   {
     question: 'Quels moyens de paiement sont acceptés ?',
     reponse:
-      'Les formules Standard et Avancées se règlent via PI-SPI et Wave, à prix fixe mensuel.',
+      'Les formules Standard et Avancées se règlent via PI-SPI et Wave, à prix fixe pour une licence annuelle.',
   },
   {
     question: 'Mes documents sont-ils confidentiels ?',

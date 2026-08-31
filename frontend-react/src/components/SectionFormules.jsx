@@ -70,12 +70,13 @@ export default function SectionFormules({ titre, description, id = 'formules' })
                     {misEnAvant ? <Badge ton="vert">Recommandée</Badge> : null}
                   </div>
                   <p className="relative mt-2 text-sm text-ink-500">{formule.description}</p>
-                  <p className="relative mt-5 text-4xl font-semibold text-ink-900">
+                  <p className="relative mt-5 flex items-baseline gap-1.5 text-4xl font-semibold text-ink-900">
                     {gratuit ? 'Gratuit' : formaterMontant(formule.prix)}
+                    {gratuit ? null : <span className="text-sm font-medium text-ink-500">/ an</span>}
                   </p>
-                  {gratuit ? (
-                    <p className="relative mt-1 text-xs text-ink-500">Consultation en mode démonstration uniquement</p>
-                  ) : null}
+                  <p className="relative mt-1 text-xs text-ink-500">
+                    {gratuit ? 'Consultation en mode démonstration uniquement' : 'Licence annuelle, renouvelable'}
+                  </p>
                   <div className="flex-1" />
                   <button
                     type="button"
