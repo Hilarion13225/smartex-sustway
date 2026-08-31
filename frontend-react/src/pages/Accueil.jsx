@@ -57,20 +57,16 @@ const CHIFFRES = [
 const ETAPES = [
   {
     titre: 'Étape 1 — Probabilité de conformité',
-    texte:
-      'Le pipeline IA calcule une probabilité entre 0 et 100 %, convertie en niveau d’engagement de 1 à 5 sur l’échelle de Likert Smartex.',
     icone: Bot,
     jauge: 78,
   },
   {
     titre: 'Étape 2 — Score pondéré Smartex',
-    texte: 'Note obtenue = niveau × coefficient (1 à 3). Score = Σ notes obtenues / Σ coefficients, sur les seuls critères actifs.',
     icone: LineChart,
     jauge: 64,
   },
   {
     titre: 'Étape 3 — Risque attendu et priorité',
-    texte: 'Risque = (1 − probabilité) × poids de criticité. La criticité ne participe jamais au score, seulement à la priorité.',
     icone: Target,
     jauge: 41,
   },
@@ -208,7 +204,7 @@ export default function Accueil() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-ink-900">{etape.titre}</p>
-                        <p className="mt-0.5 text-sm leading-relaxed text-ink-500">{etape.texte}</p>
+                        {etape.texte ? <p className="mt-0.5 text-sm leading-relaxed text-ink-500">{etape.texte}</p> : null}
                         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                           <div
                             className="h-full rounded-full bg-gradient-to-r from-brand-500 to-emerald-400 motion-safe:animate-trace-jauge"
