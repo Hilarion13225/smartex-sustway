@@ -67,6 +67,8 @@ public class EvaluationResource {
 
     private static final Logger LOG = Logger.getLogger(EvaluationResource.class);
     private static final String FORMULE_AVANCEES = "AVANCEES";
+    /** Reflète AuditCritere.statut par défaut ("A_EVALUER", voir AuditCritere.java). */
+    private static final String STATUT_EVALUE = "EVALUE";
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
@@ -192,6 +194,11 @@ public class EvaluationResource {
         // construire la réponse ci-dessous (RG14 : la date fait partie de
         // l'historique conservé, y compris dans la réponse renvoyée au client).
         evaluationRepository.persistAndFlush(evaluation);
+        // Le critère a désormais une évaluation IA, qu'elle soit déjà validée
+        // ou en attente de revue experte — il quitte donc l'onglet "Non
+        // évalués" dans les deux cas (voir AuditDetail.jsx, onglets basés sur
+        // ce statut).
+        auditCritere.setStatut(STATUT_EVALUE);
 
         boolean revueDeclenchee = declencherRevueExperteSiNecessaire(audit, evaluation, probabilite, (short) niveau, confiance);
         scoreHistoriqueService.enregistrer(audit);
