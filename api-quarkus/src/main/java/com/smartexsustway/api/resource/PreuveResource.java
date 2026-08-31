@@ -20,6 +20,7 @@ import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -53,6 +54,9 @@ public class PreuveResource {
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
+    @ConfigProperty(name = "smartex.antivirus.echec-bloquant")
+    boolean echecBloquant;
+
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
         autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
@@ -74,7 +78,12 @@ public class PreuveResource {
         if (document == null || !document.getEntreprise().getId().equals(entrepriseId)) {
             return erreur(404, "Document introuvable pour cette entreprise");
         }
-        if (document.getStatutScan() != StatutScanDocument.SAIN) {
+        // INFECTE est toujours bloquant. ERREUR (scan indisponible) ne l'est que si
+        // smartex.antivirus.echec-bloquant l'exige — voir DocumentResource, où le
+        // même réglage gouverne déjà l'admission du document en amont.
+        boolean bloque = document.getStatutScan() == StatutScanDocument.INFECTE
+                || (document.getStatutScan() == StatutScanDocument.ERREUR && echecBloquant);
+        if (bloque) {
             return erreur(422,
                     "Ce document ne peut pas servir de preuve (statut scan : " + document.getStatutScan() + ")");
         }
