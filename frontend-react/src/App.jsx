@@ -60,8 +60,8 @@ export default function App() {
     <ApiAuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Landing />} />
           <Route element={<LayoutPublic />}>
+            <Route path="/" element={<Landing />} />
             <Route path="/accueil" element={<Accueil />} />
             <Route path="/services" element={<Services />} />
             <Route path="/formules" element={<Formules />} />

@@ -1,227 +1,403 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { ArrowRight, Leaf, Menu, Sparkles, X } from 'lucide-react';
-import clsx from 'clsx';
-import Logo from '../components/Logo';
-import BasculeTheme from '../components/BasculeTheme';
-import MenuDeroulant from '../components/MenuDeroulant';
+import { Link } from 'react-router-dom';
+import { BarChart3, ChevronDown, ClipboardCheck, FileText, Leaf, PlayCircle, Scale, Target, TrendingUp } from 'lucide-react';
+import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
 
 /**
- * Feuilles du fond animé : position de départ, taille, vitesse, dérive
- * horizontale (--dx) et décalage. Délais négatifs pour que certaines soient
- * déjà « en vol » au chargement plutôt que de toutes partir du bas ensemble.
+ * Bénéfices résumés sous le héros — une ligne par promesse, volontairement
+ * courte : le détail est développé sur /accueil et /methodologie.
  */
-const FEUILLES = [
-  { gauche: '4%', taille: 20, duree: 17, delai: -3, dx: 55 },
-  { gauche: '12%', taille: 14, duree: 22, delai: -14, dx: -35 },
-  { gauche: '21%', taille: 26, duree: 19, delai: -8, dx: 40 },
-  { gauche: '30%', taille: 16, duree: 24, delai: -1, dx: -50 },
-  { gauche: '40%', taille: 22, duree: 16, delai: -11, dx: 30 },
-  { gauche: '50%', taille: 15, duree: 21, delai: -6, dx: -60 },
-  { gauche: '60%', taille: 24, duree: 18, delai: -16, dx: 45 },
-  { gauche: '69%', taille: 17, duree: 23, delai: -4, dx: -30 },
-  { gauche: '78%', taille: 21, duree: 20, delai: -10, dx: 50 },
-  { gauche: '87%', taille: 15, duree: 25, delai: -2, dx: -40 },
-  { gauche: '94%', taille: 19, duree: 18, delai: -13, dx: 35 },
-];
-
-const SOLUTION_LIENS = [
-  { vers: '/methodologie', libelle: 'Méthodologie' },
-  { vers: '/deploiement', libelle: 'Déploiement' },
-];
-
-const LIENS = [
-  { vers: '/formation', libelle: 'Se former à la RSE et DD' },
-  { vers: '/contact', libelle: 'Contact' },
+const BENEFICES = [
+  {
+    icone: ClipboardCheck,
+    titre: 'Évaluez votre conformité',
+    texte: 'Probabilité de conformité par critère, calculée par IA.',
+  },
+  {
+    icone: Target,
+    titre: 'Priorisez vos actions',
+    texte: 'Non-conformités classées par risque et criticité.',
+  },
+  {
+    icone: TrendingUp,
+    titre: 'Suivez votre progression',
+    texte: 'Visibilité continue, pas une photo ponctuelle.',
+  },
+  {
+    icone: Leaf,
+    titre: 'Ouvrez-vous aux financements verts',
+    texte: 'Indice de préparation aux standards IFC/SFI.',
+  },
 ];
 
 /**
- * Page d'entrée de la plateforme (URL racine) : vitrine d'accroche. Suit le
- * thème clair/sombre/système comme le reste du site (tokens `ink`/`surface`,
- * voir index.css) — seule la scène de fond (collines, feuilles) reste fixe,
- * elle fonctionne visuellement dans les deux thèmes. Le contenu détaillé
- * habituel reste à `/accueil`, accessible depuis la navigation ci-dessous.
+ * Noeuds de l'emblème, dans le repère du SVG (640 × 420) : `x`/`y` place la
+ * pastille, `ancre` le point de raccordement sur la sphère.
+ */
+const NOEUDS_EMBLEME = [
+  { icone: FileText, libelle: 'Documents', x: 98, y: 78, ancre: [204, 142] },
+  { icone: ClipboardCheck, libelle: 'Preuves', x: 542, y: 78, ancre: [436, 142] },
+  { icone: Scale, libelle: 'Conformité', x: 98, y: 320, ancre: [204, 306] },
+  { icone: BarChart3, libelle: 'Scoring', x: 542, y: 320, ancre: [436, 306] },
+];
+
+const CENTRE = [320, 232];
+
+/** Origine des rotations SVG : le centre de l'emblème, en unités du viewBox. */
+const ORIGINE_CENTRE = { transformOrigin: `${CENTRE[0]}px ${CENTRE[1]}px` };
+
+/**
+ * Sphère filaire entourant le bouclier : semis de points tirés d'une sphère
+ * unité puis projetés, reliés dès qu'ils sont proches. Le tirage est
+ * déterministe (générateur congruentiel à graine fixe) pour que le rendu soit
+ * identique d'une visite à l'autre et entre le serveur et le client.
+ */
+const SPHERE = (() => {
+  let graine = 20260901;
+  const alea = () => {
+    graine = (graine * 1103515245 + 12345) % 2147483648;
+    return graine / 2147483648;
+  };
+
+  const rayon = 190;
+  const points = Array.from({ length: 78 }, () => {
+    const z = alea() * 2 - 1;
+    const theta = alea() * Math.PI * 2;
+    const anneau = Math.sqrt(1 - z * z);
+    return {
+      x: CENTRE[0] + rayon * anneau * Math.cos(theta),
+      y: CENTRE[1] + rayon * z * 0.94,
+      // Profondeur perçue : les points « devant » sont plus opaques.
+      opacite: 0.25 + 0.55 * ((anneau * Math.sin(theta) + 1) / 2),
+    };
+  });
+
+  const aretes = [];
+  points.forEach((a, i) => {
+    points.slice(i + 1).forEach((b) => {
+      const distance = Math.hypot(a.x - b.x, a.y - b.y);
+      if (distance < 66) {
+        aretes.push({ a, b, opacite: 0.35 * (1 - distance / 66) });
+      }
+    });
+  });
+
+  return { points, aretes };
+})();
+
+/** Graduations de la jauge de conformité, de 0 % (gauche) à 100 % (droite). */
+const GRADUATIONS = Array.from({ length: 49 }, (_, index) => {
+  const angle = ((196 - (index * 212) / 48) * Math.PI) / 180;
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const interieur = 132;
+  const exterieur = index % 6 === 0 ? 158 : 149;
+  return {
+    x1: CENTRE[0] + cos * interieur,
+    y1: CENTRE[1] - sin * interieur,
+    x2: CENTRE[0] + cos * exterieur,
+    y2: CENTRE[1] - sin * exterieur,
+    majeure: index % 6 === 0,
+  };
+});
+
+/** Poussière de points du fond du héros (positions figées). */
+const PARTICULES = [
+  { gauche: '4%', haut: '12%', taille: 7 },
+  { gauche: '11%', haut: '46%', taille: 4 },
+  { gauche: '8%', haut: '74%', taille: 6 },
+  { gauche: '19%', haut: '22%', taille: 5 },
+  { gauche: '26%', haut: '62%', taille: 3 },
+  { gauche: '34%', haut: '9%', taille: 4 },
+  { gauche: '44%', haut: '82%', taille: 5 },
+  { gauche: '56%', haut: '14%', taille: 3 },
+  { gauche: '66%', haut: '70%', taille: 6 },
+  { gauche: '74%', haut: '30%', taille: 4 },
+  { gauche: '83%', haut: '58%', taille: 7 },
+  { gauche: '90%', haut: '18%', taille: 5 },
+  { gauche: '95%', haut: '78%', taille: 4 },
+];
+
+const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 8 74 V30 Z';
+
+/**
+ * Page d'entrée de la plateforme (URL racine). Volontairement réduite au seul
+ * héros : la présentation détaillée vit sur /accueil, /methodologie et
+ * /formules. Rendue dans LayoutPublic, qui masque le pied de page sur cette
+ * route ; le thème clair/sombre est hérité (tokens `ink`/`surface`).
  */
 export default function Landing() {
-  const [ouvert, setOuvert] = useState(false);
-
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-surface dark:bg-[#1f2533]">
-      {/* Aube — lueur chaleureuse basse, respire doucement. */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[60vh] bg-[radial-gradient(60%_100%_at_50%_100%,rgba(207,92,80,0.35),transparent_75%)] motion-safe:animate-respiration"
+    <section className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
+      <span
+        className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl motion-safe:animate-respiration dark:bg-brand-800/40"
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute -right-24 top-0 h-80 w-80 rounded-full bg-brand-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s] dark:bg-brand-900/50"
         aria-hidden
       />
 
-      {/* Collines en silhouette — paysage plutôt que motif abstrait. */}
-      <div
-        className="pointer-events-none absolute -bottom-[18vh] left-1/2 h-[38vh] w-[130vw] -translate-x-1/2 rounded-[50%] bg-[#151924]"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-[22vh] left-[38%] h-[34vh] w-[110vw] -translate-x-1/2 rounded-[50%] bg-[#10141d]"
-        aria-hidden
-      />
-
-      {/* Feuilles qui montent doucement dans un léger tangage — le motif
-          « croissance / durabilité » de la marque, en mouvement plutôt qu'en
-          icône figée, plutôt qu'un décor abstrait sans lien avec le RSE. */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-        {FEUILLES.map((feuille, index) => (
-          <Leaf
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        {PARTICULES.map((particule, index) => (
+          <span
             key={index}
-            className="absolute bottom-0 text-emerald-400 opacity-70 drop-shadow-[0_0_6px_rgba(52,211,153,0.35)] motion-safe:animate-derive-feuille"
+            className="absolute rounded-full bg-brand-400/40 motion-safe:animate-respiration dark:bg-brand-400/30"
             style={{
-              left: feuille.gauche,
-              width: feuille.taille,
-              height: feuille.taille,
-              animationDuration: `${feuille.duree}s`,
-              animationDelay: `${feuille.delai}s`,
-              '--dx': `${feuille.dx}px`,
+              left: particule.gauche,
+              top: particule.haut,
+              width: particule.taille,
+              height: particule.taille,
+              animationDelay: `${index * 0.4}s`,
             }}
-            strokeWidth={1.5}
           />
         ))}
       </div>
 
-      <header className="relative z-10 border-b border-ink-100">
-        <div className="mx-auto flex max-w-[90rem] items-center justify-between gap-4 px-5 py-3.5">
-          <Link to="/" onClick={() => setOuvert(false)}>
-            <Logo taille="sm" />
-            <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">Par {SMARTEX.editeur}</p>
-          </Link>
+      <div className="relative mx-auto max-w-[70rem] px-5 pb-12 pt-8 text-center">
+        {/* Emblème : sphère de données, jauge de conformité, bouclier de la
+            marque et les quatre natures d'objets manipulées par le moteur. */}
+        <div className="relative mx-auto aspect-[640/420] w-full max-w-3xl motion-safe:animate-apparition-douce">
+          <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
+            <defs>
+              <linearGradient id="degradeBouclier" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#cf5c50" />
+                <stop offset="55%" stopColor="#b3271e" />
+                <stop offset="100%" stopColor="#921f18" />
+              </linearGradient>
+              <radialGradient id="lueurBouclier">
+                <stop offset="0%" stopColor="#b3271e" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#b3271e" stopOpacity="0" />
+              </radialGradient>
+            </defs>
 
-          <nav className="hidden items-center gap-1 lg:flex">
-            <NavLink to="/accueil" className="lien-nav">
-              Accueil
-            </NavLink>
-            <MenuDeroulant libelle={`La solution ${SMARTEX.produit}`} liens={SOLUTION_LIENS} />
-            {LIENS.map((lien) => (
-              <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
-                {lien.libelle}
-              </NavLink>
+            {/* Sphère : les anneaux tournent lentement en sens inverse l'un de
+                l'autre, le semis de points dérive à son propre rythme. */}
+            <g style={ORIGINE_CENTRE} className="motion-safe:animate-rotation">
+              <ellipse
+                cx={CENTRE[0]}
+                cy={CENTRE[1]}
+                rx="188"
+                ry="178"
+                className="fill-none stroke-brand-200/50 dark:stroke-brand-500/40"
+                strokeWidth="1"
+              />
+              <ellipse
+                cx={CENTRE[0]}
+                cy={CENTRE[1]}
+                rx="118"
+                ry="176"
+                className="fill-none stroke-brand-200/35 dark:stroke-brand-500/30"
+                strokeWidth="1"
+              />
+            </g>
+
+            <g style={ORIGINE_CENTRE} className="motion-safe:animate-rotation-inverse">
+              {SPHERE.aretes.map((arete, index) => (
+                <line
+                  key={index}
+                  x1={arete.a.x}
+                  y1={arete.a.y}
+                  x2={arete.b.x}
+                  y2={arete.b.y}
+                  className="stroke-brand-400 dark:stroke-brand-300"
+                  strokeOpacity={arete.opacite}
+                  strokeWidth="0.8"
+                />
+              ))}
+              {SPHERE.points.map((point, index) => (
+                <circle
+                  key={index}
+                  cx={point.x}
+                  cy={point.y}
+                  r={index % 4 === 0 ? 2.6 : 1.7}
+                  className="fill-brand-500 dark:fill-brand-300"
+                  fillOpacity={point.opacite}
+                />
+              ))}
+            </g>
+
+            {/* Graduations : allumées une à une, de 0 % vers 100 %. */}
+            {GRADUATIONS.map((tick, index) => (
+              <line
+                key={index}
+                x1={tick.x1}
+                y1={tick.y1}
+                x2={tick.x2}
+                y2={tick.y2}
+                strokeWidth={tick.majeure ? 2.4 : 1.4}
+                strokeLinecap="round"
+                style={{ animationDelay: `${index * 28}ms` }}
+                className={`motion-safe:animate-apparition-tick ${
+                  tick.majeure ? 'stroke-brand-500 dark:stroke-brand-400' : 'stroke-brand-400/70 dark:stroke-brand-300/60'
+                }`}
+              />
             ))}
-          </nav>
 
-          <div className="hidden items-center gap-2 sm:flex">
-            <BasculeTheme className="mr-1" />
-            <Link to="/connexion" className="btn-vitrine-clair">
-              Se connecter
-            </Link>
-            <Link to="/inscription" className="btn-vitrine group">
-              Créer un compte
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-            </Link>
-          </div>
+            {NOEUDS_EMBLEME.map((noeud, index) => (
+              <g key={noeud.libelle} style={{ animationDelay: `${index * 260}ms` }} className="motion-safe:animate-apparition-tick">
+                <line
+                  x1={noeud.x}
+                  y1={noeud.y}
+                  x2={noeud.ancre[0]}
+                  y2={noeud.ancre[1]}
+                  className="stroke-brand-300 dark:stroke-brand-400/60"
+                  strokeWidth="1"
+                />
+                <circle
+                  cx={noeud.ancre[0]}
+                  cy={noeud.ancre[1]}
+                  r="4.5"
+                  className="fill-brand-500 dark:fill-brand-400 motion-safe:animate-respiration"
+                  style={{ transformOrigin: `${noeud.ancre[0]}px ${noeud.ancre[1]}px`, animationDelay: `${index * 700}ms` }}
+                />
+              </g>
+            ))}
 
-          <button
-            type="button"
-            className="btn-ghost p-2 lg:hidden"
-            onClick={() => setOuvert((valeur) => !valeur)}
-            aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
-            aria-expanded={ouvert}
-          >
-            {ouvert ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
-          </button>
+            <text
+              x="212"
+              y={CENTRE[1] + 42}
+              className="fill-brand-600 text-[15px] font-semibold dark:fill-brand-300"
+              textAnchor="middle"
+            >
+              0 %
+            </text>
+            <text
+              x="430"
+              y={CENTRE[1] + 42}
+              className="fill-brand-600 text-[15px] font-semibold dark:fill-brand-300"
+              textAnchor="middle"
+            >
+              100 %
+            </text>
+
+            <ellipse
+              cx={CENTRE[0]}
+              cy={CENTRE[1] + 96}
+              rx="120"
+              ry="34"
+              fill="url(#lueurBouclier)"
+              className="motion-safe:animate-respiration"
+              style={{ transformOrigin: `${CENTRE[0]}px ${CENTRE[1] + 96}px` }}
+            />
+
+            {/* Le flottement est porté par un groupe interne : une animation CSS
+                sur le groupe positionné écraserait son attribut `transform`. */}
+            <g transform={`translate(${CENTRE[0] - 64}, ${CENTRE[1] - 74})`}>
+              <g className="motion-safe:animate-flottement">
+                <path d={CHEMIN_BOUCLIER} className="fill-surface" />
+                <path
+                  d={CHEMIN_BOUCLIER}
+                  fill="none"
+                  stroke="url(#degradeBouclier)"
+                  strokeWidth="7"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M64 42 C40 50 30 72 36 96 C60 100 80 82 80 60 C80 52 74 44 64 42 Z"
+                  fill="url(#degradeBouclier)"
+                />
+                <path
+                  d="M40 100 C48 84 58 70 74 58"
+                  fill="none"
+                  stroke="#fdf2f1"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+              </g>
+            </g>
+          </svg>
+
+          {NOEUDS_EMBLEME.map((noeud, index) => (
+            <span
+              key={noeud.libelle}
+              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
+              style={{ left: `${(noeud.x / 640) * 100}%`, top: `${(noeud.y / 420) * 100}%` }}
+            >
+              <span
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-300 bg-surface text-brand-600 shadow-soft motion-safe:animate-flottement dark:border-brand-500/60 dark:text-brand-400 sm:h-14 sm:w-14"
+                style={{ animationDelay: `${index * 900}ms` }}
+              >
+                <noeud.icone className="h-4 w-4 sm:h-6 sm:w-6" strokeWidth={1.6} aria-hidden />
+              </span>
+              <span className="text-[0.5rem] font-semibold uppercase tracking-[0.2em] text-ink-500 sm:text-[0.7rem]">
+                {noeud.libelle}
+              </span>
+            </span>
+          ))}
         </div>
+
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-600 motion-safe:animate-apparition-bas dark:text-brand-400">
+          Plateforme d’évaluation RSE intelligente
+        </p>
+
+        <h1
+          className="mx-auto mt-4 max-w-4xl text-4xl font-bold leading-[1.08] text-ink-900 motion-safe:animate-apparition-bas sm:text-5xl lg:text-[3.75rem]"
+          style={{ animationDelay: '120ms' }}
+        >
+          Maîtrisez votre performance RSE.
+          <br />
+          Agissez avec <span className="text-brand-600 dark:text-brand-400">intelligence</span>.
+        </h1>
+
+        <p
+          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-600 motion-safe:animate-apparition-bas"
+          style={{ animationDelay: '240ms' }}
+        >
+          {SMARTEX.produit} unifie référentiel, preuves documentaires et intelligence artificielle multi-agents pour
+          évaluer, prioriser et améliorer votre performance RSE.
+        </p>
 
         <div
-          className={clsx(
-            'overflow-hidden border-ink-100 bg-surface/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 lg:hidden',
-            ouvert ? 'max-h-[32rem] border-t opacity-100' : 'max-h-0 opacity-0'
-          )}
+          className="mt-9 flex flex-wrap items-center justify-center gap-4 motion-safe:animate-apparition-bas"
+          style={{ animationDelay: '360ms' }}
         >
-          <nav className="mx-auto flex max-w-[90rem] flex-col gap-1 px-5 py-4">
-            <NavLink
-              to="/accueil"
-              onClick={() => setOuvert(false)}
-              className={({ isActive }) =>
-                clsx(
-                  'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400' : 'text-ink-700 hover:bg-ink-100'
-                )
-              }
-            >
-              Accueil
-            </NavLink>
-
-            <p className="mt-1 px-3 text-xs font-medium uppercase tracking-wide text-ink-500">La solution {SMARTEX.produit}</p>
-            {SOLUTION_LIENS.map((lien) => (
-              <Link
-                key={lien.vers}
-                to={lien.vers}
-                onClick={() => setOuvert(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-100"
-              >
-                {lien.libelle}
-              </Link>
-            ))}
-
-            <div className="my-2 border-t border-ink-100" />
-
-            {LIENS.map((lien) => (
-              <NavLink
-                key={lien.vers}
-                to={lien.vers}
-                onClick={() => setOuvert(false)}
-                className={({ isActive }) =>
-                  clsx(
-                    'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400'
-                      : 'text-ink-700 hover:bg-ink-100'
-                  )
-                }
-              >
-                {lien.libelle}
-              </NavLink>
-            ))}
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-ink-500">Thème</span>
-              <BasculeTheme />
-            </div>
-            <div className="mt-2 flex flex-col gap-2">
-              <Link to="/connexion" className="btn-vitrine-clair" onClick={() => setOuvert(false)}>
-                Se connecter
-              </Link>
-              <Link to="/inscription" className="btn-vitrine" onClick={() => setOuvert(false)}>
-                Créer un compte
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
-          </nav>
+          <Link to="/inscription" className="btn-vitrine px-8 py-3.5 text-base transition-transform duration-300 hover:-translate-y-0.5">
+            Démarrer gratuitement
+          </Link>
+          <Link
+            to="/methodologie"
+            className="btn-vitrine-clair group px-8 py-3.5 text-base transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <PlayCircle
+              className="h-5 w-5 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400"
+              strokeWidth={1.6}
+              aria-hidden
+            />
+            Voir la démo
+          </Link>
         </div>
-      </header>
 
-      <main className="relative z-10 flex flex-1 items-center justify-center px-5 py-16">
-        <div className="mx-auto max-w-3xl text-center motion-safe:animate-apparition-bas">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-100 px-3.5 py-1.5 text-xs font-medium text-ink-700 ring-1 ring-ink-200">
-            <Sparkles className="h-3.5 w-3.5 text-brand-500 dark:text-brand-400" aria-hidden />
-            Plateforme IA pour l’évaluation RSE
+        <dl className="mt-14 grid gap-8 text-left sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
+          {BENEFICES.map((benefice, index) => (
+            <Revele key={benefice.titre} delai={index * 110}>
+              <div className="group flex gap-3 lg:px-6">
+                <benefice.icone
+                  className="mt-0.5 h-8 w-8 shrink-0 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400"
+                  strokeWidth={1.5}
+                  aria-hidden
+                />
+                <div>
+                  <dt className="text-sm font-semibold text-ink-900">{benefice.titre}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-ink-500">{benefice.texte}</dd>
+                </div>
+              </div>
+            </Revele>
+          ))}
+        </dl>
+
+        <Link
+          to="/accueil"
+          className="mt-12 inline-flex flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
+        >
+          Découvrir
+          <span className="flex h-9 w-6 items-start justify-center rounded-full border-2 border-brand-400 pt-1.5">
+            <span className="h-1.5 w-1 rounded-full bg-brand-500 motion-safe:animate-bounce" />
           </span>
-
-          <h1 className="mt-6 text-4xl font-semibold leading-[1.1] text-ink-900 sm:text-5xl lg:text-6xl">
-            Optimisez votre demarche RSE
-            <br />
-            avec l’<span className="text-brand-600 dark:text-brand-400">Intelligence Artificielle</span>
-          </h1>
-
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink-600">
-            {SMARTEX.mission} {SMARTEX.promesseFinancement}
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/accueil" className="btn-vitrine group px-5">
-              Découvrir la plateforme
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-            </Link>
-            <Link to="/formules" className="btn-vitrine-clair px-5">
-              Formule de collaboration
-            </Link>
-          </div>
-        </div>
-      </main>
-    </div>
+          <ChevronDown className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+    </section>
   );
 }

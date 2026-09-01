@@ -24,7 +24,8 @@ export default function LayoutPublic() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <PiedPublic />
+      {/* La page d'entrée s'arrête à son héros : elle n'affiche pas le pied de page. */}
+      {pathname !== '/' && <PiedPublic />}
     </div>
   );
 }
