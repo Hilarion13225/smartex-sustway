@@ -7,7 +7,7 @@ import { SMARTEX } from '../config/smartex';
 import BasculeTheme from './BasculeTheme';
 
 const LIENS = [
-  { vers: '/', libelle: 'Accueil', fin: true },
+  { vers: '/accueil', libelle: 'Accueil' },
   { vers: '/services', libelle: 'Services' },
   { vers: '/formules', libelle: 'Formules' },
   { vers: '/a-propos', libelle: 'À propos' },

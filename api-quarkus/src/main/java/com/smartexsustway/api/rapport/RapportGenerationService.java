@@ -619,7 +619,7 @@ public class RapportGenerationService {
     }
 
     private void ajouterPiedDePage(Document document, Polices polices) throws DocumentException {
-        Paragraph pied = new Paragraph("Smartex Sustway — Généré automatiquement.", polices.avertissement());
+        Paragraph pied = new Paragraph("SMARTEX SustWay — Généré automatiquement.", polices.avertissement());
         pied.setSpacingBefore(14);
         pied.setAlignment(Element.ALIGN_CENTER);
         document.add(pied);

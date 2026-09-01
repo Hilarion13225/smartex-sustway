@@ -68,7 +68,7 @@ export default function AuditsListe() {
       <PageTitre
         icone={ClipboardList}
         titre="Missions d’audit"
-        description={`Audits RSE de ${entreprise.raisonSociale} — méthodologie Smartex Sustway.`}
+        description={`Audits RSE de ${entreprise.raisonSociale} — méthodologie SMARTEX SustWay.`}
         actions={
           peutCreerAudit ? (
             <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>

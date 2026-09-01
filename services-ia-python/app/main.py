@@ -16,7 +16,7 @@ from app.routers import analyses, evaluations
 settings = get_settings()
 
 app = FastAPI(
-    title="Smartex Sustway — Services IA",
+    title="SMARTEX SustWay — Services IA",
     description="Pipeline d'agents IA (Document/Evidence/Compliance/Risk/Scoring/Recommendation/Reporting)",
     version="0.1.0",
 )

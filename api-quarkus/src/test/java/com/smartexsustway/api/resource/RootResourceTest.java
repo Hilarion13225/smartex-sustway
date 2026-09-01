@@ -15,6 +15,6 @@ class RootResourceTest {
           .when().get("/api/v1")
           .then()
              .statusCode(200)
-             .body("application", is("Smartex Sustway — API"));
+             .body("application", is("SMARTEX SustWay — API"));
     }
 }

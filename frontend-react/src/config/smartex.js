@@ -5,7 +5,7 @@
  */
 export const SMARTEX = {
   editeur: 'Smartex Expertises',
-  produit: 'Smartex Sustway',
+  produit: 'SMARTEX SustWay',
   accroche: 'Évaluation RSE intelligente',
   baseline: 'Conseil, audit et outillage numérique de la performance durable.',
   email: 'contact@smartex-expertises.com',

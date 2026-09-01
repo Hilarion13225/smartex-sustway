@@ -53,8 +53,8 @@ public class TotpService {
      * être scanné.
      */
     public String uriProvisionnement(String email, String secret) {
-        String label = URLEncoder.encode("Smartex Sustway:" + email, StandardCharsets.UTF_8);
-        String issuer = URLEncoder.encode("Smartex Sustway", StandardCharsets.UTF_8);
+        String label = URLEncoder.encode("SMARTEX SustWay:" + email, StandardCharsets.UTF_8);
+        String issuer = URLEncoder.encode("SMARTEX SustWay", StandardCharsets.UTF_8);
         return "otpauth://totp/" + label + "?secret=" + secret + "&issuer=" + issuer
                 + "&algorithm=SHA1&digits=6&period=30";
     }
