@@ -32,7 +32,7 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
         <Leaf
           className={clsx(
             'absolute -right-[0.65em] -top-[0.15em] h-[0.55em] w-[0.55em] rotate-[18deg]',
-            clair ? 'text-brand-300' : 'text-brand-500'
+            clair ? 'text-emerald-400' : 'text-emerald-500'
           )}
           strokeWidth={2.5}
           aria-hidden
