@@ -98,6 +98,14 @@ export default {
           '33%': { transform: 'translate(4%, -6%) scale(1.08)' },
           '66%': { transform: 'translate(-5%, 4%) scale(0.96)' },
         },
+        rotation: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'apparition-tick': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
         'derive-feuille': {
           '0%': { transform: 'translateY(15vh) translateX(0) rotate(-12deg)', opacity: '0' },
           '12%': { opacity: '0.85' },
@@ -116,6 +124,9 @@ export default {
         defilement: 'defilement 22s linear infinite',
         derive: 'derive 22s ease-in-out infinite',
         'derive-feuille': 'derive-feuille 20s linear infinite',
+        rotation: 'rotation 90s linear infinite',
+        'rotation-inverse': 'rotation 120s linear infinite reverse',
+        'apparition-tick': 'apparition-tick 0.5s ease-out both',
       },
     },
   },
