@@ -26,9 +26,9 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
         className
       )}
     >
-      <span className={clair ? 'text-white' : 'text-ink-900'}>Smartex</span>
+      <span className={clair ? 'text-white' : 'text-ink-900'}>SMARTEX</span>
       <span className={clsx('relative ml-[0.1em] mr-[0.55em]', clair ? 'text-brand-300' : 'text-brand-600')}>
-        Sustway
+        SustWay
         <Leaf
           className={clsx(
             'absolute -right-[0.65em] -top-[0.15em] h-[0.55em] w-[0.55em] rotate-[18deg]',
