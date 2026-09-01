@@ -280,7 +280,7 @@ export default function Inscription() {
         </ol>
         <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-emerald-400 transition-all duration-700"
+            className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 transition-all duration-700"
             style={{ width: `${Math.max(6, progression)}%` }}
           />
         </div>

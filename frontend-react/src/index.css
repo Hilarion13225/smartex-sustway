@@ -176,7 +176,7 @@
 
 @layer utilities {
   .texte-degrade {
-    @apply bg-gradient-to-r from-brand-700 via-brand-500 to-emerald-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-brand-700 via-brand-500 to-brand-300 bg-clip-text text-transparent;
     background-size: 200% 200%;
   }
   .revele {

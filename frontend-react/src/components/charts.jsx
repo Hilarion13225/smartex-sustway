@@ -28,8 +28,8 @@ ChartJS.register(
 );
 
 export const COULEURS = {
-  brand: '#128257',
-  brandClair: 'rgba(18, 130, 87, 0.18)',
+  brand: '#921f18',
+  brandClair: 'rgba(146, 31, 24, 0.18)',
   bleu: '#2563eb',
   bleuClair: 'rgba(37, 99, 235, 0.18)',
   ambre: '#d97706',

@@ -207,7 +207,7 @@ export default function Accueil() {
                         {etape.texte ? <p className="mt-0.5 text-sm leading-relaxed text-ink-500">{etape.texte}</p> : null}
                         <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-emerald-400 motion-safe:animate-trace-jauge"
+                            className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 motion-safe:animate-trace-jauge"
                             style={{ width: `${etape.jauge}%` }}
                           />
                         </div>

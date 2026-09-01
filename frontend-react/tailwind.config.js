@@ -5,17 +5,21 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Rouge brique/carmin délibérément distinct du rouge d'alerte (rose-*,
+        // utilisé pour les erreurs et la criticité CRITIQUE) : plus profond et
+        // moins vif, pour qu'un bouton principal ne se confonde jamais avec un
+        // message d'erreur malgré la même famille de teinte.
         brand: {
-          50: '#eefbf4',
-          100: '#d6f5e3',
-          200: '#b0e9cb',
-          300: '#7cd7ac',
-          400: '#45bd88',
-          500: '#1fa26d',
-          600: '#128257',
-          700: '#106848',
-          800: '#10533b',
-          900: '#0e4432',
+          50: '#fdf2f1',
+          100: '#f9dcda',
+          200: '#f0b8b3',
+          300: '#e28d84',
+          400: '#cf5c50',
+          500: '#b3271e',
+          600: '#921f18',
+          700: '#771a15',
+          800: '#5c1310',
+          900: '#430e0c',
         },
         // Défini via des variables CSS (voir index.css, :root et .dark) plutôt
         // qu'en hexadécimal fixe : la même classe `bg-ink-50`/`text-ink-900`
@@ -50,11 +54,11 @@ export default {
         // Élévation douce (cartes vitrine/app) — teinte encre plutôt que noir pur.
         soft: '0 20px 40px -24px rgba(31, 41, 55, 0.18), 0 8px 20px -12px rgba(31, 41, 55, 0.10)',
         // Halo de marque (CTA, badges actifs) — teinte brand-600.
-        glow: '0 10px 30px -8px rgba(18, 130, 87, 0.45)',
+        glow: '0 10px 30px -8px rgba(146, 31, 24, 0.45)',
       },
       backgroundImage: {
         // Halo décoratif en haut de section (héros, cartes en survol).
-        'halo-brand': 'radial-gradient(60% 100% at 50% 0%, rgba(31, 162, 109, 0.16), transparent 70%)',
+        'halo-brand': 'radial-gradient(60% 100% at 50% 0%, rgba(179, 39, 30, 0.16), transparent 70%)',
       },
       keyframes: {
         'apparition-bas': {
