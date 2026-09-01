@@ -7,6 +7,16 @@ import { formaterMontant } from '../lib/export';
 import { Badge, Loader } from './ui';
 import Revele from './Revele';
 
+// Nombre de cartes -> colonnes et largeur max de la grille, pour qu'elle
+// reste centrée et les cartes correctement proportionnées quel que soit le
+// nombre de formules actives (ex. Free retirée : 2 formules restantes,
+// sinon coincées à gauche d'une 3e colonne vide en lg:grid-cols-3 fixe).
+const GRILLE_PAR_NOMBRE = {
+  1: 'lg:grid-cols-1 max-w-md',
+  2: 'lg:grid-cols-2 max-w-3xl',
+};
+const GRILLE_PAR_DEFAUT = 'lg:grid-cols-3';
+
 /**
  * Grille des formules, alimentée par l'endpoint public existant
  * (`listerFormules`). Utilisée par la page d'accueil et par la page Formules.
@@ -47,7 +57,7 @@ export default function SectionFormules({ titre, description, id = 'formules' })
       {chargement ? (
         <Loader message="Chargement des formules…" />
       ) : (
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+        <div className={clsx('mx-auto mt-10 grid gap-6', GRILLE_PAR_NOMBRE[formules.length] ?? GRILLE_PAR_DEFAUT)}>
           {formules.map((formule, index) => {
             const misEnAvant = formule.code === 'AVANCEES';
             const gratuit = Number(formule.prix) === 0;
