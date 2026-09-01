@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CheckCircle2, Clock, Cpu, FileText, HelpCircle } from 'lucide-react';
+import { CheckCircle2, Cpu, FileText, HelpCircle } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres } from '../components/charts';
@@ -57,10 +57,9 @@ export default function PipelineIA() {
     (acc, { score }) => ({
       total: acc.total + (score?.nombreCriteresTotal ?? 0),
       evalues: acc.evalues + (score?.nombreCriteresEvalues ?? 0),
-      enRevue: acc.enRevue + (score?.nombreCriteresEnRevue ?? 0),
       nonEvalues: acc.nonEvalues + (score?.nombreCriteresNonEvalues ?? 0),
     }),
-    { total: 0, evalues: 0, enRevue: 0, nonEvalues: 0 }
+    { total: 0, evalues: 0, nonEvalues: 0 }
   );
 
   return (
@@ -76,19 +75,13 @@ export default function PipelineIA() {
       ) : lignes && lignes.length > 0 ? (
         <>
           <Revele>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <StatCard libelle="Documents déposés" valeur={nombreDocuments} icone={FileText} ton="bleu" />
               <StatCard
                 libelle="Critères évalués"
                 valeur={`${totaux.evalues} / ${totaux.total}`}
                 icone={CheckCircle2}
                 ton="vert"
-              />
-              <StatCard
-                libelle="En revue experte"
-                valeur={totaux.enRevue}
-                icone={Clock}
-                ton={totaux.enRevue > 0 ? 'ambre' : 'neutre'}
               />
               <StatCard libelle="Non évalués" valeur={totaux.nonEvalues} icone={HelpCircle} ton="neutre" />
             </div>
@@ -103,7 +96,6 @@ export default function PipelineIA() {
                   labels={lignes.map(({ audit }) => audit.nom)}
                   series={[
                     { label: 'Évalués', data: lignes.map(({ score }) => score?.nombreCriteresEvalues ?? 0), couleur: COULEURS.brand },
-                    { label: 'En revue', data: lignes.map(({ score }) => score?.nombreCriteresEnRevue ?? 0), couleur: COULEURS.ambre },
                     { label: 'Non évalués', data: lignes.map(({ score }) => score?.nombreCriteresNonEvalues ?? 0), couleur: COULEURS.gris },
                   ]}
                 />
@@ -113,12 +105,11 @@ export default function PipelineIA() {
 
           <Revele delai={120}>
             <Card>
-              <Tableau entetes={['Mission', 'Évalués', 'En revue', 'Non évalués', '']}>
+              <Tableau entetes={['Mission', 'Évalués', 'Non évalués', '']}>
                 {lignes.map(({ audit, score }) => (
                   <tr key={audit.id} className="transition-colors hover:bg-ink-100/60">
                     <td className="td font-medium text-ink-900">{audit.nom}</td>
                     <td className="td">{score ? `${score.nombreCriteresEvalues} / ${score.nombreCriteresTotal}` : '—'}</td>
-                    <td className="td">{score?.nombreCriteresEnRevue ?? '—'}</td>
                     <td className="td">{score?.nombreCriteresNonEvalues ?? '—'}</td>
                     <td className="td text-right">
                       <Link to={`/app/${entrepriseId}/audits/${audit.id}`} className="btn-ghost">

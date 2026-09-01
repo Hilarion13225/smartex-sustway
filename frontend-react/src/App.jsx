@@ -11,6 +11,7 @@ import Services from './pages/Services';
 import Formules from './pages/Formules';
 import APropos from './pages/APropos';
 import Methodologie from './pages/Methodologie';
+import Deploiement from './pages/Deploiement';
 import Formation from './pages/Formation';
 import Contact from './pages/Contact';
 import Faq from './pages/Faq';
@@ -66,6 +67,7 @@ export default function App() {
             <Route path="/formules" element={<Formules />} />
             <Route path="/a-propos" element={<APropos />} />
             <Route path="/methodologie" element={<Methodologie />} />
+            <Route path="/deploiement" element={<Deploiement />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<Faq />} />

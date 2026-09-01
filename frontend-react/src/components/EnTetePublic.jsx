@@ -9,7 +9,7 @@ import MenuDeroulant from './MenuDeroulant';
 
 const SOLUTION_LIENS = [
   { vers: '/methodologie', libelle: 'Méthodologie' },
-  { vers: '/accueil#parcours', libelle: 'Déploiement' },
+  { vers: '/deploiement', libelle: 'Déploiement' },
 ];
 
 const LIENS = [
@@ -47,6 +47,9 @@ export default function EnTetePublic() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
+          <NavLink to="/accueil" className="lien-nav">
+            Accueil
+          </NavLink>
           <MenuDeroulant libelle={`La solution ${SMARTEX.produit}`} liens={SOLUTION_LIENS} />
           {LIENS.map((lien) => (
             <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
@@ -84,6 +87,19 @@ export default function EnTetePublic() {
         )}
       >
         <nav className="mx-auto flex max-w-[90rem] flex-col gap-1 px-5 py-4">
+          <NavLink
+            to="/accueil"
+            onClick={() => setOuvert(false)}
+            className={({ isActive }) =>
+              clsx(
+                'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                isActive ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400' : 'text-ink-700 hover:bg-ink-100'
+              )
+            }
+          >
+            Accueil
+          </NavLink>
+
           <p className="mt-1 px-3 text-xs font-medium uppercase tracking-wide text-ink-500">La solution {SMARTEX.produit}</p>
           {SOLUTION_LIENS.map((lien) => (
             <Link
