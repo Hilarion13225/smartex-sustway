@@ -22,7 +22,7 @@ import CadreAuth from '../components/CadreAuth';
 
 const ATOUTS = [
   '87 critères, 6 domaines : un référentiel adapté à votre secteur.',
-  'Analyse documentaire assistée par IA, revue par des experts.',
+  'Analyse documentaire par un pipeline d’agents IA, avec indice de confiance par critère.',
   'Score, plan d’action et rapport exportable dès la première évaluation.',
 ];
 

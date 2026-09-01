@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Clock, Gauge, HelpCircle, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Gauge, HelpCircle, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
@@ -100,7 +100,7 @@ export default function AuditScore() {
           ) : null}
 
           <Revele>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 libelle="Score global"
                 valeur={`${Number(score.scoreGlobal).toFixed(2)} / 5`}
@@ -111,16 +111,9 @@ export default function AuditScore() {
               <StatCard
                 libelle="Critères évalués"
                 valeur={`${score.nombreCriteresEvalues} / ${score.nombreCriteresTotal}`}
-                detail="Évaluation validée (IA ou expert)"
+                detail="Évaluation validée par l’IA"
                 icone={CheckCircle2}
                 ton="vert"
-              />
-              <StatCard
-                libelle="En revue experte"
-                valeur={score.nombreCriteresEnRevue}
-                detail="En attente de traitement par un expert"
-                icone={Clock}
-                ton={score.nombreCriteresEnRevue > 0 ? 'ambre' : 'neutre'}
               />
               <StatCard
                 libelle="Non évalués"

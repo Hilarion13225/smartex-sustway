@@ -17,7 +17,7 @@ export default function MenuDeroulant({ libelle, liens }) {
   }, [ouvert]);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onMouseEnter={() => setOuvert(true)} onMouseLeave={() => setOuvert(false)}>
       <button type="button" onClick={() => setOuvert((valeur) => !valeur)} className="lien-nav" aria-expanded={ouvert}>
         {libelle}
       </button>
