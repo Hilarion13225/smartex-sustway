@@ -27,7 +27,7 @@ const FEUILLES = [
 ];
 
 const SOLUTION_LIENS = [
-  { vers: '/a-propos#methodologie', libelle: 'Méthodologie' },
+  { vers: '/methodologie', libelle: 'Méthodologie' },
   { vers: '/accueil#parcours', libelle: 'Déploiement' },
 ];
 

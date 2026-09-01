@@ -1,9 +1,9 @@
-import { Award, BookOpen, Building2, Compass, HeartHandshake, Lightbulb, ScrollText, Sparkles, Target, Users } from 'lucide-react';
+import { Building2, Compass, HeartHandshake, Lightbulb, ScrollText, Sparkles, Target, Users } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
 import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
 import { Badge } from '../components/ui';
-import { FONDEMENTS, REFERENCES_METHODOLOGIQUES, REFERENTIELS_EVALUABLES, SMARTEX } from '../config/smartex';
+import { SMARTEX } from '../config/smartex';
 import Logo from '../components/Logo';
 
 const VALEURS = [
@@ -32,7 +32,6 @@ const VALEURS = [
 const ENGAGEMENTS = [
   'Confidentialité des documents déposés et isolation stricte des données par entreprise.',
   'Explicabilité de chaque note : critère, preuve associée, probabilité et niveau de confiance.',
-  'Revue humaine des évaluations incertaines avant publication du rapport.',
   'Amélioration continue du référentiel au fil des évolutions réglementaires.',
 ];
 
@@ -103,69 +102,7 @@ export default function APropos() {
         </div>
       </section>
 
-      <section id="methodologie" className="mx-auto max-w-[90rem] scroll-mt-20 px-5 py-20">
-        <Revele className="max-w-2xl">
-          <Badge ton="ambre" icone={BookOpen}>
-            Notre méthodologie
-          </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">Une méthodologie exigeante, appuyée sur la recherche et la pratique</h2>
-          <p className="mt-3 text-sm leading-relaxed text-ink-600">
-            {SMARTEX.mission} La démarche se fonde sur quatre principes, quel que soit le référentiel évalué.
-          </p>
-        </Revele>
-
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {FONDEMENTS.map((fondement, index) => (
-            <Revele key={fondement.titre} delai={index * 110}>
-              <article className="carte-vitrine group h-full">
-                <span className="puce-icone">
-                  <ScrollText className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-ink-900">{fondement.titre}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{fondement.texte}</p>
-              </article>
-            </Revele>
-          ))}
-        </div>
-
-        <div className="mt-14 grid gap-10 lg:grid-cols-2">
-          <Revele>
-            <Badge ton="bleu" icone={Award}>
-              Référentiels évaluables
-            </Badge>
-            <h3 className="mt-3 text-lg font-semibold text-ink-900">Ceux que la plateforme évalue réellement</h3>
-            <ul className="mt-4 space-y-3">
-              {REFERENTIELS_EVALUABLES.map((referentiel) => (
-                <li key={referentiel.code} className="rounded-xl border border-ink-100 bg-surface p-4 text-sm shadow-soft">
-                  <p className="font-semibold text-ink-900">{referentiel.nom}</p>
-                  <p className="mt-1 text-ink-500">{referentiel.texte}</p>
-                </li>
-              ))}
-            </ul>
-          </Revele>
-
-          <Revele delai={120}>
-            <Badge ton="neutre" icone={Compass}>
-              Repères méthodologiques
-            </Badge>
-            <h3 className="mt-3 text-lg font-semibold text-ink-900">Ceux qui inspirent notre approche</h3>
-            <p className="mt-3 text-sm leading-relaxed text-ink-500">
-              Sans être des référentiels évaluables dans l’outil, ces normes reconnues nourrissent la conception de notre
-              méthodologie.
-            </p>
-            <ul className="mt-4 space-y-3">
-              {REFERENCES_METHODOLOGIQUES.map((reference) => (
-                <li key={reference.code} className="rounded-xl border border-ink-100 bg-surface p-4 text-sm shadow-soft">
-                  <p className="font-semibold text-ink-900">{reference.nom}</p>
-                  <p className="mt-1 text-ink-500">{reference.texte}</p>
-                </li>
-              ))}
-            </ul>
-          </Revele>
-        </div>
-      </section>
-
-      <section className="border-t border-ink-100 bg-ink-50 py-20">
+      <section className="py-20">
         <div className="mx-auto max-w-[90rem] px-5 grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <Revele>
             <Badge ton="vert" icone={Users}>
