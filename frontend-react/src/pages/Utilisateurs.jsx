@@ -166,7 +166,7 @@ export default function Utilisateurs() {
             <CardHeader
               titre={membreEnEdition ? 'Modifier un accès' : 'Accorder un accès'}
               icone={UserPlus}
-              sousTitre="S'il n'a pas encore de compte Smartex Sustway, une invitation par email lui est envoyée ; l'accès peut être limité à un site."
+              sousTitre="S'il n'a pas encore de compte SMARTEX SustWay, une invitation par email lui est envoyée ; l'accès peut être limité à un site."
             />
             <FormulaireMembre
               entrepriseId={entrepriseId}

@@ -52,12 +52,12 @@ public class EmailService {
     String expediteur;
 
     public void envoyerVerificationEmail(String destinataire, String prenom, String lienVerification) {
-        String sujet = "Vérifiez votre adresse email — Smartex Sustway";
+        String sujet = "Vérifiez votre adresse email — SMARTEX SustWay";
 
         String texte = """
                 Bonjour %s,
 
-                Merci de votre inscription sur Smartex Sustway, la plateforme d'évaluation RSE pilotée par l'IA.
+                Merci de votre inscription sur SMARTEX SustWay, la plateforme d'évaluation RSE pilotée par l'IA.
 
                 Pour activer votre compte, ouvrez le lien ci-dessous (valable 24 heures) :
                 %s
@@ -78,7 +78,7 @@ public class EmailService {
                           <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eceef2;">
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
-                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">Smartex Sustway</span><br/>
+                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
                                 <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
                               </td>
                             </tr>
@@ -86,7 +86,7 @@ public class EmailService {
                               <td style="padding:32px;">
                                 <p style="margin:0 0 16px;color:#1f2533;font-size:16px;line-height:1.5;">Bonjour %s,</p>
                                 <p style="margin:0 0 24px;color:#1f2533;font-size:15px;line-height:1.6;">
-                                  Merci de votre inscription sur <strong>Smartex Sustway</strong>, la plateforme
+                                  Merci de votre inscription sur <strong>SMARTEX SustWay</strong>, la plateforme
                                   d'évaluation RSE pilotée par l'intelligence artificielle. Il ne reste plus qu'une
                                   étape avant d'accéder à votre espace : vérifier votre adresse email.
                                 </p>
@@ -132,12 +132,12 @@ public class EmailService {
 
     /** RG05 — invitation d'un collaborateur sans compte existant (voir Invitation, MembreEntrepriseResource). */
     public void envoyerInvitationEntreprise(String destinataire, String entrepriseNom, String roleNom, String lienAcceptation) {
-        String sujet = entrepriseNom + " vous invite sur Smartex Sustway";
+        String sujet = entrepriseNom + " vous invite sur SMARTEX SustWay";
 
         String texte = """
                 Bonjour,
 
-                %s vous invite à rejoindre son espace Smartex Sustway en tant que %s.
+                %s vous invite à rejoindre son espace SMARTEX SustWay en tant que %s.
 
                 Pour créer votre compte et accepter l'invitation (valable 7 jours) :
                 %s
@@ -158,7 +158,7 @@ public class EmailService {
                           <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eceef2;">
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
-                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">Smartex Sustway</span><br/>
+                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
                                 <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
                               </td>
                             </tr>
@@ -166,7 +166,7 @@ public class EmailService {
                               <td style="padding:32px;">
                                 <p style="margin:0 0 16px;color:#1f2533;font-size:16px;line-height:1.5;">Bonjour,</p>
                                 <p style="margin:0 0 24px;color:#1f2533;font-size:15px;line-height:1.6;">
-                                  <strong>%s</strong> vous invite à rejoindre son espace <strong>Smartex Sustway</strong>
+                                  <strong>%s</strong> vous invite à rejoindre son espace <strong>SMARTEX SustWay</strong>
                                   en tant que <strong>%s</strong>.
                                 </p>
                                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
@@ -211,12 +211,12 @@ public class EmailService {
 
     /** Mot de passe oublié — voir AuthResource.motDePasseOublie / JwtService.PURPOSE_PASSWORD_RESET. */
     public void envoyerReinitialisationMotDePasse(String destinataire, String prenom, String lienReinitialisation) {
-        String sujet = "Réinitialisez votre mot de passe — Smartex Sustway";
+        String sujet = "Réinitialisez votre mot de passe — SMARTEX SustWay";
 
         String texte = """
                 Bonjour %s,
 
-                Vous avez demandé la réinitialisation du mot de passe de votre compte Smartex Sustway.
+                Vous avez demandé la réinitialisation du mot de passe de votre compte SMARTEX SustWay.
 
                 Pour choisir un nouveau mot de passe (valable 1 heure) :
                 %s
@@ -238,7 +238,7 @@ public class EmailService {
                           <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #eceef2;">
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
-                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">Smartex Sustway</span><br/>
+                                <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
                                 <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
                               </td>
                             </tr>
@@ -247,7 +247,7 @@ public class EmailService {
                                 <p style="margin:0 0 16px;color:#1f2533;font-size:16px;line-height:1.5;">Bonjour %s,</p>
                                 <p style="margin:0 0 24px;color:#1f2533;font-size:15px;line-height:1.6;">
                                   Vous avez demandé la réinitialisation du mot de passe de votre compte
-                                  <strong>Smartex Sustway</strong>.
+                                  <strong>SMARTEX SustWay</strong>.
                                 </p>
                                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
                                   <tr>
@@ -296,7 +296,7 @@ public class EmailService {
         }
         try {
             Map<String, Object> corps = Map.of(
-                    "sender", Map.of("email", expediteur, "name", "Smartex Sustway"),
+                    "sender", Map.of("email", expediteur, "name", "SMARTEX SustWay"),
                     "to", List.of(Map.of("email", destinataire)),
                     "subject", sujet,
                     "htmlContent", html,

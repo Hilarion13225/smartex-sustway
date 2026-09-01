@@ -93,6 +93,17 @@ export default {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
+        derive: {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(4%, -6%) scale(1.08)' },
+          '66%': { transform: 'translate(-5%, 4%) scale(0.96)' },
+        },
+        'derive-feuille': {
+          '0%': { transform: 'translateY(15vh) translateX(0) rotate(-12deg)', opacity: '0' },
+          '12%': { opacity: '0.85' },
+          '85%': { opacity: '0.85' },
+          '100%': { transform: 'translateY(-125vh) translateX(var(--dx, 60px)) rotate(200deg)', opacity: '0' },
+        },
       },
       animation: {
         'apparition-bas': 'apparition-bas 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -103,6 +114,8 @@ export default {
         'degrade-anime': 'degrade-anime 6s ease-in-out infinite',
         'trace-jauge': 'trace-jauge 1.4s cubic-bezier(0.16, 1, 0.3, 1) both',
         defilement: 'defilement 22s linear infinite',
+        derive: 'derive 22s ease-in-out infinite',
+        'derive-feuille': 'derive-feuille 20s linear infinite',
       },
     },
   },

@@ -252,7 +252,7 @@ export default function Inscription() {
           Création de compte
         </>
       }
-      titre="Créez votre espace Smartex Sustway"
+      titre="Créez votre espace SMARTEX SustWay"
       description="Cinq étapes guidées : formule, compte, vérification, paiement puis accès immédiat à la plateforme."
       atouts={ATOUTS}
     >

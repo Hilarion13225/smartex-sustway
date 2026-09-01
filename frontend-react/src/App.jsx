@@ -5,6 +5,7 @@ import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
+import Landing from './pages/Landing';
 import Accueil from './pages/Accueil';
 import Services from './pages/Services';
 import Formules from './pages/Formules';
@@ -56,8 +57,9 @@ export default function App() {
     <ApiAuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route element={<LayoutPublic />}>
-            <Route path="/" element={<Accueil />} />
+            <Route path="/accueil" element={<Accueil />} />
             <Route path="/services" element={<Services />} />
             <Route path="/formules" element={<Formules />} />
             <Route path="/a-propos" element={<APropos />} />

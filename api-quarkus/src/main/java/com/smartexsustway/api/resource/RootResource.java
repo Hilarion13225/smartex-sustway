@@ -18,7 +18,7 @@ public class RootResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String, Object> racine() {
         return Map.of(
-                "application", "Smartex Sustway — API",
+                "application", "SMARTEX SustWay — API",
                 "version", "0.1.0-SNAPSHOT",
                 "statut", "Phase A — fondations"
         );
