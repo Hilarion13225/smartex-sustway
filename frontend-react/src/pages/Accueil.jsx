@@ -36,8 +36,8 @@ const ATOUTS = [
   },
   {
     icone: ShieldCheck,
-    titre: 'Revue experte ciblée',
-    texte: 'En formule Avancées, tout critère évalué avec une confiance IA inférieure à 80 % part en file de revue humaine.',
+    titre: 'Transparence et traçabilité',
+    texte: 'Chaque note s’appuie sur une preuve documentaire vérifiée par l’IA, avec probabilité de conformité et indice de confiance explicites.',
   },
   {
     icone: Leaf,
@@ -270,7 +270,7 @@ export default function Accueil() {
       </section>
 
       {/* ------------------------------------------------------------ Parcours */}
-      <section className="mx-auto max-w-[90rem] px-5 py-20">
+      <section id="parcours" className="mx-auto max-w-[90rem] scroll-mt-20 px-5 py-20">
         <Revele className="max-w-2xl">
           <Badge ton="ambre" icone={Users}>
             Comment ça marche

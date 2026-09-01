@@ -9,6 +9,7 @@ const COLONNES = [
     liens: [
       { vers: '/services', libelle: 'Services' },
       { vers: '/formules', libelle: 'Formules' },
+      { vers: '/formation', libelle: 'Se former à la RSE et DD' },
       { vers: '/faq', libelle: 'Questions fréquentes' },
     ],
   },

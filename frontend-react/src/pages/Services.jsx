@@ -44,8 +44,8 @@ const MODULES = [
   },
   {
     icone: ShieldCheck,
-    titre: 'Revue humaine des cas incertains',
-    texte: 'Les critères sous le seuil de confiance sont routés vers une file de revue experte avant publication du rapport.',
+    titre: 'Indice de confiance par critère',
+    texte: 'Chaque évaluation IA est livrée avec son indice de confiance, pour que votre équipe sache où porter son attention.',
   },
   {
     icone: FileCheck2,
