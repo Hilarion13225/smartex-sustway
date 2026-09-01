@@ -25,7 +25,7 @@ const QUESTIONS = [
   {
     question: 'Un expert relit-il les résultats ?',
     reponse:
-      'En formule Avancées, tout critère évalué avec une confiance inférieure à 80 % est routé vers une file de revue humaine avant publication du rapport.',
+      'L’évaluation est intégralement réalisée par le pipeline d’agents IA. Chaque critère reste accompagné d’un indice de confiance explicite, pour que votre équipe sache où porter son attention si elle souhaite challenger un résultat.',
   },
   {
     question: 'Que signifie l’indice de préparation aux financements verts ?',

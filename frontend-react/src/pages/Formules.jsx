@@ -11,7 +11,7 @@ export default function Formules() {
         etiquette="Formules et tarifs"
         icone={Wallet}
         titre="Une formule par niveau d’exigence"
-        description={`Toutes les formules ${SMARTEX.produit} partagent le même référentiel. Elles se distinguent par le volume d’évaluations, la revue humaine des critères incertains et l’accès au volet financements verts.`}
+        description={`Toutes les formules ${SMARTEX.produit} partagent le même référentiel. Elles se distinguent par le volume d’évaluations, les recommandations d’amélioration et l’accès au volet financements verts.`}
       />
 
       <SectionFormules

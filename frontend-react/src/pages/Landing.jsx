@@ -4,6 +4,7 @@ import { ArrowRight, Leaf, Menu, Sparkles, X } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from '../components/Logo';
 import BasculeTheme from '../components/BasculeTheme';
+import MenuDeroulant from '../components/MenuDeroulant';
 import { SMARTEX } from '../config/smartex';
 
 /**
@@ -25,11 +26,13 @@ const FEUILLES = [
   { gauche: '94%', taille: 19, duree: 18, delai: -13, dx: 35 },
 ];
 
+const SOLUTION_LIENS = [
+  { vers: '/a-propos#methodologie', libelle: 'Méthodologie' },
+  { vers: '/accueil#parcours', libelle: 'Déploiement' },
+];
+
 const LIENS = [
-  { vers: '/accueil', libelle: 'Accueil' },
-  { vers: '/services', libelle: 'Services' },
-  { vers: '/formules', libelle: 'Formules' },
-  { vers: '/a-propos', libelle: 'À propos' },
+  { vers: '/formation', libelle: 'Se former à la RSE et DD' },
   { vers: '/contact', libelle: 'Contact' },
 ];
 
@@ -90,6 +93,7 @@ export default function Landing() {
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
+            <MenuDeroulant libelle={`La solution ${SMARTEX.produit}`} liens={SOLUTION_LIENS} />
             {LIENS.map((lien) => (
               <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
                 {lien.libelle}
@@ -122,10 +126,24 @@ export default function Landing() {
         <div
           className={clsx(
             'overflow-hidden border-ink-100 bg-surface/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 lg:hidden',
-            ouvert ? 'max-h-96 border-t opacity-100' : 'max-h-0 opacity-0'
+            ouvert ? 'max-h-[32rem] border-t opacity-100' : 'max-h-0 opacity-0'
           )}
         >
           <nav className="mx-auto flex max-w-[90rem] flex-col gap-1 px-5 py-4">
+            <p className="mt-1 px-3 text-xs font-medium uppercase tracking-wide text-ink-500">La solution {SMARTEX.produit}</p>
+            {SOLUTION_LIENS.map((lien) => (
+              <Link
+                key={lien.vers}
+                to={lien.vers}
+                onClick={() => setOuvert(false)}
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-100"
+              >
+                {lien.libelle}
+              </Link>
+            ))}
+
+            <div className="my-2 border-t border-ink-100" />
+
             {LIENS.map((lien) => (
               <NavLink
                 key={lien.vers}
@@ -174,8 +192,7 @@ export default function Landing() {
           </h1>
 
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink-600">
-            {SMARTEX.produit} digitalise le cycle d’audit RSE : preuve documentaire, probabilité de conformité par critère et
-            plan d’actions priorisé, du premier questionnaire au rapport final.
+            {SMARTEX.mission} {SMARTEX.promesseFinancement}
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
