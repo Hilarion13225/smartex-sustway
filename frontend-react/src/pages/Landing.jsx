@@ -1,32 +1,19 @@
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  BadgeCheck,
   BarChart3,
-  Bot,
-  Building2,
   ChevronDown,
   ClipboardCheck,
-  FileSearch,
   FileText,
-  Gauge,
   Leaf,
-  LineChart,
-  ListTodo,
   Scale,
   Shield,
-  ShieldCheck,
   Sparkles,
   Target,
   TrendingUp,
 } from 'lucide-react';
-import { Badge } from '../components/ui';
 import Revele from '../components/Revele';
-import CompteurAnime from '../components/CompteurAnime';
-import SectionFormules from '../components/SectionFormules';
-import AppelAction from '../components/AppelAction';
-import banniereMethodologie from '../assets/methodologie/banniere.jpg';
-import { REFERENTIELS_EVALUABLES, SMARTEX } from '../config/smartex';
+import { SMARTEX } from '../config/smartex';
 
 /**
  * Feuilles du fond du héros : position de départ, taille, vitesse, dérive
@@ -43,57 +30,9 @@ const FEUILLES = [
   { gauche: '88%', taille: 21, duree: 20, delai: -16, dx: 45 },
 ];
 
-/** Chiffres factuels du référentiel et du pipeline — pas des données de démonstration. */
-const CHIFFRES = [
-  { libelle: 'Critères évaluables', valeur: 87, icone: ClipboardCheck },
-  { libelle: 'Domaines RSE', valeur: 6, icone: Gauge },
-  { libelle: 'Agents IA', valeur: 7, icone: Bot },
-];
-
-/**
- * Aperçu produit du héros : un critère tel qu'il apparaît après passage du
- * pipeline. Valeurs d'illustration assumées (le héros est une vitrine, pas
- * un écran connecté), volontairement cohérentes entre elles — probabilité
- * élevée, confiance au-dessus du seuil de revue.
- */
-const APERCU_CRITERE = {
-  code: 'ENV-04',
-  intitule: 'Suivi et réduction des consommations énergétiques',
-  probabilite: 78,
-  confiance: 86,
-};
-
-const APERCU_DOMAINES = [
-  { nom: 'Gouvernance', score: 72 },
-  { nom: 'Social et sociétal', score: 64 },
-  { nom: 'Environnement', score: 81 },
-  { nom: 'Éthique des affaires', score: 58 },
-];
-
-const PROMESSES = [
-  {
-    icone: Bot,
-    titre: 'L’analyse est faite pour vous',
-    texte:
-      'Sept agents lisent les preuves déposées, les confrontent à vos réponses déclaratives et produisent une probabilité de conformité assortie d’un indice de confiance.',
-  },
-  {
-    icone: ListTodo,
-    titre: 'Les priorités sont déjà classées',
-    texte:
-      'Le risque attendu croise la non-conformité probable et la criticité du critère dans votre secteur : le plan d’actions sort trié, pas à trier.',
-  },
-  {
-    icone: Leaf,
-    titre: 'Le dossier bailleur est préparé',
-    texte:
-      'Un indice mesure votre alignement aux standards de performance IFC/SFI et pointe les pièces manquantes — une mesure d’alignement, pas une garantie d’éligibilité.',
-  },
-];
-
 /**
  * Bénéfices résumés sous le héros — une ligne par promesse, volontairement
- * courte : le détail est développé plus bas dans la page.
+ * courte : le détail est développé sur /accueil et /methodologie.
  */
 const BENEFICES = [
   {
@@ -166,34 +105,11 @@ const POINTS_RESEAU = [
   [550, 360],
 ];
 
-const ETAPES = [
-  {
-    icone: Building2,
-    titre: 'Décrivez votre entreprise',
-    texte: 'Secteur, taille et sites : le questionnaire ne retient que les critères réellement applicables.',
-  },
-  {
-    icone: FileSearch,
-    titre: 'Répondez et déposez vos preuves',
-    texte: 'Réponse déclarative, scénario textuel et documents à l’appui — un même document peut servir plusieurs critères.',
-  },
-  {
-    icone: Bot,
-    titre: 'Laissez l’IA évaluer',
-    texte: 'Cohérence réponse/preuve, probabilité de conformité, niveau d’engagement et indice de confiance par critère.',
-  },
-  {
-    icone: LineChart,
-    titre: 'Pilotez et rapportez',
-    texte: 'Score pondéré, non-conformités priorisées, plan d’actions suivi et rapports exportables.',
-  },
-];
-
 /**
- * Page d'entrée de la plateforme (URL racine). Rendue dans LayoutPublic
- * comme le reste de la vitrine : en-tête et pied de page communs, thème
- * clair/sombre hérité (tokens `ink`/`surface`). La présentation détaillée
- * de la méthode reste sur /accueil et /methodologie.
+ * Page d'entrée de la plateforme (URL racine). Volontairement réduite au seul
+ * héros : la présentation détaillée vit sur /accueil, /methodologie et
+ * /formules. Rendue dans LayoutPublic comme le reste de la vitrine — en-tête
+ * et pied de page communs, thème clair/sombre hérité (tokens `ink`/`surface`).
  */
 export default function Landing() {
   return (
@@ -333,9 +249,6 @@ export default function Landing() {
               <Sparkles className="h-4 w-4 text-brand-500" aria-hidden />
               Voir la méthodologie
             </Link>
-            <Link to="/connexion" className="btn-vitrine-fantome px-5 py-3">
-              Se connecter
-            </Link>
           </div>
 
           <dl className="mt-14 grid gap-6 border-t border-ink-100 pt-10 text-left sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-ink-100">
@@ -352,245 +265,15 @@ export default function Landing() {
             ))}
           </dl>
 
-          <a
-            href="#apercu"
+          <Link
+            to="/accueil"
             className="mt-12 inline-flex flex-col items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
           >
             Découvrir
             <ChevronDown className="h-5 w-5 motion-safe:animate-bounce" aria-hidden />
-          </a>
-        </div>
-
-        {/* Bandeau défilant des référentiels réellement chargés dans la plateforme. */}
-        <div className="relative border-y border-ink-100 bg-surface/70 py-4">
-          <div className="masque-lateral overflow-hidden">
-            <div className="flex w-max gap-3 motion-safe:animate-defilement">
-              {[...REFERENTIELS_EVALUABLES, ...REFERENTIELS_EVALUABLES].map((referentiel, index) => (
-                <span
-                  key={`${referentiel.code}-${index}`}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-ink-100 bg-surface px-4 py-1.5 text-xs font-medium text-ink-600"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-brand-500" aria-hidden />
-                  {referentiel.nom}
-                </span>
-              ))}
-            </div>
-          </div>
+          </Link>
         </div>
       </section>
-
-      {/* --------------------------------------------------------- Aperçu produit */}
-      <section id="apercu" className="mx-auto max-w-[90rem] scroll-mt-24 px-5 py-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
-          <Revele>
-            <Badge ton="vert" icone={BadgeCheck}>
-              {SMARTEX.accroche} — par {SMARTEX.editeur}
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-              Chaque critère porte sa preuve, sa probabilité et sa confiance
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-ink-600">
-              {SMARTEX.mission} Le questionnaire est composé pour votre secteur, les preuves sont analysées par l’IA et le
-              score reste explicable jusqu’au rapport.
-            </p>
-
-            <dl className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {CHIFFRES.map((chiffre, index) => (
-                <Revele key={chiffre.libelle} delai={index * 120}>
-                  <div className="group rounded-2xl border border-ink-100 bg-surface/80 px-4 py-4 shadow-soft backdrop-blur transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <dt className="text-xs uppercase tracking-wide text-ink-500">{chiffre.libelle}</dt>
-                      <chiffre.icone
-                        className="h-4 w-4 text-brand-500 transition-transform duration-300 group-hover:scale-110"
-                        aria-hidden
-                      />
-                    </div>
-                    <dd className="mt-2 text-3xl font-semibold text-brand-700 dark:text-brand-400">
-                      <CompteurAnime valeur={chiffre.valeur} />
-                    </dd>
-                  </div>
-                </Revele>
-              ))}
-            </dl>
-          </Revele>
-
-          {/* Aperçu produit : un critère évalué, tel que rendu dans l'espace connecté. */}
-          <Revele delai={150}>
-            <div className="relative motion-safe:animate-flottement">
-              <div className="carte-verre relative overflow-hidden p-6">
-                <span
-                  className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-brand-400 to-transparent"
-                  aria-hidden
-                />
-
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase tracking-wide text-ink-500">Critère {APERCU_CRITERE.code}</p>
-                    <p className="mt-1 text-sm font-semibold text-ink-900">{APERCU_CRITERE.intitule}</p>
-                  </div>
-                  <Badge ton="vert" icone={ShieldCheck}>
-                    Preuve vérifiée
-                  </Badge>
-                </div>
-
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-ink-100 bg-surface p-4">
-                    <p className="text-xs uppercase tracking-wide text-ink-500">Probabilité de conformité</p>
-                    <p className="mt-1 text-3xl font-semibold text-ink-900">
-                      <CompteurAnime valeur={APERCU_CRITERE.probabilite} suffixe=" %" />
-                    </p>
-                    <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 motion-safe:animate-trace-jauge"
-                        style={{ width: `${APERCU_CRITERE.probabilite}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-ink-100 bg-surface p-4">
-                    <p className="text-xs uppercase tracking-wide text-ink-500">Indice de confiance</p>
-                    <p className="mt-1 text-3xl font-semibold text-ink-900">
-                      <CompteurAnime valeur={APERCU_CRITERE.confiance} suffixe=" %" />
-                    </p>
-                    <p className="mt-3 text-xs leading-relaxed text-ink-500">
-                      Au-dessus du seuil : aucune revue manuelle déclenchée.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-2xl border border-ink-100 bg-surface p-4">
-                  <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-ink-500">
-                    <Gauge className="h-3.5 w-3.5 text-brand-500" aria-hidden />
-                    Score par domaine
-                  </p>
-                  <ul className="mt-3 space-y-2.5">
-                    {APERCU_DOMAINES.map((domaine) => (
-                      <li key={domaine.nom} className="flex items-center gap-3">
-                        <span className="w-36 shrink-0 truncate text-xs text-ink-600">{domaine.nom}</span>
-                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink-100">
-                          <span
-                            className="block h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-400 motion-safe:animate-trace-jauge"
-                            style={{ width: `${domaine.score}%` }}
-                          />
-                        </span>
-                        <span className="w-9 shrink-0 text-right text-xs font-semibold text-ink-900">{domaine.score}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </Revele>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ Promesses */}
-      <section className="bg-ink-50 py-20">
-        <div className="mx-auto max-w-[90rem] px-5">
-          <Revele className="max-w-2xl">
-            <Badge ton="bleu" icone={Sparkles}>
-              Ce que vous obtenez
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-              Une évaluation qui s’explique, ligne par ligne
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              Aucune note n’est posée sans justification : la preuve, l’agent qui l’a analysée, la probabilité obtenue et le
-              poids du critère restent consultables du dépôt jusqu’au rapport.
-            </p>
-          </Revele>
-
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {PROMESSES.map((promesse, index) => (
-              <Revele key={promesse.titre} delai={index * 120}>
-                <article className="carte-vitrine group h-full">
-                  <span className="puce-icone">
-                    <promesse.icone className="h-5 w-5" aria-hidden />
-                  </span>
-                  <h3 className="mt-4 text-lg font-semibold text-ink-900">{promesse.titre}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500">{promesse.texte}</p>
-                </article>
-              </Revele>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------- Parcours */}
-      <section className="mx-auto max-w-[90rem] px-5 py-20">
-        <Revele className="max-w-2xl">
-          <Badge ton="ambre" icone={Target}>
-            Comment ça se passe
-          </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">Quatre étapes, du cadrage au rapport</h2>
-        </Revele>
-
-        <div className="mt-12 grid gap-6 lg:grid-cols-4">
-          {ETAPES.map((etape, index) => (
-            <Revele key={etape.titre} delai={index * 130}>
-              <article className="carte-vitrine group h-full">
-                <div className="flex items-center gap-3">
-                  <span className="puce-icone">
-                    <etape.icone className="h-5 w-5" aria-hidden />
-                  </span>
-                  <span className="text-4xl font-semibold text-ink-100 transition-colors duration-300 group-hover:text-brand-100">
-                    0{index + 1}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-base font-semibold text-ink-900">{etape.titre}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{etape.texte}</p>
-              </article>
-            </Revele>
-          ))}
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------- Méthodologie */}
-      <section className="border-y border-ink-100 bg-ink-50 py-20">
-        <div className="mx-auto grid max-w-[90rem] items-center gap-12 px-5 lg:grid-cols-2">
-          <Revele>
-            <div className="relative overflow-hidden rounded-3xl border border-ink-100 shadow-soft">
-              <img
-                src={banniereMethodologie}
-                alt="Équipe en atelier d’évaluation de la performance durable"
-                className="h-[22rem] w-full object-cover transition duration-700 motion-safe:hover:scale-105"
-                loading="lazy"
-              />
-              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1f2533]/70 via-transparent" aria-hidden />
-            </div>
-          </Revele>
-
-          <Revele delai={120}>
-            <Badge ton="neutre" icone={BadgeCheck}>
-              Méthodologie {SMARTEX.produit}
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-              La rigueur d’un cabinet, la constance d’un outil
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-ink-600">
-              {SMARTEX.produit} industrialise le référentiel d’évaluation de {SMARTEX.editeur}. {SMARTEX.baseline} L’IA
-              prépare, hiérarchise et documente ; vos équipes et nos experts décident. Chaque critère porte une criticité
-              propre à votre secteur, et chaque évaluation reste rejouable.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/methodologie" className="btn-vitrine group">
-                Découvrir la méthodologie
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-              </Link>
-              <Link to="/accueil" className="btn-vitrine-clair">
-                Explorer la plateforme
-              </Link>
-            </div>
-          </Revele>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ Formules */}
-      <SectionFormules
-        titre="Choisissez votre formule avant de créer votre compte"
-        description="La formule sélectionnée est transmise à la création du compte et active immédiatement les fonctionnalités correspondantes."
-      />
-
-      <AppelAction />
     </div>
   );
 }
