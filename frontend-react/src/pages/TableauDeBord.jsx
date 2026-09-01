@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   Leaf,
   TriangleAlert,
-  UserCheck,
   Wallet,
 } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -43,14 +42,13 @@ function tonScore(score) {
 /**
  * Vue de pilotage consolidée sur l'ensemble du portefeuille accessible au
  * compte connecté : chaque chiffre provient des ressources REST réelles
- * (audits, score RG32, non-conformités RG17, file de revue experte RG16),
- * agrégées côté client faute d'endpoint d'agrégation multi-entreprises.
+ * (audits, score RG32, non-conformités RG17), agrégées côté client faute
+ * d'endpoint d'agrégation multi-entreprises.
  */
 export default function TableauDeBord() {
   const { entreprises, utilisateur, peut, recupererAbonnement } = useApiAuth();
 
   const [missions, setMissions] = useState([]);
-  const [revues, setRevues] = useState([]);
   const [indices, setIndices] = useState([]);
   const [abonnements, setAbonnements] = useState([]);
   const [chargement, setChargement] = useState(true);
@@ -74,20 +72,6 @@ export default function TableauDeBord() {
     );
     const toutesMissions = parEntreprise.flat();
     setMissions(toutesMissions);
-
-    if (peut('revue:traiter')) {
-      const files = await Promise.all(
-        entreprises.map((entreprise) =>
-          api
-            .get(`/api/v1/entreprises/${entreprise.id}/revues-expertes`)
-            .then((liste) => liste.map((revue) => ({ ...revue, entreprise })))
-            .catch(() => [])
-        )
-      );
-      setRevues(files.flat());
-    } else {
-      setRevues([]);
-    }
 
     // RG41 : réservé à la formule Avancées ET à la permission bailleur:consulter
     // (absente de VISITEUR) — sans ce second filtre, l'appel est tenté quand
@@ -136,10 +120,9 @@ export default function TableauDeBord() {
   const avancement = missions.reduce(
     (total, m) => ({
       evalues: total.evalues + (m.score?.nombreCriteresEvalues ?? 0),
-      enRevue: total.enRevue + (m.score?.nombreCriteresEnRevue ?? 0),
       nonEvalues: total.nonEvalues + (m.score?.nombreCriteresNonEvalues ?? 0),
     }),
-    { evalues: 0, enRevue: 0, nonEvalues: 0 }
+    { evalues: 0, nonEvalues: 0 }
   );
 
   /** Moyenne par domaine sur toutes les missions ayant au moins une évaluation validée dans ce domaine. */
@@ -279,17 +262,6 @@ export default function TableauDeBord() {
                 icone={ClipboardX}
                 ton={ouvertes.length > 0 ? 'rouge' : 'vert'}
               />
-              <StatCard
-                libelle="Revues expertes en attente"
-                valeur={peut('revue:traiter') ? revues.filter((r) => r.statut === 'EN_ATTENTE').length : '—'}
-                detail={
-                  peut('revue:traiter')
-                    ? 'Confiance IA inférieure à 80 %'
-                    : 'Réservé aux experts et administrateurs'
-                }
-                icone={UserCheck}
-                ton="ambre"
-              />
               {indices.length > 0 ? (
                 <StatCard
                   libelle="Indice de préparation IFC/SFI"
@@ -339,9 +311,9 @@ export default function TableauDeBord() {
                     />
                     <div className="h-80 p-5">
                       <GraphiqueAnneau
-                        labels={['Évalués', 'En revue experte', 'Non évalués']}
-                        data={[avancement.evalues, avancement.enRevue, avancement.nonEvalues]}
-                        couleurs={[COULEURS.brand, COULEURS.ambre, COULEURS.gris]}
+                        labels={['Évalués', 'Non évalués']}
+                        data={[avancement.evalues, avancement.nonEvalues]}
+                        couleurs={[COULEURS.brand, COULEURS.gris]}
                       />
                     </div>
                   </Card>

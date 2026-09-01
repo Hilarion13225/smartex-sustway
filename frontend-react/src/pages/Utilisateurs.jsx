@@ -15,7 +15,6 @@ const PERMISSIONS_LIBELLE = {
   'audit:creer': 'Lancer une mission d’audit',
   'audit:modifier': 'Modifier une mission',
   'preuve:deposer': 'Déposer des documents et preuves',
-  'revue:traiter': 'Traiter la file de revue experte',
   'referentiel:administrer': 'Administrer les référentiels',
   'rapport:consulter': 'Consulter les rapports',
   'rapport:detaille': 'Accéder au rapport détaillé',
@@ -29,12 +28,12 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
  * MembreEntrepriseResource.ROLES_ATTRIBUABLES. Cette page n'étant plus
  * accessible qu'à SUPER_ADMIN (voir accesInterdit plus bas), elle sert
  * aussi de point d'entrée pour créer les comptes du personnel Smartex
- * (ADMIN_AUDIT, EXPERT_REVIEWER) par invitation, sans rattachement manuel
- * en base. SUPER_ADMIN lui-même ne se délègue pas depuis l'application.
+ * (ADMIN_AUDIT) par invitation, sans rattachement manuel en base.
+ * SUPER_ADMIN lui-même ne se délègue pas depuis l'application.
  * EMPLOYE retiré (décision produit, v1 : seul le responsable de
  * l'entreprise est audité).
  */
-const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR', 'ADMIN_AUDIT', 'EXPERT_REVIEWER'];
+const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR', 'ADMIN_AUDIT'];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que

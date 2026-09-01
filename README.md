@@ -238,12 +238,6 @@ est exclusivement assurée par `ScoringEngine.niveauEngagement(...)` côté
 Quarkus (même moteur testé depuis la phase B, 27 tests) — `services-ia-python`
 n'implémente aucune logique de notation.
 
-**RG22/RG38 :** si la confiance IA renvoyée est inférieure à 0,80
-(`smartex.evaluation.seuil-confiance-revue-experte`) et que la formule
-souscrite est Avancées, une `RevueExperte` est créée automatiquement
-(file d'attente — l'écran de traitement par un expert est un lot
-ultérieur).
-
 ⚠️ **Non testé de bout en bout** (Quarkus → services-ia-python → Gemini)
 faute de clé API disponible côté développement. En revanche, le service
 Python a été réellement installé (résolution de dépendances effective, un

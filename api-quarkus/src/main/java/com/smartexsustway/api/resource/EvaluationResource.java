@@ -7,7 +7,6 @@ import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Evaluation;
 import com.smartexsustway.api.domain.entity.Preuve;
-import com.smartexsustway.api.domain.entity.RevueExperte;
 import com.smartexsustway.api.domain.enums.SourceEvaluation;
 import com.smartexsustway.api.domain.enums.StatutEvaluation;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
@@ -15,7 +14,6 @@ import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
-import com.smartexsustway.api.domain.repository.RevueExperteRepository;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.ia.EvaluerCritereRequestDto;
 import com.smartexsustway.api.ia.EvaluerCritereResponseDto;
@@ -37,7 +35,6 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -49,16 +46,13 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * RG21/RG22/RG27/RG38 - evaluation IA d'un critere : orchestre le pipeline
- * d'agents Python (Document/Evidence/Compliance, voir services-ia-python)
- * puis convertit la probabilite renvoyee en niveau d'engagement via
- * ScoringEngine (deja teste, phase B) - jamais l'inverse : l'IA ne produit
- * jamais de note directement (RG27).
- *
- * RG22/RG38 : si la confiance IA est sous le seuil (0,80 par defaut) et
- * que la formule souscrite est Avancees, une RevueExperte est creee
- * automatiquement (file d'attente - le traitement de la revue elle-meme,
- * par un expert, est un lot ulterieur : ce lot ne fait que l'alimenter).
+ * RG21/RG27 - evaluation IA d'un critere : orchestre le pipeline d'agents
+ * Python (Document/Evidence/Compliance, voir services-ia-python) puis
+ * convertit la probabilite renvoyee en niveau d'engagement via ScoringEngine
+ * (deja teste, phase B) - jamais l'inverse : l'IA ne produit jamais de note
+ * directement (RG27). L'évaluation est validée immédiatement (RG16) — la
+ * revue experte (supervision humaine des évaluations à faible confiance) a
+ * été retirée du produit.
  */
 @Path("/api/v1/entreprises/{entrepriseId}/audits/{auditId}/criteres/{auditCritereId}/evaluations")
 @Produces(MediaType.APPLICATION_JSON)
@@ -75,7 +69,6 @@ public class EvaluationResource {
     @Inject PreuveRepository preuveRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject EvaluationRepository evaluationRepository;
-    @Inject RevueExperteRepository revueExperteRepository;
     @Inject NonConformiteService nonConformiteService;
     @Inject ScoreHistoriqueService scoreHistoriqueService;
     @Inject StorageService storageService;
@@ -87,9 +80,6 @@ public class EvaluationResource {
     @RestClient
     IaEvaluationClient iaEvaluationClient;
 
-    @ConfigProperty(name = "smartex.evaluation.seuil-confiance-revue-experte", defaultValue = "0.80")
-    BigDecimal seuilConfianceRevueExperte;
-
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
                             @PathParam("auditCritereId") UUID auditCritereId) {
@@ -97,7 +87,7 @@ public class EvaluationResource {
         trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         var evaluations = evaluationRepository.parAuditCritere(auditCritereId).stream()
-                .map(e -> EvaluationDto.depuis(e, e.getStatut() == StatutEvaluation.EN_REVUE))
+                .map(EvaluationDto::depuis)
                 .toList();
         return Response.ok(evaluations).build();
     }
@@ -130,9 +120,7 @@ public class EvaluationResource {
         }
 
         // RG21 : le pipeline d'agents IA dépend de la formule souscrite —
-        // calculé une seule fois ici, réutilisé à la fois pour demander
-        // (ou non) l'analyse du Risk Agent et pour la logique de revue
-        // experte plus bas (déjà présente avant l'ajout du Risk Agent).
+        // détermine si le Risk Agent et le Recommendation Agent sont exécutés.
         boolean formuleAvancees = estFormuleAvancees(audit);
 
         List<EvaluerCritereRequestDto.DocumentPourEvaluationDto> documents = new ArrayList<>();
@@ -194,40 +182,20 @@ public class EvaluationResource {
         // construire la réponse ci-dessous (RG14 : la date fait partie de
         // l'historique conservé, y compris dans la réponse renvoyée au client).
         evaluationRepository.persistAndFlush(evaluation);
-        // Le critère a désormais une évaluation IA, qu'elle soit déjà validée
-        // ou en attente de revue experte — il quitte donc l'onglet "Non
-        // évalués" dans les deux cas (voir AuditDetail.jsx, onglets basés sur
-        // ce statut).
+        // Le critère a désormais une évaluation IA — il quitte donc l'onglet
+        // "Non évalués" (voir AuditDetail.jsx, onglets basés sur ce statut).
         auditCritere.setStatut(STATUT_EVALUE);
 
-        boolean revueDeclenchee = declencherRevueExperteSiNecessaire(audit, evaluation, probabilite, (short) niveau, confiance);
+        // RG16 : l'analyse IA constitue directement l'évaluation définitive
+        // (la revue experte — supervision humaine des évaluations à faible
+        // confiance — a été retirée du produit).
+        evaluation.setStatut(StatutEvaluation.VALIDEE);
+        nonConformiteService.genererSiNecessaire(evaluation);
         scoreHistoriqueService.enregistrer(audit);
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_IA_CREEE", "evaluation", evaluation.getId());
 
-        return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation, revueDeclenchee)).build();
-    }
-
-    /**
-     * RG22/RG38 : file de revue experte si confiance IA < seuil, formule
-     * Avancées uniquement. RG16 : si aucune revue n'est requise, l'analyse
-     * IA constitue déjà l'évaluation définitive — l'évaluation passe donc
-     * directement à VALIDEE plutôt que de rester indéfiniment PROVISOIRE
-     * (le seul autre chemin vers VALIDEE est le traitement d'une revue,
-     * voir RevueExperteResource).
-     */
-    private boolean declencherRevueExperteSiNecessaire(Audit audit, Evaluation evaluation, BigDecimal probabilite,
-                                                         short niveau, BigDecimal confiance) {
-        if (!estFormuleAvancees(audit) || confiance == null || confiance.compareTo(seuilConfianceRevueExperte) >= 0) {
-            evaluation.setStatut(StatutEvaluation.VALIDEE);
-            nonConformiteService.genererSiNecessaire(evaluation);
-            return false;
-        }
-
-        RevueExperte revue = new RevueExperte(evaluation, probabilite, niveau);
-        revueExperteRepository.persist(revue);
-        evaluation.setStatut(StatutEvaluation.EN_REVUE);
-        return true;
+        return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
     }
 
     /** RG09 : réponses déjà saisies sur le critère, transmises au pipeline avec les preuves. */

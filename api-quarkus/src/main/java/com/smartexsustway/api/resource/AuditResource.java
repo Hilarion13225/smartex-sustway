@@ -308,7 +308,7 @@ public class AuditResource {
                         && AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
         if (!staffRattache) {
             return erreur(400, "Cet utilisateur doit être rattaché à l'entreprise avec un rôle interne Smartex "
-                    + "(SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER) pour être affecté à une mission");
+                    + "(SUPER_ADMIN, ADMIN_AUDIT) pour être affecté à une mission");
         }
 
         auditAuditeurRepository.affecter(audit.getId(), auditeurId, roleMission.name());

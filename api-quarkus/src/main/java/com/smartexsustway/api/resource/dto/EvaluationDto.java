@@ -15,7 +15,6 @@ public record EvaluationDto(
         String justification,
         String source,
         String statut,
-        boolean revueExperteDeclenchee,
         OffsetDateTime dateEvaluation,
         Boolean signalRisque,
         String categorieRisque,
@@ -23,11 +22,11 @@ public record EvaluationDto(
         Boolean recommandationNecessaire,
         String pistesAmelioration
 ) {
-    public static EvaluationDto depuis(Evaluation e, boolean revueExperteDeclenchee) {
+    public static EvaluationDto depuis(Evaluation e) {
         return new EvaluationDto(
                 e.getId(), e.getAuditCritere().getId(), e.getProbabiliteConforme(), e.getNote(),
                 e.getConfianceIa(), e.getJustification(), e.getSource().name(), e.getStatut().name(),
-                revueExperteDeclenchee, e.getDateEvaluation(),
+                e.getDateEvaluation(),
                 e.getSignalRisque(), e.getCategorieRisque(), e.getJustificationRisque(),
                 e.getRecommandationNecessaire(), e.getPistesAmelioration()
         );

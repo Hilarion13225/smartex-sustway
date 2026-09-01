@@ -14,7 +14,7 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
 /**
- * RG21/RG22/RG27/RG38 — évaluation IA d'un critère.
+ * RG21/RG27 — évaluation IA d'un critère.
  *
  * Cette classe ne couvre QUE ce qui est vérifiable sans services-ia-python
  * réellement démarré (validations qui s'arrêtent avant tout appel au

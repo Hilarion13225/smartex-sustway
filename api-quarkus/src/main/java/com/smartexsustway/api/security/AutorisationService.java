@@ -55,7 +55,7 @@ public class AutorisationService {
      * utilisateur affecté comme auditeur d'une mission (RG06) porte bien un
      * rôle interne, pas un rôle client.
      */
-    public static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "EXPERT_REVIEWER");
+    public static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN", "ADMIN_AUDIT");
 
     /**
      * Permissions retirées selon la formule souscrite — rôles côté client
@@ -76,9 +76,7 @@ public class AutorisationService {
      * pour l'administration de la plateforme, et ADMIN_AUDIT parce qu'en
      * pratique un seul compte ADMIN_AUDIT gère toutes les missions d'audit
      * de tous les clients à ce stade du produit — exiger un rattachement
-     * entreprise par entreprise n'aurait aucun sens opérationnel. EXPERT_
-     * REVIEWER n'en fait volontairement pas partie : il reste cantonné aux
-     * entreprises où il est explicitement affecté.
+     * entreprise par entreprise n'aurait aucun sens opérationnel.
      */
     private static final Set<String> ROLES_ACCES_GLOBAL = Set.of("SUPER_ADMIN", "ADMIN_AUDIT");
 

@@ -12,7 +12,6 @@ class Settings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
     s3_endpoint: str = "http://minio:9000"
     s3_bucket: str = "smartex-documents"
-    confiance_seuil_revue_experte: float = 0.80  # RG38 — seuil de confiance IA à 80 %
 
     # --- LLM (Compliance/Document Agents) ---
     # Gemini (Google AI Studio) — palier gratuit. ATTENTION : sur le palier

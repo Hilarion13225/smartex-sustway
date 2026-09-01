@@ -79,13 +79,13 @@ public class MembreEntrepriseResource {
     /**
      * Rôles attribuables via cet endpoint. Historiquement réservé aux rôles
      * client (RESPONSABLE_ENTREPRISE, VISITEUR) — un rôle interne Smartex ne
-     * s'accordait pas depuis un espace client. Élargi à ADMIN_AUDIT et
-     * EXPERT_REVIEWER : cet endpoint est désormais exclusivement accessible
-     * à SUPER_ADMIN (voir exigerAdministrationDesAcces/ROLES_GESTION_MEMBRES,
-     * RESPONSABLE_ENTREPRISE n'y a même plus accès en lecture), donc c'est
-     * devenu le point d'entrée officiel par lequel SUPER_ADMIN crée les
-     * comptes du personnel Smartex — plus besoin d'un rattachement manuel en
-     * base. SUPER_ADMIN lui-même reste volontairement exclu : ce rôle ne se
+     * s'accordait pas depuis un espace client. Élargi à ADMIN_AUDIT : cet
+     * endpoint est désormais exclusivement accessible à SUPER_ADMIN (voir
+     * exigerAdministrationDesAcces/ROLES_GESTION_MEMBRES, RESPONSABLE_
+     * ENTREPRISE n'y a même plus accès en lecture), donc c'est devenu le
+     * point d'entrée officiel par lequel SUPER_ADMIN crée les comptes du
+     * personnel Smartex — plus besoin d'un rattachement manuel en base.
+     * SUPER_ADMIN lui-même reste volontairement exclu : ce rôle ne se
      * délègue pas depuis l'application.
      *
      * EMPLOYE retiré (décision produit) : dans cette première version, seul
@@ -96,7 +96,7 @@ public class MembreEntrepriseResource {
      * déjà existants ni compliquer sa réintroduction.
      */
     private static final Set<String> ROLES_ATTRIBUABLES =
-            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR", "ADMIN_AUDIT", "EXPERT_REVIEWER");
+            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR", "ADMIN_AUDIT");
 
     private static final int DUREE_VALIDITE_INVITATION_JOURS = 7;
 

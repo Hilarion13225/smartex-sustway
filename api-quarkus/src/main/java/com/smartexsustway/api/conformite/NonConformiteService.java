@@ -22,9 +22,8 @@ import java.util.Optional;
  * experte (RG16).
  *
  * Seul point de création de {@link NonConforme} dans l'application —
- * appelé après qu'une évaluation IA passe directement en VALIDEE
- * (EvaluationResource, pas de revue requise) ou après qu'une revue
- * experte est traitée (RevueExperteResource). Un critère jugé pleinement
+ * appelé après qu'une évaluation IA passe en VALIDEE (EvaluationResource).
+ * Un critère jugé pleinement
  * conforme (niveau d'engagement 5) ne génère aucune non-conformité —
  * seuls les écarts (niveaux 1 à 4) sont tracés, avec une priorité qui
  * reflète leur gravité réelle plutôt qu'un simple seuil binaire

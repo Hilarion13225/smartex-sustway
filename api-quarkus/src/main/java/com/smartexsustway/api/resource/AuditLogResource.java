@@ -54,7 +54,7 @@ public class AuditLogResource {
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         // Outil de redevabilité pour qui gère la relation avec l'entreprise
         // (staff pilote + responsable client), pas un outil de travail pour
-        // un rôle scopé à une tâche précise (EXPERT_REVIEWER, VISITEUR...).
+        // un rôle scopé à une tâche précise (VISITEUR...).
         autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
 
         int tailleEffective = Math.min(Math.max(taille, 1), TAILLE_MAX);

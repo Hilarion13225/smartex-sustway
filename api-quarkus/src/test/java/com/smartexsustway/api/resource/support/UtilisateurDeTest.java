@@ -66,8 +66,8 @@ public final class UtilisateurDeTest {
     }
 
     /**
-     * Compte de test rattaché à un rôle donné (SUPER_ADMIN, ADMIN_AUDIT,
-     * EXPERT_REVIEWER...) sur une entreprise support. Comme il n'existe
+     * Compte de test rattaché à un rôle donné (SUPER_ADMIN, ADMIN_AUDIT...)
+     * sur une entreprise support. Comme il n'existe
      * aucun endpoint pour attribuer un rôle (voir CDC, TODO phase F), le
      * rattachement est posé directement en base — même contournement que
      * les scripts de test manuels du dépôt (test_backoffice_crud.ps1).

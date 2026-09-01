@@ -9,20 +9,19 @@ import jakarta.inject.Inject;
 
 /**
  * Snapshot du score global d'une mission (RG32) après un événement qui le
- * fait varier — évaluation validée directement (EvaluationResource) ou via
- * une revue experte (RevueExperteResource). Volontairement séparé de
- * {@link AuditScoreService#calculer}, qui reste un calcul pur sans effet de
- * bord : ce dernier est appelé à chaque lecture (tableau de bord, rapports,
- * détail de mission), et snapshotter à chaque lecture ferait exploser
+ * fait varier — évaluation validée par EvaluationResource. Volontairement
+ * séparé de {@link AuditScoreService#calculer}, qui reste un calcul pur sans
+ * effet de bord : ce dernier est appelé à chaque lecture (tableau de bord,
+ * rapports, détail de mission), et snapshotter à chaque lecture ferait exploser
  * score_historique sans rapport avec un changement réel de données.
  *
  * Même hook, même raison, pour la transition de statut de la mission
  * (RG10/RG11) : jusqu'ici StatutAudit.setStatut n'était jamais appelé nulle
  * part, une mission restait BROUILLON pour toujours quel que soit son
  * avancement réel. `audit` est une entité gérée (chargée dans la même
- * transaction que EvaluationResource.evaluer/RevueExperteResource.traiter,
- * tous deux @Transactional) : la mutation est persistée par dirty-checking,
- * pas besoin d'un persist() explicite ici.
+ * transaction que EvaluationResource.evaluer, elle-même @Transactional) : la
+ * mutation est persistée par dirty-checking, pas besoin d'un persist()
+ * explicite ici.
  */
 @ApplicationScoped
 public class ScoreHistoriqueService {

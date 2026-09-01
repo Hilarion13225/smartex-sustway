@@ -41,7 +41,6 @@ import Abonnement from './pages/Abonnement';
 import Utilisateurs from './pages/Utilisateurs';
 import Journal from './pages/Journal';
 import PlanActions from './pages/PlanActions';
-import RevueExperteQueue from './pages/RevueExperteQueue';
 import Profil from './pages/Profil';
 
 function RouteProtegee() {
@@ -94,7 +93,6 @@ export default function App() {
               <Route path=":entrepriseId/audits/:auditId/rapports" element={<Rapports />} />
               <Route path=":entrepriseId/audits/:auditId/indice-preparation" element={<IndicePreparation />} />
               <Route path=":entrepriseId/audits/:auditId/criteres/:auditCritereId" element={<CritereEvaluation />} />
-              <Route path=":entrepriseId/revues-expertes" element={<RevueExperteQueue />} />
               <Route path="profil" element={<Profil />} />
               <Route path="comparaison" element={<ComparaisonEntreprises />} />
               <Route path="referentiels" element={<ReferentielsListe />} />

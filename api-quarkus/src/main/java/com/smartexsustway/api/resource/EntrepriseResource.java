@@ -176,9 +176,9 @@ public class EntrepriseResource {
      * RG05 : auto-inscription — seul un compte sans rôle interne Smartex
      * (nouvelle inscription sans rattachement, ou déjà RESPONSABLE_ENTREPRISE/
      * VISITEUR côté client) peut créer une entreprise. Le personnel Smartex
-     * (SUPER_ADMIN/ADMIN_AUDIT/EXPERT_REVIEWER) audite/administre les
-     * entreprises de ses clients, il n'a pas vocation à les créer à leur
-     * place — ce n'est pas une question de formule (RG21/RESTRICTIONS_PAR_PLAN),
+     * (SUPER_ADMIN/ADMIN_AUDIT) audite/administre les entreprises de ses
+     * clients, il n'a pas vocation à les créer à leur place — ce n'est pas
+     * une question de formule (RG21/RESTRICTIONS_PAR_PLAN),
      * donc pas géré par exigerPermission, mais un contrôle de rôle direct,
      * même logique que AuditResource.affecterAuditeur.
      */

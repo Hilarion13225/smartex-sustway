@@ -128,25 +128,8 @@ public class Evaluation {
         return probabiliteConforme;
     }
 
-    /**
-     * Réservé à la correction par un expert humain lors d'une revue
-     * (RevueExperteResource) — RG27 interdit à l'IA de fixer directement
-     * ce champ, pas à un expert qui, lui, produit une décision humaine
-     * documentée (voir RevueExperte.commentaire). Après appel, evaluation
-     * redevient la source de vérité unique pour tout calcul de score en
-     * aval, alignée sur la décision finale de l'expert.
-     */
-    public void setProbabiliteConforme(BigDecimal probabiliteConforme) {
-        this.probabiliteConforme = probabiliteConforme;
-    }
-
     public short getNote() {
         return note;
-    }
-
-    /** Voir {@link #setProbabiliteConforme(BigDecimal)} — même justification, réservé à la revue experte. */
-    public void setNote(short note) {
-        this.note = note;
     }
 
     public BigDecimal getConfianceIa() {

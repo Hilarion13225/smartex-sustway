@@ -26,8 +26,8 @@ import static org.hamcrest.Matchers.hasSize;
 /**
  * RG32 — évolution du score d'une mission dans le temps
  * (score_historique, alimenté par ScoreHistoriqueService, voir
- * EvaluationResource/RevueExperteResource) et moyenne sectorielle
- * anonymisée (SecteurResource.benchmark, k-anonymat).
+ * EvaluationResource) et moyenne sectorielle anonymisée
+ * (SecteurResource.benchmark, k-anonymat).
  *
  * Le pipeline d'agents IA n'est pas dépendable dans ces tests (même
  * contournement que EvaluationResourceTest/IndicePreparationResourceTest) :

@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * Correspond à la table {@code role} (CDC section 4 : SUPER_ADMIN, ADMIN_AUDIT,
- * EXPERT_REVIEWER, RESPONSABLE_ENTREPRISE, EMPLOYE, VISITEUR).
+ * RESPONSABLE_ENTREPRISE, EMPLOYE, VISITEUR).
  * La table de liaison {@code role_permission} (pure, sans colonne propre) est
  * modélisée directement via {@code @ManyToMany}, sans entité de jointure dédiée.
  */

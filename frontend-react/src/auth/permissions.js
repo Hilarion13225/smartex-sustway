@@ -7,9 +7,9 @@
  * PERMISSIONS_PAR_ROLE fixe ce qu'un rôle peut faire en théorie.
  * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule, mais
  * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE, VISITEUR)
- * — le personnel interne Smartex (SUPER_ADMIN, ADMIN_AUDIT, EXPERT_REVIEWER)
- * n'est jamais bridé par la formule d'un client : il audite/administre au
- * nom de Smartex, pas au nom de l'entreprise.
+ * — le personnel interne Smartex (SUPER_ADMIN, ADMIN_AUDIT) n'est jamais
+ * bridé par la formule d'un client : il audite/administre au nom de
+ * Smartex, pas au nom de l'entreprise.
  *
  * EMPLOYE retiré du modèle (décision produit) : dans cette première
  * version, seul le responsable de l'entreprise est audité. Le rôle reste
@@ -47,7 +47,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'audit:creer',
     'audit:modifier',
     'preuve:deposer',
-    'revue:traiter',
     'referentiel:administrer',
     'rapport:consulter',
     'rapport:detaille',
@@ -62,7 +61,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'rapport:detaille',
     'bailleur:consulter',
   ],
-  EXPERT_REVIEWER: ['revue:traiter', 'rapport:consulter', 'rapport:detaille', 'bailleur:consulter'],
   RESPONSABLE_ENTREPRISE: [
     'entreprise:creer',
     'entreprise:modifier',
@@ -82,12 +80,11 @@ const RESTRICTIONS_PAR_PLAN = {
   AVANCEES: [],
 };
 
-const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', 'EXPERT_REVIEWER']);
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
 
 export const ROLE_LIBELLE = {
   SUPER_ADMIN: 'Administrateur global',
   ADMIN_AUDIT: 'Administrateur métier',
-  EXPERT_REVIEWER: 'Expert RSE',
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
   VISITEUR: 'Visiteur (démonstration)',
   AUCUN_ROLE_ATTRIBUE: 'Free',

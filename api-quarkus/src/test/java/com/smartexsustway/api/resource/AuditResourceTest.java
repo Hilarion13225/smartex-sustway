@@ -323,7 +323,10 @@ class AuditResourceTest {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe 2");
         var expert = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(expert.id, ctx.entrepriseId(), "EXPERT_REVIEWER");
+        // Rôle interne réel pour le rattachement (EXPERT_REVIEWER n'existe plus en
+        // tant que rôle plateforme) — distinct de "roleMission" ci-dessous, qui
+        // reste un rôle *au sein de l'équipe de la mission* (RoleMissionAuditeur).
+        rattacher(expert.id, ctx.entrepriseId(), "ADMIN_AUDIT");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token())

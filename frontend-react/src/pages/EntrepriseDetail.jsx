@@ -32,8 +32,7 @@ const TAILLES = [
 /**
  * Détail d'une entreprise : fiche légale (RG02), abonnement (avec reprise
  * de paiement si en attente — RG20), gestion des sites (RG04), et accès aux
- * audits RSE (RG10/RG11) — le lien vers la file de revue experte n'apparaît
- * que pour les rôles habilités (EXPERT_REVIEWER/ADMIN_AUDIT/SUPER_ADMIN).
+ * audits RSE (RG10/RG11).
  */
 export default function EntrepriseDetail() {
   const { entrepriseId } = useParams();

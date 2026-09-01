@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
-  AlertTriangle,
   ArrowLeft,
   CheckCircle2,
   ChevronDown,
@@ -507,11 +506,6 @@ function ResultatEvaluation({ evaluation }) {
       <div className="flex flex-wrap items-center gap-2">
         <Badge ton={TONS_STATUT_EVAL[evaluation.statut] ?? 'neutre'}>{evaluation.statut}</Badge>
         <Badge ton={evaluation.source === 'EXPERT' ? 'violet' : 'bleu'}>{evaluation.source}</Badge>
-        {evaluation.revueExperteDeclenchee ? (
-          <Badge ton="ambre" icone={AlertTriangle}>
-            En file de revue experte
-          </Badge>
-        ) : null}
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-sm">
