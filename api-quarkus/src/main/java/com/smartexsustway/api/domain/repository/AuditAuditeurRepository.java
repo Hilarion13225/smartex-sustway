@@ -10,7 +10,7 @@ import java.util.UUID;
 
 /**
  * RG06 — équipe affectée à une mission d'audit, un rôle de mission par
- * personne (AUDITEUR_PRINCIPAL/SECONDAIRE/EXPERT_REVIEWER/OBSERVATEUR).
+ * personne (AUDITEUR_PRINCIPAL/SECONDAIRE/OBSERVATEUR).
  * Requêtes natives : {@code audit_auditeur} a une clé primaire composite
  * (audit_id + utilisateur_id), même choix que AuditSiteRepository /
  * CritereBailleurRepository.

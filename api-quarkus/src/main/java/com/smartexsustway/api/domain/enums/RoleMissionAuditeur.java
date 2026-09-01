@@ -4,6 +4,5 @@ package com.smartexsustway.api.domain.enums;
 public enum RoleMissionAuditeur {
     AUDITEUR_PRINCIPAL,
     AUDITEUR_SECONDAIRE,
-    EXPERT_REVIEWER,
     OBSERVATEUR
 }
