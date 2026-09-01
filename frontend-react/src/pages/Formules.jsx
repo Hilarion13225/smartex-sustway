@@ -17,7 +17,7 @@ export default function Formules() {
       <SectionFormules
         id="grille-formules"
         titre="Comparez et choisissez"
-        description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes. La formule Free est un mode de démonstration : aucune création d’entreprise n’est possible avec elle."
+        description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes."
       />
 
       <AppelAction

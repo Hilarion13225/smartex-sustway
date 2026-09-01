@@ -33,11 +33,6 @@ const QUESTIONS = [
       'C’est une mesure d’alignement aux 8 Performance Standards du bailleur pilote, restreinte aux critères concernés. Il indique le niveau de préparation du dossier : ce n’est pas une garantie d’éligibilité ni une décision de financement.',
   },
   {
-    question: 'Que puis-je faire avec la formule Free ?',
-    reponse:
-      'La formule Free est un mode de démonstration : elle permet de parcourir la plateforme mais pas de créer une entreprise ni de lancer une évaluation.',
-  },
-  {
     question: 'Quels moyens de paiement sont acceptés ?',
     reponse:
       'Les formules Standard et Avancées se règlent via PI-SPI et Wave, à prix fixe pour une licence annuelle.',
