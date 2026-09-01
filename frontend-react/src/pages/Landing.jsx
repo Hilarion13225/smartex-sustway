@@ -1,34 +1,7 @@
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight,
-  BarChart3,
-  ChevronDown,
-  ClipboardCheck,
-  FileText,
-  Leaf,
-  Scale,
-  Shield,
-  Sparkles,
-  Target,
-  TrendingUp,
-} from 'lucide-react';
+import { BarChart3, ChevronDown, ClipboardCheck, FileText, Leaf, PlayCircle, Scale, Target, TrendingUp } from 'lucide-react';
 import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
-
-/**
- * Feuilles du fond du héros : position de départ, taille, vitesse, dérive
- * horizontale (--dx) et décalage. Délais négatifs pour que certaines soient
- * déjà « en vol » au chargement plutôt que de toutes partir du bas ensemble.
- */
-const FEUILLES = [
-  { gauche: '6%', taille: 18, duree: 19, delai: -3, dx: 55 },
-  { gauche: '18%', taille: 13, duree: 24, delai: -14, dx: -35 },
-  { gauche: '32%', taille: 22, duree: 21, delai: -8, dx: 40 },
-  { gauche: '47%', taille: 15, duree: 26, delai: -1, dx: -50 },
-  { gauche: '61%', taille: 20, duree: 18, delai: -11, dx: 30 },
-  { gauche: '74%', taille: 14, duree: 23, delai: -6, dx: -60 },
-  { gauche: '88%', taille: 21, duree: 20, delai: -16, dx: 45 },
-];
 
 /**
  * Bénéfices résumés sous le héros — une ligne par promesse, volontairement
@@ -38,7 +11,7 @@ const BENEFICES = [
   {
     icone: ClipboardCheck,
     titre: 'Évaluez votre conformité',
-    texte: 'Probabilité de conformité par critère, calculée par l’IA.',
+    texte: 'Probabilité de conformité par critère, calculée par IA.',
   },
   {
     icone: Target,
@@ -48,7 +21,7 @@ const BENEFICES = [
   {
     icone: TrendingUp,
     titre: 'Suivez votre progression',
-    texte: 'Historique de score : une trajectoire, pas une photo ponctuelle.',
+    texte: 'Visibilité continue, pas une photo ponctuelle.',
   },
   {
     icone: Leaf,
@@ -58,52 +31,91 @@ const BENEFICES = [
 ];
 
 /**
- * Noeuds de l'emblème du héros, positionnés dans le repère du SVG
- * (640 × 420) : `x`/`y` place la pastille, `ancre` le point de la ligne qui
- * la relie au cercle central.
+ * Noeuds de l'emblème, dans le repère du SVG (640 × 420) : `x`/`y` place la
+ * pastille, `ancre` le point de raccordement sur la sphère.
  */
 const NOEUDS_EMBLEME = [
-  { icone: FileText, libelle: 'Documents', x: 100, y: 90, ancre: [215, 152] },
-  { icone: ClipboardCheck, libelle: 'Preuves', x: 540, y: 90, ancre: [425, 152] },
-  { icone: Scale, libelle: 'Conformité', x: 88, y: 272, ancre: [196, 268] },
-  { icone: BarChart3, libelle: 'Scoring', x: 552, y: 272, ancre: [444, 268] },
+  { icone: FileText, libelle: 'Documents', x: 98, y: 78, ancre: [204, 142] },
+  { icone: ClipboardCheck, libelle: 'Preuves', x: 542, y: 78, ancre: [436, 142] },
+  { icone: Scale, libelle: 'Conformité', x: 98, y: 320, ancre: [204, 306] },
+  { icone: BarChart3, libelle: 'Scoring', x: 542, y: 320, ancre: [436, 306] },
 ];
 
-/** Graduations de la jauge semi-circulaire du héros. */
-const GRADUATIONS = Array.from({ length: 45 }, (_, index) => {
-  const angle = Math.PI - (index * Math.PI) / 44;
+const CENTRE = [320, 232];
+
+/**
+ * Sphère filaire entourant le bouclier : semis de points tirés d'une sphère
+ * unité puis projetés, reliés dès qu'ils sont proches. Le tirage est
+ * déterministe (générateur congruentiel à graine fixe) pour que le rendu soit
+ * identique d'une visite à l'autre et entre le serveur et le client.
+ */
+const SPHERE = (() => {
+  let graine = 20260901;
+  const alea = () => {
+    graine = (graine * 1103515245 + 12345) % 2147483648;
+    return graine / 2147483648;
+  };
+
+  const rayon = 190;
+  const points = Array.from({ length: 78 }, () => {
+    const z = alea() * 2 - 1;
+    const theta = alea() * Math.PI * 2;
+    const anneau = Math.sqrt(1 - z * z);
+    return {
+      x: CENTRE[0] + rayon * anneau * Math.cos(theta),
+      y: CENTRE[1] + rayon * z * 0.94,
+      // Profondeur perçue : les points « devant » sont plus opaques.
+      opacite: 0.25 + 0.55 * ((anneau * Math.sin(theta) + 1) / 2),
+    };
+  });
+
+  const aretes = [];
+  points.forEach((a, i) => {
+    points.slice(i + 1).forEach((b) => {
+      const distance = Math.hypot(a.x - b.x, a.y - b.y);
+      if (distance < 66) {
+        aretes.push({ a, b, opacite: 0.35 * (1 - distance / 66) });
+      }
+    });
+  });
+
+  return { points, aretes };
+})();
+
+/** Graduations de la jauge de conformité, de 0 % (gauche) à 100 % (droite). */
+const GRADUATIONS = Array.from({ length: 49 }, (_, index) => {
+  const angle = ((196 - (index * 212) / 48) * Math.PI) / 180;
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
+  const interieur = 132;
+  const exterieur = index % 6 === 0 ? 158 : 149;
   return {
-    x1: 320 + cos * 150,
-    y1: 320 - sin * 150,
-    x2: 320 + cos * (index % 5 === 0 ? 174 : 166),
-    y2: 320 - sin * (index % 5 === 0 ? 174 : 166),
+    x1: CENTRE[0] + cos * interieur,
+    y1: CENTRE[1] - sin * interieur,
+    x2: CENTRE[0] + cos * exterieur,
+    y2: CENTRE[1] - sin * exterieur,
+    majeure: index % 6 === 0,
   };
 });
 
-/** Semis de points du fond de l'emblème (positions figées, rendu stable entre deux visites). */
-const POINTS_RESEAU = [
-  [70, 60],
-  [150, 40],
-  [240, 110],
-  [320, 55],
-  [400, 110],
-  [490, 40],
-  [570, 60],
-  [40, 180],
-  [120, 230],
-  [230, 250],
-  [320, 200],
-  [410, 250],
-  [520, 230],
-  [600, 180],
-  [90, 360],
-  [200, 390],
-  [320, 370],
-  [440, 390],
-  [550, 360],
+/** Poussière de points du fond du héros (positions figées). */
+const PARTICULES = [
+  { gauche: '4%', haut: '12%', taille: 7 },
+  { gauche: '11%', haut: '46%', taille: 4 },
+  { gauche: '8%', haut: '74%', taille: 6 },
+  { gauche: '19%', haut: '22%', taille: 5 },
+  { gauche: '26%', haut: '62%', taille: 3 },
+  { gauche: '34%', haut: '9%', taille: 4 },
+  { gauche: '44%', haut: '82%', taille: 5 },
+  { gauche: '56%', haut: '14%', taille: 3 },
+  { gauche: '66%', haut: '70%', taille: 6 },
+  { gauche: '74%', haut: '30%', taille: 4 },
+  { gauche: '83%', haut: '58%', taille: 7 },
+  { gauche: '90%', haut: '18%', taille: 5 },
+  { gauche: '95%', haut: '78%', taille: 4 },
 ];
+
+const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 8 74 V30 Z';
 
 /**
  * Page d'entrée de la plateforme (URL racine). Volontairement réduite au seul
@@ -113,167 +125,209 @@ const POINTS_RESEAU = [
  */
 export default function Landing() {
   return (
-    <div>
-      {/* ---------------------------------------------------------------- Héros */}
-      <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
-        <span
-          className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-brand-300/25 blur-3xl motion-safe:animate-respiration"
-          aria-hidden
-        />
-        <span
-          className="pointer-events-none absolute -right-20 top-0 h-80 w-80 rounded-full bg-emerald-300/25 blur-3xl motion-safe:animate-respiration [animation-delay:2s]"
-          aria-hidden
-        />
+    <section className="relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
+      <span
+        className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl motion-safe:animate-respiration"
+        aria-hidden
+      />
+      <span
+        className="pointer-events-none absolute -right-24 top-0 h-80 w-80 rounded-full bg-brand-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s]"
+        aria-hidden
+      />
 
-        {/* Feuilles qui montent doucement — le motif « croissance / durabilité »
-            de la marque, en mouvement plutôt qu'en icône figée. */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-          {FEUILLES.map((feuille, index) => (
-            <Leaf
-              key={index}
-              className="absolute bottom-0 text-emerald-500/50 motion-safe:animate-derive-feuille dark:text-emerald-400/40"
-              style={{
-                left: feuille.gauche,
-                width: feuille.taille,
-                height: feuille.taille,
-                animationDuration: `${feuille.duree}s`,
-                animationDelay: `${feuille.delai}s`,
-                '--dx': `${feuille.dx}px`,
-              }}
-              strokeWidth={1.5}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        {PARTICULES.map((particule, index) => (
+          <span
+            key={index}
+            className="absolute rounded-full bg-brand-400/40 motion-safe:animate-respiration"
+            style={{
+              left: particule.gauche,
+              top: particule.haut,
+              width: particule.taille,
+              height: particule.taille,
+              animationDelay: `${index * 0.4}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative mx-auto max-w-[70rem] px-5 pb-12 pt-8 text-center">
+        {/* Emblème : sphère de données, jauge de conformité, bouclier de la
+            marque et les quatre natures d'objets manipulées par le moteur. */}
+        <div className="relative mx-auto aspect-[640/420] w-full max-w-3xl motion-safe:animate-apparition-douce">
+          <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
+            <defs>
+              <linearGradient id="degradeBouclier" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#cf5c50" />
+                <stop offset="55%" stopColor="#b3271e" />
+                <stop offset="100%" stopColor="#921f18" />
+              </linearGradient>
+              <radialGradient id="lueurBouclier">
+                <stop offset="0%" stopColor="#b3271e" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#b3271e" stopOpacity="0" />
+              </radialGradient>
+            </defs>
+
+            <ellipse
+              cx={CENTRE[0]}
+              cy={CENTRE[1]}
+              rx="188"
+              ry="178"
+              className="fill-none stroke-brand-200/50"
+              strokeWidth="1"
             />
+            <ellipse
+              cx={CENTRE[0]}
+              cy={CENTRE[1]}
+              rx="118"
+              ry="176"
+              className="fill-none stroke-brand-200/35"
+              strokeWidth="1"
+            />
+
+            {SPHERE.aretes.map((arete, index) => (
+              <line
+                key={index}
+                x1={arete.a.x}
+                y1={arete.a.y}
+                x2={arete.b.x}
+                y2={arete.b.y}
+                stroke="#cf5c50"
+                strokeOpacity={arete.opacite}
+                strokeWidth="0.8"
+              />
+            ))}
+            {SPHERE.points.map((point, index) => (
+              <circle
+                key={index}
+                cx={point.x}
+                cy={point.y}
+                r={index % 4 === 0 ? 2.6 : 1.7}
+                fill="#b3271e"
+                fillOpacity={point.opacite}
+              />
+            ))}
+
+            {GRADUATIONS.map((tick, index) => (
+              <line
+                key={index}
+                x1={tick.x1}
+                y1={tick.y1}
+                x2={tick.x2}
+                y2={tick.y2}
+                strokeWidth={tick.majeure ? 2.4 : 1.4}
+                strokeLinecap="round"
+                className={tick.majeure ? 'stroke-brand-500' : 'stroke-brand-400/70'}
+              />
+            ))}
+
+            {NOEUDS_EMBLEME.map((noeud) => (
+              <g key={noeud.libelle}>
+                <line
+                  x1={noeud.x}
+                  y1={noeud.y}
+                  x2={noeud.ancre[0]}
+                  y2={noeud.ancre[1]}
+                  className="stroke-brand-300"
+                  strokeWidth="1"
+                />
+                <circle cx={noeud.ancre[0]} cy={noeud.ancre[1]} r="4.5" className="fill-brand-500" />
+              </g>
+            ))}
+
+            <text x="212" y={CENTRE[1] + 42} className="fill-brand-600 text-[15px] font-semibold" textAnchor="middle">
+              0 %
+            </text>
+            <text x="430" y={CENTRE[1] + 42} className="fill-brand-600 text-[15px] font-semibold" textAnchor="middle">
+              100 %
+            </text>
+
+            <ellipse cx={CENTRE[0]} cy={CENTRE[1] + 96} rx="120" ry="34" fill="url(#lueurBouclier)" />
+
+            <g transform={`translate(${CENTRE[0] - 64}, ${CENTRE[1] - 74})`}>
+              <path d={CHEMIN_BOUCLIER} className="fill-surface" />
+              <path d={CHEMIN_BOUCLIER} fill="none" stroke="url(#degradeBouclier)" strokeWidth="7" strokeLinejoin="round" />
+              <path
+                d="M64 42 C40 50 30 72 36 96 C60 100 80 82 80 60 C80 52 74 44 64 42 Z"
+                fill="url(#degradeBouclier)"
+              />
+              <path
+                d="M40 100 C48 84 58 70 74 58"
+                fill="none"
+                stroke="#fdf2f1"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </g>
+          </svg>
+
+          {NOEUDS_EMBLEME.map((noeud) => (
+            <span
+              key={noeud.libelle}
+              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
+              style={{ left: `${(noeud.x / 640) * 100}%`, top: `${(noeud.y / 420) * 100}%` }}
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-300 bg-surface text-brand-600 shadow-soft sm:h-14 sm:w-14">
+                <noeud.icone className="h-4 w-4 sm:h-6 sm:w-6" strokeWidth={1.6} aria-hidden />
+              </span>
+              <span className="text-[0.5rem] font-semibold uppercase tracking-[0.2em] text-ink-500 sm:text-[0.7rem]">
+                {noeud.libelle}
+              </span>
+            </span>
           ))}
         </div>
 
-        <div className="relative mx-auto max-w-[70rem] px-5 pb-14 pt-12 text-center lg:pt-16">
-          {/* Emblème : jauge de conformité, bouclier de la marque et les quatre
-              natures d'objets manipulées par le moteur d'évaluation. */}
-          <div className="relative mx-auto aspect-[640/420] w-full max-w-3xl motion-safe:animate-apparition-douce">
-            <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
-              {POINTS_RESEAU.map(([x, y], index) => (
-                <circle key={index} cx={x} cy={y} r={index % 3 === 0 ? 3 : 2} className="fill-brand-300/60" />
-              ))}
+        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-600 dark:text-brand-400">
+          Plateforme d’évaluation RSE intelligente
+        </p>
 
-              <path
-                d="M 145 320 A 175 175 0 0 1 495 320"
-                className="stroke-brand-200/70"
-                strokeWidth="1"
-                fill="none"
-              />
-              {GRADUATIONS.map((tick, index) => (
-                <line
-                  key={index}
-                  x1={tick.x1}
-                  y1={tick.y1}
-                  x2={tick.x2}
-                  y2={tick.y2}
-                  strokeWidth={index % 5 === 0 ? 2 : 1}
-                  className={index <= 30 ? 'stroke-brand-500' : 'stroke-brand-200'}
-                />
-              ))}
+        <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-bold leading-[1.08] text-ink-900 sm:text-5xl lg:text-[3.75rem]">
+          Maîtrisez votre performance RSE.
+          <br />
+          Agissez avec <span className="text-brand-600 dark:text-brand-400">intelligence</span>.
+        </h1>
 
-              {NOEUDS_EMBLEME.map((noeud) => (
-                <g key={noeud.libelle}>
-                  <line
-                    x1={noeud.x}
-                    y1={noeud.y}
-                    x2={noeud.ancre[0]}
-                    y2={noeud.ancre[1]}
-                    className="stroke-brand-200"
-                    strokeWidth="1"
-                  />
-                  <circle cx={noeud.ancre[0]} cy={noeud.ancre[1]} r="4" className="fill-brand-400" />
-                </g>
-              ))}
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-600">
+          {SMARTEX.produit} unifie référentiel, preuves documentaires et intelligence artificielle multi-agents pour
+          évaluer, prioriser et améliorer votre performance RSE.
+        </p>
 
-              <text x="150" y="346" className="fill-brand-600 text-[13px] font-medium" textAnchor="middle">
-                0 %
-              </text>
-              <text x="492" y="346" className="fill-brand-600 text-[13px] font-medium" textAnchor="middle">
-                100 %
-              </text>
-            </svg>
-
-            <span
-              className="pointer-events-none absolute left-1/2 top-[70%] h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-400/25 blur-3xl motion-safe:animate-respiration"
-              aria-hidden
-            />
-            <span className="absolute left-1/2 top-[70%] -translate-x-1/2 -translate-y-1/2 motion-safe:animate-flottement" aria-hidden>
-              <span className="relative block">
-                <Shield className="h-28 w-28 text-brand-600 sm:h-36 sm:w-36" strokeWidth={1.25} />
-                <Leaf
-                  className="absolute left-1/2 top-[44%] h-11 w-11 -translate-x-1/2 -translate-y-1/2 -rotate-12 fill-brand-500/20 text-brand-600 sm:h-14 sm:w-14"
-                  strokeWidth={1.5}
-                />
-              </span>
-            </span>
-
-            {NOEUDS_EMBLEME.map((noeud) => (
-              <span
-                key={noeud.libelle}
-                className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1.5"
-                style={{ left: `${(noeud.x / 640) * 100}%`, top: `${(noeud.y / 420) * 100}%` }}
-              >
-                <span className="rounded-full border border-brand-200 bg-surface/90 p-2 text-brand-600 shadow-soft backdrop-blur sm:p-2.5">
-                  <noeud.icone className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
-                </span>
-                <span className="text-[0.55rem] font-semibold uppercase tracking-[0.18em] text-ink-500 sm:text-[0.65rem]">
-                  {noeud.libelle}
-                </span>
-              </span>
-            ))}
-          </div>
-
-          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-600 dark:text-brand-400">
-            Plateforme d’évaluation RSE intelligente
-          </p>
-
-          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-semibold leading-[1.1] text-ink-900 sm:text-5xl lg:text-[3.5rem]">
-            Maîtrisez votre performance RSE.
-            <br />
-            Agissez avec <span className="text-brand-600 dark:text-brand-400">intelligence</span>.
-          </h1>
-
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-600">
-            {SMARTEX.produit} unifie référentiel sectoriel, preuves documentaires et pipeline IA multi-agents pour évaluer,
-            prioriser et améliorer votre performance RSE. {SMARTEX.promesseFinancement}
-          </p>
-
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-            <Link to="/inscription" className="btn-vitrine group px-6 py-3">
-              Créer un compte
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-            </Link>
-            <Link to="/methodologie" className="btn-vitrine-clair px-6 py-3">
-              <Sparkles className="h-4 w-4 text-brand-500" aria-hidden />
-              Voir la méthodologie
-            </Link>
-          </div>
-
-          <dl className="mt-14 grid gap-6 border-t border-ink-100 pt-10 text-left sm:grid-cols-2 lg:grid-cols-4 lg:divide-x lg:divide-ink-100">
-            {BENEFICES.map((benefice, index) => (
-              <Revele key={benefice.titre} delai={index * 110}>
-                <div className="flex gap-3 lg:px-5">
-                  <benefice.icone className="mt-0.5 h-6 w-6 shrink-0 text-brand-600 dark:text-brand-400" strokeWidth={1.6} aria-hidden />
-                  <div>
-                    <dt className="text-sm font-semibold text-ink-900">{benefice.titre}</dt>
-                    <dd className="mt-1 text-sm leading-relaxed text-ink-500">{benefice.texte}</dd>
-                  </div>
-                </div>
-              </Revele>
-            ))}
-          </dl>
-
-          <Link
-            to="/accueil"
-            className="mt-12 inline-flex flex-col items-center gap-1 text-[0.65rem] font-semibold uppercase tracking-[0.28em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
-          >
-            Découvrir
-            <ChevronDown className="h-5 w-5 motion-safe:animate-bounce" aria-hidden />
+        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+          <Link to="/inscription" className="btn-vitrine px-8 py-3.5 text-base">
+            Démarrer gratuitement
+          </Link>
+          <Link to="/methodologie" className="btn-vitrine-clair px-8 py-3.5 text-base">
+            <PlayCircle className="h-5 w-5 text-brand-600" strokeWidth={1.6} aria-hidden />
+            Voir la démo
           </Link>
         </div>
-      </section>
-    </div>
+
+        <dl className="mt-14 grid gap-8 text-left sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
+          {BENEFICES.map((benefice, index) => (
+            <Revele key={benefice.titre} delai={index * 110}>
+              <div className="flex gap-3 lg:px-6">
+                <benefice.icone className="mt-0.5 h-8 w-8 shrink-0 text-brand-600 dark:text-brand-400" strokeWidth={1.5} aria-hidden />
+                <div>
+                  <dt className="text-sm font-semibold text-ink-900">{benefice.titre}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-ink-500">{benefice.texte}</dd>
+                </div>
+              </div>
+            </Revele>
+          ))}
+        </dl>
+
+        <Link
+          to="/accueil"
+          className="mt-12 inline-flex flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
+        >
+          Découvrir
+          <span className="flex h-9 w-6 items-start justify-center rounded-full border-2 border-brand-400 pt-1.5">
+            <span className="h-1.5 w-1 rounded-full bg-brand-500 motion-safe:animate-bounce" />
+          </span>
+          <ChevronDown className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+    </section>
   );
 }
