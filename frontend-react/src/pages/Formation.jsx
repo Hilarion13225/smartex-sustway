@@ -11,6 +11,7 @@ import {
   Mic2,
   Newspaper,
   Palmtree,
+  Pickaxe,
   Presentation,
   Radio,
   ShoppingBag,
@@ -29,6 +30,7 @@ import photoActuGenerale from '../assets/formation/actu-generale.jpg';
 import photoBtp from '../assets/formation/btp.jpg';
 import photoTourisme from '../assets/formation/tourisme.jpg';
 import photoPetrole from '../assets/formation/petrole.jpg';
+import photoMines from '../assets/formation/mines.jpg';
 import photoProductionElec from '../assets/formation/production-elec.jpg';
 import photoAgro from '../assets/formation/agro.jpg';
 import photoTelecom from '../assets/formation/telecom.jpg';
@@ -48,7 +50,8 @@ const SECTEURS = [
   { icone: Newspaper, nom: 'Actualités générales', photo: photoActuGenerale },
   { icone: Building2, nom: 'BTP', photo: photoBtp },
   { icone: Palmtree, nom: 'Tourisme & Hôtellerie', photo: photoTourisme },
-  { icone: Fuel, nom: 'Mines et pétrole', photo: photoPetrole },
+  { icone: Pickaxe, nom: 'Mines', photo: photoMines },
+  { icone: Fuel, nom: 'Pétrole', photo: photoPetrole },
   { icone: Zap, nom: 'Production électrique', photo: photoProductionElec },
   { icone: Factory, nom: 'Agro-industrie', photo: photoAgro },
   { icone: Radio, nom: 'Télécom', photo: photoTelecom },
