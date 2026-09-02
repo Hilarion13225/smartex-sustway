@@ -388,7 +388,7 @@ export default function Landing() {
         </dl>
 
         <Link
-          to="/accueil"
+          to="/methodologie"
           className="mt-12 inline-flex flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
         >
           Découvrir

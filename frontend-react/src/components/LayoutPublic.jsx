@@ -19,7 +19,7 @@ export default function LayoutPublic() {
   }, [pathname, hash]);
 
   return (
-    <div className="flex min-h-full flex-col overflow-x-hidden bg-surface">
+    <div className="flex min-h-full flex-col bg-surface">
       <EnTetePublic />
       <main className="flex-1">
         <Outlet />
