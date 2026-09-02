@@ -11,7 +11,7 @@ const BENEFICES = [
   {
     icone: ClipboardCheck,
     titre: 'Évaluez votre conformité',
-    texte: 'Probabilité de conformité par critère, calculée par IA.',
+    texte: 'Probabilité de conformité par critère.',
   },
   {
     icone: Target,
