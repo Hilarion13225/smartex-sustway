@@ -5,6 +5,15 @@ import { SMARTEX } from '../config/smartex';
 
 const COLONNES = [
   {
+    titre: 'Solution',
+    liens: [
+      { vers: '/methodologie', libelle: 'Méthodologie' },
+      { vers: '/avantages', libelle: 'Bénéfices de la solution' },
+      { vers: '/engagement', libelle: 'Engageons-nous ensemble' },
+      { vers: '/deploiement', libelle: 'Déploiement de la solution' },
+    ],
+  },
+  {
     titre: 'Plateforme',
     liens: [
       { vers: '/services', libelle: 'Services' },
@@ -42,7 +51,7 @@ export default function PiedPublic() {
         aria-hidden
       />
       <div className="relative mx-auto max-w-[90rem] px-5 py-14">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)]">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(4,1fr)]">
           <div>
             <Logo taille="md" variante="clair" />
             <p className="mt-1.5 text-xs text-[#8290a9]">{SMARTEX.accroche}</p>

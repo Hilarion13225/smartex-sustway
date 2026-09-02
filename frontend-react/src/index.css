@@ -49,6 +49,12 @@
   body {
     @apply bg-ink-50 text-ink-900 font-sans antialiased transition-colors duration-300;
     font-feature-settings: 'cv11', 'ss01';
+    /* Empêche tout débordement horizontal accidentel (décors pleine largeur,
+       animations de fond...) sans casser position:sticky : appliqué ici sur
+       <body>, le conteneur qui défile réellement, plutôt que sur un <div>
+       intermédiaire (voir LayoutPublic.jsx — un overflow-x posé là cassait
+       le header collant). */
+    overflow-x: hidden;
   }
   h1,
   h2,

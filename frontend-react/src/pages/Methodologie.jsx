@@ -1,9 +1,8 @@
-import { Award, BookOpen, CheckCircle2, Compass, Megaphone, RefreshCw, Rocket, ScrollText } from 'lucide-react';
+import { BookOpen, CheckCircle2, Compass, Megaphone, RefreshCw, Rocket, ScrollText } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
 import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
-import { Badge } from '../components/ui';
-import { FONDEMENTS, REFERENCES_METHODOLOGIQUES, REFERENTIELS_EVALUABLES, SMARTEX } from '../config/smartex';
+import { FONDEMENTS, SMARTEX } from '../config/smartex';
 import photoBanniere from '../assets/methodologie/banniere.jpg';
 import schemaPdca from '../assets/methodologie/pdca.png';
 
@@ -119,44 +118,6 @@ export default function Methodologie() {
               </Revele>
             ))}
           </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[90rem] px-5 py-20">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <Revele>
-            <Badge ton="bleu" icone={Award}>
-              Référentiels évaluables
-            </Badge>
-            <h3 className="mt-3 text-lg font-semibold text-ink-900">Ceux que la plateforme évalue réellement</h3>
-            <ul className="mt-4 space-y-3">
-              {REFERENTIELS_EVALUABLES.map((referentiel) => (
-                <li key={referentiel.code} className="rounded-xl border border-ink-100 bg-surface p-4 text-sm shadow-soft">
-                  <p className="font-semibold text-ink-900">{referentiel.nom}</p>
-                  <p className="mt-1 text-ink-500">{referentiel.texte}</p>
-                </li>
-              ))}
-            </ul>
-          </Revele>
-
-          <Revele delai={120}>
-            <Badge ton="neutre" icone={Compass}>
-              Repères méthodologiques
-            </Badge>
-            <h3 className="mt-3 text-lg font-semibold text-ink-900">Ceux qui inspirent notre approche</h3>
-            <p className="mt-3 text-sm leading-relaxed text-ink-500">
-              Sans être des référentiels évaluables dans l’outil, ces normes reconnues nourrissent la conception de notre
-              méthodologie.
-            </p>
-            <ul className="mt-4 space-y-3">
-              {REFERENCES_METHODOLOGIQUES.map((reference) => (
-                <li key={reference.code} className="rounded-xl border border-ink-100 bg-surface p-4 text-sm shadow-soft">
-                  <p className="font-semibold text-ink-900">{reference.nom}</p>
-                  <p className="mt-1 text-ink-500">{reference.texte}</p>
-                </li>
-              ))}
-            </ul>
-          </Revele>
         </div>
       </section>
 
