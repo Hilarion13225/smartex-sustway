@@ -63,6 +63,8 @@ export default {
       backgroundImage: {
         // Halo décoratif en haut de section (héros, cartes en survol).
         'halo-brand': 'radial-gradient(60% 100% at 50% 0%, rgba(179, 39, 30, 0.16), transparent 70%)',
+        // Variante émeraude — héros de la page d'entrée (emblème vert).
+        'halo-vert': 'radial-gradient(60% 100% at 50% 0%, rgba(16, 130, 74, 0.16), transparent 70%)',
       },
       keyframes: {
         'apparition-bas': {
