@@ -108,13 +108,13 @@ export default function Accueil() {
     <div>
       {/* ---------------------------------------------------------------- Héros */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 bg-halo-vert" aria-hidden />
         <div
           className="pointer-events-none absolute inset-0 bg-grille-ink bg-grille [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]"
           aria-hidden
         />
         <span
-          className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl motion-safe:animate-respiration"
+          className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl motion-safe:animate-respiration"
           aria-hidden
         />
         <span
@@ -283,7 +283,7 @@ export default function Accueil() {
         <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
           <Revele className="min-w-0">
             <div className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-ink-100 bg-surface p-8 shadow-soft sm:p-12">
-              <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
+              <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-vert" aria-hidden />
               <Logo taille="lg" className="relative motion-safe:animate-flottement" />
             </div>
           </Revele>

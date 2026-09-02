@@ -71,7 +71,7 @@ export default function APropos() {
 
         <Revele delai={140} className="min-w-0">
           <div className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-ink-100 bg-ink-50 p-8 shadow-soft sm:p-12">
-            <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
+            <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-vert" aria-hidden />
             <Logo taille="lg" className="relative motion-safe:animate-flottement" />
           </div>
         </Revele>
