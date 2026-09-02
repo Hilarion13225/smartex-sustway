@@ -21,12 +21,12 @@ const BENEFICES = [
   {
     icone: TrendingUp,
     titre: 'Suivez votre progression',
-    texte: 'Visibilité continue, pas une photo ponctuelle.',
+    texte: 'Visibilité continue, Profil RSE et ESG non figé',
   },
   {
     icone: Leaf,
-    titre: 'Ouvrez-vous aux financements verts',
-    texte: 'Indice de préparation aux standards IFC/SFI.',
+    titre: 'Préparer votre éligibilité aux financements verts et éthique',
+    texte: 'Indice de préparation aux standards des PTF.',
   },
 ];
 
@@ -155,7 +155,7 @@ export default function Landing() {
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-[70rem] px-4 pb-8 pt-6 text-center sm:px-5 sm:pb-12 sm:pt-8">
+      <div className="relative mx-auto max-w-[90rem] px-4 pb-8 pt-6 text-center sm:px-5 sm:pb-12 sm:pt-8">
         {/* Emblème : sphère de données, jauge de conformité, bouclier de la
             marque et les quatre natures d'objets manipulées par le moteur. */}
         <div className="relative mx-auto aspect-[640/420] w-full max-w-xs motion-safe:animate-apparition-douce sm:max-w-xl lg:max-w-3xl">
@@ -328,25 +328,21 @@ export default function Landing() {
           ))}
         </div>
 
-        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-600 motion-safe:animate-apparition-bas dark:text-brand-400 sm:text-xs sm:tracking-[0.32em]">
-          Plateforme d’évaluation RSE intelligente
-        </p>
-
         <h1
           className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1.875rem] lg:leading-[1.25]"
           style={{ animationDelay: '120ms' }}
         >
-          Evaluer et optimiser la démarche de maturité et la performance de votre entreprise en matière de bonnes pratiques de {' '}
-          <span className="text-brand-600 dark:text-brand-400">RSE et ESG</span> avec l’IA.
+          Avec <span className="text-[#2e9e4b] dark:text-[#5fbd72]">SMARTEX SustWay</span>, évaluer et optimiser la démarche de maturité et la performance de votre entreprise en matière de bonnes pratiques de {' '}
+          <span className="text-[#2e9e4b] dark:text-[#5fbd72]">RSE et ESG</span> en s’appuyant sur l’IA. <br />Indépendance, Robustesse et Transparence de la Solution.
         </h1>
 
-        <p
+        {/* <p
           className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-ink-600 motion-safe:animate-apparition-bas sm:mt-5 sm:text-base"
           style={{ animationDelay: '240ms' }}
         >
           {SMARTEX.produit} unifie référentiels, preuves documentaires et intelligence artificielle multi-agents pour
           évaluer, prioriser et améliorer votre performance RSE et ESG.
-        </p>
+        </p> */}
 
         <div
           className="mt-6 flex flex-wrap items-center justify-center gap-3 motion-safe:animate-apparition-bas sm:mt-9 sm:gap-4"
