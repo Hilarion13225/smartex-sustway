@@ -281,8 +281,8 @@ export default function Accueil() {
       {/* ------------------------------------------------------------ Éditeur */}
       <section className="border-y border-ink-100 bg-ink-50 py-20">
         <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <Revele>
-            <div className="relative flex items-center justify-center rounded-3xl border border-ink-100 bg-surface p-12 shadow-soft">
+          <Revele className="min-w-0">
+            <div className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-ink-100 bg-surface p-8 shadow-soft sm:p-12">
               <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-brand" aria-hidden />
               <Logo taille="lg" className="relative motion-safe:animate-flottement" />
             </div>

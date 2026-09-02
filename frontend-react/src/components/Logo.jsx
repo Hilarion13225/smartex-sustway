@@ -4,7 +4,7 @@ import clsx from 'clsx';
 const TAILLES = {
   sm: 'text-2xl',
   md: 'text-3xl',
-  lg: 'text-3xl sm:text-5xl lg:text-6xl',
+  lg: 'text-2xl sm:text-5xl lg:text-6xl',
 };
 
 /**
