@@ -75,8 +75,8 @@ export default function Methodologie() {
           </p>
         </Revele>
 
-        <Revele delai={120}>
-          <figure className="relative overflow-hidden rounded-[2rem] border border-ink-100 bg-gradient-to-br from-ink-50 to-surface p-10 shadow-soft">
+        <Revele delai={120} className="min-w-0">
+          <figure className="relative overflow-hidden rounded-[2rem] border border-ink-100 bg-gradient-to-br from-ink-50 to-surface p-6 shadow-soft sm:p-10">
             <span className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
             <span
               className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-200/30 blur-3xl motion-safe:animate-respiration dark:bg-brand-500/20"
@@ -85,7 +85,7 @@ export default function Methodologie() {
             <img
               src={schemaPdca}
               alt="Roue de Deming (PDCA) : Planifier, Agir, Vérifier, Réagir, amélioration continue"
-              className="relative mx-auto max-w-xs motion-safe:animate-flottement"
+              className="relative mx-auto w-full max-w-xs motion-safe:animate-flottement"
             />
             <figcaption className="relative mt-8 text-center text-xs uppercase tracking-[0.22em] text-ink-500">
               Amélioration continue — roue de Deming
