@@ -82,11 +82,13 @@ export default function Methodologie() {
               className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-200/30 blur-3xl motion-safe:animate-respiration dark:bg-brand-500/20"
               aria-hidden
             />
-            <img
-              src={schemaPdca}
-              alt="Roue de Deming (PDCA) : Planifier, Agir, Vérifier, Réagir, amélioration continue"
-              className="relative mx-auto w-full max-w-xs motion-safe:animate-flottement"
-            />
+            <div className="relative mx-auto w-full max-w-xs rounded-2xl bg-white p-4 dark:bg-white/95">
+              <img
+                src={schemaPdca}
+                alt="Roue de Deming (PDCA) : Planifier, Agir, Vérifier, Réagir, amélioration continue"
+                className="w-full motion-safe:animate-flottement"
+              />
+            </div>
             <figcaption className="relative mt-8 text-center text-xs uppercase tracking-[0.22em] text-ink-500">
               Amélioration continue — roue de Deming
             </figcaption>
