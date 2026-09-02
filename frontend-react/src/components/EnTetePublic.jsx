@@ -15,7 +15,7 @@ const SOLUTION_LIENS = [
 ];
 
 const LIENS = [
-  { vers: '/formation', libelle: 'Se former à la RSE et DD' },
+  { vers: '/formation', libelle: 'Se former à la RSE, ESG et ISR' },
   { vers: '/contact', libelle: 'Contact' },
 ];
 
