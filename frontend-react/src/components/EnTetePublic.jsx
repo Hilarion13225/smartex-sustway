@@ -59,12 +59,12 @@ export default function EnTetePublic() {
 
         <div className="hidden items-center gap-2 sm:flex">
           <BasculeTheme className="mr-1" />
-          <Link to="/connexion" className="btn-vitrine-clair">
-            Se connecter
-          </Link>
           <Link to="/inscription" className="btn-vitrine group">
             Créer un compte
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
+          </Link>
+          <Link to="/connexion" className="btn-vitrine-clair">
+            Se connecter
           </Link>
         </div>
 
@@ -122,12 +122,12 @@ export default function EnTetePublic() {
             <BasculeTheme />
           </div>
           <div className="mt-2 flex flex-col gap-2 sm:hidden">
-            <Link to="/connexion" className="btn-vitrine-clair" onClick={() => setOuvert(false)}>
-              Se connecter
-            </Link>
             <Link to="/inscription" className="btn-vitrine" onClick={() => setOuvert(false)}>
               Créer un compte
               <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link to="/connexion" className="btn-vitrine-clair" onClick={() => setOuvert(false)}>
+              Se connecter
             </Link>
           </div>
         </nav>
