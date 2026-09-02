@@ -52,7 +52,7 @@ export default function Methodologie() {
         etiquette="Notre méthodologie"
         icone={BookOpen}
         titre="Une méthodologie exigeante, appuyée sur la recherche et la pratique"
-        description={`${SMARTEX.mission} La démarche se fonde sur quatre principes, quel que soit le référentiel évalué.`}
+        description="Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre performance globale."
         image={photoBanniere}
         video="/videos/methodologie-overview.mp4"
         reperes={[
@@ -64,7 +64,12 @@ export default function Methodologie() {
 
       <section className="mx-auto grid max-w-[90rem] items-center gap-14 px-5 py-24 lg:grid-cols-[1.05fr_0.95fr]">
         <Revele>
-          <Quote className="h-10 w-10 text-brand-200 dark:text-brand-500/50" aria-hidden />
+          <p className="text-sm font-medium leading-relaxed text-ink-500">
+            Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous
+            accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre
+            performance globale.
+          </p>
+          <Quote className="mt-8 h-10 w-10 text-brand-200 dark:text-brand-500/50" aria-hidden />
           <blockquote className="titre-editorial mt-4 text-2xl font-normal italic leading-snug text-ink-800 sm:text-[2rem]">
             « Cette démarche RSE dans laquelle l’entreprise s’engage avec {SMARTEX.produit} devrait globalement répondre à
             l’objectif de maximisation de son profit, tout en intégrant dans ses décisions stratégiques de croissance, les
