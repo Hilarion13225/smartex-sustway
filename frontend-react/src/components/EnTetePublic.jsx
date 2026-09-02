@@ -9,12 +9,13 @@ import MenuDeroulant from './MenuDeroulant';
 
 const SOLUTION_LIENS = [
   { vers: '/methodologie', libelle: 'Méthodologie' },
-  { vers: '/avantages', libelle: 'Bénéfices de la solution' },
-  { vers: '/engagement', libelle: 'Engageons-nous ensemble' },
   { vers: '/deploiement', libelle: 'Déploiement' },
+  { vers: '/avantages', libelle: 'Bénéfices de la Solution' },
+  { vers: '/formules', libelle: 'Formule de collaboration' },
 ];
 
 const LIENS = [
+  { vers: '/formules', libelle: 'Formule de collaboration' },
   { vers: '/formation', libelle: 'Se former à la RSE, ESG et ISR' },
   { vers: '/contact', libelle: 'Contact' },
 ];
@@ -49,7 +50,7 @@ export default function EnTetePublic() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex">
-          <MenuDeroulant libelle={`La solution ${SMARTEX.produit}`} liens={SOLUTION_LIENS} />
+          <MenuDeroulant libelle={`La Solution`} liens={SOLUTION_LIENS} />
           {LIENS.map((lien) => (
             <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
               {lien.libelle}

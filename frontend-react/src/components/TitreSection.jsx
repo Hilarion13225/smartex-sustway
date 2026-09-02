@@ -7,7 +7,7 @@ import Revele from './Revele';
  */
 export default function TitreSection({ etiquette, icone: Icone, titre, description, centre = false, className }) {
   return (
-    <Revele className={clsx(centre ? 'mx-auto max-w-3xl text-center' : 'max-w-3xl', className)}>
+    <Revele className={clsx(centre ? 'mx-auto max-w-5xl text-center' : 'max-w-5xl', className)}>
       {etiquette ? (
         <p className={clsx('sur-titre text-brand-600 dark:text-brand-400', centre && 'justify-center')}>
           <span className="filet" aria-hidden />
