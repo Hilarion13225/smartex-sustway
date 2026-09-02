@@ -336,8 +336,8 @@ export default function Landing() {
           className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1.875rem] lg:leading-[1.25]"
           style={{ animationDelay: '120ms' }}
         >
-          Mesurer et optimiser la démarche de maturité et la performance de votre entreprise en matière de{' '}
-          <span className="text-brand-600 dark:text-brand-400">RSE et ESG</span> avec l’intelligence artificielle.
+          Evaluer et optimiser la démarche de maturité et la performance de votre entreprise en matière de bonnes pratiques de {' '}
+          <span className="text-brand-600 dark:text-brand-400">RSE et ESG</span> avec l’IA.
         </h1>
 
         <p
@@ -353,10 +353,10 @@ export default function Landing() {
           style={{ animationDelay: '360ms' }}
         >
           <Link
-            to="/accueil"
+            to="/methodologie"
             className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
-            Découvrir la plateforme
+            Découvrir la solution
           </Link>
           <Link
             to="/formules"
