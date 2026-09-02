@@ -333,7 +333,7 @@ export default function Landing() {
         </p>
 
         <h1
-          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:text-[3.25rem]"
+          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:whitespace-nowrap lg:text-[15px] lg:leading-none xl:text-[17px]"
           style={{ animationDelay: '120ms' }}
         >
           Mesurer et optimiser la démarche de maturité et la performance de votre entreprise en matière de{' '}
