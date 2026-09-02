@@ -52,7 +52,11 @@ export default function Methodologie() {
         etiquette="Notre méthodologie"
         icone={BookOpen}
         titre="Une méthodologie exigeante, appuyée sur la recherche et la pratique"
-        description="Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre performance globale."
+        messages={[
+          'Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre performance globale.',
+          'Cinq étapes inspirées de la roue de Deming (PDCA), accélérées par un pipeline d’agents IA qui prend en charge le cadrage, l’analyse des preuves et la mesure du score.',
+          'Quatre principes fondateurs guident la démarche, quel que soit le référentiel évalué.',
+        ]}
         image={photoBanniere}
         video="/videos/methodologie-overview.mp4"
         reperes={[
