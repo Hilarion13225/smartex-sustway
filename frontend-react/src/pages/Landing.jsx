@@ -344,8 +344,8 @@ export default function Landing() {
           className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-ink-600 motion-safe:animate-apparition-bas sm:mt-5 sm:text-base"
           style={{ animationDelay: '240ms' }}
         >
-          {SMARTEX.produit} unifie référentiel, preuves documentaires et intelligence artificielle multi-agents pour
-          évaluer, prioriser et améliorer votre performance RSE.
+          {SMARTEX.produit} unifie référentiels, preuves documentaires et intelligence artificielle multi-agents pour
+          évaluer, prioriser et améliorer votre performance RSE et ESG.
         </p>
 
         <div
