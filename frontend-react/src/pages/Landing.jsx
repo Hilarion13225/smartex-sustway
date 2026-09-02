@@ -129,13 +129,13 @@ const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 
 export default function Landing() {
   return (
     <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-halo-brand" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 bg-halo-vert" aria-hidden />
       <span
-        className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl motion-safe:animate-respiration dark:bg-brand-800/40"
+        className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl motion-safe:animate-respiration dark:bg-emerald-800/40"
         aria-hidden
       />
       <span
-        className="pointer-events-none absolute -right-24 top-0 h-80 w-80 rounded-full bg-brand-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s] dark:bg-brand-900/50"
+        className="pointer-events-none absolute -right-24 top-0 h-80 w-80 rounded-full bg-emerald-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s] dark:bg-emerald-900/50"
         aria-hidden
       />
 
@@ -143,7 +143,7 @@ export default function Landing() {
         {PARTICULES.map((particule, index) => (
           <span
             key={index}
-            className="absolute rounded-full bg-brand-400/40 motion-safe:animate-respiration dark:bg-brand-400/30"
+            className="absolute rounded-full bg-emerald-400/40 motion-safe:animate-respiration dark:bg-emerald-400/30"
             style={{
               left: particule.gauche,
               top: particule.haut,
@@ -333,7 +333,7 @@ export default function Landing() {
         </p>
 
         <h1
-          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:mx-[calc(50%-50vw)] lg:w-screen lg:max-w-none lg:whitespace-nowrap lg:px-8 lg:text-[1.4vw] lg:leading-tight"
+          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1.875rem] lg:leading-[1.25]"
           style={{ animationDelay: '120ms' }}
         >
           Mesurer et optimiser la démarche de maturité et la performance de votre entreprise en matière de{' '}
