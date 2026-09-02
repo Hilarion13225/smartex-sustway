@@ -4,7 +4,6 @@ import {
   BadgeCheck,
   Bot,
   Building2,
-  ClipboardCheck,
   FileSearch,
   Gauge,
   Leaf,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-react';
 import { Badge } from '../components/ui';
 import Revele from '../components/Revele';
-import CompteurAnime from '../components/CompteurAnime';
 import SectionFormules from '../components/SectionFormules';
 import AppelAction from '../components/AppelAction';
 import { SMARTEX } from '../config/smartex';
@@ -45,13 +43,6 @@ const ATOUTS = [
     texte:
       'Un indice de préparation mesure l’alignement aux 8 Performance Standards du bailleur pilote — une mesure d’alignement, pas une garantie d’éligibilité.',
   },
-];
-
-/** Chiffres factuels du CDC (référentiel, agents) — pas des données de démonstration. */
-const CHIFFRES = [
-  { libelle: 'Critères du référentiel', valeur: 87, icone: ClipboardCheck },
-  { libelle: 'Domaines évalués', valeur: 6, icone: Gauge },
-  { libelle: 'Agents IA', valeur: 7, icone: Bot },
 ];
 
 const ETAPES = [
@@ -159,22 +150,6 @@ export default function Accueil() {
                 Se connecter
               </Link>
             </div>
-
-            <dl className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-3">
-              {CHIFFRES.map((stat, index) => (
-                <Revele key={stat.libelle} delai={index * 120}>
-                  <div className="group rounded-2xl border border-ink-100 bg-surface/80 px-4 py-4 shadow-soft backdrop-blur transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <dt className="text-xs uppercase tracking-wide text-ink-500">{stat.libelle}</dt>
-                      <stat.icone className="h-4 w-4 text-brand-500 transition-transform duration-300 group-hover:scale-110" aria-hidden />
-                    </div>
-                    <dd className="mt-2 text-3xl font-semibold text-brand-700">
-                      <CompteurAnime valeur={stat.valeur} />
-                    </dd>
-                  </div>
-                </Revele>
-              ))}
-            </dl>
           </div>
 
           {/* Carte moteur de scoring — jauges animées à l'apparition */}
