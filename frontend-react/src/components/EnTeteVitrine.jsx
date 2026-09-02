@@ -1,13 +1,23 @@
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 /**
  * Bandeau de titre des pages publiques secondaires (Méthodologie, Services,
  * Contact…). `image` optionnelle : bandeau photo avec voile sombre au lieu
  * du décor dégradé/grille par défaut. `video` optionnelle : bandeau vidéo en
  * lecture automatique (silencieuse, en boucle) à la place de la photo — prend
- * le pas sur `image` si les deux sont fournies. `reperes` affiche une ligne
- * de chiffres clés sous le chapeau.
+ * le pas sur `image` si les deux sont fournies. `messages` optionnel (tableau
+ * de textes) : avec `video`, affiche plusieurs messages navigables aux
+ * flèches au lieu d'une description fixe — sinon `description` seule suffit.
+ * `reperes` affiche une ligne de chiffres clés sous le chapeau.
  */
-export default function EnTeteVitrine({ etiquette, icone, titre, description, image, video, reperes }) {
+export default function EnTeteVitrine({ etiquette, icone, titre, description, image, video, messages, reperes }) {
   const Icone = icone;
+  const [indiceMessage, setIndiceMessage] = useState(0);
+  const messagesCarousel = messages?.length ? messages : description ? [description] : [];
+  const messageActif = messagesCarousel[indiceMessage];
+  const precedent = () => setIndiceMessage((i) => (i - 1 + messagesCarousel.length) % messagesCarousel.length);
+  const suivant = () => setIndiceMessage((i) => (i + 1) % messagesCarousel.length);
 
   const surTitre = etiquette ? (
     <p className="sur-titre">
@@ -65,14 +75,34 @@ export default function EnTeteVitrine({ etiquette, icone, titre, description, im
           >
             {titre}
           </h1>
-          {description ? (
-            video ? (
-              <div className="mt-8 max-w-xl rounded-2xl bg-white/90 p-5 shadow-soft backdrop-blur-md sm:p-6">
-                <p className="text-sm font-medium leading-relaxed text-ink-700 sm:text-base">{description}</p>
+          {video && messageActif ? (
+            <div className="mt-8 flex max-w-xl items-center gap-3">
+              {messagesCarousel.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={precedent}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25"
+                  aria-label="Message précédent"
+                >
+                  <ChevronLeft className="h-4 w-4" aria-hidden />
+                </button>
+              ) : null}
+              <div className="rounded-2xl bg-white/90 p-5 shadow-soft backdrop-blur-md sm:p-6">
+                <p className="text-sm font-medium leading-relaxed text-ink-700 sm:text-base">{messageActif}</p>
               </div>
-            ) : (
-              <p className="mt-6 max-w-2xl text-base font-light leading-relaxed text-white/75 sm:text-lg">{description}</p>
-            )
+              {messagesCarousel.length > 1 ? (
+                <button
+                  type="button"
+                  onClick={suivant}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25"
+                  aria-label="Message suivant"
+                >
+                  <ChevronRight className="h-4 w-4" aria-hidden />
+                </button>
+              ) : null}
+            </div>
+          ) : !video && description ? (
+            <p className="mt-6 max-w-2xl text-base font-light leading-relaxed text-white/75 sm:text-lg">{description}</p>
           ) : null}
           <div className="text-white/60">{chiffres}</div>
         </div>
