@@ -91,7 +91,7 @@ export default function Formation() {
   return (
     <div>
       <EnTeteVitrine
-        etiquette="Se former à la RSE et DD"
+        etiquette="Se former à la RSE, ESG et ISR"
         icone={GraduationCap}
         titre="Formation à la RSE et au développement durable"
         description="Ateliers, séminaires, conférences et certificats de spécialisation : différentes formations existent pour se perfectionner dans ces domaines d’expertise."
