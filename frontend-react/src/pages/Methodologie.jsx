@@ -1,11 +1,10 @@
-import { BookOpen, CheckCircle2, Compass, Layers, Megaphone, Quote, RefreshCw, Rocket } from 'lucide-react';
+import { BookOpen, CheckCircle2, Compass, Layers, Megaphone, RefreshCw, Rocket } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
 import TitreSection from '../components/TitreSection';
 import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
 import { FONDEMENTS, SMARTEX } from '../config/smartex';
 import photoBanniere from '../assets/methodologie/banniere-hd.jpg';
-import schemaPdca from '../assets/methodologie/pdca.png';
 
 /**
  * Démarche en 5 étapes, adaptée de la roue de Deming (PDCA) — le déroulé
@@ -49,69 +48,33 @@ export default function Methodologie() {
   return (
     <div>
       <EnTeteVitrine
-        etiquette="Notre méthodologie"
-        icone={BookOpen}
         titre="Une méthodologie exigeante, appuyée sur la recherche et la pratique"
         messages={[
-          'Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre performance globale.',
-          'Cinq étapes inspirées de la roue de Deming (PDCA), accélérées par un pipeline d’agents IA qui prend en charge le cadrage, l’analyse des preuves et la mesure du score.',
-          'Quatre principes fondateurs guident la démarche, quel que soit le référentiel évalué.',
+          'Parlons de bonnes pratiques de RSE et ESG, où en êtes-vous ?',
+          'La maturité de votre engagement RSE et ESG, a quel niveau mettons le curseur ?',
+          'S’auto-évaluer ou se faire évaluer avec notre méthodologie éprouvée s’appuyant sur l’IA.',
+          'SMARTEX SustWay, une solution pratique et facile à deployer au service des entreprises',
+          'Des clients satisfaits témoignent',
         ]}
         image={photoBanniere}
         video="/videos/methodologie-overview.mp4"
-        reperes={[
-          { valeur: '5', libelle: 'étapes de mission' },
-          { valeur: '4', libelle: 'principes fondateurs' },
-          { valeur: 'PDCA', libelle: 'roue de Deming' },
-        ]}
       />
 
-      <section className="mx-auto grid max-w-[90rem] items-center gap-14 px-5 py-24 lg:grid-cols-[1.05fr_0.95fr]">
-        <Revele>
-          <p className="text-sm font-medium leading-relaxed text-ink-500">
-            Nous déployons des prestations et services qui articulent études, conseils, formations (...) en vue de vous
-            accompagner dans votre transformation, dans votre démarche de durabilité et dans le pilotage de votre
-            performance globale.
-          </p>
-          <Quote className="mt-8 h-10 w-10 text-brand-200 dark:text-brand-500/50" aria-hidden />
-          <blockquote className="titre-editorial mt-4 text-2xl font-normal italic leading-snug text-ink-800 sm:text-[2rem]">
-            « Cette démarche RSE dans laquelle l’entreprise s’engage avec {SMARTEX.produit} devrait globalement répondre à
-            l’objectif de maximisation de son profit, tout en intégrant dans ses décisions stratégiques de croissance, les
-            principes du développement durable et la maîtrise des impacts sociaux et environnementaux. »
-          </blockquote>
-          <p className="mt-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-ink-500">
-            <span className="filet" aria-hidden />
-            {SMARTEX.editeur}
-          </p>
-        </Revele>
-
-        <Revele delai={120} className="min-w-0">
-          <figure className="relative overflow-hidden rounded-[2rem] border border-ink-100 bg-gradient-to-br from-ink-50 to-surface p-6 shadow-soft sm:p-10">
-            <span className="pointer-events-none absolute inset-0 bg-halo-vert" aria-hidden />
-            <span
-              className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-emerald-200/30 blur-3xl motion-safe:animate-respiration dark:bg-emerald-500/20"
-              aria-hidden
-            />
-            <div className="relative mx-auto w-full max-w-xs rounded-2xl bg-white p-4 dark:bg-white/95">
-              <img
-                src={schemaPdca}
-                alt="Roue de Deming (PDCA) : Planifier, Agir, Vérifier, Réagir, amélioration continue"
-                className="w-full motion-safe:animate-flottement"
-              />
-            </div>
-            <figcaption className="relative mt-8 text-center text-xs uppercase tracking-[0.22em] text-ink-500">
-              Amélioration continue — roue de Deming
-            </figcaption>
-          </figure>
-        </Revele>
+      <section className="mx-auto max-w-[90rem] px-5 py-24">
+        <TitreSection
+            etiquette="Méthodologie"
+            icone={BookOpen}
+            titre="Une méthodologie éprouvée, batie autour d'années d'expériences academiques et du secteur privé"
+            description={`${SMARTEX.produit} unifie référentiels, preuves documentaires et intelligence artificielle multi-agents pour évaluer, prioriser et améliorer votre performance RSE et ESG.`}
+          />
       </section>
 
       <section className="border-y border-ink-100 bg-ink-50 py-24">
         <div className="mx-auto max-w-[90rem] px-5">
           <TitreSection
-            etiquette="Le déroulé d’une mission"
+            etiquette="Deploiement - Le déroulé d’une mission"
             icone={Compass}
-            titre="Une démarche en cinq étapes, accélérée par l’intelligence artificielle"
+            titre="Une démarche en cinq étapes, accélérée par l’IA"
             description={`L’adaptation de la roue de Deming que ${SMARTEX.editeur} appliquait en mission d’audit classique reste le fil conducteur — le pipeline d’agents IA prend en charge le cadrage, l’analyse des preuves et la mesure du score.`}
           />
 
