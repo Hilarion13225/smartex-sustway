@@ -162,13 +162,13 @@ export default function Landing() {
           <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
             <defs>
               <linearGradient id="degradeBouclier" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#cf5c50" />
-                <stop offset="55%" stopColor="#b3271e" />
-                <stop offset="100%" stopColor="#921f18" />
+                <stop offset="0%" stopColor="#5fbd72" />
+                <stop offset="55%" stopColor="#2e9e4b" />
+                <stop offset="100%" stopColor="#1c7a37" />
               </linearGradient>
               <radialGradient id="lueurBouclier">
-                <stop offset="0%" stopColor="#b3271e" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#b3271e" stopOpacity="0" />
+                <stop offset="0%" stopColor="#2e9e4b" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="#2e9e4b" stopOpacity="0" />
               </radialGradient>
             </defs>
 
@@ -301,7 +301,7 @@ export default function Landing() {
                 <path
                   d="M40 100 C48 84 58 70 74 58"
                   fill="none"
-                  stroke="#fdf2f1"
+                  stroke="#f2fbf4"
                   strokeWidth="3.5"
                   strokeLinecap="round"
                 />
