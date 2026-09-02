@@ -49,6 +49,10 @@ export default {
         // `font-display` dans index.css (h1-h4). Pas de nouvelle police à
         // charger, juste la déclaration Tailwind qui manquait.
         display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        // Titraille éditoriale des pages vitrine (`font-titre`) — serif à
+        // graisse optique variable, pour un ton plus posé que la titraille
+        // sans-serif de l'espace connecté.
+        titre: ['Fraunces', 'Georgia', 'Cambria', 'serif'],
       },
       boxShadow: {
         // Élévation douce (cartes vitrine/app) — teinte encre plutôt que noir pur.
@@ -106,6 +110,10 @@ export default {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
+        'zoom-lent': {
+          '0%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(1.12)' },
+        },
         'derive-feuille': {
           '0%': { transform: 'translateY(15vh) translateX(0) rotate(-12deg)', opacity: '0' },
           '12%': { opacity: '0.85' },
@@ -127,6 +135,7 @@ export default {
         rotation: 'rotation 90s linear infinite',
         'rotation-inverse': 'rotation 120s linear infinite reverse',
         'apparition-tick': 'apparition-tick 0.5s ease-out both',
+        'zoom-lent': 'zoom-lent 24s ease-out both',
       },
     },
   },

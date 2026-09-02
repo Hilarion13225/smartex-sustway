@@ -46,12 +46,14 @@ export default function SectionFormules({ titre, description, id = 'formules' })
 
   return (
     <section id={id} className="relative mx-auto max-w-[90rem] scroll-mt-24 px-5 py-20">
-      <Revele className="max-w-2xl">
-        <Badge ton="violet" icone={Sparkles}>
+      <Revele className="max-w-3xl">
+        <p className="sur-titre text-brand-600 dark:text-brand-400">
+          <span className="filet" aria-hidden />
+          <Sparkles className="h-4 w-4" aria-hidden />
           Tarification
-        </Badge>
-        <h2 className="mt-4 text-3xl font-semibold text-ink-900">{titre}</h2>
-        <p className="mt-3 text-sm leading-relaxed text-ink-600">{description}</p>
+        </p>
+        <h2 className="titre-editorial mt-5 text-3xl leading-tight text-ink-900 sm:text-[2.6rem]">{titre}</h2>
+        <p className="mt-4 text-base font-light leading-relaxed text-ink-600">{description}</p>
       </Revele>
 
       {chargement ? (
