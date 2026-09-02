@@ -60,9 +60,19 @@ export default function EnTeteVitrine({ etiquette, icone, titre, description, im
         />
         <div className="relative mx-auto max-w-[90rem] px-5 pb-20 pt-24 text-white motion-safe:animate-apparition-bas sm:pb-28 sm:pt-32">
           <div className="text-white/70">{surTitre}</div>
-          <h1 className="titre-editorial mt-6 max-w-4xl text-4xl leading-[1.08] sm:text-6xl">{titre}</h1>
+          <h1
+            className={`titre-editorial mt-6 max-w-4xl text-4xl leading-[1.08] sm:text-6xl ${video ? 'uppercase' : ''}`}
+          >
+            {titre}
+          </h1>
           {description ? (
-            <p className="mt-6 max-w-2xl text-base font-light leading-relaxed text-white/75 sm:text-lg">{description}</p>
+            video ? (
+              <div className="mt-8 max-w-xl rounded-2xl bg-white/90 p-5 shadow-soft backdrop-blur-md sm:p-6">
+                <p className="text-sm font-medium leading-relaxed text-ink-700 sm:text-base">{description}</p>
+              </div>
+            ) : (
+              <p className="mt-6 max-w-2xl text-base font-light leading-relaxed text-white/75 sm:text-lg">{description}</p>
+            )
           ) : null}
           <div className="text-white/60">{chiffres}</div>
         </div>
