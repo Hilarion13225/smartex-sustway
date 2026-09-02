@@ -13,7 +13,6 @@ import {
   Palmtree,
   Presentation,
   Radio,
-  ScrollText,
   ShoppingBag,
   ShoppingCart,
   Sparkles,
@@ -22,9 +21,9 @@ import {
   Zap,
 } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
+import TitreSection from '../components/TitreSection';
 import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
-import { Badge } from '../components/ui';
 import photoBanniere from '../assets/formation/banniere.jpg';
 import photoActuGenerale from '../assets/formation/actu-generale.jpg';
 import photoBtp from '../assets/formation/btp.jpg';
@@ -64,12 +63,12 @@ const CERTIFICATS = [
     texte: 'Investissement socialement responsable, critères ESG, finance verte, obligations vertes, microfinance et impact investing.',
   },
   {
-    icone: ScrollText,
+    icone: Leaf,
     titre: 'Politique et stratégie sectorielles de RSE',
     texte: 'Bonnes pratiques RSE, déploiement opérationnel, reporting extra-financier et référentiels de normalisation.',
   },
   {
-    icone: Leaf,
+    icone: Sparkles,
     titre: 'Management environnemental',
     texte: 'Défis environnementaux, systèmes de management environnemental (SME) et certification ISO 14001.',
   },
@@ -91,60 +90,63 @@ export default function Formation() {
       <EnTeteVitrine
         etiquette="Se former à la RSE et DD"
         icone={GraduationCap}
-        titre="Formation à la RSE et au Développement Durable"
-        description="Différentes formations existent pour se perfectionner dans ces domaines d’expertise."
+        titre="Formation à la RSE et au développement durable"
+        description="Ateliers, séminaires, conférences et certificats de spécialisation : différentes formations existent pour se perfectionner dans ces domaines d’expertise."
         image={photoBanniere}
+        reperes={[
+          { valeur: '6', libelle: 'formats de formation' },
+          { valeur: '5', libelle: 'certificats' },
+          { valeur: '120 h', libelle: 'par certificat' },
+        ]}
       />
 
-      <section className="mx-auto max-w-[90rem] px-5 py-20">
-        <Revele className="max-w-2xl">
-          <Badge ton="bleu" icone={Sparkles}>
-            Agenda
-          </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">Six formats, un même niveau d’exigence</h2>
-        </Revele>
+      <section className="mx-auto max-w-[90rem] px-5 py-24">
+        <TitreSection
+          etiquette="Nos formats"
+          icone={Presentation}
+          titre="Six formats, un même niveau d’exigence"
+        />
 
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {FORMATS.map((format, index) => (
             <Revele key={format.titre} delai={index * 90}>
-              <article className="carte-vitrine group h-full">
+              <article className="carte-vitrine group h-full !p-8">
                 <span className="puce-icone">
                   <format.icone className="h-5 w-5" aria-hidden />
                 </span>
-                <h3 className="mt-4 text-base font-semibold text-ink-900">{format.titre}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{format.texte}</p>
+                <h3 className="titre-editorial mt-7 text-xl text-ink-900">{format.titre}</h3>
+                <p className="mt-3 text-sm font-light leading-relaxed text-ink-500">{format.texte}</p>
               </article>
             </Revele>
           ))}
         </div>
       </section>
 
-      <section className="border-y border-ink-100 bg-ink-50 py-20">
+      <section className="border-y border-ink-100 bg-ink-50 py-24">
         <div className="mx-auto max-w-[90rem] px-5">
-          <Revele className="max-w-2xl">
-            <Badge ton="violet" icone={Building2}>
-              Actualités sectorielles
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">Des contenus adaptés à votre activité</h2>
-          </Revele>
+          <TitreSection
+            etiquette="Actualités sectorielles"
+            icone={Building2}
+            titre="Des contenus adaptés à votre activité"
+          />
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-3 lg:grid-cols-3">
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {SECTEURS.map((secteur, index) => (
               <Revele key={secteur.nom} delai={index * 60}>
-                <article className="carte-vitrine group overflow-hidden p-0">
-                  <div className="relative h-36 overflow-hidden">
-                    <img
-                      src={secteur.photo}
-                      alt=""
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      aria-hidden
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1f2533]/70 via-transparent to-transparent" aria-hidden />
-                    <span className="absolute bottom-3 left-3 flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-white backdrop-blur">
-                      <secteur.icone className="h-4 w-4" aria-hidden />
+                <article className="group relative h-56 overflow-hidden rounded-2xl shadow-soft transition duration-300 motion-safe:hover:-translate-y-1">
+                  <img
+                    src={secteur.photo}
+                    alt=""
+                    className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
+                    aria-hidden
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#141821]/90 via-[#141821]/35 to-transparent" aria-hidden />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-6 text-white">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 backdrop-blur transition-colors duration-300 group-hover:bg-brand-600">
+                      <secteur.icone className="h-5 w-5" aria-hidden />
                     </span>
+                    <h3 className="titre-editorial text-lg">{secteur.nom}</h3>
                   </div>
-                  <h3 className="p-4 text-sm font-semibold text-ink-900">{secteur.nom}</h3>
                 </article>
               </Revele>
             ))}
@@ -152,30 +154,57 @@ export default function Formation() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[90rem] px-5 py-20">
-        <Revele className="max-w-2xl">
-          <Badge ton="vert" icone={GraduationCap}>
-            Certificats de spécialisation
-          </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">Cinq certificats, pour se professionnaliser en profondeur</h2>
-          <p className="mt-3 flex items-center gap-2 text-sm text-ink-600">
-            <Clock className="h-4 w-4 text-brand-500 dark:text-brand-400" aria-hidden />
-            120 heures par certificat (présentiel et visioconférence) — 6 modules — 2 500 €
-          </p>
-        </Revele>
-
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          {CERTIFICATS.map((certificat, index) => (
-            <Revele key={certificat.titre} delai={index * 100}>
-              <article className="carte-vitrine group h-full">
-                <span className="puce-icone">
-                  <certificat.icone className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 text-base font-semibold text-ink-900">{certificat.titre}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-500">{certificat.texte}</p>
-              </article>
+      <section className="mx-auto max-w-[90rem] px-5 py-24">
+        <div className="grid gap-14 lg:grid-cols-[0.85fr_1.15fr]">
+          <div>
+            <TitreSection
+              etiquette="Certificats de spécialisation"
+              icone={GraduationCap}
+              titre="Cinq certificats, pour se professionnaliser en profondeur"
+            />
+            <Revele delai={120}>
+              <dl className="mt-10 space-y-5 border-t border-ink-100 pt-8">
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="flex items-center gap-2 text-sm text-ink-500">
+                    <Clock className="h-4 w-4 text-brand-500 dark:text-brand-400" aria-hidden />
+                    Durée
+                  </dt>
+                  <dd className="titre-editorial text-xl text-ink-900">120 heures</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-sm text-ink-500">Modules</dt>
+                  <dd className="titre-editorial text-xl text-ink-900">6</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-sm text-ink-500">Modalités</dt>
+                  <dd className="text-sm font-medium text-ink-900">Présentiel et visioconférence</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4 border-t border-ink-100 pt-5">
+                  <dt className="text-sm text-ink-500">Tarif par certificat</dt>
+                  <dd className="titre-editorial text-2xl text-brand-600 dark:text-brand-400">2 500 €</dd>
+                </div>
+              </dl>
             </Revele>
-          ))}
+          </div>
+
+          <ol className="space-y-4">
+            {CERTIFICATS.map((certificat, index) => (
+              <Revele key={certificat.titre} delai={index * 90} as="li">
+                <article className="group flex items-start gap-6 rounded-2xl border border-ink-100 bg-surface p-7 transition duration-300 hover:border-brand-200 hover:shadow-soft motion-safe:hover:-translate-y-1">
+                  <span className="titre-editorial shrink-0 text-2xl leading-none text-brand-200 transition-colors duration-300 group-hover:text-brand-500 dark:text-brand-500/40 dark:group-hover:text-brand-400">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="titre-editorial flex items-center gap-3 text-lg text-ink-900">
+                      <certificat.icone className="h-5 w-5 shrink-0 text-brand-500 dark:text-brand-400" aria-hidden />
+                      {certificat.titre}
+                    </h3>
+                    <p className="mt-2 text-sm font-light leading-relaxed text-ink-500">{certificat.texte}</p>
+                  </div>
+                </article>
+              </Revele>
+            ))}
+          </ol>
         </div>
       </section>
 

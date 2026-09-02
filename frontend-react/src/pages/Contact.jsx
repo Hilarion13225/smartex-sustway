@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { CheckCircle2, Clock, ExternalLink, Mail, MapPin, MessageSquare, Phone, Send } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
 import Revele from '../components/Revele';
-import { Alerte, Badge } from '../components/ui';
+import { Alerte } from '../components/ui';
 import { SMARTEX } from '../config/smartex';
+import photoBanniere from '../assets/contact/banniere.jpg';
 
 const SUJETS = [
   'Demande de démonstration',
@@ -64,11 +65,11 @@ export default function Contact() {
 
   const COORDONNEES = [
     { icone: Mail, libelle: 'E-mail', valeur: SMARTEX.email, lien: `mailto:${SMARTEX.email}` },
+    { icone: Mail, libelle: 'Support client', valeur: SMARTEX.emailSupport, lien: `mailto:${SMARTEX.emailSupport}` },
     { icone: Phone, libelle: 'Téléphone', valeur: SMARTEX.telephone, lien: `tel:${SMARTEX.telephone.replace(/\s/g, '')}` },
     { icone: MapPin, libelle: 'Adresse', valeur: SMARTEX.adresse },
     { icone: Clock, libelle: 'Horaires', valeur: SMARTEX.horaires },
     { icone: ExternalLink, libelle: 'LinkedIn', valeur: SMARTEX.editeur, lien: SMARTEX.linkedin, externe: true },
-    { icone: Mail, libelle: 'Support client', valeur: SMARTEX.emailSupport, lien: `mailto:${SMARTEX.emailSupport}` },
   ];
 
   return (
@@ -78,21 +79,29 @@ export default function Contact() {
         icone={MessageSquare}
         titre="Parlons de votre démarche RSE"
         description={`Une question sur ${SMARTEX.produit}, une demande de démonstration ou un projet d’accompagnement : l’équipe ${SMARTEX.editeur} vous répond.`}
+        image={photoBanniere}
+        reperes={[
+          { valeur: '24 h', libelle: 'délai de réponse visé' },
+          { valeur: 'Abidjan', libelle: 'Côte d’Ivoire' },
+          { valeur: 'Gratuit', libelle: 'premier échange' },
+        ]}
       />
 
-      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr]">
+      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-24 lg:grid-cols-[1.05fr_0.95fr]">
         <Revele>
-          <form onSubmit={soumettre} className="carte-vitrine !p-7" noValidate>
-            <Badge ton="vert" icone={Send}>
+          <form onSubmit={soumettre} className="rounded-[2rem] border border-ink-100 bg-surface p-8 shadow-soft sm:p-10" noValidate>
+            <p className="sur-titre text-brand-600 dark:text-brand-400">
+              <span className="filet" aria-hidden />
+              <Send className="h-4 w-4" aria-hidden />
               Formulaire de contact
-            </Badge>
-            <h2 className="mt-4 text-2xl font-semibold text-ink-900">Écrivez-nous</h2>
-            <p className="mt-2 text-sm text-ink-500">
+            </p>
+            <h2 className="titre-editorial mt-5 text-3xl text-ink-900">Écrivez-nous</h2>
+            <p className="mt-3 text-sm font-light leading-relaxed text-ink-500">
               Les champs marqués d’un astérisque sont obligatoires. Votre message ouvre un brouillon dans votre
               messagerie, à destination de {SMARTEX.email}.
             </p>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="contact-nom">
                   Nom et prénom *
@@ -169,7 +178,7 @@ export default function Contact() {
             ) : null}
 
             {envoye ? (
-              <div className="mt-5 flex items-start gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 ring-1 ring-emerald-200">
+              <div className="mt-5 flex items-start gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:ring-emerald-500/30">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
                 <p>
                   Votre brouillon d’e-mail a été préparé. S’il ne s’ouvre pas automatiquement, écrivez-nous directement à{' '}
@@ -181,38 +190,61 @@ export default function Contact() {
               </div>
             ) : null}
 
-            <button type="submit" className="btn-vitrine group mt-6 w-full sm:w-auto">
+            <button type="submit" className="btn-vitrine group mt-8 w-full sm:w-auto">
               Envoyer le message
               <Send className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
             </button>
           </form>
         </Revele>
 
-        <div className="space-y-4">
-          {COORDONNEES.map((element, index) => (
-            <Revele key={element.libelle} delai={index * 90}>
-              <div className="group flex items-start gap-4 rounded-2xl border border-ink-100 bg-surface p-5 shadow-soft transition duration-300 hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
-                <span className="puce-icone">
-                  <element.icone className="h-5 w-5" aria-hidden />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{element.libelle}</p>
-                  {element.lien ? (
-                    <a
-                      href={element.lien}
-                      className="mt-1 block break-words text-sm font-medium text-ink-900 transition-colors hover:text-brand-700"
-                      {...(element.externe ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-                    >
-                      {element.valeur}
-                    </a>
-                  ) : (
-                    <p className="mt-1 break-words text-sm font-medium text-ink-900">{element.valeur}</p>
-                  )}
-                </div>
-              </div>
-            </Revele>
-          ))}
-        </div>
+        <Revele delai={120}>
+          <div className="relative h-full overflow-hidden rounded-[2rem] bg-[#1f2533] p-8 text-white shadow-soft sm:p-10">
+            <span
+              className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-500/30 blur-3xl motion-safe:animate-respiration"
+              aria-hidden
+            />
+            <span
+              className="pointer-events-none absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-emerald-400/15 blur-3xl motion-safe:animate-respiration [animation-delay:1.5s]"
+              aria-hidden
+            />
+            <div className="relative">
+              <p className="sur-titre text-white/60">
+                <span className="filet" aria-hidden />
+                Nous joindre
+              </p>
+              <h2 className="titre-editorial mt-5 text-3xl">{SMARTEX.editeur}</h2>
+              <p className="mt-3 text-sm font-light leading-relaxed text-white/70">{SMARTEX.baseline}</p>
+
+              <dl className="mt-10 divide-y divide-white/10 border-y border-white/10">
+                {COORDONNEES.map((element) => (
+                  <div key={element.libelle} className="flex items-start gap-4 py-5">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/80">
+                      <element.icone className="h-4 w-4" aria-hidden />
+                    </span>
+                    <div className="min-w-0">
+                      <dt className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-white/50">
+                        {element.libelle}
+                      </dt>
+                      <dd className="mt-1.5 break-words text-sm font-medium">
+                        {element.lien ? (
+                          <a
+                            href={element.lien}
+                            className="transition-colors hover:text-brand-300"
+                            {...(element.externe ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+                          >
+                            {element.valeur}
+                          </a>
+                        ) : (
+                          element.valeur
+                        )}
+                      </dd>
+                    </div>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </div>
+        </Revele>
       </section>
     </div>
   );

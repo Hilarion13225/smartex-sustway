@@ -202,6 +202,17 @@
       transition: none;
     }
   }
+  /* Titraille éditoriale des pages vitrine : serif, contraste optique élevé,
+     interlettrage resserré. Complète `font-display`, réservée à l'app. */
+  .titre-editorial {
+    @apply font-titre font-semibold tracking-[-0.015em];
+  }
+  .sur-titre {
+    @apply inline-flex items-center gap-3 text-[0.7rem] font-semibold uppercase tracking-[0.28em];
+  }
+  .filet {
+    @apply inline-block h-px w-8 shrink-0 bg-current opacity-60;
+  }
   .masque-lateral {
     mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
   }

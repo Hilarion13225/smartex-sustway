@@ -21,8 +21,8 @@ export default function AppelAction({
             aria-hidden
           />
           <div className="relative">
-            <h2 className="mx-auto max-w-2xl text-3xl font-semibold text-white sm:text-4xl">{titre}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-[#aeb7c8]">{texte}</p>
+            <h2 className="titre-editorial mx-auto max-w-2xl text-3xl leading-tight text-white sm:text-[2.6rem]">{titre}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base font-light leading-relaxed text-[#aeb7c8]">{texte}</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/inscription" className="btn-vitrine group">
                 Créer un compte
