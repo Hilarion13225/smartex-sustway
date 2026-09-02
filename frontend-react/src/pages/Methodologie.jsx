@@ -54,6 +54,7 @@ export default function Methodologie() {
         titre="Une méthodologie exigeante, appuyée sur la recherche et la pratique"
         description={`${SMARTEX.mission} La démarche se fonde sur quatre principes, quel que soit le référentiel évalué.`}
         image={photoBanniere}
+        video="/videos/methodologie-overview.mp4"
         reperes={[
           { valeur: '5', libelle: 'étapes de mission' },
           { valeur: '4', libelle: 'principes fondateurs' },

@@ -1,10 +1,12 @@
 /**
  * Bandeau de titre des pages publiques secondaires (Méthodologie, Services,
  * Contact…). `image` optionnelle : bandeau photo avec voile sombre au lieu
- * du décor dégradé/grille par défaut. `reperes` affiche une ligne de
- * chiffres clés sous le chapeau.
+ * du décor dégradé/grille par défaut. `video` optionnelle : bandeau vidéo en
+ * lecture automatique (silencieuse, en boucle) à la place de la photo — prend
+ * le pas sur `image` si les deux sont fournies. `reperes` affiche une ligne
+ * de chiffres clés sous le chapeau.
  */
-export default function EnTeteVitrine({ etiquette, icone, titre, description, image, reperes }) {
+export default function EnTeteVitrine({ etiquette, icone, titre, description, image, video, reperes }) {
   const Icone = icone;
 
   const surTitre = etiquette ? (
@@ -29,15 +31,28 @@ export default function EnTeteVitrine({ etiquette, icone, titre, description, im
     </dl>
   ) : null;
 
-  if (image) {
+  if (image || video) {
     return (
       <section className="relative overflow-hidden">
-        <img
-          src={image}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover motion-safe:animate-zoom-lent"
-          aria-hidden
-        />
+        {video ? (
+          <video
+            src={video}
+            poster={image}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+            aria-hidden
+          />
+        ) : (
+          <img
+            src={image}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover motion-safe:animate-zoom-lent"
+            aria-hidden
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#141821] via-[#141821]/85 to-[#141821]/45" aria-hidden />
         <div
           className="absolute inset-0 bg-[radial-gradient(70%_90%_at_15%_100%,rgba(179,39,30,0.35),transparent_65%)]"
