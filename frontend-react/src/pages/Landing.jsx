@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BarChart3, ChevronDown, ClipboardCheck, FileText, Leaf, PlayCircle, Scale, Target, TrendingUp } from 'lucide-react';
+import { BarChart3, ChevronDown, ClipboardCheck, FileText, Layers, Leaf, Scale, Target, TrendingUp } from 'lucide-react';
 import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
 
@@ -353,21 +353,21 @@ export default function Landing() {
           style={{ animationDelay: '360ms' }}
         >
           <Link
-            to="/inscription"
+            to="/accueil"
             className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
-            Démarrer gratuitement
+            Découvrir la plateforme
           </Link>
           <Link
-            to="/methodologie"
+            to="/formules"
             className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
-            <PlayCircle
+            <Layers
               className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400 sm:h-5 sm:w-5"
               strokeWidth={1.6}
               aria-hidden
             />
-            Voir la démo
+            Formule de collaboration
           </Link>
         </div>
 
