@@ -155,10 +155,10 @@ export default function Landing() {
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-[70rem] px-5 pb-12 pt-8 text-center">
+      <div className="relative mx-auto max-w-[70rem] px-4 pb-8 pt-6 text-center sm:px-5 sm:pb-12 sm:pt-8">
         {/* Emblème : sphère de données, jauge de conformité, bouclier de la
             marque et les quatre natures d'objets manipulées par le moteur. */}
-        <div className="relative mx-auto aspect-[640/420] w-full max-w-3xl motion-safe:animate-apparition-douce">
+        <div className="relative mx-auto aspect-[640/420] w-full max-w-xs motion-safe:animate-apparition-douce sm:max-w-xl lg:max-w-3xl">
           <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
             <defs>
               <linearGradient id="degradeBouclier" x1="0" y1="0" x2="0" y2="1">
@@ -316,33 +316,32 @@ export default function Landing() {
               style={{ left: `${(noeud.x / 640) * 100}%`, top: `${(noeud.y / 420) * 100}%` }}
             >
               <span
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-brand-300 bg-surface text-brand-600 shadow-soft motion-safe:animate-flottement dark:border-brand-500/60 dark:text-brand-400 sm:h-14 sm:w-14"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-300 bg-surface text-brand-600 shadow-soft motion-safe:animate-flottement dark:border-brand-500/60 dark:text-brand-400 sm:h-10 sm:w-10 lg:h-14 lg:w-14"
                 style={{ animationDelay: `${index * 900}ms` }}
               >
-                <noeud.icone className="h-4 w-4 sm:h-6 sm:w-6" strokeWidth={1.6} aria-hidden />
+                <noeud.icone className="h-3 w-3 sm:h-4 sm:w-4 lg:h-6 lg:w-6" strokeWidth={1.6} aria-hidden />
               </span>
-              <span className="text-[0.5rem] font-semibold uppercase tracking-[0.2em] text-ink-500 sm:text-[0.7rem]">
+              <span className="text-[0.45rem] font-semibold uppercase tracking-[0.15em] text-ink-500 sm:text-[0.7rem] sm:tracking-[0.2em]">
                 {noeud.libelle}
               </span>
             </span>
           ))}
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-[0.32em] text-brand-600 motion-safe:animate-apparition-bas dark:text-brand-400">
+        <p className="text-[0.65rem] font-semibold uppercase tracking-[0.24em] text-brand-600 motion-safe:animate-apparition-bas dark:text-brand-400 sm:text-xs sm:tracking-[0.32em]">
           Plateforme d’évaluation RSE intelligente
         </p>
 
         <h1
-          className="mx-auto mt-4 max-w-4xl text-4xl font-bold leading-[1.08] text-ink-900 motion-safe:animate-apparition-bas sm:text-5xl lg:text-[3.75rem]"
+          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:text-[3.25rem]"
           style={{ animationDelay: '120ms' }}
         >
-          Maîtrisez votre performance RSE.
-          <br />
-          Agissez avec <span className="text-brand-600 dark:text-brand-400">intelligence</span>.
+          Mesurer et optimiser la démarche de maturité et la performance de votre entreprise en matière de{' '}
+          <span className="text-brand-600 dark:text-brand-400">RSE et ESG</span> avec l’intelligence artificielle.
         </h1>
 
         <p
-          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink-600 motion-safe:animate-apparition-bas"
+          className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-ink-600 motion-safe:animate-apparition-bas sm:mt-5 sm:text-base"
           style={{ animationDelay: '240ms' }}
         >
           {SMARTEX.produit} unifie référentiel, preuves documentaires et intelligence artificielle multi-agents pour
@@ -350,18 +349,21 @@ export default function Landing() {
         </p>
 
         <div
-          className="mt-9 flex flex-wrap items-center justify-center gap-4 motion-safe:animate-apparition-bas"
+          className="mt-6 flex flex-wrap items-center justify-center gap-3 motion-safe:animate-apparition-bas sm:mt-9 sm:gap-4"
           style={{ animationDelay: '360ms' }}
         >
-          <Link to="/inscription" className="btn-vitrine px-8 py-3.5 text-base transition-transform duration-300 hover:-translate-y-0.5">
+          <Link
+            to="/inscription"
+            className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
+          >
             Démarrer gratuitement
           </Link>
           <Link
             to="/methodologie"
-            className="btn-vitrine-clair group px-8 py-3.5 text-base transition-transform duration-300 hover:-translate-y-0.5"
+            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
             <PlayCircle
-              className="h-5 w-5 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400"
+              className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400 sm:h-5 sm:w-5"
               strokeWidth={1.6}
               aria-hidden
             />
@@ -369,7 +371,7 @@ export default function Landing() {
           </Link>
         </div>
 
-        <dl className="mt-14 grid gap-8 text-left sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
+        <dl className="mt-10 grid gap-6 text-left sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
           {BENEFICES.map((benefice, index) => (
             <Revele key={benefice.titre} delai={index * 110}>
               <div className="group flex gap-3 lg:px-6">
@@ -389,7 +391,7 @@ export default function Landing() {
 
         <Link
           to="/methodologie"
-          className="mt-12 inline-flex flex-col items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400"
+          className="mt-8 inline-flex flex-col items-center gap-2 text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400 sm:mt-12 sm:text-[0.65rem] sm:tracking-[0.3em]"
         >
           Découvrir
           <span className="flex h-9 w-6 items-start justify-center rounded-full border-2 border-brand-400 pt-1.5">
