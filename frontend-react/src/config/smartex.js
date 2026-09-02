@@ -67,6 +67,14 @@ export const FONDEMENTS = [
     titre: 'Pratiques professionnelles',
     texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
   },
+  {
+    titre: 'Robustesse',
+    texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
+  },
+  {
+    titre: 'Indépendance',
+    texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
+  },
 ];
 
 /**

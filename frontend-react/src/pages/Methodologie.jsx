@@ -2,7 +2,6 @@ import { BookOpen, CheckCircle2, Compass, Layers, Megaphone, RefreshCw, Rocket }
 import EnTeteVitrine from '../components/EnTeteVitrine';
 import TitreSection from '../components/TitreSection';
 import Revele from '../components/Revele';
-import AppelAction from '../components/AppelAction';
 import { FONDEMENTS, SMARTEX } from '../config/smartex';
 import photoBanniere from '../assets/methodologie/banniere-hd.jpg';
 
@@ -14,33 +13,33 @@ import photoBanniere from '../assets/methodologie/banniere-hd.jpg';
 const ETAPES_METHODE = [
   {
     icone: Compass,
-    phase: 'Plan',
-    titre: 'Cadrer et diagnostiquer',
-    texte: 'Le questionnaire s’adapte au secteur et au périmètre déclarés : l’IA identifie les critères RSE significatifs pour l’entreprise.',
+    phase: 'Cadrage et Diagnostic',
+    // titre: 'Cadrer et diagnostiquer',
+    texte: 'Périmètre de la mission avec les variables de caractérisation de l’entreprise, Questionnaire d’évaluation s’adaptant au secteur d’activité, plus des preuves déposées l’ensemble analysées par le pipeline d’agents IA introduit dans le dispositif. Une probabilité de conformité par critère est produite; (...)',
   },
-  {
-    icone: Rocket,
-    phase: 'Do',
-    titre: 'Déployer l’évaluation',
-    texte: 'Les preuves déposées sont analysées par le pipeline d’agents IA, qui produit une probabilité de conformité par critère.',
-  },
+  // {
+  //   icone: Rocket,
+  //   phase: 'Do',
+  //   titre: 'Déployer l’évaluation',
+  //   texte: 'Les preuves déposées sont analysées par le pipeline d’agents IA, qui produit une probabilité de conformité par critère.',
+  // },
   {
     icone: CheckCircle2,
-    phase: 'Check',
-    titre: 'Vérifier et mesurer',
-    texte: 'Score pondéré, écarts et non-conformités sont mesurés automatiquement ; l’indice de confiance signale ce qu’il reste à challenger.',
+    phase: 'Les livrables',
+    // titre: 'Vérifier et mesurer',
+    texte: 'Rapport de synthèse de l’évaluation mettant en exergue le profil RSE global de l’entreprise et le profil par domaines évalués, soulignant conformités et non-conformités. Il présente le degré de maturité de la démarche RSE/ESG de l’entreprise et génère des plans d’actions correctives sur les non-conformités, priorisés selon les risques identifiés. Toutes les actions entreprises s’inscrivent dans une dynamique d’amélioration continue. Livrable complémentaire : indice de préparation à l’éligibilité au financement vert des PTF, mesurant l’alignement des pratiques RSE/ESG de l’entreprise sur les critères d’évaluation des PTF.',
   },
-  {
-    icone: RefreshCw,
-    phase: 'Act',
-    titre: 'Agir et corriger',
-    texte: 'Plan d’actions correctives priorisé par le risque attendu, pour intégrer les améliorations dans le système de management.',
-  },
+  // {
+  //   icone: RefreshCw,
+  //   phase: 'Act',
+  //   titre: 'Agir et corriger',
+  //   texte: 'Plan d’actions correctives priorisé par le risque attendu, pour intégrer les améliorations dans le système de management.',
+  // },
   {
     icone: Megaphone,
-    phase: 'Communication RSE',
-    titre: 'Valoriser l’engagement',
-    texte: 'Rapport exportable pour communiquer les résultats et l’engagement RSE de l’entreprise auprès de ses parties prenantes.',
+    phase: 'Communication et valorisation de la démarche RSE / ESG',
+    // titre: 'Valoriser l’engagement',
+    texte: 'Rapport exportable pour communiquer les résultats et l’engagement RSE / ESG de l’entreprise auprès de ses parties prenantes.',
   },
 ];
 
@@ -74,9 +73,24 @@ export default function Methodologie() {
           <TitreSection
             etiquette="Deploiement - Le déroulé d’une mission"
             icone={Compass}
-            titre="Une démarche en cinq étapes, accélérée par l’IA"
-            description={`L’adaptation de la roue de Deming que ${SMARTEX.editeur} appliquait en mission d’audit classique reste le fil conducteur — le pipeline d’agents IA prend en charge le cadrage, l’analyse des preuves et la mesure du score.`}
+            titre="Une démarche robuste, transparente et independante, s'appuyant sur l'IA"
           />
+
+          <div className="mt-6 max-w-5xl space-y-4 text-base font-light leading-relaxed text-ink-600">
+            <p>
+              {SMARTEX.produit} est une démarche d’opérationnalisation de la RSE et ESG avec une adaptation à la logique
+              d’apprentissage ou d’amélioration continue de Deming (la roue de Deming, PDCA), et procède par scoring des
+              principales dimensions de la RSE et ESG.
+            </p>
+            <p>
+              Démarche séquentielle divisée en 4 étapes, la roue de Deming aide les entreprises à sortir de la
+              stagnation avec pour objectif principal l’amélioration continue de leur performance.
+            </p>
+            <p>
+              Ici, {SMARTEX.produit} s’appuie sur l’IA pour optimiser la démarche et suit ainsi une adaptation en trois
+              (3) étapes.
+            </p>
+          </div>
 
           <ol className="mt-14 grid gap-5 lg:grid-cols-5">
             {ETAPES_METHODE.map((etape, index) => (
@@ -104,9 +118,9 @@ export default function Methodologie() {
 
       <section className="mx-auto max-w-[90rem] px-5 py-24">
         <TitreSection
-          etiquette="Nos fondements"
+          etiquette="Nos principes fondamentaux"
           icone={Layers}
-          titre="Quatre principes, quel que soit le référentiel évalué"
+          titre="Six principes fondent notre démarche d'accompagnement."
         />
 
         <div className="mt-14 grid gap-x-14 gap-y-10 sm:grid-cols-2">
@@ -126,10 +140,6 @@ export default function Methodologie() {
         </div>
       </section>
 
-      <AppelAction
-        titre="Une question sur notre méthodologie ?"
-        texte="Décrivez votre contexte : nous revenons vers vous avec le référentiel et le niveau de formule adaptés."
-      />
     </div>
   );
 }
