@@ -192,6 +192,19 @@ services:
       - "5175:5173"
     volumes:
       - ./frontend-react/src:/app/src
+      # Assets statiques (bannières vidéo, favicon...) : sans ce montage, le
+      # conteneur ne voit que public/ tel qu'il était au dernier build de
+      # l'image, donc un fichier ajouté après coup (ex. vidéo de bannière) y
+      # est introuvable (Vite retombe alors sur index.html avec un 200 trompeur).
+      - ./frontend-react/public:/app/public
+      # Fichiers de config à la racine : sans ce montage, le conteneur garde
+      # la version figée au dernier build de l'image (ex. tailwind.config.js
+      # sans une classe/couleur ajoutée depuis -> "The `xxx` class does not
+      # exist" en pleine page malgré un fichier local à jour).
+      - ./frontend-react/tailwind.config.js:/app/tailwind.config.js
+      - ./frontend-react/postcss.config.js:/app/postcss.config.js
+      - ./frontend-react/vite.config.js:/app/vite.config.js
+      - ./frontend-react/index.html:/app/index.html
     depends_on:
       - api-quarkus
 
