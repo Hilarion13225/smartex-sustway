@@ -59,13 +59,31 @@ export default function Methodologie() {
         video="/videos/methodologie-overview.mp4"
       />
 
+      {/* Chapô : titre à gauche, chapeau à droite. La disposition en deux
+          colonnes évite la grande zone vide qu'un titre seul laissait à
+          droite sur les larges écrans. */}
       <section className="mx-auto max-w-[90rem] px-5 py-24">
-        <TitreSection
-            etiquette="Méthodologie"
-            icone={BookOpen}
-            titre="Une méthodologie éprouvée, batie autour d'années d'expériences academiques et du secteur privé"
-            description={`${SMARTEX.produit} unifie référentiels, preuves documentaires et intelligence artificielle multi-agents pour évaluer, prioriser et améliorer votre performance RSE et ESG.`}
-          />
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-16">
+          <Revele>
+            <p className="sur-titre text-brand-600 dark:text-brand-400">
+              <span className="filet" aria-hidden />
+              <BookOpen className="h-4 w-4" aria-hidden />
+              Méthodologie
+            </p>
+            <h2 className="titre-editorial mt-5 text-3xl leading-tight text-ink-900 sm:text-[2.6rem]">
+              Une méthodologie éprouvée, batie autour d’années d’expériences academiques et du secteur privé
+            </h2>
+          </Revele>
+
+          <Revele delai={120}>
+            <div className="border-l-2 border-brand-200 pl-6 dark:border-brand-500/40">
+              <p className="text-base font-light leading-relaxed text-ink-600">
+                {SMARTEX.produit} unifie référentiels, preuves documentaires et intelligence artificielle multi-agents
+                pour évaluer, prioriser et améliorer votre performance RSE et ESG.
+              </p>
+            </div>
+          </Revele>
+        </div>
       </section>
 
       <section className="border-y border-ink-100 bg-ink-50 py-24">
@@ -92,23 +110,33 @@ export default function Methodologie() {
             </p>
           </div>
 
-          <ol className="mt-14 grid gap-5 lg:grid-cols-5">
+          {/* Autant de colonnes que d'étapes : avec une grille figée à cinq
+              colonnes, trois cartes laissaient deux colonnes vides à droite. */}
+          <ol className="mt-16 grid gap-6 lg:grid-cols-3">
             {ETAPES_METHODE.map((etape, index) => (
-              <Revele key={etape.phase} delai={index * 100} as="li">
-                <article className="carte-vitrine group h-full !p-7">
-                  <div className="flex items-baseline justify-between">
-                    <span className="titre-editorial text-4xl leading-none text-brand-200 transition-colors duration-300 group-hover:text-brand-500 dark:text-brand-500/40 dark:group-hover:text-brand-400">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="puce-icone">
-                      <etape.icone className="h-5 w-5" aria-hidden />
-                    </span>
-                  </div>
-                  <p className="mt-6 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-400">
-                    {etape.phase}
-                  </p>
-                  <h3 className="titre-editorial mt-2 text-lg text-ink-900">{etape.titre}</h3>
-                  <p className="mt-3 text-sm font-light leading-relaxed text-ink-500">{etape.texte}</p>
+              <Revele key={etape.phase} delai={index * 120} as="li" className="h-full">
+                <article className="carte-vitrine group flex h-full flex-col !p-8">
+                  {/* Numéro en filigrane : repère l'ordre des étapes sans
+                      disputer la place au titre. */}
+                  <span
+                    className="titre-editorial pointer-events-none absolute -top-4 right-3 select-none text-[6.5rem] leading-none text-brand-500/[0.06] transition-colors duration-500 group-hover:text-brand-500/[0.12] dark:text-brand-400/[0.08]"
+                    aria-hidden
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+
+                  <span className="puce-icone relative">
+                    <etape.icone className="h-5 w-5" aria-hidden />
+                  </span>
+
+                  {/* `phase` porte l'intitulé de l'étape : c'est donc lui le
+                      titre de la carte (le champ `titre` n'est plus renseigné). */}
+                  <h3 className="titre-editorial relative mt-6 text-xl leading-snug text-ink-900">{etape.phase}</h3>
+                  <span
+                    className="relative mt-5 block h-px w-14 bg-brand-300 transition-all duration-500 group-hover:w-24 dark:bg-brand-500/60"
+                    aria-hidden
+                  />
+                  <p className="relative mt-5 text-sm font-light leading-relaxed text-ink-500">{etape.texte}</p>
                 </article>
               </Revele>
             ))}
@@ -123,17 +151,24 @@ export default function Methodologie() {
           titre="Six principes fondent notre démarche d'accompagnement."
         />
 
-        <div className="mt-14 grid gap-x-14 gap-y-10 sm:grid-cols-2">
+        <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {FONDEMENTS.map((fondement, index) => (
-            <Revele key={fondement.titre} delai={index * 110}>
-              <article className="group flex gap-6 border-t border-ink-100 pt-7 transition-colors duration-300 hover:border-brand-300">
-                <span className="titre-editorial shrink-0 text-2xl leading-none text-brand-500 dark:text-brand-400">
+            <Revele key={fondement.titre} delai={index * 90} className="h-full">
+              <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-ink-100 bg-surface p-7 transition duration-300 hover:border-brand-200 hover:shadow-soft motion-safe:hover:-translate-y-1">
+                {/* Liseré supérieur qui se déploie au survol : signale la carte
+                    active sans ajouter d'ombre lourde. */}
+                <span
+                  className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-brand-500 transition-transform duration-500 group-hover:scale-x-100"
+                  aria-hidden
+                />
+                <span
+                  className="titre-editorial pointer-events-none absolute -top-3 right-3 select-none text-[5rem] leading-none text-brand-500/[0.06] dark:text-brand-400/[0.08]"
+                  aria-hidden
+                >
                   {String(index + 1).padStart(2, '0')}
                 </span>
-                <div>
-                  <h3 className="titre-editorial text-xl text-ink-900">{fondement.titre}</h3>
-                  <p className="mt-3 text-sm font-light leading-relaxed text-ink-500">{fondement.texte}</p>
-                </div>
+                <h3 className="titre-editorial relative text-xl leading-snug text-ink-900">{fondement.titre}</h3>
+                <p className="relative mt-4 text-sm font-light leading-relaxed text-ink-500">{fondement.texte}</p>
               </article>
             </Revele>
           ))}
