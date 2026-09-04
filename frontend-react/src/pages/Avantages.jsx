@@ -92,44 +92,51 @@ export default function Avantages() {
             titre="Cinq bénéfices que nos missions rendent mesurables"
           />
 
-          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {BENEFICES.map((benefice, index) => (
-              <Revele key={benefice.titre} delai={index * 100}>
-                <article className="carte-vitrine group h-full !p-8">
-                  <div className="flex items-baseline justify-between">
-                    <span className="titre-editorial text-4xl leading-none text-brand-200 transition-colors duration-300 group-hover:text-brand-500 dark:text-brand-500/40 dark:group-hover:text-brand-400">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="puce-icone">
-                      <benefice.icone className="h-5 w-5" aria-hidden />
-                    </span>
-                  </div>
-                  <h3 className="titre-editorial mt-8 text-xl text-ink-900">{benefice.titre}</h3>
-                  <p className="mt-3 text-sm font-light leading-relaxed text-ink-500">{benefice.texte}</p>
+              <Revele key={benefice.titre} delai={index * 100} className="h-full">
+                <article className="carte-vitrine group flex h-full flex-col !p-8">
+                  {/* Numéro en filigrane plutôt qu'en vis-à-vis de l'icône :
+                      même traitement que les pages Méthodologie et
+                      Déploiement, et le titre récupère toute la largeur. */}
+                  <span
+                    className="titre-editorial pointer-events-none absolute -top-4 right-3 select-none text-[6.5rem] leading-none text-brand-500/[0.06] transition-colors duration-500 group-hover:text-brand-500/[0.12] dark:text-brand-400/[0.08]"
+                    aria-hidden
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+
+                  <span className="puce-icone relative">
+                    <benefice.icone className="h-5 w-5" aria-hidden />
+                  </span>
+                  <h3 className="titre-editorial relative mt-6 text-xl leading-snug text-ink-900">{benefice.titre}</h3>
+                  <span
+                    className="relative mt-5 block h-px w-14 bg-brand-300 transition-all duration-500 group-hover:w-24 dark:bg-brand-500/60"
+                    aria-hidden
+                  />
+                  <p className="relative mt-5 text-sm font-light leading-relaxed text-ink-500">{benefice.texte}</p>
                 </article>
               </Revele>
             ))}
 
-            <Revele delai={500}>
-              <article className="relative flex h-full flex-col justify-between overflow-hidden rounded-2xl bg-[#1f2533] p-8 text-white shadow-soft">
+            {/* Sixième case : la conclusion des cinq bénéfices. Sans bouton —
+                l'appel à l'action se trouve juste en dessous, et son bouton
+                rendait cette carte bien plus haute que les autres, ce qui
+                creusait un vide sous les cartes 04 et 05. */}
+            <Revele delai={500} className="h-full">
+              <article className="relative flex h-full flex-col justify-center overflow-hidden rounded-2xl bg-[#1f2533] p-8 text-white shadow-soft">
                 <span
                   className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-brand-500/30 blur-3xl motion-safe:animate-respiration"
                   aria-hidden
                 />
-                <div className="relative">
-                  <p className="sur-titre text-white/60">
-                    <span className="filet" aria-hidden />
-                    Résultat
-                  </p>
-                  <p className="titre-editorial mt-6 text-2xl leading-snug">
-                    Améliorer la performance globale, conférer des avantages compétitifs et ancrer une démarche
-                    d’amélioration continue innovante.
-                  </p>
-                </div>
-                <Link to="/contact" className="btn-vitrine group relative mt-10 self-start">
-                  Parler à un expert
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-                </Link>
+                <p className="sur-titre relative text-white/60">
+                  <span className="filet" aria-hidden />
+                  Résultat
+                </p>
+                <p className="titre-editorial relative mt-6 text-2xl leading-snug">
+                  Améliorer la performance globale, conférer des avantages compétitifs et ancrer une démarche
+                  d’amélioration continue innovante.
+                </p>
               </article>
             </Revele>
           </div>
