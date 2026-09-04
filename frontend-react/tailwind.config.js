@@ -122,6 +122,32 @@ export default {
           '85%': { opacity: '0.85' },
           '100%': { transform: 'translateY(-125vh) translateX(var(--dx, 60px)) rotate(200deg)', opacity: '0' },
         },
+        // --- Fond « tech / IA » de la page d'entrée ---
+        // Impulsion qui parcourt une arête du réseau neuronal : le tiret court
+        // défile le long du tracé (dasharray posé côté composant).
+        'flux-arete': {
+          '0%': { strokeDashoffset: 'var(--longueur, 200)', opacity: '0' },
+          '10%, 70%': { opacity: '1' },
+          '100%': { strokeDashoffset: '0', opacity: '0' },
+        },
+        // Clignotement d'un noeud du réseau, façon activation de neurone.
+        // Opacité seule : animer l'attribut SVG `r` en CSS n'est pas supporté
+        // partout (Safari ancien), alors qu'`opacity` l'est universellement.
+        'activation-noeud': {
+          '0%, 100%': { opacity: '0.25' },
+          '50%': { opacity: '1' },
+        },
+        // Balayage lumineux vertical, façon scan de données.
+        balayage: {
+          '0%': { transform: 'translateY(-60%)', opacity: '0' },
+          '15%, 60%': { opacity: '1' },
+          '100%': { transform: 'translateY(160%)', opacity: '0' },
+        },
+        // Dérive lente de la grille technique, pour éviter un fond figé.
+        'derive-grille': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '50%': { transform: 'translate3d(-28px, -18px, 0)' },
+        },
       },
       animation: {
         'apparition-bas': 'apparition-bas 0.8s cubic-bezier(0.16, 1, 0.3, 1) both',
@@ -138,6 +164,10 @@ export default {
         'rotation-inverse': 'rotation 120s linear infinite reverse',
         'apparition-tick': 'apparition-tick 0.5s ease-out both',
         'zoom-lent': 'zoom-lent 24s ease-out both',
+        'flux-arete': 'flux-arete 4s linear infinite',
+        'activation-noeud': 'activation-noeud 3.5s ease-in-out infinite',
+        balayage: 'balayage 9s ease-in-out infinite',
+        'derive-grille': 'derive-grille 30s ease-in-out infinite',
       },
     },
   },

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BarChart3, ChevronDown, ClipboardCheck, FileText, Layers, Leaf, Scale, Target, TrendingUp } from 'lucide-react';
 import Revele from '../components/Revele';
+import FondTech from '../components/FondTech';
 import { SMARTEX } from '../config/smartex';
 
 /**
@@ -101,23 +102,6 @@ const GRADUATIONS = Array.from({ length: 49 }, (_, index) => {
   };
 });
 
-/** Poussière de points du fond du héros (positions figées). */
-const PARTICULES = [
-  { gauche: '4%', haut: '12%', taille: 7 },
-  { gauche: '11%', haut: '46%', taille: 4 },
-  { gauche: '8%', haut: '74%', taille: 6 },
-  { gauche: '19%', haut: '22%', taille: 5 },
-  { gauche: '26%', haut: '62%', taille: 3 },
-  { gauche: '34%', haut: '9%', taille: 4 },
-  { gauche: '44%', haut: '82%', taille: 5 },
-  { gauche: '56%', haut: '14%', taille: 3 },
-  { gauche: '66%', haut: '70%', taille: 6 },
-  { gauche: '74%', haut: '30%', taille: 4 },
-  { gauche: '83%', haut: '58%', taille: 7 },
-  { gauche: '90%', haut: '18%', taille: 5 },
-  { gauche: '95%', haut: '78%', taille: 4 },
-];
-
 const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 8 74 V30 Z';
 
 /**
@@ -129,31 +113,7 @@ const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 
 export default function Landing() {
   return (
     <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-halo-vert" aria-hidden />
-      <span
-        className="pointer-events-none absolute -left-32 top-24 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl motion-safe:animate-respiration dark:bg-emerald-800/40"
-        aria-hidden
-      />
-      <span
-        className="pointer-events-none absolute -right-24 top-0 h-80 w-80 rounded-full bg-emerald-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s] dark:bg-emerald-900/50"
-        aria-hidden
-      />
-
-      <div className="pointer-events-none absolute inset-0" aria-hidden>
-        {PARTICULES.map((particule, index) => (
-          <span
-            key={index}
-            className="absolute rounded-full bg-emerald-400/40 motion-safe:animate-respiration dark:bg-emerald-400/30"
-            style={{
-              left: particule.gauche,
-              top: particule.haut,
-              width: particule.taille,
-              height: particule.taille,
-              animationDelay: `${index * 0.4}s`,
-            }}
-          />
-        ))}
-      </div>
+      <FondTech />
 
       <div className="relative mx-auto max-w-[90rem] px-4 pb-8 pt-6 text-center sm:px-5 sm:pb-12 sm:pt-8">
         {/* Emblème : sphère de données, jauge de conformité, bouclier de la
