@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Plus, Route } from 'lucide-react';
 import clsx from 'clsx';
 import EnTeteVitrine from '../components/EnTeteVitrine';
-import TitreSection from '../components/TitreSection';
 import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
 import { SMARTEX } from '../config/smartex';
@@ -80,18 +79,61 @@ export default function Deploiement() {
       />
 
       <section className="mx-auto max-w-[90rem] px-5 py-24">
-        <TitreSection
-          etiquette="Le déroulé pas à pas"
-          icone={Route}
-          titre="De la planification à la valorisation de votre engagement"
-          description={`Avec ${SMARTEX.produit}, les phases Do et Check ne se comptent plus en semaines : le pipeline d’agents IA analyse les preuves et calcule le score dès leur dépôt. Le cadrage stratégique, la revue de direction et la communication RSE restent portés par vos équipes et ${SMARTEX.editeur}.`}
-        />
+        {/* Titre à gauche, chapeau à droite : même disposition que la page
+            Méthodologie, et le chapeau ne laisse plus la moitié droite vide. */}
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
+          <Revele>
+            <p className="sur-titre text-brand-600 dark:text-brand-400">
+              <span className="filet" aria-hidden />
+              <Route className="h-4 w-4" aria-hidden />
+              Le déroulé pas à pas
+            </p>
+            <h2 className="titre-editorial mt-5 text-3xl leading-tight text-ink-900 sm:text-[2.6rem]">
+              De la planification à la valorisation de votre engagement
+            </h2>
+          </Revele>
 
-        <div className="mt-14 space-y-4">
+          <Revele delai={120}>
+            <div className="border-l-2 border-brand-200 pl-6 dark:border-brand-500/40">
+              <p className="text-base font-light leading-relaxed text-ink-600">
+                Avec {SMARTEX.produit}, les phases Do et Check ne se comptent plus en semaines : le pipeline d’agents IA
+                analyse les preuves et calcule le score dès leur dépôt. Le cadrage stratégique, la revue de direction et
+                la communication RSE restent portés par vos équipes et {SMARTEX.editeur}.
+              </p>
+            </div>
+          </Revele>
+        </div>
+
+        {/* Chronologie : le rail relie les étapes pour donner à lire une
+            progression (le cycle PDCA), là où l'empilement de cartes
+            indépendantes ressemblait à une simple FAQ dépliante. */}
+        <ol className="mt-16 space-y-4">
           {ETAPES.map((etape, index) => {
             const estOuvert = ouvert === index;
+            const dernier = index === ETAPES.length - 1;
             return (
-              <Revele key={etape.phase} delai={index * 80}>
+              <Revele key={etape.phase} delai={index * 80} as="li" className="relative block pl-16 sm:pl-24">
+                {/* Segment de rail : prolongé sous la carte pour franchir
+                    l'espacement et donner une ligne continue. */}
+                {!dernier ? (
+                  <span
+                    className="absolute left-[1.4rem] top-14 -bottom-4 w-px bg-ink-200 sm:left-8 dark:bg-ink-200"
+                    aria-hidden
+                  />
+                ) : null}
+
+                <span
+                  className={clsx(
+                    'titre-editorial absolute left-0 top-4 flex h-12 w-12 items-center justify-center rounded-full border-2 text-base transition duration-300 sm:h-16 sm:w-16 sm:text-xl',
+                    estOuvert
+                      ? 'border-brand-500 bg-brand-500 text-white shadow-glow'
+                      : 'border-ink-200 bg-surface text-brand-300 dark:text-brand-500/60'
+                  )}
+                  aria-hidden
+                >
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+
                 <div
                   className={clsx(
                     'overflow-hidden rounded-2xl border bg-surface transition-colors duration-300',
@@ -104,35 +146,45 @@ export default function Deploiement() {
                     className="flex w-full items-center gap-6 px-6 py-6 text-left sm:px-8"
                     aria-expanded={estOuvert}
                   >
-                    <span
-                      className={clsx(
-                        'titre-editorial shrink-0 text-3xl leading-none transition-colors duration-300',
-                        estOuvert ? 'text-brand-500 dark:text-brand-400' : 'text-brand-200 dark:text-brand-500/40'
-                      )}
-                    >
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
                     <span className="flex-1">
-                      <span className="block text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-600 dark:text-brand-400">
+                      <span className="inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
                         {etape.phase}
                       </span>
-                      <span className="titre-editorial mt-1.5 block text-xl text-ink-900">{etape.titre}</span>
-                      <span className="mt-1.5 block text-sm font-light text-ink-500">{etape.resume}</span>
+                      <span className="titre-editorial mt-3 block text-xl text-ink-900">{etape.titre}</span>
+                      <span className="mt-1.5 block max-w-3xl text-sm font-light text-ink-500">{etape.resume}</span>
                     </span>
-                    <Plus
+                    <span
                       className={clsx(
-                        'h-5 w-5 shrink-0 text-ink-400 transition-transform duration-300',
-                        estOuvert && 'rotate-45 text-brand-500 dark:text-brand-400'
+                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition duration-300',
+                        estOuvert
+                          ? 'border-brand-300 bg-brand-50 dark:border-brand-500/40 dark:bg-brand-500/15'
+                          : 'border-ink-200'
                       )}
-                      aria-hidden
-                    />
+                    >
+                      <Plus
+                        className={clsx(
+                          'h-4 w-4 text-ink-400 transition-transform duration-300',
+                          estOuvert && 'rotate-45 text-brand-500 dark:text-brand-400'
+                        )}
+                        aria-hidden
+                      />
+                    </span>
                   </button>
-                  <div className={clsx('grid transition-all duration-300', estOuvert ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0')}>
+                  <div
+                    className={clsx(
+                      'grid transition-all duration-300',
+                      estOuvert ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                    )}
+                  >
                     <div className="overflow-hidden">
-                      <div className="space-y-4 border-t border-ink-100 px-6 py-7 text-sm font-light leading-relaxed text-ink-600 sm:px-8 sm:pl-[6.5rem]">
-                        {etape.paragraphes.map((paragraphe) => (
-                          <p key={paragraphe.slice(0, 40)}>{paragraphe}</p>
-                        ))}
+                      {/* Le filet court sur toute la carte, seul le texte est
+                          borné en largeur pour rester lisible. */}
+                      <div className="border-t border-ink-100 px-6 py-7 sm:px-8">
+                        <div className="max-w-3xl space-y-4 text-sm font-light leading-relaxed text-ink-600">
+                          {etape.paragraphes.map((paragraphe) => (
+                            <p key={paragraphe.slice(0, 40)}>{paragraphe}</p>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -140,7 +192,7 @@ export default function Deploiement() {
               </Revele>
             );
           })}
-        </div>
+        </ol>
       </section>
 
       <AppelAction
