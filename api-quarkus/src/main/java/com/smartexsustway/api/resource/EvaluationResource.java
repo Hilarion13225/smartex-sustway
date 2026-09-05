@@ -14,12 +14,14 @@ import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
+import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.ia.EvaluerCritereRequestDto;
 import com.smartexsustway.api.ia.EvaluerCritereResponseDto;
 import com.smartexsustway.api.ia.IaEvaluationClient;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.EvaluationDto;
+import com.smartexsustway.api.resource.dto.EvaluationExperteRequestDto;
 import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.stockage.StorageService;
@@ -27,11 +29,14 @@ import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -68,6 +73,7 @@ public class EvaluationResource {
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject PreuveRepository preuveRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;
+    @Inject UtilisateurRepository utilisateurRepository;
     @Inject EvaluationRepository evaluationRepository;
     @Inject NonConformiteService nonConformiteService;
     @Inject ScoreHistoriqueService scoreHistoriqueService;
@@ -196,6 +202,76 @@ public class EvaluationResource {
         auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_IA_CREEE", "evaluation", evaluation.getId());
 
         return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+    }
+
+    /**
+     * Enregistre l'évaluation d'un critère saisie par un auditeur, sur
+     * l'échelle de maturité en cinq niveaux.
+     *
+     * RG27 impose que {@code note} soit toujours dérivée d'une probabilité de
+     * conformité via ScoringEngine, jamais posée telle quelle. Le niveau choisi
+     * est donc converti en probabilité représentative de sa plage Likert
+     * (voir {@link #probabiliteRepresentative}), puis reconverti en note par le
+     * même ScoringEngine que le flux IA : la règle vaut aussi pour la saisie
+     * humaine, et la note reste cohérente avec la probabilité stockée.
+     *
+     * Ré-évaluer un critère ajoute une évaluation sans supprimer les
+     * précédentes : RG14 impose de conserver l'historique complet.
+     */
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response enregistrerEvaluationExperte(@PathParam("entrepriseId") UUID entrepriseId,
+                                                 @PathParam("auditId") UUID auditId,
+                                                 @PathParam("auditCritereId") UUID auditCritereId,
+                                                 @Valid EvaluationExperteRequestDto requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+
+        Audit audit = trouverAudit(entrepriseId, auditId);
+        // Même permission que le dépôt de preuve et le questionnaire : saisir
+        // le niveau fait partie de la collecte, pas d'une action distincte.
+        String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
+        AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+
+        BigDecimal probabilite = probabiliteRepresentative(requete.niveau());
+        int niveau = ScoringEngine.niveauEngagement(probabilite);
+
+        Evaluation evaluation = new Evaluation(auditCritere, probabilite, (short) niveau);
+        evaluation.setSource(SourceEvaluation.EXPERT);
+        evaluation.setJustification(requete.justification());
+        evaluation.setAuteur(utilisateurRepository.findById(utilisateurId));
+        // RG16 : l'évaluation est définitive dès son enregistrement, comme
+        // pour le flux IA (la revue experte a été retirée du produit).
+        evaluation.setStatut(StatutEvaluation.VALIDEE);
+        evaluationRepository.persistAndFlush(evaluation);
+
+        auditCritere.setStatut(STATUT_EVALUE);
+        nonConformiteService.genererSiNecessaire(evaluation);
+        scoreHistoriqueService.enregistrer(audit);
+
+        auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_EXPERTE_ENREGISTREE", "evaluation",
+                evaluation.getId());
+
+        return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+    }
+
+    /**
+     * Probabilité de conformité représentative d'un niveau d'engagement : le
+     * milieu de la plage Likert correspondante (voir ScoringEngine). Prendre le
+     * milieu plutôt qu'une borne garantit que reconvertir cette probabilité
+     * redonne exactement le niveau choisi, sans dépendre du sens des
+     * comparaisons aux bornes.
+     */
+    private static BigDecimal probabiliteRepresentative(int niveau) {
+        return switch (niveau) {
+            case 5 -> new BigDecimal("0.9500");
+            case 4 -> new BigDecimal("0.8250");
+            case 3 -> new BigDecimal("0.6250");
+            case 2 -> new BigDecimal("0.3750");
+            default -> new BigDecimal("0.1250");
+        };
     }
 
     /** RG09 : réponses déjà saisies sur le critère, transmises au pipeline avec les preuves. */
