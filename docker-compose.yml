@@ -140,7 +140,7 @@ services:
       # reseau) - a ajuster si l'IP change (voir "ipconfig"/Get-NetIPAddress).
       # 127.0.0.1:5176 / localhost:5176 : serveur Vite natif (hors Docker),
       # utilise pour les verifications rapides sans reconstruire l'image.
-      SMARTEX_CORS_ORIGINS: http://localhost:5175,http://192.168.1.12:5175,http://127.0.0.1:5176,http://localhost:5176,http://192.168.1.12:5176
+      SMARTEX_CORS_ORIGINS: http://localhost:5175,http://192.168.1.7:5175,http://127.0.0.1:5176,http://localhost:5176,http://192.168.1.7:5176
       SMARTEX_API_BASE_URL: http://localhost:8090
       # Sans cette variable, les liens envoyes par email (verification de
       # compte, reinitialisation de mot de passe, invitation) retombent sur
@@ -185,7 +185,7 @@ services:
       # IP locale (Wi-Fi) plutot que "localhost" : depuis le telephone, "localhost"
       # designerait le telephone lui-meme, pas ce poste. Fonctionne aussi depuis
       # ce poste (le trafic vers sa propre IP locale est route normalement).
-      VITE_API_BASE_URL: http://192.168.1.12:8090
+      VITE_API_BASE_URL: http://192.168.1.7:8090
     ports:
       # Hôte 5175 : 5173 et 5174 sont déjà occupés par des processus Node
       # natifs hors Docker (autres projets sur cette machine) — voir README.

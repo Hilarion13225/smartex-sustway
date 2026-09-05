@@ -25,6 +25,7 @@ import {
 import clsx from 'clsx';
 import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
+import DecorSidebar from './DecorSidebar';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
@@ -215,31 +216,41 @@ export default function Layout() {
     <div className="flex h-full bg-ink-50">
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-ink-100 bg-surface transition-transform duration-300 lg:static lg:translate-x-0',
+          'sidebar-tech fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 transition-transform duration-300 lg:static lg:translate-x-0',
           ouvert ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between gap-2 px-5 py-4">
+        <DecorSidebar />
+
+        <div className="relative flex items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <div>
-              <Logo taille="sm" />
-              <p className="text-xs text-ink-500">Par {SMARTEX.editeur}</p>
+              <Logo taille="sm" variante="clair" />
+              <p className="text-xs text-white/50">Par {SMARTEX.editeur}</p>
             </div>
           </div>
-          <button type="button" className="btn-ghost p-1.5 lg:hidden" onClick={() => setOuvert(false)} aria-label="Fermer le menu">
+          <button
+            type="button"
+            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
+            onClick={() => setOuvert(false)}
+            aria-label="Fermer le menu"
+          >
             <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
 
         {entreprises.length > 0 ? (
-          <div className="px-5 pb-3">
-            <label className="label" htmlFor="entreprise-courante">
+          <div className="relative px-5 pb-3">
+            <label
+              className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-white/40"
+              htmlFor="entreprise-courante"
+            >
               Entreprise
             </label>
             {entreprises.length > SEUIL_RECHERCHE_ENTREPRISE ? (
               <input
                 type="search"
-                className="input mb-1.5 text-sm"
+                className="champ-sidebar mb-1.5"
                 placeholder="Rechercher une entreprise…"
                 value={filtreEntreprise}
                 onChange={(e) => setFiltreEntreprise(e.target.value)}
@@ -248,7 +259,7 @@ export default function Layout() {
             ) : null}
             <select
               id="entreprise-courante"
-              className="input text-sm"
+              className="champ-sidebar"
               value={entrepriseCouranteId}
               onChange={(e) => choisirEntreprise(e.target.value)}
             >
@@ -261,7 +272,7 @@ export default function Layout() {
           </div>
         ) : null}
 
-        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
+        <nav className="relative flex-1 space-y-4 overflow-y-auto px-3 py-3">
           {GROUPES.map((groupe) => {
             const liensVisibles = groupe.liens.filter(lienVisible);
             if (liensVisibles.length === 0) return null;
@@ -273,7 +284,7 @@ export default function Layout() {
                   type="button"
                   onClick={() => basculerGroupe(groupe.titre)}
                   aria-expanded={!replie}
-                  className="flex w-full items-center justify-between rounded-lg px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400 transition-colors hover:text-ink-600"
+                  className="flex w-full items-center justify-between rounded-lg px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-white/70"
                 >
                   <span>{groupe.titre}</span>
                   <ChevronDown
@@ -290,10 +301,10 @@ export default function Layout() {
                       return (
                         <span
                           key={lien.libelle}
-                          className="lien-app lien-app-inactif cursor-not-allowed opacity-40"
+                          className="lien-app cursor-not-allowed text-white/70 opacity-40"
                           title="Sélectionnez d’abord une entreprise"
                         >
-                          <lien.icone className="h-4 w-4 shrink-0 text-ink-400" aria-hidden />
+                          <lien.icone className="h-4 w-4 shrink-0 text-white/50" aria-hidden />
                           <span className="flex-1 truncate">{lien.libelle}</span>
                         </span>
                       );
@@ -305,14 +316,16 @@ export default function Layout() {
                         to={cible}
                         end={lien.fin}
                         onClick={() => setOuvert(false)}
-                        className={({ isActive }) => clsx('lien-app group', isActive ? 'lien-app-actif' : 'lien-app-inactif')}
+                        className={({ isActive }) =>
+                          clsx('lien-app group', isActive ? 'lien-app-actif' : 'lien-sidebar-inactif')
+                        }
                       >
                         {({ isActive }) => (
                           <>
                             <lien.icone
                               className={clsx(
                                 'h-4 w-4 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110',
-                                isActive ? 'text-white' : 'text-ink-400 group-hover:text-brand-600'
+                                isActive ? 'text-white' : 'text-white/50 group-hover:text-emerald-400'
                               )}
                               aria-hidden
                             />
@@ -328,18 +341,23 @@ export default function Layout() {
             );
           })}
 
-          {/* Encart volontairement toujours sombre, couleur figée (pas --ink-900, réactive au thème). */}
-          <div className="rounded-2xl bg-[#1f2533] p-4 text-white">
-            <p className="flex items-center gap-2 text-sm font-semibold">
-              <LifeBuoy className="h-4 w-4 text-brand-300" aria-hidden />
+          {/* Sur une barre désormais sombre, l'ancien fond #1f2533 se serait
+              fondu dans le décor : l'encart se détache en surface translucide. */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-white backdrop-blur-sm">
+            <span
+              className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-500/20 blur-2xl motion-safe:animate-respiration"
+              aria-hidden
+            />
+            <p className="relative flex items-center gap-2 text-sm font-semibold">
+              <LifeBuoy className="h-4 w-4 text-emerald-400" aria-hidden />
               Besoin d’un accompagnement ?
             </p>
-            <p className="mt-1.5 text-xs text-white/70">
+            <p className="relative mt-1.5 text-xs text-white/70">
               Les experts {SMARTEX.editeur} peuvent auditer vos preuves et prioriser votre plan d’action.
             </p>
             <a
               href={`mailto:${SMARTEX.emailSupport}`}
-              className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-brand-300 hover:text-white"
+              className="relative mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400 transition-colors hover:text-white"
             >
               Contacter un expert
               <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -347,22 +365,22 @@ export default function Layout() {
           </div>
         </nav>
 
-        <div className="border-t border-ink-100 p-3">
-          <div className="flex items-center gap-3 rounded-2xl bg-ink-50 px-3 py-2.5">
+        <div className="relative border-t border-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
               {initiales || utilisateur.prenom?.slice(0, 1)}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-ink-900">
+              <p className="truncate text-sm font-medium text-white">
                 {utilisateur.prenom} {utilisateur.nom}
               </p>
-              <p className="truncate text-xs text-ink-500">
+              <p className="truncate text-xs text-white/60">
                 {roleCourant ? ROLE_LIBELLE[roleCourant] ?? roleCourant : utilisateur.email}
               </p>
             </div>
             <button
               type="button"
-              className="btn-ghost p-1.5 hover:text-rose-600"
+              className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-rose-400"
               onClick={() => {
                 deconnecter();
                 navigate('/');
