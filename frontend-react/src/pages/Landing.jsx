@@ -1,7 +1,20 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BarChart3, ChevronDown, ClipboardCheck, FileText, Layers, Leaf, Scale, Target, TrendingUp } from 'lucide-react';
+import {
+  BarChart3,
+  ChevronDown,
+  ClipboardCheck,
+  FileText,
+  Layers,
+  Leaf,
+  PlayCircle,
+  Scale,
+  Target,
+  TrendingUp,
+} from 'lucide-react';
 import Revele from '../components/Revele';
 import FondTech from '../components/FondTech';
+import ModaleVideo from '../components/ModaleVideo';
 import { useSombreForce } from '../theme/ThemeContext';
 import { SMARTEX } from '../config/smartex';
 
@@ -116,6 +129,7 @@ const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 
  */
 export default function Landing() {
   useSombreForce();
+  const [videoOuverte, definirVideoOuverte] = useState(false);
 
   return (
     <section className="relative overflow-hidden">
@@ -331,7 +345,27 @@ export default function Landing() {
             />
             Formule de collaboration
           </Link>
+          <button
+            type="button"
+            onClick={() => definirVideoOuverte(true)}
+            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
+          >
+            <PlayCircle
+              className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400 sm:h-5 sm:w-5"
+              strokeWidth={1.6}
+              aria-hidden
+            />
+            Lire la vidéo
+          </button>
         </div>
+
+        {videoOuverte ? (
+          <ModaleVideo
+            source="/videos/methodologie-overview.mp4"
+            titre="Vidéo de présentation SMARTEX SustWay"
+            surFermeture={() => definirVideoOuverte(false)}
+          />
+        ) : null}
 
         <dl className="mt-10 grid gap-6 text-left sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
           {BENEFICES.map((benefice, index) => (
