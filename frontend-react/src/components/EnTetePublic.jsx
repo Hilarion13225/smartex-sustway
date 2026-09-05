@@ -6,6 +6,7 @@ import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
 import BasculeTheme from './BasculeTheme';
 import MenuDeroulant from './MenuDeroulant';
+import { useTheme } from '../theme/ThemeContext';
 
 const SOLUTION_LIENS = [
   { vers: '/methodologie', libelle: 'Méthodologie' },
@@ -24,6 +25,9 @@ const LIENS = [
 export default function EnTetePublic() {
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
+  // Sur une page qui impose le sombre, BasculeTheme ne rend rien : l'intitulé
+  // « Thème » du menu mobile resterait seul face à un espace vide.
+  const { sombreForce } = useTheme();
 
   useEffect(() => {
     const surDefilement = () => setDefile(window.scrollY > 12);
@@ -118,10 +122,12 @@ export default function EnTetePublic() {
               {lien.libelle}
             </NavLink>
           ))}
-          <div className="mt-2 flex items-center justify-between gap-2 sm:hidden">
-            <span className="text-xs font-medium uppercase tracking-wide text-ink-500">Thème</span>
-            <BasculeTheme />
-          </div>
+          {sombreForce ? null : (
+            <div className="mt-2 flex items-center justify-between gap-2 sm:hidden">
+              <span className="text-xs font-medium uppercase tracking-wide text-ink-500">Thème</span>
+              <BasculeTheme />
+            </div>
+          )}
           <div className="mt-2 flex flex-col gap-2 sm:hidden">
             <Link to="/inscription" className="btn-vitrine" onClick={() => setOuvert(false)}>
               Créer un compte
