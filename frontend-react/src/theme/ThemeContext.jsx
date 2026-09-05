@@ -30,10 +30,14 @@ export function ThemeProvider({ children }) {
     }
   });
   const [estSombre, setEstSombre] = useState(() => resoudreEstSombre(preference));
+  // Certaines pages imposent le thème sombre (page d'entrée). Le forçage est
+  // volontairement séparé de `preference` : il ne l'écrase pas et n'est pas
+  // mémorisé, si bien qu'en quittant la page l'utilisateur retrouve son choix.
+  const [sombreForce, setSombreForce] = useState(false);
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', estSombre);
-  }, [estSombre]);
+    document.documentElement.classList.toggle('dark', sombreForce || estSombre);
+  }, [estSombre, sombreForce]);
 
   useEffect(() => {
     setEstSombre(resoudreEstSombre(preference));
@@ -52,9 +56,30 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', onChange);
   }, [preference]);
 
-  const valeur = useMemo(() => ({ preference, definirPreference: setPreference, estSombre }), [preference, estSombre]);
+  const valeur = useMemo(
+    () => ({
+      preference,
+      definirPreference: setPreference,
+      estSombre: sombreForce || estSombre,
+      sombreForce,
+      definirSombreForce: setSombreForce,
+    }),
+    [preference, estSombre, sombreForce]
+  );
 
   return <ThemeContext.Provider value={valeur}>{children}</ThemeContext.Provider>;
+}
+
+/**
+ * Impose le thème sombre tant que le composant appelant est monté, puis rend
+ * la main à la préférence de l'utilisateur au démontage.
+ */
+export function useSombreForce() {
+  const { definirSombreForce } = useTheme();
+  useEffect(() => {
+    definirSombreForce(true);
+    return () => definirSombreForce(false);
+  }, [definirSombreForce]);
 }
 
 export function useTheme() {

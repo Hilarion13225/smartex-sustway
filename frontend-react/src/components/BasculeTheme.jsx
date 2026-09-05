@@ -14,8 +14,12 @@ const OPTIONS = [
  * indépendant du thème choisi — même logique que `Logo`.
  */
 export default function BasculeTheme({ className, variante = 'defaut' }) {
-  const { preference, definirPreference } = useTheme();
+  const { preference, definirPreference, sombreForce } = useTheme();
   const surPanneauSombre = variante === 'clair';
+
+  // Une page qui impose le sombre (page d'entrée) ignorerait les clics : mieux
+  // vaut retirer la bascule que d'afficher un réglage sans effet.
+  if (sombreForce) return null;
 
   return (
     <div

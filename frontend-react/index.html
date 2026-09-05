@@ -16,6 +16,13 @@
       // thème clair au chargement si l'utilisateur a choisi sombre/système).
       // Miroir exact de la logique de src/theme/ThemeContext.jsx.
       (function () {
+        // La page d'entrée impose le sombre (voir useSombreForce dans
+        // ThemeContext) : sans ce cas particulier, un visiteur en préférence
+        // claire verrait un flash blanc avant que React ne force le sombre.
+        if (window.location.pathname === '/') {
+          document.documentElement.classList.add('dark');
+          return;
+        }
         try {
           var preference = localStorage.getItem('smartex.theme') || 'systeme';
           var sombre =

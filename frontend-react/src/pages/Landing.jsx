@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { BarChart3, ChevronDown, ClipboardCheck, FileText, Layers, Leaf, Scale, Target, TrendingUp } from 'lucide-react';
 import Revele from '../components/Revele';
 import FondTech from '../components/FondTech';
+import { useSombreForce } from '../theme/ThemeContext';
 import { SMARTEX } from '../config/smartex';
 
 /**
@@ -108,9 +109,14 @@ const CHEMIN_BOUCLIER = 'M64 6 L120 30 V74 C120 111 96 133 64 143 C32 133 8 111 
  * Page d'entrée de la plateforme (URL racine). Volontairement réduite au seul
  * héros : la présentation détaillée vit sur /accueil, /methodologie et
  * /formules. Rendue dans LayoutPublic, qui masque le pied de page sur cette
- * route ; le thème clair/sombre est hérité (tokens `ink`/`surface`).
+ * route. Le thème sombre y est imposé — le décor « tech » (maillage émeraude,
+ * impulsions) est conçu pour un fond sombre — et la bascule de thème est
+ * masquée le temps de la visite ; la préférence de l'utilisateur est
+ * conservée et reprend effet dès qu'il quitte la page.
  */
 export default function Landing() {
+  useSombreForce();
+
   return (
     <section className="relative overflow-hidden">
       <FondTech />
