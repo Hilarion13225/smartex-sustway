@@ -40,6 +40,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   const [erreur, setErreur] = useState(null);
   const [brouillonEnregistre, setBrouillonEnregistre] = useState(false);
   const [listeOuverte, setListeOuverte] = useState(false);
+  const [depotEnCours, setDepotEnCours] = useState(false);
   const [analyse, setAnalyse] = useState(null);
   const [analyseEnCours, setAnalyseEnCours] = useState(false);
   const [erreurAnalyse, setErreurAnalyse] = useState(null);
@@ -54,10 +55,16 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
 
   useEffect(() => () => clearTimeout(minuteur.current), []);
 
-  /** Recharge l'évaluation la plus récente et les preuves du critère affiché. */
-  const chargerCritere = useCallback(() => {
+  /**
+   * Recharge l'évaluation la plus récente et les preuves du critère affiché.
+   * `silencieux` évite de masquer la carte derrière l'indicateur de chargement
+   * quand elle est déjà à l'écran — après un dépôt de preuve, seule la liste
+   * des fichiers change, faire disparaître le critère donnerait l'impression
+   * d'un rechargement de la page.
+   */
+  const chargerCritere = useCallback((silencieux = false) => {
     if (!critereId) return;
-    setChargement(true);
+    if (!silencieux) setChargement(true);
     setErreur(null);
     setErreurAnalyse(null);
     Promise.all([
@@ -180,6 +187,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   /** Téléverse chaque fichier puis l'associe au critère comme preuve. */
   async function ajouterPreuves(fichiers) {
     setErreur(null);
+    setDepotEnCours(true);
     try {
       for (const fichier of fichiers) {
         const donnees = new FormData();
@@ -192,10 +200,12 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
           auditCritereIds: [critereId],
         });
       }
-      chargerCritere();
+      chargerCritere(true);
       surChangement?.();
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Dépôt de la preuve impossible');
+    } finally {
+      setDepotEnCours(false);
     }
   }
 
@@ -256,6 +266,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',
               }))}
               surAjoutFichiers={ajouterPreuves}
+              depotEnCours={depotEnCours}
               surPrecedent={() => allerA(indice - 1)}
               surBrouillon={surBrouillon}
               surContinuer={surContinuer}

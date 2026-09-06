@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import CarteNiveauMaturite from './CarteNiveauMaturite';
 import SectionCommentaire from './SectionCommentaire';
 import DepotPreuves from './DepotPreuves';
@@ -24,6 +24,7 @@ export default function CarteCritere({
   fichiers,
   surAjoutFichiers,
   surSuppressionFichier,
+  depotEnCours,
   surPrecedent,
   surBrouillon,
   surContinuer,
@@ -72,8 +73,14 @@ export default function CarteCritere({
       </div>
 
       <div className="mt-7">
-        <p className="text-sm font-medium text-ink-700">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink-700">
           Preuves et documents <span className="text-ink-400">(optionnel)</span>
+          {depotEnCours ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-normal text-ink-500">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              Dépôt en cours…
+            </span>
+          ) : null}
         </p>
         <div className="mt-2.5 grid gap-4 lg:grid-cols-2">
           <DepotPreuves surAjout={surAjoutFichiers} />
