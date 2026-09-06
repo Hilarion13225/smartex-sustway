@@ -20,6 +20,7 @@ public record QuestionMissionDto(
         boolean obligatoire,
         String statut,
         ValeurReponse valeur,
+        Short niveau,
         String commentaire,
         OffsetDateTime dateReponse
 ) {
@@ -35,6 +36,7 @@ public record QuestionMissionDto(
                 question.isObligatoire(),
                 auditQuestion.getStatut(),
                 reponse != null ? reponse.getValeur() : null,
+                reponse != null ? reponse.getNiveau() : null,
                 reponse != null ? reponse.getCommentaire() : null,
                 reponse != null ? reponse.getUpdatedAt() : null
         );

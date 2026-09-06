@@ -107,10 +107,11 @@ public class ReponseQuestionResource {
                         return nouvelle;
                     });
             reponse.setValeur(saisie.valeur());
+            reponse.setNiveau(saisie.niveau() == null ? null : saisie.niveau().shortValue());
             reponse.setCommentaire(commentaire);
             reponse.setAuteur(utilisateurRepository.findById(utilisateurId));
 
-            boolean renseignee = saisie.valeur() != null || commentaire != null;
+            boolean renseignee = saisie.niveau() != null || saisie.valeur() != null || commentaire != null;
             auditQuestion.setStatut(renseignee ? STATUT_REPONDU : STATUT_A_REPONDRE);
         }
 

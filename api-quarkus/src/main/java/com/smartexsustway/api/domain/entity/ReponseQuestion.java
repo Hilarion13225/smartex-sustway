@@ -41,10 +41,19 @@ public class ReponseQuestion {
     @JoinColumn(name = "audit_question_id", nullable = false, unique = true)
     private AuditQuestion auditQuestion;
 
+    /**
+     * Réponse antérieure au passage à l'échelle de maturité (V26). Conservée
+     * en lecture pour l'historique (RG14) ; les nouvelles saisies renseignent
+     * {@link #niveau}.
+     */
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "valeur", columnDefinition = "valeur_reponse")
     private ValeurReponse valeur;
+
+    /** Niveau de maturité déclaré, de 1 à 5 (voir NiveauMaturite). */
+    @Column(name = "niveau")
+    private Short niveau;
 
     @Column(name = "commentaire", columnDefinition = "text")
     private String commentaire;
@@ -83,6 +92,14 @@ public class ReponseQuestion {
 
     public void setValeur(ValeurReponse valeur) {
         this.valeur = valeur;
+    }
+
+    public Short getNiveau() {
+        return niveau;
+    }
+
+    public void setNiveau(Short niveau) {
+        this.niveau = niveau;
     }
 
     public String getCommentaire() {

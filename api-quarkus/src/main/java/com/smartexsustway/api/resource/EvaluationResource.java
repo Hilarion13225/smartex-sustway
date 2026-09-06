@@ -7,14 +7,17 @@ import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Evaluation;
 import com.smartexsustway.api.domain.entity.Preuve;
+import com.smartexsustway.api.domain.entity.ReponseQuestion;
 import com.smartexsustway.api.domain.enums.SourceEvaluation;
 import com.smartexsustway.api.domain.enums.StatutEvaluation;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
+import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.domain.rules.NiveauMaturite;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.ia.EvaluerCritereRequestDto;
 import com.smartexsustway.api.ia.EvaluerCritereResponseDto;
@@ -68,10 +71,13 @@ public class EvaluationResource {
     private static final String FORMULE_AVANCEES = "AVANCEES";
     /** Reflète AuditCritere.statut par défaut ("A_EVALUER", voir AuditCritere.java). */
     private static final String STATUT_EVALUE = "EVALUE";
+    /** Reflète AuditQuestion.statut (voir ReponseQuestionResource). */
+    private static final String STATUT_REPONDU = "REPONDU";
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject PreuveRepository preuveRepository;
+    @Inject AuditQuestionRepository auditQuestionRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject EvaluationRepository evaluationRepository;
@@ -248,6 +254,7 @@ public class EvaluationResource {
         evaluationRepository.persistAndFlush(evaluation);
 
         auditCritere.setStatut(STATUT_EVALUE);
+        reporterNiveauSurQuestionnaire(auditCritere, requete.niveau(), utilisateurId);
         nonConformiteService.genererSiNecessaire(evaluation);
         scoreHistoriqueService.enregistrer(audit);
 
@@ -255,6 +262,32 @@ public class EvaluationResource {
                 evaluation.getId());
 
         return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+    }
+
+    /**
+     * Reporte le niveau saisi sur les questions du critère (RG09).
+     *
+     * Le questionnaire et la note portent désormais la même échelle : sans ce
+     * report, le niveau choisi par l'auditeur resterait invisible du pipeline
+     * d'agents, qui ne lit que les réponses déclarées — l'écran de saisie et
+     * l'analyse IA travailleraient sur des données distinctes.
+     *
+     * Le commentaire de la réponse n'est pas touché : il appartient à la
+     * saisie déclarative de l'entreprise, non à l'évaluation de l'auditeur.
+     */
+    private void reporterNiveauSurQuestionnaire(AuditCritere auditCritere, int niveau, UUID utilisateurId) {
+        var auteur = utilisateurRepository.findById(utilisateurId);
+        for (var auditQuestion : auditQuestionRepository.parAuditCritere(auditCritere.getId())) {
+            ReponseQuestion reponse = reponseQuestionRepository.parAuditQuestion(auditQuestion.getId())
+                    .orElseGet(() -> {
+                        ReponseQuestion nouvelle = new ReponseQuestion(auditQuestion);
+                        reponseQuestionRepository.persist(nouvelle);
+                        return nouvelle;
+                    });
+            reponse.setNiveau((short) niveau);
+            reponse.setAuteur(auteur);
+            auditQuestion.setStatut(STATUT_REPONDU);
+        }
     }
 
     /**
@@ -277,12 +310,26 @@ public class EvaluationResource {
     /** RG09 : réponses déjà saisies sur le critère, transmises au pipeline avec les preuves. */
     private List<EvaluerCritereRequestDto.ReponseDeclareeDto> reponsesDeclarees(UUID auditCritereId) {
         return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
-                .filter(r -> r.getValeur() != null || r.getCommentaire() != null)
+                .filter(r -> r.getNiveau() != null || r.getValeur() != null || r.getCommentaire() != null)
                 .map(r -> new EvaluerCritereRequestDto.ReponseDeclareeDto(
                         r.getAuditQuestion().getQuestion().getLibelle(),
-                        r.getValeur() != null ? r.getValeur().name() : null,
+                        valeurDeclaree(r),
                         r.getCommentaire()))
                 .toList();
+    }
+
+    /**
+     * Réponse transmise aux agents, sous forme de texte : le niveau de
+     * maturité depuis V26 (« 4 — Active »), à défaut l'ancienne valeur fermée
+     * pour les réponses saisies avant ce changement.
+     */
+    private static String valeurDeclaree(ReponseQuestion reponse) {
+        String niveau = NiveauMaturite.libelleComplet(
+                reponse.getNiveau() == null ? null : reponse.getNiveau().intValue());
+        if (niveau != null) {
+            return niveau;
+        }
+        return reponse.getValeur() != null ? reponse.getValeur().name() : null;
     }
 
     /** RG21 : le pipeline d'agents exécuté (et donc le Risk Agent) dépend de la formule souscrite. */
