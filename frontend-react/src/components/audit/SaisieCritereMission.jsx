@@ -35,6 +35,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   const [indice, setIndice] = useState(0);
   const [niveau, setNiveau] = useState(null);
   const [commentaire, setCommentaire] = useState('');
+  const [question, setQuestion] = useState(null);
   const [preuves, setPreuves] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
@@ -70,8 +71,14 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/evaluations`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves`),
+      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/questions`),
     ])
-      .then(([evaluations, toutesLesPreuves]) => {
+      .then(([evaluations, toutesLesPreuves, saisie]) => {
+        // Le libellé du critère est une formulation déclarative, destinée aux
+        // tableaux et aux rapports ; c'est la question du référentiel, elle
+        // interrogative, qui s'adresse à l'auditeur (voir la migration V21).
+        setQuestion(saisie?.questions?.[0]?.libelle ?? null);
+
         // RG14 conserve tout l'historique : la dernière évaluation en date est
         // celle qui reflète l'état courant du critère.
         const parDateDecroissante = [...(evaluations ?? [])].sort(
@@ -256,7 +263,8 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
             <CarteCritere
               code={critere.critereCode}
               criticite={LIBELLES_CRITICITE[critere.criticite] ?? critere.criticite ?? '—'}
-              question={critere.critereLibelle}
+              question={question ?? critere.critereLibelle}
+              intitule={question ? critere.critereLibelle : null}
               niveauSelectionne={niveau}
               surSelectionNiveau={peutModifier ? setNiveau : () => {}}
               commentaire={commentaire}

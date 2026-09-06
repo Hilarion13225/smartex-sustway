@@ -16,6 +16,7 @@ export default function CarteCritere({
   code,
   criticite,
   question,
+  intitule,
   aide,
   niveauSelectionne,
   surSelectionNiveau,
@@ -40,7 +41,13 @@ export default function CarteCritere({
         </span>
       </div>
 
-      <h3 className="mt-6 flex items-start gap-2 text-xl font-bold leading-snug text-ink-900 sm:text-[1.4rem]">
+      {/* Intitulé déclaratif du critère : il situe la question sans la
+          répéter, et reste le libellé utilisé dans les rapports. */}
+      {intitule ? <p className="mt-4 text-sm text-ink-500">{intitule}</p> : null}
+
+      <h3
+        className={`${intitule ? 'mt-2' : 'mt-6'} flex items-start gap-2 text-xl font-bold leading-snug text-ink-900 sm:text-[1.4rem]`}
+      >
         <span>{question}</span>
         {aide ? (
           <span title={aide} className="mt-1.5 shrink-0 text-ink-400">
