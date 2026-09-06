@@ -20,7 +20,6 @@ import Faq from './pages/Faq';
 import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
-import VerificationEmail from './pages/VerificationEmail';
 import AccepterInvitation from './pages/AccepterInvitation';
 import MotDePasseOublie from './pages/MotDePasseOublie';
 import ReinitialiserMotDePasse from './pages/ReinitialiserMotDePasse';
@@ -79,7 +78,6 @@ export default function App() {
           </Route>
           <Route path="/connexion" element={<ConnexionReelle />} />
           <Route path="/inscription" element={<Inscription />} />
-          <Route path="/verification-email" element={<VerificationEmail />} />
           <Route path="/invitation/:token" element={<AccepterInvitation />} />
           <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />

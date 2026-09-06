@@ -14,6 +14,9 @@ import com.smartexsustway.api.resource.dto.ConnexionResponse;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.InscriptionRequest;
 import com.smartexsustway.api.resource.dto.MotDePasseOublieRequest;
+import com.smartexsustway.api.security.CodeVerificationService;
+import com.smartexsustway.api.resource.dto.RenvoiCodeRequest;
+import com.smartexsustway.api.resource.dto.VerificationCodeRequest;
 import com.smartexsustway.api.resource.dto.ReinitialiserMotDePasseRequest;
 import com.smartexsustway.api.resource.dto.UtilisateurDto;
 import com.smartexsustway.api.security.CodeNumeriqueGenerator;
@@ -75,6 +78,16 @@ public class AuthResource {
     @Inject
     EmailService emailService;
 
+    @Inject
+    CodeVerificationService codeVerificationService;
+
+    /**
+     * Sert uniquement à détecter l'absence d'envoi réel : sans clé Brevo, le
+     * code n'atteindrait personne et le compte serait inactivable en local.
+     */
+    @ConfigProperty(name = "smartex.mail.brevo-api-key")
+    Optional<String> mailApiKey;
+
     @ConfigProperty(name = "smartex.api.base-url", defaultValue = "http://localhost:8080")
     String apiBaseUrl;
 
@@ -105,17 +118,7 @@ public class AuthResource {
         Utilisateur utilisateur = new Utilisateur(requete.nom(), requete.prenom(), requete.email(), hash);
         utilisateurRepository.persist(utilisateur);
 
-        String tokenVerification = jwtService.genererTokenVerificationEmail(utilisateur.getId());
-        // Le lien pointe sur le frontend (page /verification-email), qui
-        // appelle lui-même GET /api/v1/auth/verification-email : un clic
-        // direct sur un lien pointant sur l'API afficherait du JSON brut.
-        String lienVerification = frontendBaseUrl + "/verification-email?token=" + tokenVerification;
-
-        // Filet de sécurité conservé même maintenant que l'envoi réel est
-        // branché (EmailService) : reste utile si Brevo n'est pas configuré
-        // (dev sans compte) ou temporairement indisponible.
-        LOG.infof("Lien de vérification email pour %s : %s", utilisateur.getEmail(), lienVerification);
-        emailService.envoyerVerificationEmail(utilisateur.getEmail(), utilisateur.getPrenom(), lienVerification);
+        envoyerCode(utilisateur);
 
         // TEMPORAIRE (voir smartex.auth.verification-email-obligatoire) : en
         // dev uniquement, l'email reste envoyé/journalisé comme d'habitude,
@@ -132,28 +135,86 @@ public class AuthResource {
         return Response.status(Response.Status.CREATED).entity(UtilisateurDto.depuis(utilisateur)).build();
     }
 
-    @GET
+    /**
+     * RG36 — activation du compte par code à usage unique.
+     *
+     * Les échecs renvoient tous 400 avec un message distinguant seulement la
+     * cause utile à l'utilisateur (code faux, expiré, trop d'essais) : préciser
+     * si l'adresse correspond à un compte permettrait d'énumérer les comptes,
+     * comme sur /connexion.
+     */
+    @POST
     @Path("/verification-email")
     @Transactional
-    public Response verifierEmail(@QueryParam("token") String token) {
-        UUID utilisateurId;
-        try {
-            utilisateurId = jwtService.validerTokenVerificationEmail(token);
-        } catch (Exception e) {
+    public Response verifierEmail(@Valid VerificationCodeRequest requete) {
+        Utilisateur utilisateur = utilisateurRepository.parEmail(requete.email()).orElse(null);
+        if (utilisateur == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErreurDto("Lien de vérification invalide ou expiré"))
-                    .build();
+                    .entity(new ErreurDto("Code invalide ou expiré")).build();
+        }
+        if (utilisateur.isEmailVerifie()) {
+            // Idempotent : un double envoi du formulaire ne doit pas se solder
+            // par une erreur alors que le compte est déjà actif.
+            return Response.ok(UtilisateurDto.depuis(utilisateur)).build();
         }
 
-        Utilisateur utilisateur = utilisateurRepository.findById(utilisateurId);
-        if (utilisateur == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        var resultat = codeVerificationService.verifier(utilisateur, requete.code());
+        if (resultat != CodeVerificationService.Resultat.VALIDE) {
+            auditLogService.journaliser(utilisateur.getId(), null, "CODE_VERIFICATION_REFUSE",
+                    "utilisateur", utilisateur.getId());
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ErreurDto(messageEchec(resultat))).build();
         }
 
         utilisateur.marquerEmailVerifie(); // RG36 : passe aussi le statut à ACTIF
         auditLogService.journaliser(utilisateur.getId(), null, "EMAIL_VERIFIE", "utilisateur", utilisateur.getId());
 
         return Response.ok(UtilisateurDto.depuis(utilisateur)).build();
+    }
+
+    /**
+     * Renvoie un code d'activation. Répond toujours 204, que l'adresse existe
+     * ou non et que le compte soit déjà actif ou non : la réponse ne doit rien
+     * apprendre sur l'existence d'un compte.
+     */
+    @POST
+    @Path("/verification-email/renvoyer")
+    @Transactional
+    public Response renvoyerCodeVerification(@Valid RenvoiCodeRequest requete) {
+        utilisateurRepository.parEmail(requete.email())
+                .filter(utilisateur -> !utilisateur.isEmailVerifie())
+                .ifPresent(this::envoyerCode);
+        return Response.noContent().build();
+    }
+
+    /**
+     * Émet un code et l'envoie par email.
+     *
+     * Le code n'est journalisé que si aucun envoi réel n'est possible (clé
+     * Brevo absente, cas du poste de développement) : le journaliser en
+     * production reviendrait à exposer un identifiant d'activation à
+     * quiconque lit les logs.
+     */
+    private void envoyerCode(Utilisateur utilisateur) {
+        String code = codeVerificationService.emettre(utilisateur);
+        long minutes = CodeVerificationService.DUREE_VALIDITE.toMinutes();
+        emailService.envoyerCodeVerification(utilisateur.getEmail(), utilisateur.getPrenom(), code, minutes);
+
+        if (mailApiKey.isEmpty() || mailApiKey.get().isBlank()) {
+            LOG.warnf("Envoi d'email non configuré — code d'activation de %s : %s (valable %d min)",
+                    utilisateur.getEmail(), code, minutes);
+        } else {
+            LOG.infof("Code d'activation émis pour %s (valable %d min)", utilisateur.getEmail(), minutes);
+        }
+    }
+
+    private static String messageEchec(CodeVerificationService.Resultat resultat) {
+        return switch (resultat) {
+            case CODE_EXPIRE -> "Ce code a expiré — demandez-en un nouveau";
+            case TROP_DE_TENTATIVES -> "Trop de tentatives sur ce code — demandez-en un nouveau";
+            case AUCUN_CODE -> "Aucun code en cours — demandez-en un nouveau";
+            default -> "Code invalide ou expiré";
+        };
     }
 
     /**

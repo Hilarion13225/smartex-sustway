@@ -19,6 +19,7 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { ApiError } from '../lib/apiClient';
 import SustwayLoader from '../components/SustwayLoader';
 import CadreAuth from '../components/CadreAuth';
+import SaisieCodeOtp, { LONGUEUR_CODE } from '../components/SaisieCodeOtp';
 
 const ATOUTS = [
   'Analyse documentaire par un pipeline d’agents IA, avec indice de confiance par critère.',
@@ -51,11 +52,32 @@ const COULEURS_FORCE = ['bg-rose-400', 'bg-amber-400', 'bg-amber-500', 'bg-brand
  * index numérique, car son déroulé diffère selon la formule choisie
  * (Free s'arrête avant le paiement, qui n'existe pas pour elle).
  */
+/** Durée de validité d'un code d'activation, alignée sur CodeVerificationService. */
+const DUREE_CODE_SECONDES = 180;
+
+/** Formate un décompte en m:ss. */
+function formaterDelai(secondes) {
+  const minutes = Math.floor(secondes / 60);
+  return `${minutes}:${String(secondes % 60).padStart(2, '0')}`;
+}
+
 export default function Inscription() {
   const navigate = useNavigate();
-  const { inscrire, connecter, creerEntreprise, payerAbonnement, listerFormules, listerSecteurs } = useApiAuth();
+  const {
+    inscrire,
+    verifierEmail,
+    renvoyerCodeVerification,
+    connecter,
+    creerEntreprise,
+    payerAbonnement,
+    listerFormules,
+    listerSecteurs,
+  } = useApiAuth();
 
   const [etape, setEtape] = useState('formule');
+  const [codeOtp, setCodeOtp] = useState('');
+  const [secondesRestantes, setSecondesRestantes] = useState(DUREE_CODE_SECONDES);
+  const [renvoiEnCours, setRenvoiEnCours] = useState(false);
   const [formules, setFormules] = useState([]);
   const [secteurs, setSecteurs] = useState([]);
   const [plan, setPlan] = useState('STANDARD');
@@ -127,6 +149,8 @@ export default function Inscription() {
     setChargement(true);
     try {
       await inscrire(formulaire.nom, formulaire.prenom, formulaire.email, formulaire.motDePasse);
+      setCodeOtp('');
+      setSecondesRestantes(DUREE_CODE_SECONDES);
       setEtape('verification');
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
@@ -135,97 +159,82 @@ export default function Inscription() {
     }
   }
 
-  // Étape "vérification" : aucune saisie à faire ici — l'activation se fait
-  // en cliquant le lien reçu par email (page /verification-email). Cette
-  // page sonde discrètement en arrière-plan (tentative de connexion toutes
-  // les 3s) pour détecter l'activation et enchaîner seule sur la suite,
-  // sans que l'utilisateur ait à revenir cliquer quoi que ce soit ici.
-  //
-  // setTimeout auto-programmé plutôt que setInterval : creerEntreprise()
-  // peut dépasser 3s (hashage du mot de passe, appel IA de scoring...), et
-  // un setInterval relancerait un sondage concurrent avant la fin du
-  // premier — son connecter() reposerait alors un jeton AUCUN_ROLE_ATTRIBUE
-  // par-dessus le jeton RESPONSABLE_ENTREPRISE fraîchement obtenu, laissant
-  // le compte bloqué sans permission malgré une entreprise bien créée (bug
-  // constaté en test réel). Le prochain sondage n'est reprogrammé qu'une
-  // fois le précédent entièrement résolu.
+  /**
+   * Décompte de validité du code. Il ne conditionne rien côté serveur, qui
+   * refait le calcul : il évite seulement à l'utilisateur de saisir un code
+   * déjà périmé pour découvrir l'échec après coup.
+   */
   useEffect(() => {
     if (etape !== 'verification') return undefined;
-
-    let annule = false;
-    let minuteur;
-    // RG20 (formule payante) : une fois l'email vérifié, creerEntreprise()
-    // peut échouer une ou deux fois sans rapport avec une vraie erreur
-    // métier — l'hébergement gratuit (Render...) met l'API en veille après
-    // inactivité, et le tout premier appel après ce réveil peut échouer ou
-    // traîner assez pour dépasser un délai réseau. Sans repli, l'utilisateur
-    // restait bloqué sur cet écran avec un message d'erreur silencieux
-    // (constaté en usage réel) malgré un compte bien vérifié côté serveur.
-    // On retente donc aussi sur ces échecs transitoires, un nombre de fois
-    // limité pour ne pas masquer indéfiniment une vraie erreur (ex. RCCM
-    // déjà utilisé).
-    const TENTATIVES_MAX_ECHEC_TRANSITOIRE = 8;
-    let tentativesEchecTransitoire = 0;
-
-    const sonder = async () => {
-      try {
-        const connexion = await connecter(formulaire.email, formulaire.motDePasse);
-        if (annule) return;
-
-        if (connexion.deuxFaRequise) {
-          // Cas limite : ne devrait pas arriver pour un compte tout juste créé
-          // (la 2FA se configure après coup), mais on ne bloque pas l'utilisateur.
-          setErreur('Ce compte a une double authentification active — connectez-vous via la page de connexion.');
-          return;
-        }
-
-        if (estFree) {
-          setEtape('confirmation');
-          return;
-        }
-
-        setChargement(true);
-        const { entreprise, abonnement } = await creerEntreprise({
-          raisonSociale: formulaire.raisonSociale,
-          identifiantLegal: formulaire.identifiantLegal,
-          secteurCode: formulaire.secteurCode || undefined,
-          taille: formulaire.taille || undefined,
-          formuleCode: plan,
-        });
-        if (annule) return;
-        setEntrepriseCreee(entreprise);
-        setAbonnementCree(abonnement);
-        setEtape('paiement');
-      } catch (err) {
-        if (annule) return;
-        // 403 = compte pas encore actif : c'est l'état normal tant que
-        // l'email n'a pas été vérifié, on continue simplement d'attendre.
-        if (err instanceof ApiError && err.statut === 403) {
-          minuteur = setTimeout(sonder, 3000);
-          return;
-        }
-        // Échec après un connecter() réussi (donc après vérification) :
-        // probablement transitoire (voir commentaire de l'effet) — on
-        // retente avec un délai plus long, jusqu'à épuisement du quota.
-        if (tentativesEchecTransitoire < TENTATIVES_MAX_ECHEC_TRANSITOIRE) {
-          tentativesEchecTransitoire += 1;
-          minuteur = setTimeout(sonder, 5000);
-          return;
-        }
-        setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
-      } finally {
-        if (!annule) setChargement(false);
-      }
-    };
-
-    minuteur = setTimeout(sonder, 3000);
-
-    return () => {
-      annule = true;
-      clearTimeout(minuteur);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const minuteur = setInterval(() => {
+      setSecondesRestantes((restant) => (restant <= 1 ? 0 : restant - 1));
+    }, 1000);
+    return () => clearInterval(minuteur);
   }, [etape]);
+
+  /**
+   * Suite du parcours une fois le compte activé : connexion, puis création de
+   * l'entreprise pour les formules payantes. Extrait de la validation du code
+   * pour que « Activer » puisse être rejoué sans réactiver le compte — la
+   * vérification est idempotente côté serveur.
+   */
+  async function poursuivreApresActivation() {
+    const connexion = await connecter(formulaire.email, formulaire.motDePasse);
+
+    if (connexion.deuxFaRequise) {
+      // Cas limite : ne devrait pas arriver pour un compte tout juste créé
+      // (la 2FA se configure après coup), mais on ne bloque pas l'utilisateur.
+      setErreur('Ce compte a une double authentification active — connectez-vous via la page de connexion.');
+      return;
+    }
+
+    if (estFree) {
+      setEtape('confirmation');
+      return;
+    }
+
+    const { entreprise, abonnement } = await creerEntreprise({
+      raisonSociale: formulaire.raisonSociale,
+      identifiantLegal: formulaire.identifiantLegal,
+      secteurCode: formulaire.secteurCode || undefined,
+      taille: formulaire.taille || undefined,
+      formuleCode: plan,
+    });
+    setEntrepriseCreee(entreprise);
+    setAbonnementCree(abonnement);
+    setEtape('paiement');
+  }
+
+  async function validerCode() {
+    if (codeOtp.length < LONGUEUR_CODE) return;
+    setErreur(null);
+    setChargement(true);
+    try {
+      await verifierEmail(formulaire.email, codeOtp);
+      await poursuivreApresActivation();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+      // Le code est effacé pour éviter de renvoyer tel quel un code refusé :
+      // les essais sur un même code sont comptés côté serveur.
+      setCodeOtp('');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  async function renvoyerCode() {
+    setErreur(null);
+    setRenvoiEnCours(true);
+    try {
+      await renvoyerCodeVerification(formulaire.email);
+      setCodeOtp('');
+      setSecondesRestantes(DUREE_CODE_SECONDES);
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setRenvoiEnCours(false);
+    }
+  }
 
   async function soumettrePaiement(e) {
     e.preventDefault();
@@ -508,24 +517,56 @@ export default function Inscription() {
 
       {etape === 'verification' ? (
         <div>
-          <h2 className="text-lg font-semibold text-ink-900">Vérification de l’adresse email</h2>
-          <p className="mt-1 text-sm text-ink-500">Le compte n’est activé qu’après vérification de l’email.</p>
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
-            <Mail className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
-            <p className="text-sm font-semibold text-brand-800">
-              Vérifiez votre boîte mail pour activer votre compte.
-            </p>
+          <h2 className="text-lg font-semibold text-ink-900">Activation du compte</h2>
+          <p className="mt-1 text-sm text-ink-500">
+            Un code à six chiffres vient d’être envoyé à <strong>{formulaire.email}</strong>.
+          </p>
+
+          <div className="mt-6">
+            <SaisieCodeOtp
+              valeur={codeOtp}
+              surChangement={(valeur) => {
+                setCodeOtp(valeur);
+                setErreur(null);
+              }}
+              surValidation={validerCode}
+              desactive={chargement}
+              erreur={Boolean(erreur)}
+            />
           </div>
-          <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-200 py-8 text-center">
-            <SustwayLoader taille="md" />
-            <p className="text-sm text-ink-500">
-              En attente de la vérification… cette page continuera automatiquement dès que vous aurez cliqué le lien
-              reçu par email.
-            </p>
+
+          <p className="mt-4 text-center text-sm text-ink-500">
+            {secondesRestantes > 0 ? (
+              <>
+                Code valable encore{' '}
+                <strong className="tabular-nums text-ink-800">{formaterDelai(secondesRestantes)}</strong>
+              </>
+            ) : (
+              'Ce code a expiré — demandez-en un nouveau.'
+            )}
+          </p>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              className="btn-primary"
+              disabled={codeOtp.length < LONGUEUR_CODE || chargement || secondesRestantes === 0}
+              onClick={validerCode}
+            >
+              {chargement ? 'Activation…' : 'Activer mon compte'}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              disabled={chargement || renvoiEnCours}
+              onClick={renvoyerCode}
+            >
+              {renvoiEnCours ? 'Envoi…' : 'Renvoyer un code'}
+            </button>
           </div>
+
           <p className="mt-4 text-center text-xs text-ink-400">
-            Vous ne recevez rien (pensez au dossier spam) ? Le même lien est aussi journalisé dans les logs du
-            terminal <code>mvn quarkus:dev</code> — ouvrez-le pour activer votre compte.
+            Vous ne recevez rien ? Pensez au dossier indésirables, puis demandez un nouveau code.
           </p>
         </div>
       ) : null}

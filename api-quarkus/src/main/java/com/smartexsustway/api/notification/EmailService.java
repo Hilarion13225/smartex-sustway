@@ -51,22 +51,29 @@ public class EmailService {
     @ConfigProperty(name = "smartex.mail.from")
     String expediteur;
 
-    public void envoyerVerificationEmail(String destinataire, String prenom, String lienVerification) {
-        String sujet = "Vérifiez votre adresse email — SMARTEX SustWay";
+    /**
+     * RG36 — code d'activation de compte. Le code remplace l'ancien lien signé :
+     * l'utilisateur le saisit sur la plateforme sans quitter son inscription, et
+     * sa validité se compte en minutes plutôt qu'en heures.
+     */
+    public void envoyerCodeVerification(String destinataire, String prenom, String code, long minutesValidite) {
+        String sujet = "Votre code d'activation — SMARTEX SustWay";
 
         String texte = """
                 Bonjour %s,
 
                 Merci de votre inscription sur SMARTEX SustWay, la plateforme d'évaluation RSE pilotée par l'IA.
 
-                Pour activer votre compte, ouvrez le lien ci-dessous (valable 24 heures) :
-                %s
+                Votre code d'activation est : %s
 
-                Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email sans risque.
+                Saisissez-le sur la plateforme dans les %d minutes. Passé ce délai, demandez-en un nouveau.
+
+                Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email sans risque :
+                ce code seul ne permet d'activer aucun compte.
 
                 — L'équipe technique Smartex Expertises
                 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
-                """.formatted(prenom, lienVerification);
+                """.formatted(prenom, code, minutesValidite);
 
         String html = """
                 <!doctype html>
@@ -86,30 +93,24 @@ public class EmailService {
                               <td style="padding:32px;">
                                 <p style="margin:0 0 16px;color:#1f2533;font-size:16px;line-height:1.5;">Bonjour %s,</p>
                                 <p style="margin:0 0 24px;color:#1f2533;font-size:15px;line-height:1.6;">
-                                  Merci de votre inscription sur <strong>SMARTEX SustWay</strong>, la plateforme
-                                  d'évaluation RSE pilotée par l'intelligence artificielle. Il ne reste plus qu'une
-                                  étape avant d'accéder à votre espace : vérifier votre adresse email.
+                                  Voici votre code d'activation pour <strong>SMARTEX SustWay</strong>. Saisissez-le
+                                  sur la page d'inscription pour activer votre compte.
                                 </p>
                                 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
                                   <tr>
-                                    <td style="border-radius:10px;background-color:#128257;">
-                                      <a href="%s" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:10px;">
-                                        Vérifier mon adresse email
-                                      </a>
+                                    <td style="border-radius:12px;background-color:#f2fbf6;border:1px solid #b9e6cf;padding:18px 32px;">
+                                      <span style="display:block;color:#106848;font-size:34px;font-weight:700;letter-spacing:0.32em;text-align:center;font-family:'Courier New',monospace;">%s</span>
                                     </td>
                                   </tr>
                                 </table>
-                                <p style="margin:0 0 8px;color:#63728e;font-size:13px;line-height:1.5;">
-                                  Ce lien est valable 24 heures. Si le bouton ne fonctionne pas, copiez ce lien dans
-                                  votre navigateur :
-                                </p>
-                                <p style="margin:0 0 24px;word-break:break-all;">
-                                  <a href="%s" style="color:#106848;font-size:12px;">%s</a>
+                                <p style="margin:0 0 24px;color:#63728e;font-size:13px;line-height:1.5;text-align:center;">
+                                  Ce code est valable <strong>%d minutes</strong>. Passé ce délai, demandez-en un nouveau
+                                  depuis la plateforme.
                                 </p>
                                 <hr style="border:none;border-top:1px solid #eceef2;margin:0 0 20px;" />
                                 <p style="margin:0;color:#8290a9;font-size:12px;line-height:1.6;">
-                                  Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email
-                                  sans risque : aucun compte ne sera activé sans confirmation.
+                                  Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email : ce code seul
+                                  ne permet d'activer aucun compte.
                                 </p>
                               </td>
                             </tr>
@@ -125,7 +126,7 @@ public class EmailService {
                     </table>
                   </body>
                 </html>
-                """.formatted(prenom, lienVerification, lienVerification, lienVerification);
+                """.formatted(prenom, code, minutesValidite);
 
         envoyer(destinataire, sujet, texte, html, "l'inscription reste valide");
     }
