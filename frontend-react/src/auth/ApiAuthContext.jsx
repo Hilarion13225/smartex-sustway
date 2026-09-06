@@ -68,8 +68,14 @@ export function ApiAuthProvider({ children }) {
     return api.post('/api/v1/auth/inscription', { nom, prenom, email, motDePasse }, { avecAuth: false });
   }, []);
 
-  const verifierEmail = useCallback(async (tokenVerification) => {
-    return api.get(`/api/v1/auth/verification-email?token=${encodeURIComponent(tokenVerification)}`, { avecAuth: false });
+  /** RG36 — active le compte avec le code à usage unique reçu par email. */
+  const verifierEmail = useCallback(async (email, code) => {
+    return api.post('/api/v1/auth/verification-email', { email, code }, { avecAuth: false });
+  }, []);
+
+  /** Demande un nouveau code d'activation. Répond toujours, même adresse inconnue. */
+  const renvoyerCodeVerification = useCallback(async (email) => {
+    return api.post('/api/v1/auth/verification-email/renvoyer', { email }, { avecAuth: false });
   }, []);
 
   // --- Connexion (RG36 : deux étapes si la 2FA est active) ---------------
@@ -242,6 +248,7 @@ export function ApiAuthProvider({ children }) {
       estConnecte: Boolean(token && utilisateur),
       inscrire,
       verifierEmail,
+      renvoyerCodeVerification,
       connecter,
       confirmerDeuxFa,
       deconnecter,
@@ -273,6 +280,7 @@ export function ApiAuthProvider({ children }) {
       chargement,
       inscrire,
       verifierEmail,
+      renvoyerCodeVerification,
       connecter,
       confirmerDeuxFa,
       deconnecter,

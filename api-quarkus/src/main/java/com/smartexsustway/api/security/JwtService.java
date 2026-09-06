@@ -39,7 +39,6 @@ public class JwtService {
     JWTParser jwtParser;
 
     private static final Duration DUREE_VALIDITE_SESSION = Duration.ofHours(8);
-    private static final Duration DUREE_VALIDITE_VERIFICATION_EMAIL = Duration.ofHours(24);
     private static final Duration DUREE_VALIDITE_PRE_AUTH_2FA = Duration.ofMinutes(5);
     private static final Duration DUREE_VALIDITE_ACTIVATION_SMS = Duration.ofMinutes(10);
     private static final Duration DUREE_VALIDITE_REINITIALISATION_MDP = Duration.ofHours(1);
@@ -48,7 +47,6 @@ public class JwtService {
     private static final String CLAIM_CODE_HASH = "code_hash";
 
     public static final String PURPOSE_SESSION = "SESSION";
-    public static final String PURPOSE_EMAIL_VERIFICATION = "EMAIL_VERIFICATION";
     public static final String PURPOSE_PRE_AUTH_2FA = "PRE_AUTH_2FA";
     public static final String PURPOSE_ACTIVATION_SMS_2FA = "ACTIVATION_SMS_2FA";
     public static final String PURPOSE_PASSWORD_RESET = "PASSWORD_RESET";
@@ -72,15 +70,9 @@ public class JwtService {
         return builder.groups(java.util.Set.of(roleCode)).sign();
     }
 
-    // --- Vérification email (RG36) ---------------------------------------
-
-    public String genererTokenVerificationEmail(UUID utilisateurId) {
-        return genererTokenAvecCodeHash(utilisateurId, PURPOSE_EMAIL_VERIFICATION, null, DUREE_VALIDITE_VERIFICATION_EMAIL);
-    }
-
-    public UUID validerTokenVerificationEmail(String token) throws ParseException {
-        return validerTokenAvecCodeHash(token, PURPOSE_EMAIL_VERIFICATION).utilisateurId();
-    }
+    // La vérification d'email par lien signé a été remplacée par un code à
+    // usage unique (voir CodeVerificationService, migration V28) : les jetons
+    // correspondants n'ont plus lieu d'être émis.
 
     // --- Pré-authentification 2FA (login étape 1 -> étape 2) -------------
 

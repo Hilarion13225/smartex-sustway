@@ -16,10 +16,12 @@ public record QuestionMissionDto(
         String code,
         String libelle,
         String type,
+        String echelleReponse,
         int ordre,
         boolean obligatoire,
         String statut,
         ValeurReponse valeur,
+        Short niveau,
         String commentaire,
         OffsetDateTime dateReponse
 ) {
@@ -31,10 +33,12 @@ public record QuestionMissionDto(
                 question.getCode(),
                 question.getLibelle(),
                 question.getType().name(),
+                question.getEchelleReponse(),
                 question.getOrdre(),
                 question.isObligatoire(),
                 auditQuestion.getStatut(),
                 reponse != null ? reponse.getValeur() : null,
+                reponse != null ? reponse.getNiveau() : null,
                 reponse != null ? reponse.getCommentaire() : null,
                 reponse != null ? reponse.getUpdatedAt() : null
         );

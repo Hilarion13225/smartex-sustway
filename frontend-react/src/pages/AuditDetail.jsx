@@ -26,8 +26,14 @@ export default function AuditDetail() {
 
   const [erreurSites, setErreurSites] = useState(null);
 
-  const rafraichir = useCallback(() => {
-    setChargement(true);
+  /**
+   * `silencieux` recharge les données sans repasser la page en écran de
+   * chargement : celui-ci démonte toute la mission, ce qui ferait perdre à la
+   * saisie de critère son état (critère courant, commentaire en cours). Il est
+   * réservé au premier affichage, où il n'y a encore rien à préserver.
+   */
+  const rafraichir = useCallback((silencieux = false) => {
+    if (!silencieux) setChargement(true);
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres`),
@@ -51,6 +57,8 @@ export default function AuditDetail() {
   useEffect(() => {
     rafraichir();
   }, [rafraichir]);
+
+  const rafraichirSilencieux = useCallback(() => rafraichir(true), [rafraichir]);
 
   const peutModifier = peut('audit:modifier', audit?.formuleCode);
 
@@ -182,7 +190,7 @@ export default function AuditDetail() {
               auditId={auditId}
               criteres={criteres ?? []}
               peutModifier={peutModifier}
-              surChangement={rafraichir}
+              surChangement={rafraichirSilencieux}
             />
           </Revele>
         </>

@@ -22,15 +22,14 @@ import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../com
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
+import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
 
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 'vert' };
-const VALEURS_REPONSE = [
-  { code: 'OUI', libelle: 'Oui' },
-  { code: 'NON', libelle: 'Non' },
-  { code: 'PARTIEL', libelle: 'Partiellement' },
-  { code: 'NON_APPLICABLE', libelle: 'Non applicable' },
-];
+// Le questionnaire se répond sur l'échelle de maturité à cinq niveaux, la
+// même que la saisie de critère et que la note d'évaluation. Les anciennes
+// réponses fermées (OUI/NON/PARTIEL) restent lisibles en base mais ne sont
+// plus proposées à la saisie.
 
 export default function CritereEvaluation() {
   const { entrepriseId, auditId, auditCritereId } = useParams();
@@ -86,7 +85,7 @@ export default function CritereEvaluation() {
   // RG09 : la collecte déclarative vaut source d'analyse au même titre que
   // les preuves — l'API accepte l'évaluation dès que l'une des deux existe.
   const declaratifRenseigne = Boolean(
-    saisie && (saisie.scenario || (saisie.questions ?? []).some((q) => q.valeur || q.commentaire))
+    saisie && (saisie.scenario || (saisie.questions ?? []).some((q) => q.niveau || q.valeur || q.commentaire))
   );
 
   return (
@@ -201,7 +200,7 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
           scenario,
           reponses: questions.map((q) => ({
             auditQuestionId: q.auditQuestionId,
-            valeur: reponses[q.auditQuestionId]?.valeur || null,
+            niveau: reponses[q.auditQuestionId]?.niveau ?? null,
             commentaire: reponses[q.auditQuestionId]?.commentaire || null,
           })),
         }
@@ -230,11 +229,12 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
 
             {q.type === 'FERMEE' ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                {VALEURS_REPONSE.map((v) => (
+                {NIVEAUX_MATURITE.map((n) => (
                   <label
-                    key={v.code}
+                    key={n.niveau}
+                    title={n.description}
                     className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm ${
-                      reponses[q.auditQuestionId]?.valeur === v.code
+                      reponses[q.auditQuestionId]?.niveau === n.niveau
                         ? 'border-brand-500 bg-brand-50 text-brand-700'
                         : 'border-ink-200 text-ink-600'
                     } ${peutRepondre ? '' : 'pointer-events-none opacity-60'}`}
@@ -243,19 +243,19 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
                       type="radio"
                       className="sr-only"
                       name={`reponse-${q.auditQuestionId}`}
-                      value={v.code}
-                      checked={reponses[q.auditQuestionId]?.valeur === v.code}
+                      value={n.niveau}
+                      checked={reponses[q.auditQuestionId]?.niveau === n.niveau}
                       disabled={!peutRepondre}
-                      onChange={() => modifier(q.auditQuestionId, 'valeur', v.code)}
+                      onChange={() => modifier(q.auditQuestionId, 'niveau', n.niveau)}
                     />
-                    {v.libelle}
+                    {n.niveau} — {n.titre}
                   </label>
                 ))}
-                {peutRepondre && reponses[q.auditQuestionId]?.valeur ? (
+                {peutRepondre && reponses[q.auditQuestionId]?.niveau ? (
                   <button
                     type="button"
                     className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm text-ink-600"
-                    onClick={() => modifier(q.auditQuestionId, 'valeur', null)}
+                    onClick={() => modifier(q.auditQuestionId, 'niveau', null)}
                   >
                     <Eraser className="mr-1 inline h-4 w-4" aria-hidden />
                     Effacer la réponse
@@ -321,7 +321,7 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
 
 function reponsesInitiales(saisie) {
   return Object.fromEntries(
-    (saisie?.questions ?? []).map((q) => [q.auditQuestionId, { valeur: q.valeur, commentaire: q.commentaire ?? '' }])
+    (saisie?.questions ?? []).map((q) => [q.auditQuestionId, { niveau: q.niveau ?? null, commentaire: q.commentaire ?? '' }])
   );
 }
 

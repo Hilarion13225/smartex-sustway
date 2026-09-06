@@ -49,6 +49,13 @@ public class Question {
     @Column(name = "obligatoire", nullable = false)
     private boolean obligatoire = true;
 
+    /**
+     * Échelle attendue en réponse : {@code MATURITE} (niveau 1 à 5) ou
+     * {@code BINAIRE} (constat de fait, oui/non). Voir V27.
+     */
+    @Column(name = "echelle_reponse", nullable = false, length = 20)
+    private String echelleReponse = "MATURITE";
+
     protected Question() {
         // JPA
     }
@@ -67,6 +74,10 @@ public class Question {
 
     public String getLibelle() {
         return libelle;
+    }
+
+    public String getEchelleReponse() {
+        return echelleReponse;
     }
 
     public TypeQuestion getType() {
