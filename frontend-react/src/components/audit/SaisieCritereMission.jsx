@@ -26,7 +26,6 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   const [indice, setIndice] = useState(0);
   const [niveau, setNiveau] = useState(null);
   const [commentaire, setCommentaire] = useState('');
-  const [marquePourRevue, setMarquePourRevue] = useState(false);
   const [preuves, setPreuves] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
@@ -160,8 +159,6 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
           code={critere.critereCode}
           criticite={LIBELLES_CRITICITE[critere.criticite] ?? critere.criticite ?? '—'}
           question={critere.critereLibelle}
-          marquePourRevue={marquePourRevue}
-          surMarquerPourRevue={() => setMarquePourRevue((valeur) => !valeur)}
           niveauSelectionne={niveau}
           surSelectionNiveau={peutModifier ? setNiveau : () => {}}
           commentaire={commentaire}

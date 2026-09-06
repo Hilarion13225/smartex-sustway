@@ -1,5 +1,4 @@
-import { Bookmark, Info } from 'lucide-react';
-import clsx from 'clsx';
+import { Info } from 'lucide-react';
 import CarteNiveauMaturite from './CarteNiveauMaturite';
 import SectionCommentaire from './SectionCommentaire';
 import DepotPreuves from './DepotPreuves';
@@ -18,8 +17,6 @@ export default function CarteCritere({
   criticite,
   question,
   aide,
-  marquePourRevue,
-  surMarquerPourRevue,
   niveauSelectionne,
   surSelectionNiveau,
   commentaire,
@@ -35,26 +32,11 @@ export default function CarteCritere({
 }) {
   return (
     <article className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-sm sm:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold text-brand-600 dark:text-brand-400">{code}</span>
-          <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
-            Criticité&nbsp;: {criticite}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          onClick={surMarquerPourRevue}
-          aria-pressed={marquePourRevue}
-          className={clsx(
-            'inline-flex items-center gap-2 text-sm font-medium transition-colors',
-            marquePourRevue ? 'text-brand-600 dark:text-brand-400' : 'text-ink-500 hover:text-ink-800'
-          )}
-        >
-          <Bookmark className={clsx('h-4 w-4', marquePourRevue && 'fill-current')} aria-hidden />
-          {marquePourRevue ? 'Marqué pour revue' : 'Marquer pour revue'}
-        </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="text-sm font-semibold text-brand-600 dark:text-brand-400">{code}</span>
+        <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
+          Criticité&nbsp;: {criticite}
+        </span>
       </div>
 
       <h3 className="mt-6 flex items-start gap-2 text-xl font-bold leading-snug text-ink-900 sm:text-[1.4rem]">
