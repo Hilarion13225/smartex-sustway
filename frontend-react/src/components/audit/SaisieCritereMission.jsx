@@ -36,6 +36,11 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   const [niveau, setNiveau] = useState(null);
   const [commentaire, setCommentaire] = useState('');
   const [question, setQuestion] = useState(null);
+  // Question factuelle : la réponse est un oui/non rangé dans le
+  // questionnaire, non un niveau de maturité (voir la migration V27).
+  const [questionBinaire, setQuestionBinaire] = useState(null);
+  const [reponseBinaire, setReponseBinaire] = useState(null);
+  const [scenario, setScenario] = useState(null);
   const [preuves, setPreuves] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
@@ -77,7 +82,16 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
         // Le libellé du critère est une formulation déclarative, destinée aux
         // tableaux et aux rapports ; c'est la question du référentiel, elle
         // interrogative, qui s'adresse à l'auditeur (voir la migration V21).
-        setQuestion(saisie?.questions?.[0]?.libelle ?? null);
+        const premiereQuestion = saisie?.questions?.[0] ?? null;
+        setQuestion(premiereQuestion?.libelle ?? null);
+        setQuestionBinaire(
+          premiereQuestion?.echelleReponse === 'BINAIRE' ? premiereQuestion : null
+        );
+        setReponseBinaire(premiereQuestion?.valeur ?? null);
+        // Le scénario appartient à la saisie déclarative du critère et non à
+        // cet écran ; il est retransmis tel quel pour ne pas être effacé par
+        // l'enregistrement d'une réponse.
+        setScenario(saisie?.scenario ?? null);
 
         // RG14 conserve tout l'historique : la dernière évaluation en date est
         // celle qui reflète l'état courant du critère.
@@ -132,8 +146,44 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   const desynchronisee =
     analyse != null && signatureAnalysee !== signature(niveau, commentaire, preuves.length);
 
+  /**
+   * Enregistre une question factuelle : la réponse va au questionnaire
+   * déclaratif (RG09), sans produire d'évaluation — un oui/non ne se convertit
+   * pas en note de maturité. Le critère est ensuite évalué par le pipeline
+   * d'agents, qui lit cette réponse.
+   */
+  async function enregistrerReponseBinaire() {
+    await api.put(
+      `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/questions`,
+      {
+        scenario,
+        reponses: [
+          {
+            auditQuestionId: questionBinaire.auditQuestionId,
+            valeur: reponseBinaire,
+            commentaire: commentaire || null,
+          },
+        ],
+      }
+    );
+    setDernierEnregistrement(new Date().toISOString());
+    surChangement?.();
+    return true;
+  }
+
   async function enregistrer() {
-    if (!critereId || niveau == null) return false;
+    if (!critereId) return false;
+    if (questionBinaire) {
+      if (!reponseBinaire) return false;
+      setErreur(null);
+      try {
+        return await enregistrerReponseBinaire();
+      } catch (err) {
+        setErreur(err instanceof ApiError ? err.message : 'Enregistrement impossible');
+        return false;
+      }
+    }
+    if (niveau == null) return false;
     setErreur(null);
     try {
       const evaluation = await api.put(
@@ -265,8 +315,11 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
               criticite={LIBELLES_CRITICITE[critere.criticite] ?? critere.criticite ?? '—'}
               question={question ?? critere.critereLibelle}
               intitule={question ? critere.critereLibelle : null}
+              binaire={questionBinaire != null}
               niveauSelectionne={niveau}
               surSelectionNiveau={peutModifier ? setNiveau : () => {}}
+              reponseBinaire={reponseBinaire}
+              surSelectionBinaire={peutModifier ? setReponseBinaire : () => {}}
               commentaire={commentaire}
               surChangementCommentaire={setCommentaire}
               fichiers={preuves.map((preuve) => ({

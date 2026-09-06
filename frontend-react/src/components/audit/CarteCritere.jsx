@@ -4,6 +4,7 @@ import SectionCommentaire from './SectionCommentaire';
 import DepotPreuves from './DepotPreuves';
 import ListeFichiers from './ListeFichiers';
 import ActionsCritere from './ActionsCritere';
+import CarteReponseBinaire from './CarteReponseBinaire';
 import { NIVEAUX_MATURITE } from './niveauxMaturite';
 
 /**
@@ -18,8 +19,11 @@ export default function CarteCritere({
   question,
   intitule,
   aide,
+  binaire,
   niveauSelectionne,
   surSelectionNiveau,
+  reponseBinaire,
+  surSelectionBinaire,
   commentaire,
   surChangementCommentaire,
   fichiers,
@@ -57,23 +61,29 @@ export default function CarteCritere({
         ) : null}
       </h3>
       <p className="mt-3 text-sm text-ink-500">
-        Sélectionnez le niveau qui décrit le mieux la situation actuelle de votre organisation.
+        {binaire
+          ? 'Cette question constate une situation : répondez par oui ou par non.'
+          : 'Sélectionnez le niveau qui décrit le mieux la situation actuelle de votre organisation.'}
       </p>
 
-      {/* Cinq colonnes seulement à partir de `xl` : en dessous, les
-          descriptions deviendraient illisibles sur une colonne de 150 px. */}
-      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {NIVEAUX_MATURITE.map((niveau) => (
-          <CarteNiveauMaturite
-            key={niveau.niveau}
-            niveau={niveau.niveau}
-            titre={niveau.titre}
-            description={niveau.description}
-            selectionne={niveauSelectionne === niveau.niveau}
-            surSelection={() => surSelectionNiveau(niveau.niveau)}
-          />
-        ))}
-      </div>
+      {binaire ? (
+        <CarteReponseBinaire valeur={reponseBinaire} surSelection={surSelectionBinaire} />
+      ) : (
+        /* Cinq colonnes seulement à partir de `xl` : en dessous, les
+           descriptions deviendraient illisibles sur une colonne de 150 px. */
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+          {NIVEAUX_MATURITE.map((niveau) => (
+            <CarteNiveauMaturite
+              key={niveau.niveau}
+              niveau={niveau.niveau}
+              titre={niveau.titre}
+              description={niveau.description}
+              selectionne={niveauSelectionne === niveau.niveau}
+              surSelection={() => surSelectionNiveau(niveau.niveau)}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="mt-7">
         <SectionCommentaire valeur={commentaire} surChangement={surChangementCommentaire} />
