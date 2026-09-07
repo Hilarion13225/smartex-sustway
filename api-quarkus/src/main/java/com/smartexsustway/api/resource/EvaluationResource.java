@@ -194,6 +194,9 @@ public class EvaluationResource {
         // quels documents il a lus. Sans ces deux informations, un résultat de
         // conformité n'est pas contrôlable par le superviseur.
         evaluation.setCouverturePreuve(reponse.couverturePreuve());
+        // Niveau déclaré au moment de l'analyse, figé ici : le relire plus tard
+        // ne dirait rien, les réponses ayant pu changer depuis.
+        evaluation.setNiveauDeclare(niveauDeclare(auditCritereId));
         // persistAndFlush (et non persist seul) : @CreationTimestamp n'est
         // renseigné par Hibernate qu'au flush, qui autrement n'aurait lieu
         // qu'à la fin de la transaction — sans ce flush explicite,
@@ -279,6 +282,22 @@ public class EvaluationResource {
                 evaluation.getId());
 
         return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+    }
+
+    /**
+     * Niveau déclaré sur ce critère, s'il en existe un.
+     *
+     * Une déclaration se fait question par question ; un critère n'en portant
+     * qu'une aujourd'hui, la première renseignée suffit. La moyenne serait
+     * trompeuse le jour où un critère en portera plusieurs — mieux vaut alors
+     * expliciter la règle que la deviner ici.
+     */
+    private Short niveauDeclare(UUID auditCritereId) {
+        return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
+                .map(ReponseQuestion::getNiveau)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

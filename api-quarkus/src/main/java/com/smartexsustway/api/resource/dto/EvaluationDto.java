@@ -17,6 +17,8 @@ public record EvaluationDto(
         String justification,
         /** Jugement de l'IA sur la suffisance des preuves ; null pour une saisie humaine. */
         Boolean couverturePreuve,
+        /** Niveau déclaré au moment de l'analyse ; null pour une saisie humaine. */
+        Short niveauDeclare,
         /** Documents effectivement lus par l'IA, avec le résumé qu'elle en a tiré. */
         List<DocumentAnalyseDto> documentsAnalyses,
         String source,
@@ -42,7 +44,7 @@ public record EvaluationDto(
                 .toList();
         return new EvaluationDto(
                 e.getId(), e.getAuditCritere().getId(), e.getProbabiliteConforme(), e.getNote(),
-                e.getConfianceIa(), e.getJustification(), e.getCouverturePreuve(), documents, e.getSource().name(),
+                e.getConfianceIa(), e.getJustification(), e.getCouverturePreuve(), e.getNiveauDeclare(), documents, e.getSource().name(),
                 e.getStatut().name(),
                 e.getDateEvaluation(),
                 e.getSignalRisque(), e.getCategorieRisque(), e.getJustificationRisque(),

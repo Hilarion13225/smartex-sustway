@@ -60,6 +60,14 @@ public class Evaluation {
     @Column(name = "couverture_preuve")
     private Boolean couverturePreuve;
 
+    /**
+     * Niveau déclaré par l'entreprise au moment de l'analyse. Comparé à la
+     * note, il montre la rectification opérée au vu des preuves. Null pour une
+     * saisie humaine, qui est elle-même la déclaration.
+     */
+    @Column(name = "niveau_declare")
+    private Short niveauDeclare;
+
     @Column(name = "justification", columnDefinition = "text")
     private String justification;
 
@@ -145,6 +153,14 @@ public class Evaluation {
 
     public void setConfianceIa(BigDecimal confianceIa) {
         this.confianceIa = confianceIa;
+    }
+
+    public Short getNiveauDeclare() {
+        return niveauDeclare;
+    }
+
+    public void setNiveauDeclare(Short niveauDeclare) {
+        this.niveauDeclare = niveauDeclare;
     }
 
     public Boolean getCouverturePreuve() {

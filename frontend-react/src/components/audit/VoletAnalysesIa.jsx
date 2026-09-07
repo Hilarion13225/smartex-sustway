@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Loader } from '../ui';
 import TracabiliteIa from './TracabiliteIa';
+import Rectification from './Rectification';
 import { analyseDepuisEvaluation } from './analyseCritere';
 import { api } from '../../lib/apiClient';
 
@@ -114,6 +115,11 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
             </div>
 
             <div className="space-y-3">
+              <Rectification
+                niveauDeclare={analyse.niveauDeclare}
+                niveauRetenu={analyse.niveauRetenu}
+                compact
+              />
               <TracabiliteIa
                 couverturePreuve={analyse.couverturePreuve}
                 documents={analyse.documentsAnalyses}
