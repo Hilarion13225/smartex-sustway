@@ -2,7 +2,10 @@
 // Toutes les routes réelles sont sous /api/v1 — voir README racine du repo
 // pour la liste des endpoints disponibles à ce stade (phase B).
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// Vide par défaut : les appels partent en relatif sur l'origine de la page et
+// sont relayés vers l'API par le proxy Vite (voir vite.config.js). Renseigner
+// VITE_API_BASE_URL reste possible pour viser une API distante.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 const CLE_TOKEN = 'sustway.token';
 
 export function lireToken() {
