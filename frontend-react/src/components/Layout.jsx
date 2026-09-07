@@ -63,7 +63,9 @@ const GROUPES = [
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
       { vers: '/app/entreprises', libelle: 'Organisations', icone: Building2 },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
-      { vers: '/app/referentiels', libelle: 'Référentiel RSE', icone: BookOpen, permission: 'referentiel:administrer' },
+      // Consultation ouverte à tous : l'API ne protège pas la lecture des
+      // référentiels, seules création et modification exigent SUPER_ADMIN.
+      { vers: '/app/referentiels', libelle: 'Référentiel RSE', icone: BookOpen },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
       { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe d’audit', icone: Users },
     ],

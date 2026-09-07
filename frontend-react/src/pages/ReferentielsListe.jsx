@@ -3,17 +3,25 @@ import { Link } from 'react-router-dom';
 import { BookOpen, PlusCircle } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
-import { Alerte, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { ROLE_LIBELLE } from '../auth/permissions';
 
 const TYPES_REFERENTIEL = ['SMARTEX', 'PRI', 'GRESB', 'ITIE', 'IFC_SFI'];
 const STATUTS = ['ACTIF', 'INACTIF', 'SUSPENDU', 'ARCHIVE'];
 
-/** Module 4 (back-office) : gestion des référentiels — réservé à SUPER_ADMIN. */
+/**
+ * Module 4 (back-office) : référentiels d'évaluation.
+ *
+ * La consultation est ouverte à tout compte authentifié — l'API ne protège
+ * pas la lecture, et un auditeur doit pouvoir consulter le référentiel sur
+ * lequel il évalue. Seules la création et la modification restent réservées
+ * à SUPER_ADMIN (`referentiel:administrer`, aligné sur @RolesAllowed côté
+ * ReferentielResource).
+ */
 export default function ReferentielsListe() {
-  const { roleCourant, peut } = useApiAuth();
+  const { peut } = useApiAuth();
+  const peutAdministrer = peut('referentiel:administrer');
 
   const [referentiels, setReferentiels] = useState(null);
   const [chargement, setChargement] = useState(true);
@@ -44,27 +52,29 @@ export default function ReferentielsListe() {
     }
   }
 
-  if (!peut('referentiel:administrer')) {
-    return <Alerte ton="ambre">Cet espace est réservé aux super-administrateurs (rôle actuel : {ROLE_LIBELLE[roleCourant] ?? 'aucun'}).</Alerte>;
-  }
-
   return (
     <>
       <PageTitre
         icone={BookOpen}
-        titre="Référentiels"
-        description="Module 4 — back-office : référentiels, domaines et critères d'évaluation."
+        titre="Référentiel RSE"
+        description={
+          peutAdministrer
+            ? "Référentiels, domaines et critères d'évaluation."
+            : "Consultez les référentiels, leurs domaines et leurs critères d'évaluation."
+        }
         actions={
-          <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>
-            <PlusCircle className="h-4 w-4" aria-hidden />
-            Nouveau référentiel
-          </button>
+          peutAdministrer ? (
+            <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>
+              <PlusCircle className="h-4 w-4" aria-hidden />
+              Nouveau référentiel
+            </button>
+          ) : null
         }
       />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}
 
-      {afficherFormulaire ? (
+      {afficherFormulaire && peutAdministrer ? (
         <Revele>
           <Card className="mb-6 p-5">
             <NouveauReferentielFormulaire
@@ -90,21 +100,26 @@ export default function ReferentielsListe() {
                   <td className="td">{r.type}</td>
                   <td className="td">{r.version}</td>
                   <td className="td">
-                    <select
-                      className="input w-auto py-1 text-xs"
-                      value={r.statut}
-                      onChange={(e) => changerStatut(r.code, e.target.value)}
-                    >
-                      {STATUTS.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
+                    {peutAdministrer ? (
+                      <select
+                        className="input w-auto py-1 text-xs"
+                        aria-label={`Statut du référentiel ${r.code}`}
+                        value={r.statut}
+                        onChange={(e) => changerStatut(r.code, e.target.value)}
+                      >
+                        {STATUTS.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Badge ton={r.statut === 'ACTIF' ? 'vert' : 'neutre'}>{r.statut}</Badge>
+                    )}
                   </td>
                   <td className="td text-right">
                     <Link to={`/app/referentiels/${r.code}`} className="btn-ghost">
-                      Gérer
+                      {peutAdministrer ? 'Gérer' : 'Consulter'}
                     </Link>
                   </td>
                 </tr>
@@ -113,7 +128,7 @@ export default function ReferentielsListe() {
           </Card>
         </Revele>
       ) : (
-        <Vide message="Aucun référentiel — créez le premier." />
+        <Vide message={peutAdministrer ? 'Aucun référentiel — créez le premier.' : 'Aucun référentiel disponible.'} />
       )}
     </>
   );
