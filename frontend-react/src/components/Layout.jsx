@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   BookOpen,
   Building2,
@@ -33,7 +33,6 @@ const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
 const CLE_GROUPES_REPLIES = 'smartex.sidebarGroupesReplies';
 
 /** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
-const SEUIL_RECHERCHE_ENTREPRISE = 6;
 
 /**
  * Rôles habilités à administrer une entreprise (abonnement, journal) —
@@ -151,7 +150,6 @@ export default function Layout() {
   const [entrepriseCouranteId, setEntrepriseCouranteId] = useState(
     () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
   );
-  const [filtreEntreprise, setFiltreEntreprise] = useState('');
   const [groupesReplies, setGroupesReplies] = useState(() => {
     try {
       const brut = localStorage.getItem(CLE_GROUPES_REPLIES);
@@ -160,7 +158,6 @@ export default function Layout() {
       return new Set();
     }
   });
-  const navigate = useNavigate();
   const location = useLocation();
 
   /** Repli/dépli d'une section de la sidebar (ex. Pilotage, Audit) — mémorisé par titre de section, persiste entre sessions. */
@@ -182,56 +179,32 @@ export default function Layout() {
   }
 
   // Filtre par raison sociale / identifiant légal — l'entreprise déjà
-  // sélectionnée reste toujours proposée même si elle ne correspond plus au
-  // filtre, pour ne jamais faire disparaître silencieusement le contexte
-  // courant de la liste affichée.
-  const entreprisesFiltrees = useMemo(() => {
-    const requete = filtreEntreprise.trim().toLowerCase();
-    if (!requete) return entreprises;
-    const correspondantes = entreprises.filter(
-      (e) => e.raisonSociale.toLowerCase().includes(requete) || e.identifiantLegal?.toLowerCase().includes(requete)
-    );
-    const courante = entreprises.find((e) => e.id === entrepriseCouranteId);
-    if (courante && !correspondantes.some((e) => e.id === courante.id)) {
-      return [courante, ...correspondantes];
-    }
-    return correspondantes;
-  }, [entreprises, filtreEntreprise, entrepriseCouranteId]);
 
-  // Si l'entreprise mémorisée n'est plus dans la liste (accès révoqué,
-  // nouvel appareil...) ou qu'aucune n'est encore choisie, on retombe sur
-  // la première entreprise de l'utilisateur dès qu'elle est connue.
-  useEffect(() => {
-    if (entreprises.length === 0) return;
-    if (!entreprises.some((e) => e.id === entrepriseCouranteId)) {
-      setEntrepriseCouranteId(entreprises[0].id);
-    }
-  }, [entreprises, entrepriseCouranteId]);
 
   /**
-   * Si la page courante dépend de l'entreprise (ex. /app/{id}/documents),
-   * bascule vers l'équivalent pour la nouvelle entreprise plutôt que de
-   * laisser affichées les données de l'ancienne — sans ça, seuls les
-   * PROCHAINS clics dans le menu tenaient compte du changement, la page
-   * ouverte restait figée sur l'ancienne entreprise. Un segment au-delà du
-   * premier (ex. un auditId dans /audits/{auditId}/score) appartient à
-   * l'ancienne entreprise et n'a aucun sens pour la nouvelle : on retombe
-   * alors sur la page de liste correspondante plutôt que de propager un id
-   * invalide.
+   * L'organisation courante suit l'adresse consultée : ouvrir une mission de
+   * l'organisation X fait de X le contexte des liens de navigation. Le
+   * sélecteur de la barre latérale a disparu — un seul compte gère toutes les
+   * missions, désigner une organisation « courante » à la main n'avait plus
+   * lieu d'être. On retombe sur la valeur mémorisée, puis sur la première
+   * organisation connue, tant qu'aucune adresse ne désigne d'organisation.
    */
-  function cheminEquivalent(pathname, ancienId, nouvelId) {
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] !== 'app' || segments[1] !== ancienId) return null;
-    const reste = segments.slice(2);
-    return reste.length === 0 ? `/app/${nouvelId}` : `/app/${nouvelId}/${reste[0]}`;
-  }
+  useEffect(() => {
+    if (entreprises.length === 0) return;
 
-  function choisirEntreprise(id) {
-    const cible = cheminEquivalent(location.pathname, entrepriseCouranteId, id);
-    setEntrepriseCouranteId(id);
-    localStorage.setItem(CLE_ENTREPRISE_COURANTE, id);
-    if (cible) navigate(cible);
-  }
+    const segments = location.pathname.split('/').filter(Boolean);
+    const depuisUrl =
+      segments[0] === 'app' && entreprises.some((e) => e.id === segments[1]) ? segments[1] : null;
+
+    const cible =
+      depuisUrl ??
+      (entreprises.some((e) => e.id === entrepriseCouranteId) ? entrepriseCouranteId : entreprises[0].id);
+
+    if (cible !== entrepriseCouranteId) {
+      setEntrepriseCouranteId(cible);
+      localStorage.setItem(CLE_ENTREPRISE_COURANTE, cible);
+    }
+  }, [entreprises, entrepriseCouranteId, location.pathname]);
 
   if (!utilisateur) return null;
 
@@ -322,39 +295,6 @@ export default function Layout() {
             <X className="h-4 w-4" aria-hidden />
           </button>
         </div>
-
-        {entreprises.length > 0 ? (
-          <div className="relative px-5 pb-3">
-            <label
-              className="titre-sidebar mb-1.5 block text-[11px] font-semibold uppercase tracking-wider"
-              htmlFor="entreprise-courante"
-            >
-              Entreprise
-            </label>
-            {entreprises.length > SEUIL_RECHERCHE_ENTREPRISE ? (
-              <input
-                type="search"
-                className="champ-sidebar mb-1.5"
-                placeholder="Rechercher une entreprise…"
-                value={filtreEntreprise}
-                onChange={(e) => setFiltreEntreprise(e.target.value)}
-                aria-controls="entreprise-courante"
-              />
-            ) : null}
-            <select
-              id="entreprise-courante"
-              className="champ-sidebar"
-              value={entrepriseCouranteId}
-              onChange={(e) => choisirEntreprise(e.target.value)}
-            >
-              {entreprisesFiltrees.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.raisonSociale}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
 
         <nav className="relative flex-1 space-y-4 overflow-y-auto px-3 py-3">
           {GROUPES.map((groupe) => {
