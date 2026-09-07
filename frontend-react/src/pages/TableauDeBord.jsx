@@ -132,6 +132,11 @@ export default function TableauDeBord() {
           progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
           // Le score global est noté sur 5 (RG31) : ramené en pourcentage
           // pour tenir dans une colonne aux côtés de la progression.
+          // Le score est celui de la grille, noté sur 5 ; la conformité en est
+          // la traduction en pourcentage pour la lecture rapide.
+          score: score?.scoreGlobal ?? null,
+          noteTotale: score?.noteTotale ?? null,
+          coefficientTotal: score?.coefficientTotal ?? null,
           conformite:
             score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
           risque,
@@ -161,6 +166,24 @@ export default function TableauDeBord() {
       aRisque: aRisque.length,
       completion: totalCriteres > 0 ? Math.round((totalEvalues / totalCriteres) * 100) : 0,
       totalEvalues,
+    };
+  }, [missionsVue]);
+
+  /**
+   * Consolidation du portefeuille, lue comme la grille d'évaluation : somme
+   * des notes obtenues, somme des coefficients, et leur quotient. Le score du
+   * portefeuille n'est donc pas la moyenne des scores de mission — une
+   * mission de quatre-vingt-douze critères y pèse plus qu'une de seize.
+   */
+  const consolide = useMemo(() => {
+    const notees = missionsVue.filter((m) => m.noteTotale != null && Number(m.coefficientTotal) > 0);
+    const note = notees.reduce((somme, m) => somme + Number(m.noteTotale), 0);
+    const coefficient = notees.reduce((somme, m) => somme + Number(m.coefficientTotal), 0);
+    return {
+      missions: notees.length,
+      note,
+      coefficient,
+      score: coefficient > 0 ? note / coefficient : null,
     };
   }, [missionsVue]);
 
@@ -356,6 +379,45 @@ export default function TableauDeBord() {
           />
         </div>
       </Revele>
+
+      {/* --- Consolidation du portefeuille --- */}
+      {consolide.missions > 0 ? (
+        <Revele delai={30}>
+          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-sm font-semibold text-ink-900">Notation consolidée</h2>
+              <p className="text-xs text-ink-500">
+                Sur {consolide.missions} mission{consolide.missions > 1 ? 's' : ''} évaluée
+                {consolide.missions > 1 ? 's' : ''}
+              </p>
+            </div>
+            <dl className="mt-4 grid grid-cols-3 gap-3 sm:gap-4">
+              <div className="rounded-xl border border-ink-100 p-4">
+                <dd className="text-2xl font-bold tabular-nums text-ink-900">
+                  {consolide.note.toFixed(0)}
+                </dd>
+                <dt className="mt-1 text-xs text-ink-500">Note totale</dt>
+              </div>
+              <div className="rounded-xl border border-ink-100 p-4">
+                <dd className="text-2xl font-bold tabular-nums text-ink-900">
+                  {consolide.coefficient.toFixed(0)}
+                </dd>
+                <dt className="mt-1 text-xs text-ink-500">Coefficient total</dt>
+              </div>
+              <div className="rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-500/20 dark:bg-brand-500/10">
+                <dd className="text-2xl font-bold tabular-nums text-brand-700 dark:text-brand-300">
+                  {consolide.score == null ? '—' : consolide.score.toFixed(2)}
+                </dd>
+                <dt className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">Score / 5</dt>
+              </div>
+            </dl>
+            <p className="mt-3 text-xs text-ink-500">
+              Le score du portefeuille est le quotient des deux sommes, non la moyenne des scores de
+              mission : une mission de quatre-vingt-douze critères y pèse plus qu'une de seize.
+            </p>
+          </section>
+        </Revele>
+      ) : null}
 
       {/* --- Missions et alertes --- */}
       <Revele delai={60}>

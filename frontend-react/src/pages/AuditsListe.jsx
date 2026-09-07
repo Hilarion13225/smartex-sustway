@@ -111,6 +111,11 @@ export default function AuditsListe() {
           organisation: audit.referentielCode,
           nom: audit.nom,
           progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
+          // Le score est celui de la grille, noté sur 5 ; la conformité en est
+          // la traduction en pourcentage pour la lecture rapide.
+          score: score?.scoreGlobal ?? null,
+          noteTotale: score?.noteTotale ?? null,
+          coefficientTotal: score?.coefficientTotal ?? null,
           conformite:
             score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
           risque,

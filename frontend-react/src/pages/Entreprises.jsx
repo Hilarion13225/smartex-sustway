@@ -255,6 +255,30 @@ export default function Entreprises() {
                     </div>
                     <p className="relative mt-4 font-semibold text-ink-900">{e.raisonSociale}</p>
                     <p className="relative mt-0.5 text-xs text-ink-500">{e.identifiantLegal}</p>
+                    {/* Effectif et chiffre d'affaires caractérisent l'entreprise
+                        au-delà de sa tranche de taille : deux PME n'ont ni le
+                        même poids économique ni le même effectif. */}
+                    {e.effectif != null || e.chiffreAffaires != null ? (
+                      <dl className="relative mt-3 grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-ink-50 px-3 py-2">
+                          <dd className="text-sm font-semibold tabular-nums text-ink-900">
+                            {e.effectif == null ? '—' : e.effectif.toLocaleString('fr-FR')}
+                          </dd>
+                          <dt className="text-[11px] text-ink-500">Effectif</dt>
+                        </div>
+                        <div className="min-w-0 rounded-xl bg-ink-50 px-3 py-2">
+                          <dd className="truncate text-sm font-semibold tabular-nums text-ink-900">
+                            {e.chiffreAffaires == null
+                              ? '—'
+                              : `${Number(e.chiffreAffaires).toLocaleString('fr-FR', {
+                                  notation: 'compact',
+                                  maximumFractionDigits: 1,
+                                })} ${e.deviseChiffreAffaires ?? ''}`.trim()}
+                          </dd>
+                          <dt className="text-[11px] text-ink-500">Chiffre d’affaires</dt>
+                        </div>
+                      </dl>
+                    ) : null}
                     <div className="relative mt-3 flex flex-wrap gap-2">
                       {e.secteurCode ? <Badge>{e.secteurCode}</Badge> : null}
                       {e.taille ? <Badge>{e.taille}</Badge> : null}
