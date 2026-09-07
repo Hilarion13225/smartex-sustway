@@ -7,7 +7,7 @@ import {
   ClipboardList,
   ClipboardX,
   Columns3,
-  Cpu,
+  FolderOpen,
   ExternalLink,
   FileText,
   History,
@@ -18,6 +18,8 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  Sparkles,
+  Users,
   UserCog,
   Wallet,
   X,
@@ -25,7 +27,6 @@ import {
 import clsx from 'clsx';
 import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
-import DecorSidebar from './DecorSidebar';
 import { useTheme } from '../theme/ThemeContext';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
@@ -56,11 +57,26 @@ const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', '
  */
 const GROUPES = [
   {
-    titre: 'Pilotage',
+    titre: 'Navigation',
     liens: [
-      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+      { vers: '/app', libelle: 'Vue générale', icone: LayoutDashboard, fin: true },
+      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
+      { vers: '/app/entreprises', libelle: 'Organisations', icone: Building2 },
+      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
+      { vers: '/app/referentiels', libelle: 'Référentiel RSE', icone: BookOpen, permission: 'referentiel:administrer' },
+      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
+      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe d’audit', icone: Users },
+    ],
+  },
+  {
+    // Les pages hors navigation principale restent listées ici : les retirer
+    // les rendrait inatteignables alors qu'elles existent et sont routées.
+    titre: 'Suivi',
+    liens: [
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
       { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
-      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
         libelle: 'Financements verts',
@@ -70,22 +86,10 @@ const GROUPES = [
     ],
   },
   {
-    titre: 'Audit',
-    liens: [
-      { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
-      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FileText },
-      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Cpu },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
-    ],
-  },
-  {
-    titre: 'Administration',
+    titre: 'Paramètres',
     liens: [
       { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
       { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
-      { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -222,10 +226,6 @@ export default function Layout() {
           ouvert ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        {/* Présent dans les deux thèmes : le décor passe par des classes
-            qui atténuent fortement ses valeurs en mode clair (voir
-            index.css), pour rester une texture sans gêner les libellés. */}
-        <DecorSidebar />
 
         <div className="relative flex items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2.5">
