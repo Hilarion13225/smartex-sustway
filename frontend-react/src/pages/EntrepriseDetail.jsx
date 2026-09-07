@@ -115,7 +115,7 @@ export default function EntrepriseDetail() {
             <CardHeader
               titre="Fiche entreprise"
               icone={Building2}
-              sousTitre="Identité légale, secteur et taille — le secteur détermine la criticité des critères du référentiel."
+              sousTitre="Identité légale, secteur, taille, effectif et chiffre d’affaires — le secteur détermine la criticité des critères du référentiel."
             />
             <FormulaireEntreprise
               entreprise={entreprise}
@@ -260,6 +260,9 @@ function FormulaireEntreprise({ entreprise, onEnregistrer, onTermine }) {
     identifiantLegal: entreprise.identifiantLegal,
     secteurCode: entreprise.secteurCode ?? '',
     taille: entreprise.taille ?? '',
+    effectif: entreprise.effectif ?? '',
+    chiffreAffaires: entreprise.chiffreAffaires ?? '',
+    deviseChiffreAffaires: entreprise.deviseChiffreAffaires ?? 'XOF',
   });
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState(null);
@@ -279,6 +282,11 @@ function FormulaireEntreprise({ entreprise, onEnregistrer, onTermine }) {
         ...formulaire,
         secteurCode: formulaire.secteurCode || null,
         taille: formulaire.taille || null,
+        // Champ vidé : on transmet null pour effacer la valeur, pas 0.
+        effectif: formulaire.effectif === '' ? null : Number(formulaire.effectif),
+        chiffreAffaires:
+          formulaire.chiffreAffaires === '' ? null : Number(formulaire.chiffreAffaires),
+        deviseChiffreAffaires: formulaire.deviseChiffreAffaires || 'XOF',
       });
       onTermine();
     } catch (err) {
@@ -350,6 +358,48 @@ function FormulaireEntreprise({ entreprise, onEnregistrer, onTermine }) {
               </option>
             ))}
           </select>
+        </div>
+        <div>
+          <label className="label" htmlFor="entreprise-effectif">
+            Effectif
+          </label>
+          <input
+            id="entreprise-effectif"
+            type="number"
+            min="0"
+            step="1"
+            className="input"
+            placeholder="Nombre de personnes"
+            value={formulaire.effectif}
+            onChange={(e) => setFormulaire({ ...formulaire, effectif: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label" htmlFor="entreprise-chiffre-affaires">
+            Chiffre d’affaires annuel
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="entreprise-chiffre-affaires"
+              type="number"
+              min="0"
+              step="1000"
+              className="input"
+              placeholder="Montant"
+              value={formulaire.chiffreAffaires}
+              onChange={(e) => setFormulaire({ ...formulaire, chiffreAffaires: e.target.value })}
+            />
+            <input
+              aria-label="Devise du chiffre d’affaires"
+              className="input w-24 uppercase"
+              maxLength={3}
+              placeholder="XOF"
+              value={formulaire.deviseChiffreAffaires}
+              onChange={(e) =>
+                setFormulaire({ ...formulaire, deviseChiffreAffaires: e.target.value.toUpperCase() })
+              }
+            />
+          </div>
         </div>
       </div>
 

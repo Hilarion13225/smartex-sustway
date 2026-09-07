@@ -306,16 +306,38 @@ class AuditResourceTest {
     void auditeurs_affecterUnRoleClient_estRejete() {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe");
+        var interne = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(interne.id, ctx.entrepriseId(), "ADMIN_AUDIT");
         var visiteur = UtilisateurDeTest.creerEtConnecter(jwtService);
         rattacher(visiteur.id, ctx.entrepriseId(), "VISITEUR");
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + interne.token)
                 .contentType(ContentType.JSON)
                 .body(Map.of("roleMission", "OBSERVATEUR"))
                 .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + visiteur.id)
                 .then()
                 .statusCode(400);
+    }
+
+    /**
+     * Le client ne choisit plus son auditeur : l'affectation est réservée au
+     * personnel interne Smartex, même sur sa propre entreprise.
+     */
+    @Test
+    void auditeurs_affecterDepuisUnCompteClient_estRefuse() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Audit Équipe 4");
+        var expert = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(expert.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("roleMission", "OBSERVATEUR"))
+                .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + expert.id)
+                .then()
+                .statusCode(403);
     }
 
     @Test
@@ -326,7 +348,7 @@ class AuditResourceTest {
         rattacher(expert.id, ctx.entrepriseId(), "ADMIN_AUDIT");
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + expert.token)
                 .contentType(ContentType.JSON)
                 .body(Map.of("roleMission", "OBSERVATEUR"))
                 .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + expert.id)
@@ -336,20 +358,20 @@ class AuditResourceTest {
                 .body("roleMission", equalTo("OBSERVATEUR"));
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + expert.token)
                 .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs")
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(1));
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + expert.token)
                 .when().delete("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + expert.id)
                 .then()
                 .statusCode(204);
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + expert.token)
                 .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs")
                 .then()
                 .statusCode(200)
@@ -364,7 +386,7 @@ class AuditResourceTest {
         rattacher(admin.id, ctx.entrepriseId(), "ADMIN_AUDIT");
 
         given()
-                .header("Authorization", "Bearer " + ctx.token())
+                .header("Authorization", "Bearer " + admin.token)
                 .contentType(ContentType.JSON)
                 .body(Map.of("roleMission", "INEXISTANT"))
                 .when().put("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/auditeurs/" + admin.id)

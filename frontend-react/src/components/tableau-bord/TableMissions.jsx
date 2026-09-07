@@ -73,6 +73,7 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
               <th className={entete}>{etiquettePremiereColonne}</th>
               <th className={entete}>Mission</th>
               <th className={entete}>Progression</th>
+              <th className={entete}>Score</th>
               <th className={entete}>Conformité</th>
               <th className={entete}>Risque</th>
               <th className={entete}>Statut</th>
@@ -94,6 +95,15 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
                 </td>
                 <td className={cellule}>
                   <Progression pourcentage={mission.progression} compact={compact} />
+                </td>
+                {/* Score sur 5, l'échelle de la grille d'évaluation ; la
+                    conformité en est la traduction en pourcentage. */}
+                <td className={clsx(cellule, 'whitespace-nowrap font-medium tabular-nums text-ink-900')}>
+                  {mission.score == null ? (
+                    <span className="font-normal text-ink-400">—</span>
+                  ) : (
+                    `${Number(mission.score).toFixed(2)} / 5`
+                  )}
                 </td>
                 <td className={clsx(cellule, 'whitespace-nowrap tabular-nums')}>
                   {mission.conformite == null ? (
@@ -156,6 +166,9 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
                 <Progression pourcentage={mission.progression} />
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500">
+                <span>
+                  Score : {mission.score == null ? '—' : `${Number(mission.score).toFixed(2)} / 5`}
+                </span>
                 <span>
                   Conformité : {mission.conformite == null ? '—' : `${mission.conformite}%`}
                 </span>

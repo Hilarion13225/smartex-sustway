@@ -6,6 +6,8 @@ import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Evaluation;
+import com.smartexsustway.api.domain.repository.EvaluationDocumentAnalyseRepository;
+import com.smartexsustway.api.domain.entity.EvaluationDocumentAnalyse;
 import com.smartexsustway.api.domain.entity.Preuve;
 import com.smartexsustway.api.domain.entity.ReponseQuestion;
 import com.smartexsustway.api.domain.enums.SourceEvaluation;
@@ -81,6 +83,7 @@ public class EvaluationResource {
     @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject EvaluationRepository evaluationRepository;
+    @Inject EvaluationDocumentAnalyseRepository documentAnalyseRepository;
     @Inject NonConformiteService nonConformiteService;
     @Inject ScoreHistoriqueService scoreHistoriqueService;
     @Inject StorageService storageService;
@@ -99,7 +102,7 @@ public class EvaluationResource {
         trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         var evaluations = evaluationRepository.parAuditCritere(auditCritereId).stream()
-                .map(EvaluationDto::depuis)
+                .map(e -> EvaluationDto.depuis(e, documentAnalyseRepository.parEvaluation(e.getId())))
                 .toList();
         return Response.ok(evaluations).build();
     }
@@ -187,6 +190,13 @@ public class EvaluationResource {
         evaluation.setJustificationRisque(reponse.justificationRisque());
         evaluation.setRecommandationNecessaire(reponse.recommandationNecessaire());
         evaluation.setPistesAmelioration(reponse.pistesAmelioration());
+        // Traçabilité : le pipeline dit s'il juge les preuves suffisantes et
+        // quels documents il a lus. Sans ces deux informations, un résultat de
+        // conformité n'est pas contrôlable par le superviseur.
+        evaluation.setCouverturePreuve(reponse.couverturePreuve());
+        // Niveau déclaré au moment de l'analyse, figé ici : le relire plus tard
+        // ne dirait rien, les réponses ayant pu changer depuis.
+        evaluation.setNiveauDeclare(niveauDeclare(auditCritereId));
         // persistAndFlush (et non persist seul) : @CreationTimestamp n'est
         // renseigné par Hibernate qu'au flush, qui autrement n'aurait lieu
         // qu'à la fin de la transaction — sans ce flush explicite,
@@ -194,6 +204,14 @@ public class EvaluationResource {
         // construire la réponse ci-dessous (RG14 : la date fait partie de
         // l'historique conservé, y compris dans la réponse renvoyée au client).
         evaluationRepository.persistAndFlush(evaluation);
+
+        var documentsLus = reponse.documentsAnalyses() == null ? List.<EvaluerCritereResponseDto.DocumentAnalyseDto>of()
+                : reponse.documentsAnalyses();
+        for (int rang = 0; rang < documentsLus.size(); rang++) {
+            var lu = documentsLus.get(rang);
+            documentAnalyseRepository.persist(
+                    new EvaluationDocumentAnalyse(evaluation, lu.nom(), lu.resume(), rang));
+        }
         // Le critère a désormais une évaluation IA — il quitte donc l'onglet
         // "Non évalués" (voir AuditDetail.jsx, onglets basés sur ce statut).
         auditCritere.setStatut(STATUT_EVALUE);
@@ -207,7 +225,9 @@ public class EvaluationResource {
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_IA_CREEE", "evaluation", evaluation.getId());
 
-        return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+        return Response.status(Response.Status.CREATED)
+                .entity(EvaluationDto.depuis(evaluation, documentAnalyseRepository.parEvaluation(evaluation.getId())))
+                .build();
     }
 
     /**
@@ -262,6 +282,22 @@ public class EvaluationResource {
                 evaluation.getId());
 
         return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
+    }
+
+    /**
+     * Niveau déclaré sur ce critère, s'il en existe un.
+     *
+     * Une déclaration se fait question par question ; un critère n'en portant
+     * qu'une aujourd'hui, la première renseignée suffit. La moyenne serait
+     * trompeuse le jour où un critère en portera plusieurs — mieux vaut alors
+     * expliciter la règle que la deviner ici.
+     */
+    private Short niveauDeclare(UUID auditCritereId) {
+        return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
+                .map(ReponseQuestion::getNiveau)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

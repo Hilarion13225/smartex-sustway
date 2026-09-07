@@ -15,6 +15,10 @@ import java.util.UUID;
 public record AuditScoreDto(
         UUID auditId,
         BigDecimal scoreGlobal,
+        /** Somme des notes obtenues, comme la ligne « Note globale » de la grille. */
+        BigDecimal noteTotale,
+        /** Somme des coefficients des critères évalués. */
+        BigDecimal coefficientTotal,
         int nombreCriteresTotal,
         int nombreCriteresEvalues,
         int nombreCriteresEnRevue,
@@ -27,6 +31,8 @@ public record AuditScoreDto(
             String domaineCode,
             String domaineNom,
             BigDecimal score,
+            BigDecimal noteTotale,
+            BigDecimal coefficientTotal,
             int nombreCriteresTotal,
             int nombreCriteresEvalues
     ) {

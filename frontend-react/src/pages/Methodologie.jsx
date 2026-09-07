@@ -71,7 +71,7 @@ export default function Methodologie() {
               Méthodologie
             </p>
             <h2 className="titre-editorial mt-5 text-3xl leading-tight text-ink-900 sm:text-[2.6rem]">
-              Une méthodologie éprouvée, batie autour d’années d’expériences academiques et du secteur privé
+              Une méthodologie éprouvée, bâtie autour d’années d’expériences academiques et du secteur privé
             </h2>
           </Revele>
 

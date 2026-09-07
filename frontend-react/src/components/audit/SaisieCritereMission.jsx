@@ -18,8 +18,8 @@ const LIBELLES_CRITICITE = {
 };
 
 /** Signature de la saisie, pour repérer un écart avec l'analyse IA affichée. */
-function signature(niveau, commentaire, nombrePreuves) {
-  return `${niveau ?? ''}|${commentaire}|${nombrePreuves}`;
+function signature(niveau, nombrePreuves) {
+  return `${niveau ?? ''}|${nombrePreuves}`;
 }
 
 /**
@@ -34,7 +34,6 @@ function signature(niveau, commentaire, nombrePreuves) {
 export default function SaisieCritereMission({ entrepriseId, auditId, criteres, peutModifier, surChangement }) {
   const [indice, setIndice] = useState(0);
   const [niveau, setNiveau] = useState(null);
-  const [commentaire, setCommentaire] = useState('');
   const [question, setQuestion] = useState(null);
   // Question factuelle : la réponse est un oui/non rangé dans le
   // questionnaire, non un niveau de maturité (voir la migration V27).
@@ -99,10 +98,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
           (a, b) => new Date(b.dateEvaluation) - new Date(a.dateEvaluation)
         );
         const derniere = parDateDecroissante[0];
-        const niveauCharge = derniere?.note ?? null;
-        const commentaireCharge = derniere?.justification ?? '';
-        setNiveau(niveauCharge);
-        setCommentaire(commentaireCharge);
+        setNiveau(derniere?.note ?? null);
         setDernierEnregistrement(derniere?.dateEvaluation ?? null);
 
         // L'API rattache les preuves au critère par son code métier
@@ -118,9 +114,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
         const derniereIa = parDateDecroissante.find((e) => e.source === 'IA');
         setAnalyse(analyseDepuisEvaluation(derniereIa));
         setSignatureAnalysee(
-          derniereIa
-            ? signature(derniereIa.note, derniereIa.justification ?? '', preuvesDuCritere.length)
-            : null
+          derniereIa ? signature(derniereIa.note, preuvesDuCritere.length) : null
         );
       })
       .catch((err) => setErreur(err instanceof ApiError ? err.message : 'Chargement du critère impossible'))
@@ -144,7 +138,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
   );
 
   const desynchronisee =
-    analyse != null && signatureAnalysee !== signature(niveau, commentaire, preuves.length);
+    analyse != null && signatureAnalysee !== signature(niveau, preuves.length);
 
   /**
    * Enregistre une question factuelle : la réponse va au questionnaire
@@ -161,7 +155,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
           {
             auditQuestionId: questionBinaire.auditQuestionId,
             valeur: reponseBinaire,
-            commentaire: commentaire || null,
+            commentaire: null,
           },
         ],
       }
@@ -186,9 +180,11 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
     if (niveau == null) return false;
     setErreur(null);
     try {
+      // La justification n'est plus saisie à la main : celle qui compte est
+      // produite par l'analyse IA à partir des preuves.
       const evaluation = await api.put(
         `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/evaluations`,
-        { niveau, justification: commentaire || null }
+        { niveau, justification: null }
       );
       setDernierEnregistrement(evaluation?.dateEvaluation ?? new Date().toISOString());
       surChangement?.();
@@ -219,7 +215,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
     try {
       const resultat = await analyserCritere({ entrepriseId, auditId, critereId });
       setAnalyse(resultat);
-      setSignatureAnalysee(signature(niveau, commentaire, preuves.length));
+      setSignatureAnalysee(signature(niveau, preuves.length));
       surChangement?.();
     } catch (err) {
       setErreurAnalyse(err instanceof ApiError ? err.message : 'Analyse IA impossible');
@@ -320,8 +316,6 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
               surSelectionNiveau={peutModifier ? setNiveau : () => {}}
               reponseBinaire={reponseBinaire}
               surSelectionBinaire={peutModifier ? setReponseBinaire : () => {}}
-              commentaire={commentaire}
-              surChangementCommentaire={setCommentaire}
               fichiers={preuves.map((preuve) => ({
                 id: preuve.id,
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',

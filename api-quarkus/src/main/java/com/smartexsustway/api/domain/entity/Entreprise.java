@@ -24,6 +24,7 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -56,6 +57,17 @@ public class Entreprise {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "taille", columnDefinition = "taille_entreprise")
     private TailleEntreprise taille;
+
+    /** Chiffre d'affaires annuel déclaré ; null tant qu'il n'est pas communiqué. */
+    @Column(name = "chiffre_affaires")
+    private BigDecimal chiffreAffaires;
+
+    @Column(name = "devise_chiffre_affaires", nullable = false, length = 3)
+    private String deviseChiffreAffaires = "XOF";
+
+    /** Effectif déclaré, en nombre de personnes. */
+    @Column(name = "effectif")
+    private Integer effectif;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -117,6 +129,30 @@ public class Entreprise {
 
     public TailleEntreprise getTaille() {
         return taille;
+    }
+
+    public BigDecimal getChiffreAffaires() {
+        return chiffreAffaires;
+    }
+
+    public void setChiffreAffaires(BigDecimal chiffreAffaires) {
+        this.chiffreAffaires = chiffreAffaires;
+    }
+
+    public String getDeviseChiffreAffaires() {
+        return deviseChiffreAffaires;
+    }
+
+    public void setDeviseChiffreAffaires(String deviseChiffreAffaires) {
+        this.deviseChiffreAffaires = deviseChiffreAffaires;
+    }
+
+    public Integer getEffectif() {
+        return effectif;
+    }
+
+    public void setEffectif(Integer effectif) {
+        this.effectif = effectif;
     }
 
     public void setTaille(TailleEntreprise taille) {

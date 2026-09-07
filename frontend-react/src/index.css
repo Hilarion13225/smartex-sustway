@@ -95,11 +95,14 @@
   .label {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-500;
   }
+  /* Espacement resserré sur petit écran : sur un tableau à sept colonnes,
+     l'espacement de bureau ajoute une centaine de pixels de largeur, qui se
+     paient en défilement horizontal sur un téléphone. */
   .th {
-    @apply whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-500;
+    @apply whitespace-nowrap px-2.5 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-ink-500 sm:px-4 sm:py-3;
   }
   .td {
-    @apply px-4 py-3 text-sm text-ink-700;
+    @apply px-2.5 py-2.5 text-sm text-ink-700 sm:px-4 sm:py-3;
   }
 
   /* --- Vitrine publique : surfaces et interactions --- */

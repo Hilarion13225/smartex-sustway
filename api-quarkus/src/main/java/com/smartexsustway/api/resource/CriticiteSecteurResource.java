@@ -63,7 +63,7 @@ public class CriticiteSecteurResource {
     }
 
     @PUT
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response definir(@PathParam("critereId") UUID critereId, DefinirCriticiteSecteurRequestDto requete) {
         trouverCritere(critereId);
 
@@ -93,7 +93,7 @@ public class CriticiteSecteurResource {
 
     @DELETE
     @Path("/{secteurCode}")
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response supprimer(@PathParam("critereId") UUID critereId, @PathParam("secteurCode") String secteurCode) {
         trouverCritere(critereId);
         Secteur secteur = secteurRepository.parCode(secteurCode)

@@ -11,6 +11,9 @@ public record CritereDto(
         String description,
         String domaineCode,
         String domaineNom,
+        String sousDomaineCode,
+        String sousDomaineNom,
+        java.math.BigDecimal coefficientPonderation,
         String criticite,
         String applicabilite,
         boolean actif
@@ -23,6 +26,9 @@ public record CritereDto(
                 c.getDescription(),
                 c.getDomaine().getCode(),
                 c.getDomaine().getNom(),
+                c.getSousDomaine() == null ? null : c.getSousDomaine().getCode(),
+                c.getSousDomaine() == null ? null : c.getSousDomaine().getNom(),
+                c.getCoefficientPonderation(),
                 c.getCriticite() != null ? c.getCriticite().getCode().name() : null,
                 c.getApplicabilite().name(),
                 c.isActif()

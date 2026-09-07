@@ -54,7 +54,7 @@ public class CritereBailleurResource {
     }
 
     @PUT
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response definir(@PathParam("critereId") UUID critereId, DefinirCritereBailleurRequestDto requete) {
         trouverCritere(critereId);
 
@@ -72,7 +72,7 @@ public class CritereBailleurResource {
 
     @DELETE
     @Path("/{bailleurCode}")
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response supprimer(@PathParam("critereId") UUID critereId, @PathParam("bailleurCode") String bailleurCode) {
         trouverCritere(critereId);
         Bailleur bailleur = bailleurRepository.parCode(bailleurCode)

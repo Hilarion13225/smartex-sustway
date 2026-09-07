@@ -167,6 +167,15 @@ public class EntrepriseResource {
             }
         }
 
+        // Chiffre d'affaires et effectif sont conservés tels que déclarés : ils
+        // ne se déduisent pas de la tranche de taille, et le classement d'un
+        // portefeuille perdrait son sens à les confondre.
+        entreprise.setChiffreAffaires(requete.chiffreAffaires());
+        entreprise.setEffectif(requete.effectif());
+        if (requete.deviseChiffreAffaires() != null && !requete.deviseChiffreAffaires().isBlank()) {
+            entreprise.setDeviseChiffreAffaires(requete.deviseChiffreAffaires().toUpperCase());
+        }
+
         auditLogService.journaliser(utilisateurId, id, "ENTREPRISE_MODIFIEE", "entreprise", id);
 
         return Response.ok(EntrepriseDto.depuis(entreprise)).build();

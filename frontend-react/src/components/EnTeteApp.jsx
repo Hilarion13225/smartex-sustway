@@ -211,12 +211,17 @@ export default function EnTeteApp({
         href={`mailto:${SMARTEX.emailSupport}`}
         aria-label="Contacter le support"
         title="Besoin d’aide ?"
-        className="rounded-lg p-2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-800"
+        className="hidden rounded-lg p-2 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-800 sm:block"
       >
         <HelpCircle className="h-5 w-5" aria-hidden />
       </a>
 
-      <BasculeTheme />
+      {/* Masquée sur mobile : trois boutons de thème y occupent autant de
+          place que l'identité de l'utilisateur, pour un réglage qu'on ne
+          change pas en situation. */}
+      <span className="hidden sm:inline-flex">
+        <BasculeTheme />
+      </span>
 
       {/* --- Profil --- */}
       <div ref={refProfil} className="relative">

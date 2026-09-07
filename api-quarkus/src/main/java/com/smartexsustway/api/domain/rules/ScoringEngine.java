@@ -60,8 +60,21 @@ public final class ScoringEngine {
      * plutôt qu'une division par zéro).
      */
     public static BigDecimal scorePondere(List<CritereEvalue> criteresActifs) {
+        return ponderation(criteresActifs).score();
+    }
+
+    /**
+     * Détail du calcul pondéré : somme des notes obtenues, somme des
+     * coefficients, et leur quotient.
+     *
+     * Les deux sommes sont renvoyées et non seulement le quotient : la grille
+     * d'évaluation les affiche par domaine — « note totale », « coefficient
+     * total », « score » — et les recalculer côté client reviendrait à
+     * dupliquer RG31 hors du moteur.
+     */
+    public static Ponderation ponderation(List<CritereEvalue> criteresActifs) {
         if (criteresActifs == null || criteresActifs.isEmpty()) {
-            return BigDecimal.ZERO;
+            return new Ponderation(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         }
         BigDecimal sommeNotes = BigDecimal.ZERO;
         BigDecimal sommeCoefficients = BigDecimal.ZERO;
@@ -71,9 +84,10 @@ public final class ScoringEngine {
             sommeCoefficients = sommeCoefficients.add(c.coefficientPonderation());
         }
         if (sommeCoefficients.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
+            return new Ponderation(sommeNotes, BigDecimal.ZERO, BigDecimal.ZERO);
         }
-        return sommeNotes.divide(sommeCoefficients, 4, RoundingMode.HALF_UP);
+        return new Ponderation(sommeNotes, sommeCoefficients,
+                sommeNotes.divide(sommeCoefficients, 4, RoundingMode.HALF_UP));
     }
 
     /**
@@ -121,6 +135,10 @@ public final class ScoringEngine {
 
     /** Couple (probabilité de conformité, coefficient de pondération) pour un critère évalué. */
     public record CritereEvalue(BigDecimal probabiliteConformite, BigDecimal coefficientPonderation) {
+    }
+
+    /** Détail d'un calcul pondéré, tel que présenté dans la grille d'évaluation. */
+    public record Ponderation(BigDecimal noteTotale, BigDecimal coefficientTotal, BigDecimal score) {
     }
 
     public enum NiveauPriorite { MINEURE, MODEREE, MAJEURE, CRITIQUE }

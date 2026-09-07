@@ -309,10 +309,10 @@ export default function Landing() {
         </div>
 
         <h1
-          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1.875rem] lg:leading-[1.25]"
+          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1rem] lg:leading-[1.25]"
           style={{ animationDelay: '120ms' }}
         >
-          Avec <span className="text-[#2e9e4b] dark:text-[#5fbd72]">SMARTEX SustWay</span>, évaluer et optimiser la démarche de maturité et la performance de votre entreprise en matière de bonnes pratiques de {' '}
+          Avec <span className="text-[#2e9e4b] dark:text-[#5fbd72]">SMARTEX SustWay</span>, évaluer et optimiser la démarche de maturité et la performance de votre entreprise<br /> en matière de bonnes pratiques de {' '}
           <span className="text-[#2e9e4b] dark:text-[#5fbd72]">RSE et ESG</span> en s’appuyant sur l’IA. <br />Indépendance, Robustesse et Transparence de la Solution.
         </h1>
 

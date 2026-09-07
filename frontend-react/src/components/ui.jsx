@@ -121,11 +121,22 @@ export function Alerte({
       <p>{children}</p>
     </div>;
 }
+/**
+ * Tableau de données.
+ *
+ * Sous `sm`, il défile horizontalement plutôt que d'être comprimé : un
+ * tableau à sept colonnes y devient illisible autrement. Le défilement est
+ * annoncé, sinon rien n'indique que des colonnes existent hors écran.
+ */
 export function Tableau({
   entetes,
   children
 }) {
-  return <div className="overflow-x-auto">
+  return <div>
+      <p className="mb-2 text-xs text-ink-400 sm:hidden">
+        Faites défiler le tableau horizontalement pour voir toutes les colonnes.
+      </p>
+      <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-ink-100">
         <thead className="bg-ink-50">
           <tr>
@@ -136,5 +147,6 @@ export function Tableau({
         </thead>
         <tbody className="divide-y divide-ink-100 bg-surface">{children}</tbody>
       </table>
+      </div>
     </div>;
 }

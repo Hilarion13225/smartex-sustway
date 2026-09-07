@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Building2,
@@ -7,6 +7,7 @@ import {
   ClipboardList,
   ClipboardX,
   Columns3,
+  FolderKanban,
   FolderOpen,
   FileText,
   History,
@@ -15,6 +16,7 @@ import {
   ListTodo,
   Menu,
   Sparkles,
+  Trophy,
   Users,
   UserCog,
   Wallet,
@@ -30,6 +32,8 @@ import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
+/** Au-delà de ce nombre d'organisations, un champ de recherche précède la liste. */
+const SEUIL_RECHERCHE_ENTREPRISE = 6;
 const CLE_GROUPES_REPLIES = 'smartex.sidebarGroupesReplies';
 
 /** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
@@ -51,7 +55,7 @@ const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', '
  * unique pour « les non-conformités » ou « le journal » : il faut toujours
  * une entreprise de contexte.
  */
-const GROUPES = [
+const GROUPES_AUDIT = [
   {
     titre: 'Navigation',
     liens: [
@@ -80,11 +84,22 @@ const GROUPES = [
           { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
         ],
       },
+      {
+        // Un projet traverse les organisations : il n'a pas d'entreprise de
+        // contexte, d'où un chemin global comme le classement.
+        vers: '/app/projets',
+        libelle: 'Projets',
+        icone: FolderKanban,
+      },
+      { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
       {
         vers: '/app/referentiels',
         libelle: 'Référentiel RSE',
         icone: BookOpen,
+        // Réservé aux deux rôles qui administrent le catalogue : depuis V32,
+        // `referentiel:administrer` est portée par ADMIN_AUDIT et SUPER_ADMIN.
+        permission: 'referentiel:administrer',
         enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
       },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
@@ -119,6 +134,54 @@ const GROUPES = [
   },
 ];
 
+/**
+ * Navigation des comptes côté client — responsable d'entreprise et employé.
+ *
+ * Elle reste organisée par métier (pilotage, audit, administration) et donne
+ * accès à toutes les pages opérationnelles : collecte de preuves, écarts,
+ * plans d'actions, abonnement. Le responsable audit, lui, suit une
+ * arborescence resserrée sur la supervision (voir GROUPES_AUDIT).
+ */
+const GROUPES_ENTREPRISE = [
+  {
+    titre: 'Pilotage',
+    liens: [
+      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
+      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
+      {
+        chemin: (id) => `/app/${id}/financements-verts`,
+        libelle: 'Financements verts',
+        icone: Leaf,
+        permission: 'bailleur:consulter',
+      },
+    ],
+  },
+  {
+    titre: 'Audit',
+    liens: [
+      { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
+      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
+      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
+    ],
+  },
+  {
+    titre: 'Administration',
+    liens: [
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
+      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
+      { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
+      { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
+    ],
+  },
+];
+
+/** Rôles qui conservent la navigation de supervision resserrée. */
+const ROLES_NAVIGATION_AUDIT = new Set(['ADMIN_AUDIT', 'SUPER_ADMIN']);
+
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = [
   'janvier',
@@ -144,6 +207,7 @@ function dateDuJour() {
 export default function Layout() {
   const { utilisateur, entreprises, roleCourant, peut, deconnecter } = useApiAuth();
   const { estSombre } = useTheme();
+  const [filtreEntreprise, setFiltreEntreprise] = useState('');
   const [missionsCourantes, setMissionsCourantes] = useState([]);
   const [ecartsOuverts, setEcartsOuverts] = useState([]);
   const [ouvert, setOuvert] = useState(false);
@@ -159,6 +223,7 @@ export default function Layout() {
     }
   });
   const location = useLocation();
+  const navigate = useNavigate();
 
   /** Repli/dépli d'une section de la sidebar (ex. Pilotage, Audit) — mémorisé par titre de section, persiste entre sessions. */
   function basculerGroupe(titre) {
@@ -259,6 +324,48 @@ export default function Layout() {
     };
   }, [entrepriseCouranteId]);
 
+  // Le responsable audit supervise, les comptes côté client exploitent :
+  // leurs navigations n'ont pas le même périmètre ni le même découpage.
+  const groupes = ROLES_NAVIGATION_AUDIT.has(roleCourant) ? GROUPES_AUDIT : GROUPES_ENTREPRISE;
+
+  const entreprisesFiltrees = useMemo(() => {
+    const requete = filtreEntreprise.trim().toLowerCase();
+    if (!requete) return entreprises;
+    const correspondantes = entreprises.filter(
+      (e) => e.raisonSociale.toLowerCase().includes(requete) || e.identifiantLegal?.toLowerCase().includes(requete)
+    );
+    const courante = entreprises.find((e) => e.id === entrepriseCouranteId);
+    if (courante && !correspondantes.some((e) => e.id === courante.id)) {
+      return [courante, ...correspondantes];
+    }
+    return correspondantes;
+  }, [entreprises, filtreEntreprise, entrepriseCouranteId]);
+
+  /**
+   * Si la page courante dépend de l'entreprise (ex. /app/{id}/documents),
+   * bascule vers l'équivalent pour la nouvelle entreprise plutôt que de
+   * laisser affichées les données de l'ancienne — sans ça, seuls les
+   * PROCHAINS clics dans le menu tenaient compte du changement, la page
+   * ouverte restait figée sur l'ancienne entreprise. Un segment au-delà du
+   * premier (ex. un auditId dans /audits/{auditId}/score) appartient à
+   * l'ancienne entreprise et n'a aucun sens pour la nouvelle : on retombe
+   * alors sur la page de liste correspondante plutôt que de propager un id
+   * invalide.
+   */
+  function cheminEquivalent(pathname, ancienId, nouvelId) {
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments[0] !== 'app' || segments[1] !== ancienId) return null;
+    const reste = segments.slice(2);
+    return reste.length === 0 ? `/app/${nouvelId}` : `/app/${nouvelId}/${reste[0]}`;
+  }
+
+  function choisirEntreprise(id) {
+    const cible = cheminEquivalent(location.pathname, entrepriseCouranteId, id);
+    setEntrepriseCouranteId(id);
+    localStorage.setItem(CLE_ENTREPRISE_COURANTE, id);
+    if (cible) navigate(cible);
+  }
+
   function lienVisible(lien) {
     if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
     if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
@@ -296,8 +403,43 @@ export default function Layout() {
           </button>
         </div>
 
+        {/* Sélecteur réservé aux comptes côté client : le responsable audit
+            voit toutes les organisations et son contexte suit l'adresse. */}
+        {!ROLES_NAVIGATION_AUDIT.has(roleCourant) && entreprises.length > 0 ? (
+          <div className="relative px-5 pb-3">
+            <label
+              className="titre-sidebar mb-1.5 block text-[11px] font-semibold uppercase tracking-wider"
+              htmlFor="entreprise-courante"
+            >
+              Entreprise
+            </label>
+            {entreprises.length > SEUIL_RECHERCHE_ENTREPRISE ? (
+              <input
+                type="search"
+                className="champ-sidebar mb-1.5"
+                placeholder="Rechercher une entreprise…"
+                value={filtreEntreprise}
+                onChange={(e) => setFiltreEntreprise(e.target.value)}
+                aria-controls="entreprise-courante"
+              />
+            ) : null}
+            <select
+              id="entreprise-courante"
+              className="champ-sidebar"
+              value={entrepriseCouranteId}
+              onChange={(e) => choisirEntreprise(e.target.value)}
+            >
+              {entreprisesFiltrees.map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.raisonSociale}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+
         <nav className="relative flex-1 space-y-4 overflow-y-auto px-3 py-3">
-          {GROUPES.map((groupe) => {
+          {groupes.map((groupe) => {
             const liensVisibles = groupe.liens.filter(lienVisible);
             if (liensVisibles.length === 0) return null;
             const replie = groupesReplies.has(groupe.titre);

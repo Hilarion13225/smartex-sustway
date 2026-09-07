@@ -115,11 +115,16 @@ class AbonnementResourceTest {
     }
 
     @Test
+    /**
+     * Seules les formules actives sont proposées : la formule FREE a été
+     * désactivée (migration V22), elle ne doit plus apparaître au visiteur.
+     */
     void listerFormules_estPubliqueEtNonVide() {
         given()
                 .when().get("/api/v1/formules")
                 .then()
                 .statusCode(200)
-                .body("code", org.hamcrest.Matchers.hasItems("FREE", "STANDARD", "AVANCEES"));
+                .body("code", org.hamcrest.Matchers.hasItems("STANDARD", "AVANCEES"))
+                .body("code", org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem("FREE")));
     }
 }

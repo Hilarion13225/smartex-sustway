@@ -7,6 +7,7 @@ import SyntheseMission from '../components/audit/SyntheseMission';
 import OngletsMission from '../components/audit/OngletsMission';
 import VoletAnalysesIa from '../components/audit/VoletAnalysesIa';
 import VoletPreuves from '../components/audit/VoletPreuves';
+import VoletPlanAction from '../components/audit/VoletPlanAction';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -19,6 +20,7 @@ const ONGLETS = [
   { cle: 'criteres', libelle: 'Critères' },
   { cle: 'preuves', libelle: 'Preuves' },
   { cle: 'analyses', libelle: 'Analyses IA' },
+  { cle: 'plan', libelle: 'Plan d’action' },
 ];
 
 /**
@@ -319,6 +321,16 @@ export default function AuditDetail() {
                 entrepriseId={entrepriseId}
                 auditId={auditId}
                 criteres={criteres ?? []}
+              />
+            ) : null}
+
+            {onglet === 'plan' ? (
+              <VoletPlanAction
+                entrepriseId={entrepriseId}
+                auditId={auditId}
+                criteres={criteres ?? []}
+                score={score}
+                peutModifier={peutModifier}
               />
             ) : null}
           </div>
