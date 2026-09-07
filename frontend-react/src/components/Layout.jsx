@@ -85,6 +85,9 @@ const GROUPES = [
         vers: '/app/referentiels',
         libelle: 'Référentiel RSE',
         icone: BookOpen,
+        // Réservé aux deux rôles qui administrent le catalogue : depuis V32,
+        // `referentiel:administrer` est portée par ADMIN_AUDIT et SUPER_ADMIN.
+        permission: 'referentiel:administrer',
         enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
       },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
