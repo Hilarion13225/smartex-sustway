@@ -5,6 +5,15 @@ import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.enums.StatutGenerique;
 import com.smartexsustway.api.domain.enums.TypeReferentiel;
 import com.smartexsustway.api.domain.repository.CritereRepository;
+import java.util.UUID;
+import jakarta.validation.Valid;
+import com.smartexsustway.api.resource.dto.ReferentielVersionDto;
+import com.smartexsustway.api.resource.dto.PublierVersionRequestDto;
+import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.domain.repository.ReferentielVersionRepository;
+import com.smartexsustway.api.domain.repository.DomaineRepository;
+import com.smartexsustway.api.domain.entity.ReferentielVersion;
+import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.repository.ReferentielRepository;
 import com.smartexsustway.api.resource.dto.CritereDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
@@ -52,6 +61,9 @@ public class ReferentielResource {
 
     @Inject ReferentielRepository referentielRepository;
     @Inject CritereRepository critereRepository;
+    @Inject DomaineRepository domaineRepository;
+    @Inject ReferentielVersionRepository referentielVersionRepository;
+    @Inject UtilisateurRepository utilisateurRepository;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -136,6 +148,69 @@ public class ReferentielResource {
                 "REFERENTIEL_MODIFIE", "referentiel", referentiel.getId());
 
         return Response.ok(ReferentielDto.depuis(referentiel)).build();
+    }
+
+    /**
+     * Historique des publications d'un référentiel.
+     *
+     * Lecture ouverte comme le reste du catalogue : savoir quand un cadre a
+     * évolué intéresse l'auditeur qui l'applique, pas seulement celui qui
+     * l'administre.
+     */
+    @GET
+    @Path("/{code}/versions")
+    public Response versions(@PathParam("code") String code) {
+        Referentiel referentiel = trouverParCode(code);
+        var versions = referentielVersionRepository.parReferentiel(referentiel.getId()).stream()
+                .map(v -> ReferentielVersionDto.depuis(v, referentiel.getVersion()))
+                .toList();
+        return Response.ok(versions).build();
+    }
+
+    /**
+     * Publie une nouvelle version du référentiel.
+     *
+     * La volumétrie est figée ici, à la publication : la relire plus tard
+     * décrirait l'état courant et non celui de la version. Les missions en
+     * cours ne sont pas touchées — leur questionnaire est figé à leur création
+     * (RG34/RG35), publier une version ne rejoue donc rien.
+     */
+    @POST
+    @Path("/{code}/versions")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response publierVersion(@PathParam("code") String code, @Valid PublierVersionRequestDto requete) {
+        Referentiel referentiel = trouverParCode(code);
+        if (requete == null) {
+            return erreur(400, "Corps de requête manquant");
+        }
+
+        String numero = requete.numero().trim();
+        if (referentielVersionRepository.numeroExiste(referentiel.getId(), numero)) {
+            return erreur(409, "La version " + numero + " existe déjà pour ce référentiel");
+        }
+
+        int domaines = domaineRepository.parReferentiel(referentiel.getId()).size();
+        int criteres = (int) critereRepository.parReferentiel(referentiel.getId()).stream()
+                .filter(Critere::isActif)
+                .count();
+
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        var version = new ReferentielVersion(referentiel, numero, requete.notes(), domaines, criteres,
+                utilisateurRepository.findById(utilisateurId));
+        referentielVersionRepository.persist(version);
+
+        // La version courante du référentiel suit la publication : sans cela,
+        // le catalogue continuerait d'annoncer l'ancienne.
+        referentiel.setVersion(numero);
+
+        auditLogService.journaliser(utilisateurId, null, "REFERENTIEL_VERSION_PUBLIEE",
+                "referentiel", referentiel.getId());
+
+        return Response.status(Response.Status.CREATED)
+                .entity(ReferentielVersionDto.depuis(version, referentiel.getVersion()))
+                .build();
     }
 
     private Referentiel trouverParCode(String code) {

@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'luci
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import VoletVersions from '../components/referentiel/VoletVersions';
 import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -168,6 +169,22 @@ export default function ReferentielDetail() {
                     <Vide message="Aucun critère pour l’instant." />
                   </div>
                 )}
+              </div>
+            </Card>
+          </Revele>
+
+          <Revele delai={120}>
+            <Card>
+              <CardHeader
+                titre="Versions"
+                sousTitre="Publications successives de ce référentiel et évolution de sa volumétrie"
+              />
+              <div className="p-5 pt-0">
+                <VoletVersions
+                  code={code}
+                  peutAdministrer={peutAdministrer}
+                  surPublication={rafraichir}
+                />
               </div>
             </Card>
           </Revele>
