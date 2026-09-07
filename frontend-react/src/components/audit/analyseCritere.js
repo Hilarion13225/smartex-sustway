@@ -39,6 +39,9 @@ export function analyseDepuisEvaluation(evaluation) {
     confiance:
       evaluation.confianceIa == null ? null : Math.round(Number(evaluation.confianceIa) * 100),
     justification: evaluation.justification ?? null,
+    // Traçabilité : ce que l'IA a jugé des preuves et ce qu'elle a lu.
+    couverturePreuve: evaluation.couverturePreuve ?? null,
+    documentsAnalyses: evaluation.documentsAnalyses ?? [],
     signalRisque: evaluation.signalRisque ?? false,
     categorieRisque: evaluation.categorieRisque ?? null,
     justificationRisque: evaluation.justificationRisque ?? null,

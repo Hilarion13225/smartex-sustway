@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Loader } from '../ui';
+import TracabiliteIa from './TracabiliteIa';
 import { analyseDepuisEvaluation } from './analyseCritere';
 import { api } from '../../lib/apiClient';
 
@@ -112,7 +113,13 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
               ) : null}
             </div>
 
-            <dl className="space-y-2 rounded-xl border border-ink-100 p-4">
+            <div className="space-y-3">
+              <TracabiliteIa
+                couverturePreuve={analyse.couverturePreuve}
+                documents={analyse.documentsAnalyses}
+                compact
+              />
+              <dl className="space-y-2 rounded-xl border border-ink-100 p-4">
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-xs text-ink-500">Niveau retenu</dt>
                 <dd className="text-sm font-medium tabular-nums text-ink-900">
@@ -133,7 +140,8 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
                   {analyse.categorieRisque ?? 'Aucun'}
                 </dd>
               </div>
-            </dl>
+              </dl>
+            </div>
           </div>
 
           <Link

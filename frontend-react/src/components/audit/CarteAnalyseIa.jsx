@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, ArrowRight, Info, Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import JaugeCirculaire from './JaugeCirculaire';
+import TracabiliteIa from './TracabiliteIa';
 
 /**
  * Carte d'analyse IA d'un critère : probabilité de conformité, justification et
@@ -80,6 +81,14 @@ export default function CarteAnalyseIa({
             <div className="mt-5">
               <h4 className="text-sm font-medium text-ink-700">Justification IA</h4>
               <p className="mt-2 text-sm leading-relaxed text-ink-600">{analyse.justification}</p>
+
+              <div className="mt-4">
+                <TracabiliteIa
+                  couverturePreuve={analyse.couverturePreuve}
+                  documents={analyse.documentsAnalyses}
+                  compact
+                />
+              </div>
 
               {analyse.categorieRisque || analyse.pistesAmelioration ? (
                 <>
