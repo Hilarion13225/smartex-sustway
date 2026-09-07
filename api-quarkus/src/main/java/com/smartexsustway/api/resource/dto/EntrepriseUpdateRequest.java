@@ -1,6 +1,9 @@
 package com.smartexsustway.api.resource.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import java.math.BigDecimal;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * Modification de la fiche entreprise (RG02 : l'identifiant légal reste
@@ -17,6 +20,16 @@ public record EntrepriseUpdateRequest(
 
         String secteurCode,
 
-        String taille
+        String taille,
+
+        /** Chiffre d'affaires annuel déclaré ; null pour l'effacer. */
+        @PositiveOrZero(message = "Le chiffre d'affaires ne peut être négatif")
+        BigDecimal chiffreAffaires,
+
+        @Size(min = 3, max = 3, message = "La devise doit compter trois lettres")
+        String deviseChiffreAffaires,
+
+        @PositiveOrZero(message = "L'effectif ne peut être négatif")
+        Integer effectif
 ) {
 }

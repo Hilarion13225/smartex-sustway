@@ -10,6 +10,9 @@ public record EntrepriseDto(
         String identifiantLegal,
         String secteurCode,
         String taille,
+        java.math.BigDecimal chiffreAffaires,
+        String deviseChiffreAffaires,
+        Integer effectif,
         String statut,
         String formuleCode
 ) {
@@ -31,6 +34,9 @@ public record EntrepriseDto(
                 e.getIdentifiantLegal(),
                 e.getSecteur() != null ? e.getSecteur().getCode() : null,
                 e.getTaille() != null ? e.getTaille().name() : null,
+                e.getChiffreAffaires(),
+                e.getDeviseChiffreAffaires(),
+                e.getEffectif(),
                 e.getStatut().name(),
                 formuleCode
         );
