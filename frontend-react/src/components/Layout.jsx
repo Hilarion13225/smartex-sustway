@@ -100,23 +100,24 @@ const GROUPES = [
     // les rendrait inatteignables alors qu'elles existent et sont routées.
     titre: 'Suivi',
     liens: [
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
-      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen , horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX , horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo , horsPerimetreAudit: true },
+      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 , horsPerimetreAudit: true },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
         libelle: 'Financements verts',
         icone: Leaf,
         permission: 'bailleur:consulter',
+        horsPerimetreAudit: true,
       },
     ],
   },
   {
     titre: 'Paramètres',
     liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
-      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true, horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true, horsPerimetreAudit: true },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -242,6 +243,11 @@ export default function Layout() {
   function lienVisible(lien) {
     if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
     if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
+    // Le périmètre du responsable d'audit est arrêté (voir GROUPES) : les
+    // pages qui n'en relèvent pas lui sont masquées. Elles restent visibles
+    // pour les autres rôles, qui en ont l'usage — le responsable d'entreprise
+    // gère son abonnement, le super-administrateur consulte le journal.
+    if (lien.horsPerimetreAudit && roleCourant === 'ADMIN_AUDIT') return false;
     return true;
   }
 
