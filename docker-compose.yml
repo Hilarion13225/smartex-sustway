@@ -19,10 +19,15 @@ services:
       POSTGRES_PASSWORD: smartex
       POSTGRES_DB: smartex_sustway
     ports:
-      # Hôte 5433 : le port 5432 par défaut est déjà occupé sur cette machine
-      # par le Postgres d'un autre projet (cie-smart-prepaid-poc). Le réseau
-      # Docker interne continue d'utiliser 5432 (voir SMARTEX_DB_URL ci-dessous).
-      - "5433:5432"
+      # Hôte 5434 : sur cette machine, une installation PostgreSQL native écoute
+      # déjà sur 5432 ET 5433 (projet cie-smart-prepaid-poc). Publier sur 5433
+      # « fonctionnait » — Docker s'y liait sans erreur — mais c'est l'instance
+      # native qui répondait aux connexions entrantes, avec un rôle `smartex`
+      # au mot de passe différent : toute connexion depuis l'hôte échouait à
+      # l'authentification. Le réseau Docker interne continue d'utiliser 5432
+      # (voir SMARTEX_DB_URL ci-dessous), l'API en conteneur n'était donc pas
+      # affectée — seuls les accès depuis l'hôte l'étaient (tests, psql).
+      - "5434:5432"
     volumes:
       - smartex_postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d/01-migrations:ro
