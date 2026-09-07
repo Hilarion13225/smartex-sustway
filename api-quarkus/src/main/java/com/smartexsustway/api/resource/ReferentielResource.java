@@ -85,7 +85,7 @@ public class ReferentielResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response creer(ReferentielCreateRequestDto requete) {
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
@@ -107,7 +107,10 @@ public class ReferentielResource {
         if (requete.version() != null && !requete.version().isBlank()) {
             referentiel.setVersion(requete.version());
         }
-        referentielRepository.persist(referentiel);
+        // persistAndFlush : @CreationTimestamp n'est renseigné par Hibernate
+        // qu'au flush, qui n'aurait autrement lieu qu'en fin de transaction —
+        // createdAt serait alors nul dans la réponse renvoyée au client.
+        referentielRepository.persistAndFlush(referentiel);
 
         auditLogService.journaliser(tenantContext.utilisateurCourantId(), null,
                 "REFERENTIEL_CREE", "referentiel", referentiel.getId());
@@ -119,7 +122,7 @@ public class ReferentielResource {
     @Path("/{code}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response modifier(@PathParam("code") String code, ReferentielUpdateRequestDto requete) {
         Referentiel referentiel = trouverParCode(code);
         if (requete == null) {
@@ -179,7 +182,7 @@ public class ReferentielResource {
     @Path("/{code}/versions")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed("SUPER_ADMIN")
+    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
     public Response publierVersion(@PathParam("code") String code, @Valid PublierVersionRequestDto requete) {
         Referentiel referentiel = trouverParCode(code);
         if (requete == null) {

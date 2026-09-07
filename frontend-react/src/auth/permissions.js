@@ -57,6 +57,10 @@ export const PERMISSIONS_PAR_ROLE = {
     'audit:creer',
     'audit:modifier',
     'preuve:deposer',
+    // Le responsable audit pilote le dispositif : choisir les cadres
+    // d'évaluation et les faire évoluer relève de son métier, non de
+    // l'administration technique de la plateforme (voir V32).
+    'referentiel:administrer',
     'rapport:consulter',
     'rapport:detaille',
     'bailleur:consulter',
@@ -93,8 +97,8 @@ export const ROLE_LIBELLE = {
 /**
  * Contrôle centralisé : rôle puis formule (section 4). `plan` peut être
  * omis quand la permission n'est jamais soumise à restriction de formule
- * pour ce rôle (ex. referentiel:administrer, réservé à SUPER_ADMIN qui de
- * toute façon court-circuite la vérification de formule).
+ * pour ce rôle (ex. referentiel:administrer, qui ne figure dans aucune
+ * restriction par formule).
  */
 export function possedePermission(role, plan, permission) {
   if (!role || !PERMISSIONS_PAR_ROLE[role]?.includes(permission)) return false;
