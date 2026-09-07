@@ -171,7 +171,7 @@ export function GraphiqueLigne({ labels, series }) {
   );
 }
 
-export function GraphiqueAnneau({ labels, data, couleurs }) {
+export function GraphiqueAnneau({ labels, data, couleurs, legende = true }) {
   const { communes, texte } = useOptionsCommunes();
   return (
     <Doughnut
@@ -179,7 +179,13 @@ export function GraphiqueAnneau({ labels, data, couleurs }) {
       options={{
         ...communes,
         cutout: '62%',
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: texte } } },
+        // Une jauge compacte affiche sa valeur en son centre : la légende y
+        // viendrait la recouvrir.
+        plugins: {
+          legend: legende
+            ? { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: texte } }
+            : { display: false },
+        },
       }}
     />
   );
