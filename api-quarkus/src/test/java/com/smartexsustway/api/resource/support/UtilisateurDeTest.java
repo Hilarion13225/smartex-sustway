@@ -9,6 +9,7 @@ import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.security.JwtService;
 import io.quarkus.narayana.jta.QuarkusTransaction;
+import io.quarkus.arc.Arc;
 import io.restassured.http.ContentType;
 
 import java.util.Map;
@@ -50,10 +51,10 @@ public final class UtilisateurDeTest {
                 .then().statusCode(201)
                 .extract().path("id");
 
-        String tokenVerification = jwtService.genererTokenVerificationEmail(UUID.fromString(id));
-        given().queryParam("token", tokenVerification)
-                .when().get("/api/v1/auth/verification-email")
-                .then().statusCode(200);
+        // L'activation passe par un code à usage unique dont seule l'empreinte
+        // est stockée (V28) : un test ne peut pas le rejouer. Il active donc le
+        // compte directement, sans toucher au contrôle appliqué par l'API.
+        Arc.container().instance(ActivationDeTest.class).get().activer(id);
 
         String token = given()
                 .contentType(ContentType.JSON)

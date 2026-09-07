@@ -100,6 +100,10 @@ public class Referentiel {
         this.version = version;
     }
 
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public StatutGenerique getStatut() {
         return statut;
     }

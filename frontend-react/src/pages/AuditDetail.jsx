@@ -3,11 +3,90 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
 import Revele from '../components/Revele';
 import SaisieCritereMission from '../components/audit/SaisieCritereMission';
+import SyntheseMission from '../components/audit/SyntheseMission';
+import OngletsMission from '../components/audit/OngletsMission';
+import VoletAnalysesIa from '../components/audit/VoletAnalysesIa';
+import VoletPreuves from '../components/audit/VoletPreuves';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 
 
+
+const ONGLETS = [
+  { cle: 'synthese', libelle: 'Vue d’ensemble' },
+  { cle: 'domaines', libelle: 'Domaines' },
+  { cle: 'criteres', libelle: 'Critères' },
+  { cle: 'preuves', libelle: 'Preuves' },
+  { cle: 'analyses', libelle: 'Analyses IA' },
+];
+
+/**
+ * Domaines de la mission : score obtenu et avancement de la collecte.
+ *
+ * Les compteurs viennent des critères déjà chargés par la page ; le score,
+ * lui, n'existe que pour les domaines comportant au moins une évaluation.
+ */
+function VoletDomaines({ score, criteres }) {
+  const parDomaine = new Map();
+  criteres.forEach((critere) => {
+    const actuel = parDomaine.get(critere.domaineCode) ?? { total: 0, evalues: 0 };
+    actuel.total += 1;
+    if (critere.statut === 'EVALUE') actuel.evalues += 1;
+    parDomaine.set(critere.domaineCode, actuel);
+  });
+
+  const scores = new Map((score?.domaines ?? []).map((d) => [d.domaineCode, d]));
+  const lignes = [...parDomaine.entries()].map(([code, compteurs]) => ({
+    code,
+    nom: scores.get(code)?.domaineNom ?? code,
+    score: scores.get(code)?.score ?? null,
+    ...compteurs,
+  }));
+
+  if (lignes.length === 0) {
+    return (
+      <p className="rounded-2xl border border-dashed border-ink-200 px-4 py-10 text-center text-sm text-ink-500">
+        Aucun domaine sur cette mission.
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {lignes.map((ligne) => {
+        const avancement = ligne.total > 0 ? Math.round((ligne.evalues / ligne.total) * 100) : 0;
+        return (
+          <section
+            key={ligne.code}
+            className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h3 className="truncate text-sm font-semibold text-ink-900" title={ligne.nom}>
+                  {ligne.nom}
+                </h3>
+                <p className="mt-0.5 font-mono text-xs text-ink-400">{ligne.code}</p>
+              </div>
+              <span className="shrink-0 text-sm font-semibold tabular-nums text-ink-900">
+                {ligne.score == null ? '—' : `${Number(ligne.score).toFixed(1)} / 5`}
+              </span>
+            </div>
+            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-ink-100">
+              <div
+                className="h-full rounded-full bg-brand-600 transition-[width] duration-500"
+                style={{ width: `${avancement}%` }}
+              />
+            </div>
+            <p className="mt-2 text-xs text-ink-500">
+              {ligne.evalues} / {ligne.total} critères évalués
+            </p>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
 
 /** RG34/RG35 : questionnaire figé de la mission — liste des critères à évaluer. */
 export default function AuditDetail() {
@@ -17,7 +96,10 @@ export default function AuditDetail() {
 
   const [audit, setAudit] = useState(null);
   const [criteres, setCriteres] = useState(null);
+  const [score, setScore] = useState(null);
+  const [nonConformites, setNonConformites] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [onglet, setOnglet] = useState('synthese');
 
   const [sitesEntreprise, setSitesEntreprise] = useState([]);
   const [sitesAudit, setSitesAudit] = useState([]);
@@ -39,10 +121,14 @@ export default function AuditDetail() {
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres`),
       api.get(`/api/v1/entreprises/${entrepriseId}/sites`),
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/sites`),
+      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/score`).catch(() => null),
+      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/non-conformites`).catch(() => []),
     ])
-      .then(([a, c, se, sa]) => {
+      .then(([a, c, se, sa, sc, nc]) => {
         setAudit(a);
         setCriteres(c);
+        setScore(sc);
+        setNonConformites(nc ?? []);
         setSitesEntreprise(se.filter((s) => s.statut === 'ACTIF'));
         setSitesAudit(sa);
         setSelectionSites(sa.map((s) => s.id));
@@ -61,6 +147,15 @@ export default function AuditDetail() {
   const rafraichirSilencieux = useCallback(() => rafraichir(true), [rafraichir]);
 
   const peutModifier = peut('audit:modifier', audit?.formuleCode);
+
+  // Même règle que le tableau de bord et la liste des missions : le risque se
+  // lit sur les écarts constatés, pas sur le score.
+  const risqueGlobal = (() => {
+    if ((score?.nombreCriteresEvalues ?? 0) === 0) return null;
+    if (nonConformites.some((nc) => nc.niveau === 'CRITIQUE')) return 'ELEVE';
+    if (nonConformites.some((nc) => nc.niveau === 'MAJEURE')) return 'MOYEN';
+    return 'FAIBLE';
+  })();
 
   function basculerSite(siteId) {
     setSelectionSites((prec) => (prec.includes(siteId) ? prec.filter((id) => id !== siteId) : [...prec, siteId]));
@@ -134,7 +229,25 @@ export default function AuditDetail() {
           {erreurSites ? <Alerte ton="rouge">{erreurSites}</Alerte> : null}
 
           <Revele>
-            <div className="mb-6 lg:max-w-xl">
+            <OngletsMission
+              onglets={ONGLETS.map((o) =>
+                o.cle === 'criteres' ? { ...o, compteur: criteres?.length ?? 0 } : o
+              )}
+              actif={onglet}
+              surChangement={setOnglet}
+            />
+          </Revele>
+
+          <div className="mt-5">
+            {onglet === 'synthese' ? (
+              <div className="space-y-5">
+                <SyntheseMission
+                  score={score}
+                  risque={risqueGlobal}
+                  criteresTotal={score?.nombreCriteresTotal ?? audit.nombreCriteres ?? 0}
+                  criteresEvalues={score?.nombreCriteresEvalues ?? 0}
+                />
+              <div className="lg:max-w-xl">
               <Card className="p-5">
                 <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />
                 {sitesEntreprise.length === 0 ? (
@@ -182,17 +295,33 @@ export default function AuditDetail() {
                 )}
               </Card>
             </div>
-          </Revele>
+              </div>
+            ) : null}
 
-          <Revele delai={60}>
-            <SaisieCritereMission
-              entrepriseId={entrepriseId}
-              auditId={auditId}
-              criteres={criteres ?? []}
-              peutModifier={peutModifier}
-              surChangement={rafraichirSilencieux}
-            />
-          </Revele>
+            {onglet === 'domaines' ? <VoletDomaines score={score} criteres={criteres ?? []} /> : null}
+
+            {onglet === 'criteres' ? (
+              <SaisieCritereMission
+                entrepriseId={entrepriseId}
+                auditId={auditId}
+                criteres={criteres ?? []}
+                peutModifier={peutModifier}
+                surChangement={rafraichirSilencieux}
+              />
+            ) : null}
+
+            {onglet === 'preuves' ? (
+              <VoletPreuves entrepriseId={entrepriseId} auditId={auditId} />
+            ) : null}
+
+            {onglet === 'analyses' ? (
+              <VoletAnalysesIa
+                entrepriseId={entrepriseId}
+                auditId={auditId}
+                criteres={criteres ?? []}
+              />
+            ) : null}
+          </div>
         </>
       )}
     </>

@@ -1,24 +1,45 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, PlusCircle } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, PlusCircle, Search } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
-import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import TableMissions from '../components/tableau-bord/TableMissions';
+import { Alerte, Card, Loader, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
 
-const TONS_STATUT_AUDIT = {
-  BROUILLON: 'neutre',
-  EN_COURS: 'bleu',
-  TERMINE: 'vert',
-  CLOTURE: 'neutre',
-};
+const STATUTS = [
+  { valeur: '', libelle: 'Tous les statuts' },
+  { valeur: 'BROUILLON', libelle: 'Brouillon' },
+  { valeur: 'EN_COURS', libelle: 'En cours' },
+  { valeur: 'CLOTURE', libelle: 'Terminée' },
+  { valeur: 'ARCHIVE', libelle: 'Archivée' },
+];
+
+const RISQUES = [
+  { valeur: '', libelle: 'Tous les niveaux de risque' },
+  { valeur: 'ELEVE', libelle: 'Risque élevé' },
+  { valeur: 'MOYEN', libelle: 'Risque moyen' },
+  { valeur: 'FAIBLE', libelle: 'Risque faible' },
+  { valeur: 'NON_EVALUE', libelle: 'Non évalué' },
+];
+
+const PERIODES = [
+  { valeur: '', libelle: 'Toutes les périodes' },
+  { valeur: '30', libelle: '30 derniers jours' },
+  { valeur: '90', libelle: '3 derniers mois' },
+  { valeur: '365', libelle: '12 derniers mois' },
+];
 
 /**
- * RG10/RG11 : liste des missions d'audit d'une entreprise, et création
- * d'une nouvelle mission (le questionnaire est composé dynamiquement côté
- * API à la création — voir QuestionnaireService).
+ * RG10/RG11 : missions d'audit d'une entreprise, et création d'une nouvelle
+ * mission (le questionnaire est composé dynamiquement côté API à la création
+ * — voir QuestionnaireService).
+ *
+ * Le tableau est celui du tableau de bord : mêmes colonnes, mêmes codes
+ * couleur de risque, et le même repli en cartes sous `lg`. Dupliquer un
+ * second tableau aurait fait diverger les deux vues à la première évolution.
  */
 export default function AuditsListe() {
   const { entrepriseId } = useParams();
@@ -26,19 +47,39 @@ export default function AuditsListe() {
   const { entreprises, recupererAbonnement, peut } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
-  const [audits, setAudits] = useState(null);
+  const [missions, setMissions] = useState(null);
   const [chargement, setChargement] = useState(true);
   const [referentiels, setReferentiels] = useState([]);
   const [abonnement, setAbonnement] = useState(null);
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
 
-  const rafraichir = useCallback(() => {
+  // Les filtres de statut sont aussi pilotables par l'URL : la barre latérale
+  // pointe sur ?statut=EN_COURS ou ?vue=a-valider, ce qui rend ses entrées de
+  // sous-menu réellement distinctes sans dupliquer la page.
+  const [parametres, setParametres] = useSearchParams();
+  const vue = parametres.get('vue') ?? '';
+
+  const [recherche, setRecherche] = useState('');
+  const [filtreStatut, setFiltreStatut] = useState(parametres.get('statut') ?? '');
+  const [filtreRisque, setFiltreRisque] = useState('');
+  const [filtrePeriode, setFiltrePeriode] = useState('');
+
+  const rafraichir = useCallback(async () => {
     setChargement(true);
-    api
-      .get(`/api/v1/entreprises/${entrepriseId}/audits`)
-      .then(setAudits)
-      .catch(() => setAudits([]))
-      .finally(() => setChargement(false));
+    const audits = await api.get(`/api/v1/entreprises/${entrepriseId}/audits`).catch(() => []);
+    // Score et non-conformités par mission : ni la progression ni le risque ne
+    // figurent dans AuditDto, il faut les composer côté client.
+    const enrichies = await Promise.all(
+      audits.map(async (audit) => {
+        const [score, nonConformites] = await Promise.all([
+          api.get(`/api/v1/entreprises/${entrepriseId}/audits/${audit.id}/score`).catch(() => null),
+          api.get(`/api/v1/entreprises/${entrepriseId}/audits/${audit.id}/non-conformites`).catch(() => []),
+        ]);
+        return { audit, score, nonConformites };
+      })
+    );
+    setMissions(enrichies);
+    setChargement(false);
   }, [entrepriseId]);
 
   useEffect(() => {
@@ -54,38 +95,114 @@ export default function AuditsListe() {
 
   const peutCreerAudit = peut('audit:creer', abonnement?.formuleCode);
 
+  const missionsVue = useMemo(
+    () =>
+      (missions ?? []).map(({ audit, score, nonConformites }) => {
+        const total = score?.nombreCriteresTotal ?? audit.nombreCriteres ?? 0;
+        const evalues = score?.nombreCriteresEvalues ?? 0;
+        const critiques = nonConformites.filter((nc) => nc.niveau === 'CRITIQUE').length;
+        const majeures = nonConformites.filter((nc) => nc.niveau === 'MAJEURE').length;
+
+        let risque = null;
+        if (evalues > 0) risque = critiques > 0 ? 'ELEVE' : majeures > 0 ? 'MOYEN' : 'FAIBLE';
+
+        return {
+          id: audit.id,
+          organisation: audit.referentielCode,
+          nom: audit.nom,
+          progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
+          conformite:
+            score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
+          risque,
+          statut: audit.statut,
+          echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
+          lien: `/app/${entrepriseId}/audits/${audit.id}`,
+          dateDebut: audit.dateDebut,
+        };
+      }),
+    [missions, entrepriseId]
+  );
+
+  /** Change le statut filtré et reflète le choix dans l'URL. */
+  function changerStatut(valeur) {
+    setFiltreStatut(valeur);
+    const suivant = new URLSearchParams(parametres);
+    if (valeur) suivant.set('statut', valeur);
+    else suivant.delete('statut');
+    suivant.delete('vue');
+    setParametres(suivant, { replace: true });
+  }
+
+  const missionsFiltrees = useMemo(() => {
+    const requete = recherche.trim().toLowerCase();
+    const limite = filtrePeriode
+      ? Date.now() - Number(filtrePeriode) * 24 * 60 * 60 * 1000
+      : null;
+
+    return missionsVue.filter((mission) => {
+      if (requete && !`${mission.nom} ${mission.organisation}`.toLowerCase().includes(requete)) {
+        return false;
+      }
+      if (filtreStatut && mission.statut !== filtreStatut) return false;
+      // « À valider » n'est pas un statut du modèle : c'est une mission dont
+      // tous les critères sont évalués mais qui n'est pas encore clôturée.
+      if (vue === 'a-valider' && !(mission.progression === 100 && mission.statut === 'EN_COURS')) {
+        return false;
+      }
+      if (filtreRisque && (mission.risque ?? 'NON_EVALUE') !== filtreRisque) return false;
+      if (limite && mission.dateDebut && new Date(mission.dateDebut).getTime() < limite) return false;
+      return true;
+    });
+  }, [missionsVue, recherche, filtreStatut, filtreRisque, filtrePeriode, vue]);
+
   if (!entreprise) {
     return <Vide message="Entreprise introuvable ou non accessible." />;
   }
 
   return (
-    <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
+    <div className="space-y-5">
+      <Link to={`/app/${entrepriseId}`} className="btn-ghost -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Retour à {entreprise.raisonSociale}
       </Link>
 
-      <PageTitre
-        icone={ClipboardList}
-        titre="Missions d’audit"
-        description={`Audits RSE de ${entreprise.raisonSociale} — méthodologie SMARTEX SustWay.`}
-        actions={
-          peutCreerAudit ? (
-            <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>
-              <PlusCircle className="h-4 w-4" aria-hidden />
-              Nouvel audit
-            </button>
-          ) : null
-        }
-      />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-ink-900">
+            {vue === 'a-valider'
+              ? 'Missions à valider'
+              : filtreStatut === 'EN_COURS'
+                ? 'Missions en cours'
+                : filtreStatut === 'CLOTURE'
+                  ? 'Missions terminées'
+                  : 'Missions d’audit'}
+          </h1>
+          <p className="mt-1 text-sm text-ink-500">
+            Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — {entreprise.raisonSociale}.
+          </p>
+        </div>
+        {peutCreerAudit ? (
+          <button
+            type="button"
+            className="btn-primary shrink-0"
+            onClick={() => setAfficherFormulaire((v) => !v)}
+          >
+            <PlusCircle className="h-4 w-4" aria-hidden />
+            Nouvelle mission
+          </button>
+        ) : null}
+      </div>
 
       {!peutCreerAudit ? (
-        <Alerte ton="ambre">La création d’une nouvelle mission n’est pas disponible avec la formule actuelle de cette entreprise.</Alerte>
+        <Alerte ton="ambre">
+          La création d’une nouvelle mission n’est pas disponible avec la formule actuelle de cette
+          entreprise.
+        </Alerte>
       ) : null}
 
       {afficherFormulaire ? (
         <Revele>
-          <Card className="mb-6 p-5">
+          <Card className="p-5">
             <NouvelAuditFormulaire
               entrepriseId={entrepriseId}
               referentiels={referentiels}
@@ -98,35 +215,76 @@ export default function AuditsListe() {
         </Revele>
       ) : null}
 
+      {/* --- Recherche et filtres --- */}
+      <div className="rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              className="input pl-9"
+              placeholder="Rechercher une mission…"
+              aria-label="Rechercher une mission"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+            />
+          </div>
+          <select
+            className="input"
+            aria-label="Filtrer par statut"
+            value={filtreStatut}
+            onChange={(e) => changerStatut(e.target.value)}
+          >
+            {STATUTS.map((s) => (
+              <option key={s.valeur} value={s.valeur}>
+                {s.libelle}
+              </option>
+            ))}
+          </select>
+          <select
+            className="input"
+            aria-label="Filtrer par niveau de risque"
+            value={filtreRisque}
+            onChange={(e) => setFiltreRisque(e.target.value)}
+          >
+            {RISQUES.map((r) => (
+              <option key={r.valeur} value={r.valeur}>
+                {r.libelle}
+              </option>
+            ))}
+          </select>
+          <select
+            className="input"
+            aria-label="Filtrer par période"
+            value={filtrePeriode}
+            onChange={(e) => setFiltrePeriode(e.target.value)}
+          >
+            {PERIODES.map((p) => (
+              <option key={p.valeur} value={p.valeur}>
+                {p.libelle}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {chargement ? (
-        <Loader message="Chargement des audits…" />
-      ) : audits && audits.length > 0 ? (
-        <Revele delai={80}>
-          <Card>
-            <Tableau entetes={['Mission', 'Référentiel', 'Critères', 'Statut', 'Début', '']}>
-              {audits.map((a) => (
-                <tr key={a.id} className="transition-colors hover:bg-ink-100/60">
-                  <td className="td font-medium text-ink-900">{a.nom}</td>
-                  <td className="td">{a.referentielCode}</td>
-                  <td className="td">{a.nombreCriteres}</td>
-                  <td className="td">
-                    <Badge ton={TONS_STATUT_AUDIT[a.statut] ?? 'neutre'}>{a.statut}</Badge>
-                  </td>
-                  <td className="td">{formaterDate(a.dateDebut)}</td>
-                  <td className="td text-right">
-                    <Link to={`/app/${entrepriseId}/audits/${a.id}`} className="btn-ghost">
-                      Ouvrir
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </Tableau>
-          </Card>
-        </Revele>
+        <Loader message="Chargement des missions…" />
       ) : (
-        <Vide message="Aucun audit pour l’instant — créez la première mission." />
+        <Revele delai={80}>
+          <div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <p className="mb-4 text-xs text-ink-500">
+              {missionsFiltrees.length} mission{missionsFiltrees.length > 1 ? 's' : ''} affichée
+              {missionsFiltrees.length > 1 ? 's' : ''} sur {missionsVue.length}.
+            </p>
+            <TableMissions missions={missionsFiltrees} etiquettePremiereColonne="Référentiel" />
+          </div>
+        </Revele>
       )}
-    </>
+    </div>
   );
 }
 

@@ -7,25 +7,24 @@ import {
   ClipboardList,
   ClipboardX,
   Columns3,
-  Cpu,
-  ExternalLink,
+  FolderOpen,
   FileText,
   History,
   LayoutDashboard,
   Leaf,
-  LifeBuoy,
   ListTodo,
-  LogOut,
   Menu,
-  ShieldCheck,
+  Sparkles,
+  Users,
   UserCog,
   Wallet,
   X,
 } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
-import BasculeTheme from './BasculeTheme';
-import DecorSidebar from './DecorSidebar';
+import { useTheme } from '../theme/ThemeContext';
+import EnTeteApp from './EnTeteApp';
+import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
@@ -55,36 +54,67 @@ const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', '
  */
 const GROUPES = [
   {
-    titre: 'Pilotage',
+    titre: 'Navigation',
     liens: [
-      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
-      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
-      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
+      { vers: '/app', libelle: 'Vue générale', icone: LayoutDashboard, fin: true },
+      {
+        chemin: (id) => `/app/${id}/audits`,
+        libelle: 'Missions d’audit',
+        icone: ClipboardList,
+        // Les sous-entrées visent la même page avec un filtre : « à valider »
+        // n'est pas un statut du modèle mais une mission entièrement évaluée
+        // et non close (voir AuditsListe).
+        enfants: [
+          { libelle: 'Toutes les missions', chemin: (id) => `/app/${id}/audits` },
+          { libelle: 'En cours', chemin: (id) => `/app/${id}/audits?statut=EN_COURS` },
+          { libelle: 'À valider', chemin: (id) => `/app/${id}/audits?vue=a-valider` },
+          { libelle: 'Terminées', chemin: (id) => `/app/${id}/audits?statut=CLOTURE` },
+        ],
+      },
+      {
+        vers: '/app/entreprises',
+        libelle: 'Organisations',
+        icone: Building2,
+        enfants: [
+          { libelle: 'Liste', vers: '/app/entreprises' },
+          { libelle: 'Profil organisation', chemin: (id) => `/app/${id}` },
+          { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
+        ],
+      },
+      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
+      {
+        vers: '/app/referentiels',
+        libelle: 'Référentiel RSE',
+        icone: BookOpen,
+        enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
+      },
+      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
+      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe', icone: Users },
+    ],
+  },
+  {
+    // Les pages hors navigation principale restent listées ici : les retirer
+    // les rendrait inatteignables alors qu'elles existent et sont routées.
+    titre: 'Suivi',
+    liens: [
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen , horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX , horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo , horsPerimetreAudit: true },
+      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 , horsPerimetreAudit: true },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
         libelle: 'Financements verts',
         icone: Leaf,
         permission: 'bailleur:consulter',
+        horsPerimetreAudit: true,
       },
     ],
   },
   {
-    titre: 'Audit',
+    titre: 'Paramètres',
     liens: [
-      { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
-      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FileText },
-      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Cpu },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
-    ],
-  },
-  {
-    titre: 'Administration',
-    liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
-      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
-      { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true, horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true, horsPerimetreAudit: true },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -114,6 +144,9 @@ function dateDuJour() {
 /** Mise en page de l'espace connecté — navigation réelle uniquement (pilotage, entreprises, profil). */
 export default function Layout() {
   const { utilisateur, entreprises, roleCourant, peut, deconnecter } = useApiAuth();
+  const { estSombre } = useTheme();
+  const [missionsCourantes, setMissionsCourantes] = useState([]);
+  const [ecartsOuverts, setEcartsOuverts] = useState([]);
   const [ouvert, setOuvert] = useState(false);
   const [entrepriseCouranteId, setEntrepriseCouranteId] = useState(
     () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
@@ -202,13 +235,65 @@ export default function Layout() {
 
   if (!utilisateur) return null;
 
-  const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
 
   const formuleCourante = entreprises.find((e) => e.id === entrepriseCouranteId)?.formuleCode;
+
+  // Chargées une fois par organisation : la recherche de l'en-tête porte sur
+  // ces missions, et la cloche compte leurs écarts encore ouverts. Sans cette
+  // collecte partagée, chacun des deux ferait les mêmes appels de son côté.
+  useEffect(() => {
+    if (!entrepriseCouranteId) {
+      setMissionsCourantes([]);
+      setEcartsOuverts([]);
+      return;
+    }
+    let annule = false;
+
+    api
+      .get(`/api/v1/entreprises/${entrepriseCouranteId}/audits`)
+      .then(async (audits) => {
+        if (annule) return;
+        setMissionsCourantes(audits ?? []);
+        const parMission = await Promise.all(
+          (audits ?? []).map((audit) =>
+            api
+              .get(`/api/v1/entreprises/${entrepriseCouranteId}/audits/${audit.id}/non-conformites`)
+              .then((liste) =>
+                (liste ?? [])
+                  .filter((nc) => nc.statut === 'OUVERTE')
+                  .map((nc) => ({
+                    id: nc.id,
+                    niveau: nc.niveau,
+                    libelle: nc.critereLibelle ?? nc.critereCode ?? 'Écart constaté',
+                    mission: audit.nom,
+                    vers: `/app/${entrepriseCouranteId}/audits/${audit.id}/non-conformites`,
+                  }))
+              )
+              .catch(() => [])
+          )
+        );
+        if (!annule) setEcartsOuverts(parMission.flat());
+      })
+      .catch(() => {
+        if (!annule) {
+          setMissionsCourantes([]);
+          setEcartsOuverts([]);
+        }
+      });
+
+    return () => {
+      annule = true;
+    };
+  }, [entrepriseCouranteId]);
 
   function lienVisible(lien) {
     if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
     if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
+    // Le périmètre du responsable d'audit est arrêté (voir GROUPES) : les
+    // pages qui n'en relèvent pas lui sont masquées. Elles restent visibles
+    // pour les autres rôles, qui en ont l'usage — le responsable d'entreprise
+    // gère son abonnement, le super-administrateur consulte le journal.
+    if (lien.horsPerimetreAudit && roleCourant === 'ADMIN_AUDIT') return false;
     return true;
   }
 
@@ -216,22 +301,21 @@ export default function Layout() {
     <div className="flex h-full bg-ink-50">
       <aside
         className={clsx(
-          'sidebar-tech fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 transition-transform duration-300 lg:static lg:translate-x-0',
+          'sidebar-tech bordure-sidebar fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r transition-transform duration-300 lg:static lg:translate-x-0',
           ouvert ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <DecorSidebar />
 
         <div className="relative flex items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2.5">
             <div>
-              <Logo taille="sm" variante="clair" />
-              <p className="text-xs text-white/50">Par {SMARTEX.editeur}</p>
+              <Logo taille="sm" variante={estSombre ? 'clair' : 'sombre'} />
+              <p className="texte-sidebar-attenue text-xs">Par {SMARTEX.editeur}</p>
             </div>
           </div>
           <button
             type="button"
-            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
+            className="bouton-sidebar rounded-lg p-1.5 transition-colors lg:hidden"
             onClick={() => setOuvert(false)}
             aria-label="Fermer le menu"
           >
@@ -242,7 +326,7 @@ export default function Layout() {
         {entreprises.length > 0 ? (
           <div className="relative px-5 pb-3">
             <label
-              className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-white/40"
+              className="titre-sidebar mb-1.5 block text-[11px] font-semibold uppercase tracking-wider"
               htmlFor="entreprise-courante"
             >
               Entreprise
@@ -284,7 +368,7 @@ export default function Layout() {
                   type="button"
                   onClick={() => basculerGroupe(groupe.titre)}
                   aria-expanded={!replie}
-                  className="flex w-full items-center justify-between rounded-lg px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-white/40 transition-colors hover:text-white/70"
+                  className="titre-sidebar-actionnable flex w-full items-center justify-between rounded-lg px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider transition-colors"
                 >
                   <span>{groupe.titre}</span>
                   <ChevronDown
@@ -301,18 +385,33 @@ export default function Layout() {
                       return (
                         <span
                           key={lien.libelle}
-                          className="lien-app cursor-not-allowed text-white/70 opacity-40"
+                          className="lien-app texte-sidebar-attenue cursor-not-allowed opacity-40"
                           title="Sélectionnez d’abord une entreprise"
                         >
-                          <lien.icone className="h-4 w-4 shrink-0 text-white/50" aria-hidden />
+                          <lien.icone className="texte-sidebar-attenue h-4 w-4 shrink-0" aria-hidden />
                           <span className="flex-1 truncate">{lien.libelle}</span>
                         </span>
                       );
                     }
 
+                    const cibleParente = cible;
+                    const enfantsVisibles = (lien.enfants ?? [])
+                      .map((enfant) => ({
+                        libelle: enfant.libelle,
+                        cible: enfant.chemin
+                          ? entrepriseCouranteId
+                            ? enfant.chemin(entrepriseCouranteId)
+                            : null
+                          : enfant.vers,
+                      }))
+                      .filter((enfant) => enfant.cible);
+                    const sectionOuverte =
+                      enfantsVisibles.length > 0 &&
+                      location.pathname.startsWith(cibleParente.split('?')[0]);
+
                     return (
+                      <div key={lien.libelle}>
                       <NavLink
-                        key={lien.libelle}
                         to={cible}
                         end={lien.fin}
                         onClick={() => setOuvert(false)}
@@ -325,7 +424,7 @@ export default function Layout() {
                             <lien.icone
                               className={clsx(
                                 'h-4 w-4 shrink-0 transition-transform duration-300 motion-safe:group-hover:scale-110',
-                                isActive ? 'text-white' : 'text-white/50 group-hover:text-emerald-400'
+                                isActive ? 'text-brand-600 dark:text-brand-300' : 'icone-sidebar'
                               )}
                               aria-hidden
                             />
@@ -333,6 +432,32 @@ export default function Layout() {
                           </>
                         )}
                       </NavLink>
+
+                      {sectionOuverte ? (
+                        <ul className="mt-1 space-y-0.5 border-l border-ink-200 pl-3 dark:border-white/10">
+                          {enfantsVisibles.map((enfant) => {
+                            const actif =
+                              location.pathname + location.search === enfant.cible;
+                            return (
+                              <li key={enfant.libelle}>
+                                <NavLink
+                                  to={enfant.cible}
+                                  onClick={() => setOuvert(false)}
+                                  className={clsx(
+                                    'block rounded-lg px-3 py-1.5 text-[13px] transition-colors',
+                                    actif
+                                      ? 'font-semibold text-brand-700 dark:text-brand-300'
+                                      : 'lien-sidebar-inactif'
+                                  )}
+                                >
+                                  {enfant.libelle}
+                                </NavLink>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                      </div>
                     );
                   })}
                 </div>
@@ -341,56 +466,8 @@ export default function Layout() {
             );
           })}
 
-          {/* Sur une barre désormais sombre, l'ancien fond #1f2533 se serait
-              fondu dans le décor : l'encart se détache en surface translucide. */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] p-4 text-white backdrop-blur-sm">
-            <span
-              className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-500/20 blur-2xl motion-safe:animate-respiration"
-              aria-hidden
-            />
-            <p className="relative flex items-center gap-2 text-sm font-semibold">
-              <LifeBuoy className="h-4 w-4 text-emerald-400" aria-hidden />
-              Besoin d’un accompagnement ?
-            </p>
-            <p className="relative mt-1.5 text-xs text-white/70">
-              Les experts {SMARTEX.editeur} peuvent auditer vos preuves et prioriser votre plan d’action.
-            </p>
-            <a
-              href={`mailto:${SMARTEX.emailSupport}`}
-              className="relative mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400 transition-colors hover:text-white"
-            >
-              Contacter un expert
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            </a>
-          </div>
         </nav>
 
-        <div className="relative border-t border-white/10 p-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
-              {initiales || utilisateur.prenom?.slice(0, 1)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">
-                {utilisateur.prenom} {utilisateur.nom}
-              </p>
-              <p className="truncate text-xs text-white/60">
-                {roleCourant ? ROLE_LIBELLE[roleCourant] ?? roleCourant : utilisateur.email}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-rose-400"
-              onClick={() => {
-                deconnecter();
-                navigate('/');
-              }}
-              aria-label="Se déconnecter"
-            >
-              <LogOut className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-        </div>
       </aside>
 
       {ouvert ? (
@@ -401,19 +478,25 @@ export default function Layout() {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-100 bg-surface/85 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-ink-100 bg-surface/90 px-4 backdrop-blur lg:px-8">
           <button type="button" className="btn-ghost p-1.5 lg:hidden" onClick={() => setOuvert(true)} aria-label="Ouvrir le menu">
             <Menu className="h-5 w-5" aria-hidden />
           </button>
-          <div className="min-w-0 flex-1">
+          {/* Sous `md`, la recherche disparaît : le titre reprend sa place
+              pour que l'en-tête ne se réduise pas à une rangée d'icônes. */}
+          <div className="min-w-0 flex-1 md:hidden">
             <p className="truncate text-sm font-semibold text-ink-900">Bonjour {utilisateur.prenom}</p>
             <p className="truncate text-xs text-ink-500">{dateDuJour()}</p>
           </div>
-          <BasculeTheme />
-          <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30 sm:inline-flex">
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-            Espace sécurisé
-          </span>
+          <EnTeteApp
+            utilisateur={utilisateur}
+            roleLibelle={ROLE_LIBELLE[roleCourant] ?? 'Accès en cours d’attribution'}
+            entreprises={entreprises}
+            missions={missionsCourantes}
+            alertes={ecartsOuverts}
+            entrepriseCouranteId={entrepriseCouranteId}
+            surDeconnexion={deconnecter}
+          />
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">

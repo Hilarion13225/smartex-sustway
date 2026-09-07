@@ -33,6 +33,7 @@ export const COULEURS = {
   bleu: '#2563eb',
   bleuClair: 'rgba(37, 99, 235, 0.18)',
   ambre: '#d97706',
+  vert: '#059669',
   rouge: '#e11d48',
   violet: '#7c3aed',
   gris: '#94a3b8',
@@ -170,7 +171,7 @@ export function GraphiqueLigne({ labels, series }) {
   );
 }
 
-export function GraphiqueAnneau({ labels, data, couleurs }) {
+export function GraphiqueAnneau({ labels, data, couleurs, legende = true }) {
   const { communes, texte } = useOptionsCommunes();
   return (
     <Doughnut
@@ -178,7 +179,13 @@ export function GraphiqueAnneau({ labels, data, couleurs }) {
       options={{
         ...communes,
         cutout: '62%',
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: texte } } },
+        // Une jauge compacte affiche sa valeur en son centre : la légende y
+        // viendrait la recouvrir.
+        plugins: {
+          legend: legende
+            ? { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 }, color: texte } }
+            : { display: false },
+        },
       }}
     />
   );

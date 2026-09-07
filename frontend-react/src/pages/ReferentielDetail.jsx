@@ -4,9 +4,9 @@ import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'luci
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { ROLE_LIBELLE } from '../auth/permissions';
 
 const TONS_STATUT = { ACTIF: 'vert', INACTIF: 'neutre', SUSPENDU: 'ambre', ARCHIVE: 'rouge' };
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
@@ -16,7 +16,10 @@ const TYPES_APPLICABILITE = ['GENERALE', 'SECTORIELLE', 'BAILLEUR'];
 /** Module 4 (back-office) : domaines, critères et criticité sectorielle d'un référentiel — réservé à SUPER_ADMIN. */
 export default function ReferentielDetail() {
   const { code } = useParams();
-  const { roleCourant, peut } = useApiAuth();
+  const { peut } = useApiAuth();
+  // Lecture ouverte, écriture réservée : l'API n'exige SUPER_ADMIN que sur
+  // les créations et modifications (voir ReferentielResource).
+  const peutAdministrer = peut('referentiel:administrer');
 
   const [referentiel, setReferentiel] = useState(null);
   const [domaines, setDomaines] = useState(null);
@@ -53,9 +56,11 @@ export default function ReferentielDetail() {
     rafraichir();
   }, [rafraichir]);
 
-  if (!peut('referentiel:administrer')) {
-    return <Alerte ton="ambre">Cet espace est réservé aux super-administrateurs (rôle actuel : {ROLE_LIBELLE[roleCourant] ?? 'aucun'}).</Alerte>;
-  }
+  // Alimente la liste « Derniers consultés » du catalogue, tenue côté
+  // navigateur : l'API ne journalise pas les consultations.
+  useEffect(() => {
+    if (referentiel) memoriserConsultation(referentiel);
+  }, [referentiel]);
 
   return (
     <>
@@ -85,14 +90,16 @@ export default function ReferentielDetail() {
                 titre="Domaines"
                 sousTitre="Un référentiel se décompose en plusieurs domaines"
                 action={
-                  <button type="button" className="btn-secondary" onClick={() => setAfficherFormulaireDomaine((v) => !v)}>
-                    <PlusCircle className="h-4 w-4" aria-hidden />
-                    Nouveau domaine
-                  </button>
+                  peutAdministrer ? (
+                    <button type="button" className="btn-secondary" onClick={() => setAfficherFormulaireDomaine((v) => !v)}>
+                      <PlusCircle className="h-4 w-4" aria-hidden />
+                      Nouveau domaine
+                    </button>
+                  ) : null
                 }
               />
               <div className="p-5 pt-0">
-                {afficherFormulaireDomaine ? (
+                {afficherFormulaireDomaine && peutAdministrer ? (
                   <div className="mb-4">
                     <NouveauDomaineFormulaire
                       referentielCode={code}
@@ -107,7 +114,7 @@ export default function ReferentielDetail() {
                 {domaines && domaines.length > 0 ? (
                   <div className="space-y-2">
                     {domaines.map((d) => (
-                      <DomaineRow key={d.id} domaine={d} referentielCode={code} onChange={rafraichir} />
+                      <DomaineRow key={d.id} domaine={d} referentielCode={code} onChange={rafraichir} peutAdministrer={peutAdministrer} />
                     ))}
                   </div>
                 ) : (
@@ -123,19 +130,21 @@ export default function ReferentielDetail() {
                 titre="Critères"
                 sousTitre="Chaque critère appartient à un domaine et porte une criticité"
                 action={
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    disabled={!domaines || domaines.length === 0}
-                    onClick={() => setAfficherFormulaireCritere((v) => !v)}
-                  >
-                    <PlusCircle className="h-4 w-4" aria-hidden />
-                    Nouveau critère
-                  </button>
+                  peutAdministrer ? (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      disabled={!domaines || domaines.length === 0}
+                      onClick={() => setAfficherFormulaireCritere((v) => !v)}
+                    >
+                      <PlusCircle className="h-4 w-4" aria-hidden />
+                      Nouveau critère
+                    </button>
+                  ) : null
                 }
               />
               <div className="p-5 pt-0">
-                {afficherFormulaireCritere ? (
+                {afficherFormulaireCritere && peutAdministrer ? (
                   <div className="mb-4">
                     <NouveauCritereFormulaire
                       referentielCode={code}
@@ -151,7 +160,7 @@ export default function ReferentielDetail() {
                 {criteres && criteres.length > 0 ? (
                   <Tableau entetes={['Code', 'Critère', 'Domaine', 'Applicabilité', 'Criticité', 'Statut', '']}>
                     {criteres.map((c) => (
-                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} />
+                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} peutAdministrer={peutAdministrer} />
                     ))}
                   </Tableau>
                 ) : (
@@ -168,7 +177,7 @@ export default function ReferentielDetail() {
   );
 }
 
-function DomaineRow({ domaine, referentielCode, onChange }) {
+function DomaineRow({ domaine, referentielCode, onChange, peutAdministrer }) {
   const [edition, setEdition] = useState(false);
   const [formulaire, setFormulaire] = useState({
     nom: domaine.nom,
@@ -201,12 +210,14 @@ function DomaineRow({ domaine, referentielCode, onChange }) {
           <span className="ml-2 font-medium text-ink-900">{domaine.nom}</span>
           <span className="ml-2 text-xs text-ink-400">ordre {domaine.ordre}</span>
         </div>
-        <button type="button" className="btn-ghost" onClick={() => setEdition((v) => !v)}>
-          {edition ? 'Fermer' : 'Modifier'}
-        </button>
+        {peutAdministrer ? (
+          <button type="button" className="btn-ghost" onClick={() => setEdition((v) => !v)}>
+            {edition ? 'Fermer' : 'Modifier'}
+          </button>
+        ) : null}
       </div>
 
-      {edition ? (
+      {edition && peutAdministrer ? (
         <form className="mt-3 space-y-3 border-t border-ink-100 pt-3" onSubmit={enregistrer}>
           {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
           <div className="grid gap-3 sm:grid-cols-3">
@@ -462,7 +473,7 @@ function NouveauCritereFormulaire({ referentielCode, domaines, onCree }) {
   );
 }
 
-function CritereRow({ critere, secteurs, bailleurs, onChange }) {
+function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer }) {
   const [ouvert, setOuvert] = useState(false);
   const [formulaire, setFormulaire] = useState({
     libelle: critere.libelle,
@@ -528,13 +539,22 @@ function CritereRow({ critere, secteurs, bailleurs, onChange }) {
           <Badge ton={formulaire.actif ? 'vert' : 'neutre'}>{formulaire.actif ? 'ACTIF' : 'INACTIF'}</Badge>
         </td>
         <td className="td text-right">
-          <button type="button" className="btn-ghost" onClick={ouvrir}>
+          {/* Le volet déplié est un formulaire d'édition : sans droit
+              d'administration, l'ouvrir n'offrirait qu'une saisie refusée
+              en 403 à l'enregistrement. */}
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={ouvrir}
+            disabled={!peutAdministrer}
+            aria-label={`Modifier le critère ${critere.code}`}
+          >
             {ouvert ? <ChevronDown className="h-4 w-4" aria-hidden /> : <ChevronRight className="h-4 w-4" aria-hidden />}
             Détails
           </button>
         </td>
       </tr>
-      {ouvert ? (
+      {ouvert && peutAdministrer ? (
         <tr>
           <td colSpan={7} className="bg-ink-50/60 px-4 py-4">
             <form className="space-y-3" onSubmit={enregistrer}>

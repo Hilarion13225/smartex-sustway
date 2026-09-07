@@ -1,5 +1,6 @@
 package com.smartexsustway.api.resource;
 
+import com.smartexsustway.api.resource.support.ActivationDeTest;
 import com.smartexsustway.api.security.JwtService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
@@ -29,6 +30,9 @@ class AuthResourceTest {
     @Inject
     JwtService jwtService;
 
+    @Inject
+    ActivationDeTest activation;
+
     private String emailUnique() {
         return "test-" + UUID.randomUUID() + "@example.com";
     }
@@ -54,18 +58,18 @@ class AuthResourceTest {
         String utilisateurId = inscrireEtRecupererId(email, motDePasse);
         assertNotNull(utilisateurId);
 
-        // RG36 : le compte n'est activé qu'après vérification de l'email.
-        // On génère le token directement via JwtService plutôt que de scraper
-        // les logs (équivalent fonctionnel du lien envoyé par email).
-        String tokenVerification = jwtService.genererTokenVerificationEmail(UUID.fromString(utilisateurId));
-
+        // RG36 : le compte n'est activé qu'après vérification de l'email. Le
+        // code envoyé n'est stocké que sous forme d'empreinte (V28), un test ne
+        // peut donc pas le rejouer — il vérifie le refus d'un code erroné, puis
+        // active le compte directement pour poursuivre le parcours.
         given()
-                .queryParam("token", tokenVerification)
-                .when().get("/api/v1/auth/verification-email")
+                .contentType(ContentType.JSON)
+                .body(Map.of("email", email, "code", "000000"))
+                .when().post("/api/v1/auth/verification-email")
                 .then()
-                .statusCode(200)
-                .body("emailVerifie", is(true))
-                .body("statut", equalTo("ACTIF"));
+                .statusCode(400);
+
+        activation.activer(utilisateurId);
 
         given()
                 .contentType(ContentType.JSON)
@@ -94,8 +98,7 @@ class AuthResourceTest {
     void connexion_motDePasseIncorrect_estRefusee() {
         String email = emailUnique();
         String id = inscrireEtRecupererId(email, "motdepasse123");
-        String token = jwtService.genererTokenVerificationEmail(UUID.fromString(id));
-        given().queryParam("token", token).when().get("/api/v1/auth/verification-email").then().statusCode(200);
+        activation.activer(id);
 
         given()
                 .contentType(ContentType.JSON)

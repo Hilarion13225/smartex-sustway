@@ -33,16 +33,9 @@ class SessionPurposeFilterTest {
                 .then().statusCode(200);
     }
 
-    @Test
-    void tokenVerificationEmail_neDonnePasAccesAuxEndpointsProteges() {
-        UUID idQuelconque = UUID.randomUUID();
-        String tokenVerification = jwtService.genererTokenVerificationEmail(idQuelconque);
-
-        given()
-                .header("Authorization", "Bearer " + tokenVerification)
-                .when().get("/api/v1/utilisateurs/moi")
-                .then().statusCode(401);
-    }
+    // Le jeton de vérification d'email a disparu avec le passage à l'OTP
+    // (V28) : la règle qu'il servait à garder — un jeton d'une autre finalité
+    // n'ouvre pas les endpoints protégés — reste couverte par le test suivant.
 
     @Test
     void tokenPreAuth2fa_neDonnePasAccesAuxEndpointsProteges() {

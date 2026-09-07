@@ -1,56 +1,68 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  ArrowRight,
   Building2,
-  ClipboardCheck,
-  ClipboardX,
+  ClipboardList,
   Download,
+  FileText,
+  FolderOpen,
   Gauge,
-  LayoutDashboard,
-  Leaf,
+  Plus,
+  Sparkles,
   TriangleAlert,
-  Wallet,
 } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
-import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
+import { Loader } from '../components/ui';
+import { COULEURS, GraphiqueAnneau, GraphiqueLigne } from '../components/charts';
+import CarteKpi from '../components/tableau-bord/CarteKpi';
+import TableMissions from '../components/tableau-bord/TableMissions';
+import PanneauAlertes from '../components/tableau-bord/PanneauAlertes';
+import PanneauIa from '../components/tableau-bord/PanneauIa';
+import FilActivite from '../components/tableau-bord/FilActivite';
+import BandeauReprise from '../components/tableau-bord/BandeauReprise';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
 
-const NIVEAUX_ENGAGEMENT = [
-  '1 — Totalement inactive',
-  '2 — Hésitante',
-  '3 — Réactive',
-  '4 — Active',
-  '5 — Fortement active',
-];
-const TONS_FORMULE = { FREE: 'neutre', STANDARD: 'bleu', AVANCEES: 'vert' };
+const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
-const NIVEAUX_NC = ['CRITIQUE', 'MAJEURE', 'MODEREE', 'MINEURE'];
-const COULEURS_NC = [COULEURS.rouge, COULEURS.ambre, '#eab308', COULEURS.gris];
-const TONS_NIVEAU_NC = { CRITIQUE: 'rouge', MAJEURE: 'ambre', MODEREE: 'bleu', MINEURE: 'neutre' };
+/** Actions du journal d'audit traduites en phrases lisibles. */
+const LIBELLES_ACTION = {
+  EVALUATION_IA_CREEE: 'Analyse IA d’un critère',
+  EVALUATION_EXPERTE_ENREGISTREE: 'Évaluation d’un critère enregistrée',
+  REPONSES_CRITERE_ENREGISTREES: 'Réponses au questionnaire enregistrées',
+  PREUVE_DEPOSEE: 'Preuve documentaire déposée',
+  AUDIT_CREE: 'Mission d’audit créée',
+  AUDIT_MODIFIE: 'Mission d’audit modifiée',
+  RAPPORT_GENERE: 'Rapport généré',
+  INSCRIPTION: 'Création de compte',
+  EMAIL_VERIFIE: 'Compte activé',
+  CODE_VERIFICATION_REFUSE: 'Code d’activation refusé',
+};
 
-function tonScore(score) {
-  const valeur = Number(score);
-  if (valeur >= 4) return 'vert';
-  if (valeur >= 3) return 'bleu';
-  if (valeur >= 2) return 'ambre';
-  return 'rouge';
+/** Point coloré du fil d'activité, selon la nature de l'action. */
+function couleurAction(action) {
+  if (action.startsWith('EVALUATION_IA')) return 'bg-brand-500';
+  if (action.includes('REFUSE') || action.includes('SUPPRIM')) return 'bg-rose-500';
+  if (action.includes('RAPPORT')) return 'bg-blue-500';
+  return 'bg-emerald-500';
 }
 
 /**
- * Vue de pilotage consolidée sur l'ensemble du portefeuille accessible au
- * compte connecté : chaque chiffre provient des ressources REST réelles
- * (audits, score RG32, non-conformités RG17), agrégées côté client faute
- * d'endpoint d'agrégation multi-entreprises.
+ * Vue de pilotage du responsable d'audit : missions demandant une action,
+ * risques, avancement, analyses IA puis activité.
+ *
+ * Chaque chiffre provient des ressources REST réelles (audits, score RG32,
+ * non-conformités RG17, historique de score, journal RG15), agrégées côté
+ * client faute d'endpoint d'agrégation multi-entreprises.
  */
 export default function TableauDeBord() {
-  const { entreprises, utilisateur, peut, recupererAbonnement } = useApiAuth();
+  const { entreprises, utilisateur } = useApiAuth();
 
   const [missions, setMissions] = useState([]);
-  const [indices, setIndices] = useState([]);
-  const [abonnements, setAbonnements] = useState([]);
+  const [historique, setHistorique] = useState([]);
+  const [journal, setJournal] = useState([]);
   const [chargement, setChargement] = useState(true);
 
   const charger = useCallback(async () => {
@@ -61,478 +73,408 @@ export default function TableauDeBord() {
         const audits = await api.get(`/api/v1/entreprises/${entreprise.id}/audits`).catch(() => []);
         return Promise.all(
           audits.map(async (audit) => {
-            const [score, nonConformites] = await Promise.all([
+            const [score, nonConformites, points] = await Promise.all([
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score`).catch(() => null),
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/non-conformites`).catch(() => []),
+              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score-historique`).catch(() => []),
             ]);
-            return { entreprise, audit, score, nonConformites };
+            return { entreprise, audit, score, nonConformites, points };
           })
         );
       })
     );
-    const toutesMissions = parEntreprise.flat();
-    setMissions(toutesMissions);
+    const toutes = parEntreprise.flat();
+    setMissions(toutes);
+    setHistorique(toutes.flatMap((m) => m.points ?? []));
 
-    // RG41 : réservé à la formule Avancées ET à la permission bailleur:consulter
-    // (absente de VISITEUR) — sans ce second filtre, l'appel est tenté quand
-    // même et échoue systématiquement en 403 pour ce rôle.
-    const missionsAvancees = peut('bailleur:consulter')
-      ? toutesMissions.filter((m) => m.audit.formuleCode === 'AVANCEES')
-      : [];
-    const indicesResultats = await Promise.all(
-      missionsAvancees.map((m) =>
+    // Journal de chaque entreprise accessible : le fil d'activité est global,
+    // l'API ne l'expose que par entreprise.
+    const journaux = await Promise.all(
+      entreprises.map((entreprise) =>
         api
-          .get(`/api/v1/entreprises/${m.entreprise.id}/audits/${m.audit.id}/indice-preparation`)
-          .then((liste) => liste.map((i) => ({ ...i, entreprise: m.entreprise })))
+          .get(`/api/v1/entreprises/${entreprise.id}/journal`)
+          .then((entrees) => (entrees ?? []).map((e) => ({ ...e, entreprise })))
           .catch(() => [])
       )
     );
-    setIndices(indicesResultats.flat());
-
-    const abonnementsResultats = await Promise.all(
-      entreprises.map((entreprise) =>
-        recupererAbonnement(entreprise.id)
-          .then((abonnement) => ({ entreprise, abonnement }))
-          .catch(() => null)
-      )
-    );
-    setAbonnements(abonnementsResultats.filter(Boolean));
+    setJournal(journaux.flat());
 
     setChargement(false);
-  }, [entreprises, peut, recupererAbonnement]);
+  }, [entreprises]);
 
   useEffect(() => {
     charger();
   }, [charger]);
 
-  const nonConformites = useMemo(
-    () => missions.flatMap((m) => m.nonConformites.map((nc) => ({ ...nc, mission: m }))),
+  /** Missions ramenées à la forme attendue par le tableau. */
+  const missionsVue = useMemo(
+    () =>
+      missions.map(({ entreprise, audit, score, nonConformites }) => {
+        const total = score?.nombreCriteresTotal ?? audit.nombreCriteres ?? 0;
+        const evalues = score?.nombreCriteresEvalues ?? 0;
+        const critiques = nonConformites.filter((nc) => nc.niveau === 'CRITIQUE').length;
+        const majeures = nonConformites.filter((nc) => nc.niveau === 'MAJEURE').length;
+
+        // Le risque se lit sur les non-conformités constatées, pas sur le
+        // score : une mission peu avancée mais déjà porteuse d'un écart
+        // critique doit remonter en tête.
+        let risque = null;
+        if (evalues > 0) {
+          if (critiques > 0) risque = 'ELEVE';
+          else if (majeures > 0) risque = 'MOYEN';
+          else risque = 'FAIBLE';
+        }
+
+        return {
+          id: audit.id,
+          organisation: entreprise.raisonSociale ?? entreprise.nom ?? '—',
+          nom: audit.nom,
+          progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
+          // Le score global est noté sur 5 (RG31) : ramené en pourcentage
+          // pour tenir dans une colonne aux côtés de la progression.
+          conformite:
+            score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
+          risque,
+          statut: audit.statut,
+          echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
+          lien: `/app/${entreprise.id}/audits/${audit.id}`,
+          critiques,
+          nonEvalues: score?.nombreCriteresNonEvalues ?? Math.max(0, total - evalues),
+          evalues,
+          total,
+        };
+      }),
     [missions]
   );
 
-  const ouvertes = nonConformites.filter((nc) => nc.statut !== 'CLOTUREE');
+  const kpis = useMemo(() => {
+    const actives = missionsVue.filter((m) => m.statut !== 'ARCHIVE');
+    const enCours = missionsVue.filter((m) => m.statut === 'EN_COURS');
+    const aRisque = missionsVue.filter((m) => m.risque === 'ELEVE');
+    const brouillons = missionsVue.filter((m) => m.statut === 'BROUILLON');
+    const totalCriteres = missionsVue.reduce((somme, m) => somme + m.total, 0);
+    const totalEvalues = missionsVue.reduce((somme, m) => somme + m.evalues, 0);
+    return {
+      actives: actives.length,
+      enCours: enCours.length,
+      brouillons: brouillons.length,
+      aRisque: aRisque.length,
+      completion: totalCriteres > 0 ? Math.round((totalEvalues / totalCriteres) * 100) : 0,
+      totalEvalues,
+    };
+  }, [missionsVue]);
 
-  const missionsNotees = missions.filter((m) => m.score && m.score.nombreCriteresEvalues > 0);
-  const scoreMoyen = missionsNotees.length
-    ? missionsNotees.reduce((total, m) => total + Number(m.score.scoreGlobal), 0) / missionsNotees.length
-    : null;
+  /** Missions à traiter en premier : risque élevé, puis avancement le plus faible. */
+  const missionsPrioritaires = useMemo(() => {
+    const rang = { ELEVE: 0, MOYEN: 1, FAIBLE: 2 };
+    return [...missionsVue]
+      .filter((m) => m.statut !== 'ARCHIVE')
+      .sort((a, b) => (rang[a.risque] ?? 3) - (rang[b.risque] ?? 3) || a.progression - b.progression)
+      .slice(0, 6);
+  }, [missionsVue]);
 
-  const avancement = missions.reduce(
-    (total, m) => ({
-      evalues: total.evalues + (m.score?.nombreCriteresEvalues ?? 0),
-      nonEvalues: total.nonEvalues + (m.score?.nombreCriteresNonEvalues ?? 0),
-    }),
-    { evalues: 0, nonEvalues: 0 }
-  );
-
-  /** Moyenne par domaine sur toutes les missions ayant au moins une évaluation validée dans ce domaine. */
-  const domaines = useMemo(() => {
-    const cumul = new Map();
-    missionsNotees.forEach((m) => {
-      m.score.domaines
-        .filter((d) => d.nombreCriteresEvalues > 0)
-        .forEach((d) => {
-          const courant = cumul.get(d.domaineCode) ?? { nom: d.domaineNom, total: 0, nombre: 0 };
-          courant.total += Number(d.score);
-          courant.nombre += 1;
-          cumul.set(d.domaineCode, courant);
-        });
+  const repartitionRisques = useMemo(() => {
+    const compte = { ELEVE: 0, MOYEN: 0, FAIBLE: 0, NON_EVALUE: 0 };
+    missionsVue.forEach((m) => {
+      compte[m.risque ?? 'NON_EVALUE'] += 1;
     });
-    return [...cumul.entries()].map(([code, valeur]) => ({
-      code,
-      nom: valeur.nom,
-      score: valeur.total / valeur.nombre,
-    }));
-  }, [missionsNotees]);
+    return compte;
+  }, [missionsVue]);
 
-  const prioritaires = [...ouvertes]
-    .sort((a, b) => Number(b.risqueAttendu ?? 0) - Number(a.risqueAttendu ?? 0))
-    .slice(0, 8);
+  /** Moyenne mensuelle du score global sur les six derniers mois. */
+  const evolution = useMemo(() => {
+    const maintenant = new Date();
+    const mois = [];
+    for (let recul = 5; recul >= 0; recul -= 1) {
+      const date = new Date(maintenant.getFullYear(), maintenant.getMonth() - recul, 1);
+      mois.push({ cle: `${date.getFullYear()}-${date.getMonth()}`, libelle: MOIS_COURTS[date.getMonth()] });
+    }
 
-  /** Somme des histogrammes par niveau (1-5) de toutes les missions notées — même donnée que le score, juste sous un autre angle (répartition plutôt que moyenne). */
-  const repartitionEngagement = useMemo(() => {
-    const total = [0, 0, 0, 0, 0];
-    missionsNotees.forEach((m) => {
-      (m.score.repartitionNiveaux ?? []).forEach((n, index) => {
-        total[index] += n;
+    const sommes = new Map();
+    historique.forEach((point) => {
+      const date = new Date(point.date);
+      const cle = `${date.getFullYear()}-${date.getMonth()}`;
+      const actuel = sommes.get(cle) ?? { total: 0, nombre: 0 };
+      sommes.set(cle, { total: actuel.total + Number(point.scoreGlobal ?? 0), nombre: actuel.nombre + 1 });
+    });
+
+    return {
+      labels: mois.map((m) => m.libelle),
+      // Score sur 5 ramené en pourcentage, comme la colonne « Conformité ».
+      valeurs: mois.map((m) => {
+        const somme = sommes.get(m.cle);
+        return somme ? Math.round((somme.total / somme.nombre / 5) * 100) : null;
+      }),
+      pointsConnus: historique.length,
+    };
+  }, [historique]);
+
+  const alertes = useMemo(() => {
+    const liste = [];
+    const critiques = missionsVue.reduce((somme, m) => somme + m.critiques, 0);
+    const missionCritique = missionsVue.find((m) => m.critiques > 0);
+    if (critiques > 0) {
+      liste.push({
+        icone: TriangleAlert,
+        ton: 'critique',
+        titre: `${critiques} écart${critiques > 1 ? 's' : ''} critique${critiques > 1 ? 's' : ''} détecté${critiques > 1 ? 's' : ''}`,
+        detail: `Dont ${missionCritique.critiques} sur « ${missionCritique.nom} » (${missionCritique.organisation}).`,
+        lien: `${missionCritique.lien}/non-conformites`,
+      });
+    }
+
+    const nonEvalues = missionsVue.reduce((somme, m) => somme + m.nonEvalues, 0);
+    if (nonEvalues > 0) {
+      const laPlusEnRetard = [...missionsVue].sort((a, b) => b.nonEvalues - a.nonEvalues)[0];
+      liste.push({
+        icone: FolderOpen,
+        ton: 'attention',
+        titre: `${nonEvalues} critère${nonEvalues > 1 ? 's' : ''} encore à évaluer`,
+        detail: `« ${laPlusEnRetard.nom} » en concentre ${laPlusEnRetard.nonEvalues}.`,
+        lien: laPlusEnRetard.lien,
+      });
+    }
+
+    if (kpis.brouillons > 0) {
+      liste.push({
+        icone: ClipboardList,
+        ton: 'information',
+        titre: `${kpis.brouillons} mission${kpis.brouillons > 1 ? 's' : ''} en brouillon`,
+        detail: 'Ces missions ne sont pas encore lancées et n’entrent dans aucun score.',
+      });
+    }
+
+    return liste;
+  }, [missionsVue, kpis]);
+
+  /** Fil d'activité : les huit dernières entrées du journal, groupées par jour. */
+  const groupesActivite = useMemo(() => {
+    const recentes = [...journal]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 8);
+
+    const aujourdhui = new Date().toDateString();
+    const hier = new Date(Date.now() - 86400000).toDateString();
+    const groupes = new Map();
+
+    recentes.forEach((entree) => {
+      const date = new Date(entree.createdAt);
+      const jourBrut = date.toDateString();
+      const jour =
+        jourBrut === aujourdhui ? "Aujourd'hui" : jourBrut === hier ? 'Hier' : formaterDate(entree.createdAt);
+      if (!groupes.has(jour)) groupes.set(jour, []);
+      groupes.get(jour).push({
+        id: entree.id,
+        libelle: LIBELLES_ACTION[entree.action] ?? entree.action,
+        heure: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        auteur: entree.utilisateurNom ?? null,
+        couleur: couleurAction(entree.action),
       });
     });
-    return total;
-  }, [missionsNotees]);
 
-  // Vue portefeuille (multi-entreprises, staff) vs vue mission (une seule
-  // entreprise, cas ADMIN_AUDIT rattaché à un seul client ou compte client
-  // classique) : au-delà de ce booléen, on retire toute mention/colonne
-  // "Entreprise" devenue redondante quand elle est toujours la même.
-  const plusieursEntreprises = entreprises.length > 1;
+    return [...groupes.entries()].map(([jour, entrees]) => ({ jour, entrees }));
+  }, [journal]);
 
-  const missionsEnCours = missions.filter((m) => m.audit.statut === 'EN_COURS').length;
+  const metriquesIa = useMemo(() => {
+    const analysees = missionsVue.filter((m) => m.evalues > 0).length;
+    const ecarts = missionsVue.reduce((somme, m) => somme + m.critiques, 0);
+    return [
+      { valeur: kpis.totalEvalues, libelle: 'Critères évalués sur le portefeuille' },
+      { valeur: analysees, libelle: 'Missions comportant une analyse' },
+      { valeur: ecarts, libelle: 'Écarts critiques remontés' },
+    ];
+  }, [missionsVue, kpis]);
 
-  const indiceMoyen = indices.length
-    ? indices.reduce((total, i) => total + Number(i.score), 0) / indices.length
-    : null;
+  const premiereEntreprise = entreprises[0]?.id;
+  const prenom = utilisateur?.prenom ?? '';
 
-  /** Score moyen par entreprise — pertinent seulement au-delà d'une seule entreprise (voir gating à l'affichage). */
-  const parEntrepriseNotee = useMemo(() => {
-    const cumul = new Map();
-    missionsNotees.forEach((m) => {
-      const courant = cumul.get(m.entreprise.id) ?? { nom: m.entreprise.raisonSociale, total: 0, nombre: 0 };
-      courant.total += Number(m.score.scoreGlobal);
-      courant.nombre += 1;
-      cumul.set(m.entreprise.id, courant);
-    });
-    return [...cumul.values()].map((v) => ({ nom: v.nom, score: v.total / v.nombre }));
-  }, [missionsNotees]);
-
-  function exporter() {
-    const entetesBase = ['Mission', 'Référentiel', 'Statut', 'Score global', 'Critères évalués', 'Non-conformités ouvertes'];
+  function exporterMissions() {
     exporterCsv(
-      'tableau-de-bord-smartex-sustway.csv',
-      plusieursEntreprises ? ['Entreprise', ...entetesBase] : entetesBase,
-      missions.map((m) => {
-        const ligne = [
-          m.audit.nom,
-          m.audit.referentielCode,
-          m.audit.statut,
-          m.score ? Number(m.score.scoreGlobal).toFixed(2) : '—',
-          m.score ? `${m.score.nombreCriteresEvalues}/${m.score.nombreCriteresTotal}` : '—',
-          m.nonConformites.filter((nc) => nc.statut !== 'CLOTUREE').length,
-        ];
-        return plusieursEntreprises ? [m.entreprise.raisonSociale, ...ligne] : ligne;
-      })
+      'missions-audit.csv',
+      ['Organisation', 'Mission', 'Statut', 'Progression (%)', 'Conformité (%)', 'Risque', 'Échéance'],
+      missionsVue.map((m) => [
+        m.organisation,
+        m.nom,
+        m.statut,
+        m.progression,
+        m.conformite ?? '',
+        m.risque ?? '',
+        m.echeance ?? '',
+      ])
     );
   }
 
-  return (
-    <>
-      <PageTitre
-        icone={LayoutDashboard}
-        titre={`Tableau de bord${utilisateur ? ` — ${utilisateur.prenom} ${utilisateur.nom}` : ''}`}
-        description={
-          plusieursEntreprises
-            ? 'Vue consolidée de vos entreprises, de l’avancement des missions d’audit et des écarts à traiter en priorité.'
-            : 'Avancement de vos missions d’audit et écarts à traiter en priorité.'
-        }
-        actions={
-          missions.length > 0 ? (
-            <button type="button" className="btn-secondary" onClick={exporter}>
-              <Download className="h-4 w-4" aria-hidden />
-              Exporter en CSV
-            </button>
-          ) : null
-        }
-      />
+  if (chargement) return <Loader message="Chargement de vos missions…" />;
 
-      {chargement ? (
-        <Loader message="Consolidation de vos missions…" />
-      ) : entreprises.length === 0 ? (
-        <Vide message="Aucune entreprise rattachée à votre compte — créez-en une pour démarrer votre première mission d’audit." />
-      ) : (
-        <>
-          <Revele>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {plusieursEntreprises ? (
-                <StatCard
-                  libelle="Entreprises suivies"
-                  valeur={entreprises.length}
-                  detail={`${missions.length} mission${missions.length > 1 ? 's' : ''} d’audit`}
-                  icone={Building2}
-                  ton="bleu"
-                />
-              ) : (
-                <StatCard
-                  libelle="Missions suivies"
-                  valeur={missions.length}
-                  detail={`${missionsEnCours} en cours`}
-                  icone={ClipboardCheck}
-                  ton="bleu"
-                />
-              )}
-              <StatCard
-                libelle="Score moyen"
-                valeur={scoreMoyen === null ? '—' : `${scoreMoyen.toFixed(2)} / 5`}
-                detail="Moyenne des missions déjà notées"
-                icone={Gauge}
-                ton={scoreMoyen === null ? 'neutre' : tonScore(scoreMoyen)}
-              />
-              <StatCard
-                libelle="Non-conformités ouvertes"
-                valeur={ouvertes.length}
-                detail={`${ouvertes.filter((nc) => nc.niveau === 'CRITIQUE').length} critique(s)`}
-                icone={ClipboardX}
-                ton={ouvertes.length > 0 ? 'rouge' : 'vert'}
-              />
-              {indices.length > 0 ? (
-                <StatCard
-                  libelle="Indice de préparation IFC/SFI"
-                  valeur={`${indiceMoyen.toFixed(2)} / 5`}
-                  detail={`Moyenne sur ${indices.length} indice${indices.length > 1 ? 's' : ''} calculé${indices.length > 1 ? 's' : ''} (formule Avancées)`}
-                  icone={Leaf}
-                  ton={tonScore(indiceMoyen)}
-                />
+  return (
+    <div className="space-y-6">
+      {/* --- Accueil et action principale --- */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-ink-900">Bonjour, {prenom} 👋</h1>
+          <p className="mt-1 text-sm text-ink-500">
+            Voici la situation actuelle de vos missions d’audit RSE.
+          </p>
+        </div>
+        {premiereEntreprise ? (
+          <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary shrink-0">
+            <Plus className="h-4 w-4" aria-hidden />
+            Nouvelle mission d’audit
+          </Link>
+        ) : null}
+      </div>
+
+      {/* --- Indicateurs --- */}
+      <Revele>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <CarteKpi
+            icone={Building2}
+            ton="marque"
+            valeur={kpis.actives}
+            libelle="Missions actives"
+            precision={`${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}`}
+          />
+          <CarteKpi
+            icone={ClipboardList}
+            valeur={kpis.enCours}
+            libelle="En cours"
+            precision={`${kpis.brouillons} en brouillon`}
+          />
+          <CarteKpi
+            icone={TriangleAlert}
+            ton="alerte"
+            valeur={kpis.aRisque}
+            libelle="À risque"
+            precision="Au moins un écart critique"
+          />
+          <CarteKpi
+            icone={Gauge}
+            ton="succes"
+            valeur={`${kpis.completion}%`}
+            libelle="Taux de complétion"
+            precision={`${kpis.totalEvalues} critères évalués`}
+          />
+        </div>
+      </Revele>
+
+      {/* --- Missions et alertes --- */}
+      <Revele delai={60}>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <section className="min-w-0 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-ink-900">Missions à traiter</h2>
+              {premiereEntreprise ? (
+                <Link
+                  to={`/app/${premiereEntreprise}/audits`}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
+                >
+                  Voir toutes
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
               ) : null}
             </div>
-          </Revele>
+            <p className="mt-0.5 text-xs text-ink-500">
+              Classées par niveau de risque, puis par avancement.
+            </p>
+            <div className="mt-4">
+              <TableMissions missions={missionsPrioritaires} compact />
+            </div>
+          </section>
 
-          {missions.length === 0 ? (
-            <Alerte ton="bleu">
-              Aucune mission d’audit n’a encore été créée — ouvrez une entreprise pour lancer votre première campagne
-              d’évaluation.
-            </Alerte>
-          ) : (
+          <PanneauAlertes alertes={alertes} />
+        </div>
+      </Revele>
+
+      {/* --- Graphiques --- */}
+      <Revele delai={90}>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink-900">Évolution des missions</h2>
+            <p className="mt-0.5 text-xs text-ink-500">
+              Score moyen du portefeuille sur les six derniers mois.
+            </p>
+            <div className="mt-4 h-64">
+              {evolution.pointsConnus === 0 ? (
+                <p className="flex h-full items-center justify-center rounded-xl border border-dashed border-ink-200 px-4 text-center text-xs text-ink-500">
+                  L’historique se remplit à mesure que les missions sont évaluées.
+                </p>
+              ) : (
+                <GraphiqueLigne
+                  labels={evolution.labels}
+                  series={[{ label: 'Score moyen (%)', data: evolution.valeurs, couleur: COULEURS.rouge }]}
+                />
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink-900">Répartition des risques</h2>
+            <p className="mt-0.5 text-xs text-ink-500">
+              {missionsVue.length} mission{missionsVue.length > 1 ? 's' : ''} au total.
+            </p>
+            <div className="mt-4 h-64">
+              <GraphiqueAnneau
+                labels={['Élevé', 'Moyen', 'Faible', 'Non évalué']}
+                data={[
+                  repartitionRisques.ELEVE,
+                  repartitionRisques.MOYEN,
+                  repartitionRisques.FAIBLE,
+                  repartitionRisques.NON_EVALUE,
+                ]}
+                couleurs={[COULEURS.rouge, COULEURS.ambre, COULEURS.vert, COULEURS.gris]}
+              />
+            </div>
+          </section>
+        </div>
+      </Revele>
+
+      {/* --- Analyse IA et activité --- */}
+      <Revele delai={120}>
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <PanneauIa
+            metriques={metriquesIa}
+            lien={premiereEntreprise ? `/app/${premiereEntreprise}/pipeline-ia` : null}
+          />
+
+          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-ink-900">Activité récente</h2>
+            <p className="mt-0.5 text-xs text-ink-500">Dernières actions enregistrées au journal.</p>
+            <div className="mt-4">
+              <FilActivite groupes={groupesActivite} />
+            </div>
+          </section>
+        </div>
+      </Revele>
+
+      {/* --- Actions rapides --- */}
+      <Revele delai={150}>
+        <div className="flex flex-wrap gap-3">
+          {premiereEntreprise ? (
             <>
-              <Revele delai={80}>
-                <div className="mb-6 grid gap-6 lg:grid-cols-2">
-                  <Card>
-                    <CardHeader titre="Profil RSE par domaine" sousTitre="Moyenne des missions notées, sur 5" />
-                    <div className="h-80 p-5">
-                      {domaines.length > 0 ? (
-                        <GraphiqueRadar
-                          labels={domaines.map((d) => d.code)}
-                          series={[
-                            {
-                              label: 'Score moyen',
-                              data: domaines.map((d) => Number(d.score.toFixed(2))),
-                              couleur: COULEURS.brand,
-                              fond: COULEURS.brandClair,
-                            },
-                          ]}
-                        />
-                      ) : (
-                        <Vide message="Aucune évaluation validée pour l’instant." />
-                      )}
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <CardHeader
-                      titre="Avancement des évaluations"
-                      sousTitre="Répartition des critères de toutes les missions"
-                    />
-                    <div className="h-80 p-5">
-                      <GraphiqueAnneau
-                        labels={['Évalués', 'Non évalués']}
-                        data={[avancement.evalues, avancement.nonEvalues]}
-                        couleurs={[COULEURS.brand, COULEURS.gris]}
-                      />
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <CardHeader titre="Score par mission" icone={ClipboardCheck} sousTitre="Score pondéré" />
-                    <div className="h-72 p-5">
-                      {missionsNotees.length > 0 ? (
-                        <GraphiqueBarres
-                          horizontal
-                          max={5}
-                          labels={missionsNotees.map((m) => m.audit.nom)}
-                          series={[
-                            {
-                              label: 'Score global',
-                              data: missionsNotees.map((m) => Number(m.score.scoreGlobal)),
-                              couleur: COULEURS.bleu,
-                            },
-                          ]}
-                        />
-                      ) : (
-                        <Vide message="Aucune mission notée pour l’instant." />
-                      )}
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <CardHeader
-                      titre="Non-conformités par niveau"
-                      icone={TriangleAlert}
-                      sousTitre={`${ouvertes.length} écart${ouvertes.length > 1 ? 's' : ''} encore ouvert${ouvertes.length > 1 ? 's' : ''}`}
-                    />
-                    <div className="h-72 p-5">
-                      {nonConformites.length > 0 ? (
-                        <GraphiqueAnneau
-                          labels={NIVEAUX_NC}
-                          data={NIVEAUX_NC.map((niveau) => ouvertes.filter((nc) => nc.niveau === niveau).length)}
-                          couleurs={COULEURS_NC}
-                        />
-                      ) : (
-                        <Vide message="Aucune non-conformité détectée." />
-                      )}
-                    </div>
-                  </Card>
-
-                  <Card>
-                    <CardHeader
-                      titre="Répartition des niveaux d’engagement"
-                      icone={Gauge}
-                      sousTitre="Échelle de Likert 1 à 5, tous critères évalués confondus"
-                    />
-                    <div className="h-72 p-5">
-                      {missionsNotees.length > 0 ? (
-                        <GraphiqueBarres
-                          horizontal
-                          labels={NIVEAUX_ENGAGEMENT}
-                          series={[{ label: 'Critères', data: repartitionEngagement, couleur: COULEURS.brand }]}
-                        />
-                      ) : (
-                        <Vide message="Aucune évaluation validée pour l’instant." />
-                      )}
-                    </div>
-                  </Card>
-
-                  {entreprises.length > 1 ? (
-                    <Card>
-                      <CardHeader
-                        titre="Portefeuille d’entreprises"
-                        icone={Building2}
-                        sousTitre="Score moyen sur 5, une entreprise par barre"
-                      />
-                      <div className="h-72 p-5">
-                        {parEntrepriseNotee.length > 0 ? (
-                          <GraphiqueBarres
-                            horizontal
-                            max={5}
-                            labels={parEntrepriseNotee.map((e) => e.nom)}
-                            series={[
-                              {
-                                label: 'Score moyen',
-                                data: parEntrepriseNotee.map((e) => Number(e.score.toFixed(2))),
-                                couleur: COULEURS.violet,
-                              },
-                            ]}
-                          />
-                        ) : (
-                          <Vide message="Aucune entreprise notée pour l’instant." />
-                        )}
-                      </div>
-                    </Card>
-                  ) : null}
-                </div>
-              </Revele>
-
-              {entreprises.length > 1 && abonnements.length > 0 ? (
-                <Revele delai={100}>
-                  <Card className="mb-6 p-0">
-                    <CardHeader titre="Abonnements actifs" icone={Wallet} sousTitre="Formule de chaque entreprise" />
-                    <Tableau entetes={['Entreprise', 'Formule', 'Statut']}>
-                      {abonnements.map(({ entreprise, abonnement }) => (
-                        <tr key={entreprise.id} className="transition-colors hover:bg-ink-100/60">
-                          <td className="td">{entreprise.raisonSociale}</td>
-                          <td className="td">
-                            <Badge ton={TONS_FORMULE[abonnement.formuleCode] ?? 'neutre'}>{abonnement.formuleNom}</Badge>
-                          </td>
-                          <td className="td">
-                            <Badge ton={abonnement.statut === 'ACTIF' ? 'vert' : 'neutre'}>{abonnement.statut}</Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </Tableau>
-                  </Card>
-                </Revele>
-              ) : null}
-
-              <Revele delai={120}>
-                <Card className="mb-6 p-0">
-                  <CardHeader
-                    titre="Missions d’audit"
-                    icone={ClipboardCheck}
-                    sousTitre="Avancement et score de chaque campagne d’évaluation"
-                  />
-                  <Tableau
-                    entetes={
-                      plusieursEntreprises
-                        ? ['Entreprise', 'Mission', 'Statut', 'Avancement', 'Score', '']
-                        : ['Mission', 'Statut', 'Avancement', 'Score', '']
-                    }
-                  >
-                    {missions.map((m) => (
-                      <tr key={m.audit.id} className="transition-colors hover:bg-ink-100/60">
-                        {plusieursEntreprises ? <td className="td">{m.entreprise.raisonSociale}</td> : null}
-                        <td className="td">
-                          <p className="font-medium text-ink-900">{m.audit.nom}</p>
-                          <p className="text-xs text-ink-500">
-                            {m.audit.referentielCode} — démarrée le {formaterDate(m.audit.dateDebut)}
-                          </p>
-                        </td>
-                        <td className="td">
-                          <Badge ton="bleu">{m.audit.statut}</Badge>
-                        </td>
-                        <td className="td w-48">
-                          {m.score ? (
-                            <>
-                              <Barre
-                                valeur={(m.score.nombreCriteresEvalues / Math.max(1, m.score.nombreCriteresTotal)) * 100}
-                              />
-                              <p className="mt-1 text-xs text-ink-500">
-                                {m.score.nombreCriteresEvalues} / {m.score.nombreCriteresTotal} critères évalués
-                              </p>
-                            </>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
-                        <td className="td">
-                          {m.score && m.score.nombreCriteresEvalues > 0 ? (
-                            <Badge ton={tonScore(m.score.scoreGlobal)}>
-                              {Number(m.score.scoreGlobal).toFixed(2)} / 5
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-ink-400">Non notée</span>
-                          )}
-                        </td>
-                        <td className="td text-right">
-                          <Link
-                            to={`/app/${m.entreprise.id}/audits/${m.audit.id}`}
-                            className="btn-ghost whitespace-nowrap"
-                          >
-                            Ouvrir
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </Tableau>
-                </Card>
-              </Revele>
-
-              {prioritaires.length > 0 ? (
-                <Revele delai={160}>
-                  <Card className="p-0">
-                    <CardHeader
-                      titre="Écarts prioritaires"
-                      icone={TriangleAlert}
-                      sousTitre="Classés par risque attendu — (1 − probabilité de conformité) × poids de criticité"
-                    />
-                    <Tableau entetes={['Critère', 'Non-conformité', 'Niveau', 'Risque attendu', 'Actions', '']}>
-                      {prioritaires.map((nc) => (
-                        <tr key={nc.id} className="transition-colors hover:bg-ink-100/60">
-                          <td className="td font-mono text-xs text-ink-500">{nc.critereCode}</td>
-                          <td className="td max-w-md">
-                            <p className="font-medium text-ink-900">{nc.titre}</p>
-                            {plusieursEntreprises ? (
-                              <p className="text-xs text-ink-500">{nc.mission.entreprise.raisonSociale}</p>
-                            ) : null}
-                          </td>
-                          <td className="td">
-                            <Badge ton={TONS_NIVEAU_NC[nc.niveau] ?? 'neutre'}>{nc.niveau}</Badge>
-                          </td>
-                          <td className="td">{nc.risqueAttendu === null ? '—' : Number(nc.risqueAttendu).toFixed(2)}</td>
-                          <td className="td">{nc.nombreActionsCorrectives}</td>
-                          <td className="td text-right">
-                            <Link
-                              to={`/app/${nc.mission.entreprise.id}/audits/${nc.mission.audit.id}/non-conformites`}
-                              className="btn-ghost whitespace-nowrap"
-                            >
-                              Traiter
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </Tableau>
-                  </Card>
-                </Revele>
-              ) : null}
+              <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
+                <Plus className="h-4 w-4" aria-hidden />
+                Nouvelle mission d’audit
+              </Link>
+              <Link to="/app/entreprises" className="btn-secondary">
+                <Building2 className="h-4 w-4" aria-hidden />
+                Gérer les organisations
+              </Link>
+              <Link to={`/app/${premiereEntreprise}/rapports`} className="btn-secondary">
+                <FileText className="h-4 w-4" aria-hidden />
+                Rapports RSE
+              </Link>
             </>
-          )}
-        </>
-      )}
-    </>
+          ) : null}
+          <button type="button" onClick={exporterMissions} className="btn-secondary">
+            <Download className="h-4 w-4" aria-hidden />
+            Exporter les missions
+          </button>
+        </div>
+      </Revele>
+
+      <Revele delai={180}>
+        <BandeauReprise />
+      </Revele>
+    </div>
   );
 }
