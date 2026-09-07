@@ -8,16 +8,12 @@ import {
   ClipboardX,
   Columns3,
   FolderOpen,
-  ExternalLink,
   FileText,
   History,
   LayoutDashboard,
   Leaf,
-  LifeBuoy,
   ListTodo,
-  LogOut,
   Menu,
-  ShieldCheck,
   Sparkles,
   Users,
   UserCog,
@@ -26,7 +22,6 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
-import BasculeTheme from './BasculeTheme';
 import { useTheme } from '../theme/ThemeContext';
 import EnTeteApp from './EnTeteApp';
 import { api } from '../lib/apiClient';
@@ -240,7 +235,6 @@ export default function Layout() {
 
   if (!utilisateur) return null;
 
-  const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
 
   const formuleCourante = entreprises.find((e) => e.id === entrepriseCouranteId)?.formuleCode;
 
@@ -472,56 +466,8 @@ export default function Layout() {
             );
           })}
 
-          {/* Sur une barre désormais sombre, l'ancien fond #1f2533 se serait
-              fondu dans le décor : l'encart se détache en surface translucide. */}
-          <div className="carte-sidebar relative overflow-hidden rounded-2xl border p-4 backdrop-blur-sm">
-            <span
-              className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-emerald-500/20 blur-2xl motion-safe:animate-respiration"
-              aria-hidden
-            />
-            <p className="relative flex items-center gap-2 text-sm font-semibold">
-              <LifeBuoy className="h-4 w-4 text-emerald-400" aria-hidden />
-              Besoin d’un accompagnement ?
-            </p>
-            <p className="texte-sidebar-attenue relative mt-1.5 text-xs">
-              Les experts {SMARTEX.editeur} peuvent auditer vos preuves et prioriser votre plan d’action.
-            </p>
-            <a
-              href={`mailto:${SMARTEX.emailSupport}`}
-              className="relative mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-emerald-400 dark:hover:text-white"
-            >
-              Contacter un expert
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            </a>
-          </div>
         </nav>
 
-        <div className="bordure-sidebar relative border-t p-3">
-          <div className="carte-sidebar flex items-center gap-3 rounded-2xl border px-3 py-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-xs font-semibold text-white">
-              {initiales || utilisateur.prenom?.slice(0, 1)}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-ink-900 dark:text-white">
-                {utilisateur.prenom} {utilisateur.nom}
-              </p>
-              <p className="texte-sidebar-attenue truncate text-xs">
-                {roleCourant ? ROLE_LIBELLE[roleCourant] ?? roleCourant : utilisateur.email}
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded-lg p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-rose-600 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-rose-400"
-              onClick={() => {
-                deconnecter();
-                navigate('/');
-              }}
-              aria-label="Se déconnecter"
-            >
-              <LogOut className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-        </div>
       </aside>
 
       {ouvert ? (
