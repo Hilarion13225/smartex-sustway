@@ -269,7 +269,7 @@ export default function ReferentielsListe() {
 
       {/* --- Indicateurs --- */}
       <Revele>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
           <CarteKpi
             icone={BookOpen}
             ton="marque"
@@ -367,7 +367,7 @@ export default function ReferentielsListe() {
               </p>
             ) : null}
 
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 hidden overflow-x-auto lg:block">
               {lignesFiltrees.length === 0 ? (
                 <Vide message="Aucun référentiel ne correspond à ces critères." />
               ) : (
@@ -449,6 +449,51 @@ export default function ReferentielsListe() {
                 </table>
               )}
             </div>
+
+            {/* Sous `lg`, une carte par référentiel : le tableau à huit
+                colonnes mesure près de 1100 px et n'a aucun sens sur un
+                téléphone. */}
+            <ul className="mt-4 space-y-3 lg:hidden">
+              {lignesFiltrees.map((ligne) => (
+                <li key={ligne.id}>
+                  <Link
+                    to={`/app/referentiels/${ligne.code}`}
+                    className="block rounded-2xl border border-ink-100 p-4 transition-colors hover:border-brand-200 hover:bg-ink-50"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex min-w-0 items-start gap-2.5">
+                        <span
+                          className="mt-0.5 h-8 w-1 shrink-0 rounded-full"
+                          style={{ backgroundColor: ligne.couleur }}
+                          aria-hidden
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-ink-900">{ligne.nom}</p>
+                          <p className="truncate text-xs text-ink-500">
+                            {ligne.typeLibelle} · v{ligne.version}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge ton={TONS_STATUT[ligne.statut] ?? 'neutre'}>{ligne.statut}</Badge>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+                      {[
+                        ['Domaines', ligne.domaines],
+                        ['Critères', ligne.criteres],
+                        ['Missions', ligne.missions],
+                      ].map(([libelle, valeur]) => (
+                        <div key={libelle} className="rounded-xl bg-ink-50 py-2">
+                          <dd className="text-sm font-semibold tabular-nums text-ink-900">
+                            {valeur ?? '…'}
+                          </dd>
+                          <dt className="text-[11px] text-ink-500">{libelle}</dt>
+                        </div>
+                      ))}
+                    </dl>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </section>
 
           {/* --- Panneaux latéraux --- */}

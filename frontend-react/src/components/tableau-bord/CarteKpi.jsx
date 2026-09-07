@@ -14,14 +14,14 @@ export default function CarteKpi({ icone: Icone, valeur, libelle, precision, ton
   };
 
   return (
-    <div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+    <div className="rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{libelle}</p>
-        <span className={clsx('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', tons[ton])}>
+        <span className={clsx('hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:flex', tons[ton])}>
           <Icone className="h-4 w-4" aria-hidden />
         </span>
       </div>
-      <p className="mt-3 text-3xl font-bold tabular-nums text-ink-900">{valeur}</p>
+      <p className="mt-3 text-2xl font-bold tabular-nums text-ink-900 sm:text-3xl">{valeur}</p>
       {precision ? <p className="mt-1 text-xs text-ink-500">{precision}</p> : null}
     </div>
   );
