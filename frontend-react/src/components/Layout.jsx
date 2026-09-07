@@ -28,6 +28,8 @@ import clsx from 'clsx';
 import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
 import { useTheme } from '../theme/ThemeContext';
+import EnTeteApp from './EnTeteApp';
+import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLE_LIBELLE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
@@ -148,6 +150,8 @@ function dateDuJour() {
 export default function Layout() {
   const { utilisateur, entreprises, roleCourant, peut, deconnecter } = useApiAuth();
   const { estSombre } = useTheme();
+  const [missionsCourantes, setMissionsCourantes] = useState([]);
+  const [ecartsOuverts, setEcartsOuverts] = useState([]);
   const [ouvert, setOuvert] = useState(false);
   const [entrepriseCouranteId, setEntrepriseCouranteId] = useState(
     () => localStorage.getItem(CLE_ENTREPRISE_COURANTE) || ''
@@ -239,6 +243,54 @@ export default function Layout() {
   const initiales = `${utilisateur.prenom?.slice(0, 1) ?? ''}${utilisateur.nom?.slice(0, 1) ?? ''}`.toUpperCase();
 
   const formuleCourante = entreprises.find((e) => e.id === entrepriseCouranteId)?.formuleCode;
+
+  // Chargées une fois par organisation : la recherche de l'en-tête porte sur
+  // ces missions, et la cloche compte leurs écarts encore ouverts. Sans cette
+  // collecte partagée, chacun des deux ferait les mêmes appels de son côté.
+  useEffect(() => {
+    if (!entrepriseCouranteId) {
+      setMissionsCourantes([]);
+      setEcartsOuverts([]);
+      return;
+    }
+    let annule = false;
+
+    api
+      .get(`/api/v1/entreprises/${entrepriseCouranteId}/audits`)
+      .then(async (audits) => {
+        if (annule) return;
+        setMissionsCourantes(audits ?? []);
+        const parMission = await Promise.all(
+          (audits ?? []).map((audit) =>
+            api
+              .get(`/api/v1/entreprises/${entrepriseCouranteId}/audits/${audit.id}/non-conformites`)
+              .then((liste) =>
+                (liste ?? [])
+                  .filter((nc) => nc.statut === 'OUVERTE')
+                  .map((nc) => ({
+                    id: nc.id,
+                    niveau: nc.niveau,
+                    libelle: nc.critereLibelle ?? nc.critereCode ?? 'Écart constaté',
+                    mission: audit.nom,
+                    vers: `/app/${entrepriseCouranteId}/audits/${audit.id}/non-conformites`,
+                  }))
+              )
+              .catch(() => [])
+          )
+        );
+        if (!annule) setEcartsOuverts(parMission.flat());
+      })
+      .catch(() => {
+        if (!annule) {
+          setMissionsCourantes([]);
+          setEcartsOuverts([]);
+        }
+      });
+
+    return () => {
+      annule = true;
+    };
+  }, [entrepriseCouranteId]);
 
   function lienVisible(lien) {
     if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
@@ -480,19 +532,25 @@ export default function Layout() {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-100 bg-surface/85 px-4 py-3 backdrop-blur lg:px-8">
+        <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-ink-100 bg-surface/90 px-4 backdrop-blur lg:px-8">
           <button type="button" className="btn-ghost p-1.5 lg:hidden" onClick={() => setOuvert(true)} aria-label="Ouvrir le menu">
             <Menu className="h-5 w-5" aria-hidden />
           </button>
-          <div className="min-w-0 flex-1">
+          {/* Sous `md`, la recherche disparaît : le titre reprend sa place
+              pour que l'en-tête ne se réduise pas à une rangée d'icônes. */}
+          <div className="min-w-0 flex-1 md:hidden">
             <p className="truncate text-sm font-semibold text-ink-900">Bonjour {utilisateur.prenom}</p>
             <p className="truncate text-xs text-ink-500">{dateDuJour()}</p>
           </div>
-          <BasculeTheme />
-          <span className="hidden items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30 sm:inline-flex">
-            <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
-            Espace sécurisé
-          </span>
+          <EnTeteApp
+            utilisateur={utilisateur}
+            roleLibelle={ROLE_LIBELLE[roleCourant] ?? 'Accès en cours d’attribution'}
+            entreprises={entreprises}
+            missions={missionsCourantes}
+            alertes={ecartsOuverts}
+            entrepriseCouranteId={entrepriseCouranteId}
+            surDeconnexion={deconnecter}
+          />
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
