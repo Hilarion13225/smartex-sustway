@@ -21,6 +21,14 @@ export default defineConfig({
       '/api': {
         target: process.env.SMARTEX_API_PROXY || 'http://localhost:8090',
         changeOrigin: true,
+        configure: (proxy) => {
+          // L'en-tête Origin du navigateur est retiré avant de relayer. Pour
+          // le navigateur la requête est same-origin ; la transmettre ferait
+          // voir à l'API une requête croisée venant de l'adresse du poste ou
+          // du téléphone, qu'elle refuserait en 403 faute de figurer dans sa
+          // liste CORS — ce qui rendait le proxy inutilisable hors localhost.
+          proxy.on('proxyReq', (requete) => requete.removeHeader('origin'));
+        },
       },
     },
   },
