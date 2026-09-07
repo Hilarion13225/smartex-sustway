@@ -7,6 +7,7 @@ import {
   ClipboardList,
   ClipboardX,
   Columns3,
+  FolderKanban,
   FolderOpen,
   FileText,
   History,
@@ -82,6 +83,13 @@ const GROUPES_AUDIT = [
           { libelle: 'Profil organisation', chemin: (id) => `/app/${id}` },
           { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
         ],
+      },
+      {
+        // Un projet traverse les organisations : il n'a pas d'entreprise de
+        // contexte, d'où un chemin global comme le classement.
+        vers: '/app/projets',
+        libelle: 'Projets',
+        icone: FolderKanban,
       },
       { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },

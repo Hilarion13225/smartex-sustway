@@ -136,9 +136,12 @@ export default function Classement() {
             domaine.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+          {/* Largeur bornée : les noms de domaines du référentiel Smartex font
+              plusieurs lignes, et un select en largeur automatique étirerait
+              la page bien au-delà de l'écran sur mobile. */}
           <select
-            className="input w-auto"
+            className="input w-full sm:w-56"
             aria-label="Classer sur un domaine"
             value={domaineChoisi}
             onChange={(e) => setDomaineChoisi(e.target.value)}

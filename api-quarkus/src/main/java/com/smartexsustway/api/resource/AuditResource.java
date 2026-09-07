@@ -31,6 +31,7 @@ import com.smartexsustway.api.resource.dto.AffecterAuditeurRequest;
 import com.smartexsustway.api.resource.dto.AuditAuditeurDto;
 import com.smartexsustway.api.resource.dto.AuditCreateRequest;
 import com.smartexsustway.api.resource.dto.AuditCritereDto;
+import com.smartexsustway.api.mission.CreationMissionService;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
@@ -91,6 +92,7 @@ public class AuditResource {
     @Inject ReferentielRepository referentielRepository;
     @Inject AbonnementRepository abonnementRepository;
     @Inject AuditRepository auditRepository;
+    @Inject CreationMissionService creationMissionService;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject AuditScoreService auditScoreService;
     @Inject AuditQuestionRepository auditQuestionRepository;
@@ -189,33 +191,17 @@ public class AuditResource {
         Referentiel referentiel = referentielRepository.parCode(requete.referentielCode())
                 .orElseThrow(() -> new BadRequestException("Référentiel inconnu : " + requete.referentielCode()));
 
-        Audit audit = new Audit(entreprise, referentiel, requete.nom(), requete.dateDebut());
-        audit.setDescription(requete.description());
-        audit.setDateFin(requete.dateFin());
-        audit.setFormuleAbonnement(abonnement.getFormule());
-        audit.setCreatedBy(utilisateurRepository.findById(utilisateurId));
-        auditRepository.persist(audit);
+        // La composition du questionnaire est portée par CreationMissionService,
+        // partagé avec la création groupée d'un projet : la dupliquer ferait
+        // diverger les deux à la première évolution de RG34/RG35.
+        var creee = creationMissionService.creer(entreprise, referentiel, requete.nom(),
+                requete.dateDebut(), requete.dateFin(), requete.description(), abonnement,
+                utilisateurRepository.findById(utilisateurId));
 
-        // RG34/RG35 : composition dynamique du questionnaire, figée dans la
-        // mission (voir javadoc QuestionnaireService et AuditCritere).
-        // RG37 : la criticité de chaque critère est résolue pour le secteur
-        // de l'entreprise auditée (surcharge sectorielle si elle existe,
-        // sinon criticité générale), puis gelée dans l'AuditCritere.
-        List<Critere> criteresApplicables = questionnaireService.composer(entreprise, referentiel);
-        for (Critere critere : criteresApplicables) {
-            Criticite criticiteEffective = questionnaireService.criticiteEffective(critere, entreprise);
-            AuditCritere auditCritere = new AuditCritere(audit, critere, criticiteEffective);
-            auditCritereRepository.persist(auditCritere);
-
-            for (Question question : questionRepository.parCritere(critere.getId())) {
-                auditQuestionRepository.persist(new AuditQuestion(auditCritere, question));
-            }
-        }
-
-        auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_CREE", "audit", audit.getId());
+        auditLogService.journaliser(utilisateurId, entrepriseId, "AUDIT_CREE", "audit", creee.audit().getId());
 
         return Response.status(Response.Status.CREATED)
-                .entity(AuditDto.depuis(audit, criteresApplicables.size()))
+                .entity(AuditDto.depuis(creee.audit(), creee.nombreCriteres()))
                 .build();
     }
 
