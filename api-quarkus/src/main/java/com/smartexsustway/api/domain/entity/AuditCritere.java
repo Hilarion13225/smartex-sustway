@@ -69,6 +69,9 @@ public class AuditCritere {
         this.audit = audit;
         this.critere = critere;
         this.criticite = critere.getCriticite();
+        // Le poids vient du référentiel et se fige ici : faire évoluer le
+        // référentiel ne doit pas réécrire le score d'un audit déjà rendu.
+        this.coefficientPonderation = critere.getCoefficientPonderation();
     }
 
     /**
@@ -83,6 +86,7 @@ public class AuditCritere {
         this.audit = audit;
         this.critere = critere;
         this.criticite = criticiteEffective;
+        this.coefficientPonderation = critere.getCoefficientPonderation();
     }
 
     public UUID getId() {

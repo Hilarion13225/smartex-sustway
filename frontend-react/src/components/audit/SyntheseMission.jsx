@@ -10,6 +10,13 @@ const TONS_RISQUE = {
   FAIBLE: { point: 'bg-emerald-500', libelle: 'Faible' },
 };
 
+/** Affiche une somme sans décimale inutile : « 69 » plutôt que « 69,0 ». */
+function nombre(valeur) {
+  if (valeur == null) return '—';
+  const n = Number(valeur);
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+
 /** Anneau compact avec sa valeur au centre. */
 function Jauge({ pourcentage, legende, couleurs }) {
   return (
@@ -42,10 +49,12 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
   const conformite =
     score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100);
   const domaines = score?.domaines ?? [];
+  const noteTotale = score?.noteTotale ?? null;
+  const coefficientTotal = score?.coefficientTotal ?? null;
   const ton = risque ? TONS_RISQUE[risque] : null;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_minmax(0,0.8fr)]">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.8fr)_minmax(0,0.8fr)]">
       {/* --- Avancement --- */}
       <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-ink-900">Progression globale</h2>
@@ -65,31 +74,55 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
             Les scores par domaine apparaîtront dès les premières évaluations.
           </p>
         ) : (
-          <ul className="mt-4 space-y-2.5">
-            {domaines.map((domaine) => {
-              const part =
-                domaine.score == null ? 0 : Math.round((Number(domaine.score) / 5) * 100);
-              return (
-                <li key={domaine.domaineCode} className="flex items-center gap-3">
-                  <span
-                    className="w-32 shrink-0 truncate text-xs text-ink-600"
-                    title={domaine.domaineNom ?? domaine.domaineCode}
-                  >
-                    {domaine.domaineNom ?? domaine.domaineCode}
-                  </span>
-                  <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-ink-100">
-                    <span
-                      className="block h-full rounded-full bg-brand-600 transition-[width] duration-500"
-                      style={{ width: `${part}%` }}
-                    />
-                  </span>
-                  <span className="w-9 shrink-0 text-right text-xs font-medium tabular-nums text-ink-700">
-                    {domaine.score == null ? '—' : `${part}%`}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          /* Mêmes colonnes que la grille d'évaluation : note totale,
+             coefficient total, puis le score qui en découle. */
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-ink-100">
+                  <th className="th">Domaine</th>
+                  <th className="th text-right">Note totale</th>
+                  <th className="th text-right">Coef. total</th>
+                  <th className="th text-right">Score</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ink-100">
+                {domaines.map((domaine) => (
+                  <tr key={domaine.domaineCode}>
+                    <td
+                      className="td max-w-[14rem] truncate"
+                      title={domaine.domaineNom ?? domaine.domaineCode}
+                    >
+                      {domaine.domaineNom ?? domaine.domaineCode}
+                    </td>
+                    <td className="td text-right tabular-nums">
+                      {nombre(domaine.noteTotale)}
+                    </td>
+                    <td className="td text-right tabular-nums">
+                      {nombre(domaine.coefficientTotal)}
+                    </td>
+                    <td className="td text-right font-semibold tabular-nums text-ink-900">
+                      {domaine.score == null ? '—' : Number(domaine.score).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {noteTotale != null ? (
+                <tfoot>
+                  <tr className="border-t-2 border-ink-200">
+                    <td className="td font-semibold text-ink-900">Ensemble de la mission</td>
+                    <td className="td text-right font-semibold tabular-nums">{nombre(noteTotale)}</td>
+                    <td className="td text-right font-semibold tabular-nums">
+                      {nombre(coefficientTotal)}
+                    </td>
+                    <td className="td text-right font-bold tabular-nums text-ink-900">
+                      {score?.scoreGlobal == null ? '—' : Number(score.scoreGlobal).toFixed(2)}
+                    </td>
+                  </tr>
+                </tfoot>
+              ) : null}
+            </table>
+          </div>
         )}
       </section>
 

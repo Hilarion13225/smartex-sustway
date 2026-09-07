@@ -63,16 +63,22 @@ public class AuditScoreService {
             }
         }
 
-        BigDecimal scoreGlobal = ScoringEngine.scorePondere(tousEvalues);
+        // Le détail du calcul est repris tel quel de la grille d'évaluation :
+        // note totale, coefficient total, puis leur quotient.
+        ScoringEngine.Ponderation global = ScoringEngine.ponderation(tousEvalues);
+        BigDecimal scoreGlobal = global.score();
 
         List<AuditScoreDto.DomaineScoreDto> domaines = totalParDomaine.keySet().stream()
                 .sorted(Comparator.comparingInt(Domaine::getOrdre))
                 .map(domaine -> {
                     List<ScoringEngine.CritereEvalue> evaluesDomaine = evaluesParDomaine.getOrDefault(domaine, List.of());
+                    ScoringEngine.Ponderation p = ScoringEngine.ponderation(evaluesDomaine);
                     return new AuditScoreDto.DomaineScoreDto(
                             domaine.getCode(),
                             domaine.getNom(),
-                            ScoringEngine.scorePondere(evaluesDomaine),
+                            p.score(),
+                            p.noteTotale(),
+                            p.coefficientTotal(),
                             totalParDomaine.get(domaine),
                             evaluesDomaine.size());
                 })
@@ -82,6 +88,8 @@ public class AuditScoreService {
         return new AuditScoreDto(
                 audit.getId(),
                 scoreGlobal,
+                global.noteTotale(),
+                global.coefficientTotal(),
                 criteresMission.size(),
                 nombreEvalues,
                 nombreEnRevue,

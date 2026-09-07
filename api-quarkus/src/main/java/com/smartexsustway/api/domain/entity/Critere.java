@@ -16,6 +16,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Objects;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -36,6 +37,18 @@ public class Critere {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "domaine_id", nullable = false)
     private Domaine domaine;
+
+    /** Regroupement facultatif à l'intérieur du domaine (voir V33). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sous_domaine_id")
+    private SousDomaine sousDomaine;
+
+    /**
+     * Poids du critère dans le score de son référentiel (1 à 3 dans les
+     * grilles Smartex), recopié dans la mission à sa création.
+     */
+    @Column(name = "coefficient_ponderation", nullable = false)
+    private BigDecimal coefficientPonderation = BigDecimal.ONE;
 
     @Column(name = "code", nullable = false, length = 30)
     private String code;
@@ -74,6 +87,22 @@ public class Critere {
 
     public Domaine getDomaine() {
         return domaine;
+    }
+
+    public SousDomaine getSousDomaine() {
+        return sousDomaine;
+    }
+
+    public void setSousDomaine(SousDomaine sousDomaine) {
+        this.sousDomaine = sousDomaine;
+    }
+
+    public BigDecimal getCoefficientPonderation() {
+        return coefficientPonderation;
+    }
+
+    public void setCoefficientPonderation(BigDecimal coefficientPonderation) {
+        this.coefficientPonderation = coefficientPonderation;
     }
 
     public String getCode() {
