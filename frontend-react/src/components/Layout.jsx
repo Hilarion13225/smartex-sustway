@@ -222,9 +222,10 @@ export default function Layout() {
           ouvert ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        {/* Le maillage n'a de sens que sur fond sombre : posé sur la barre
-            claire, il salirait un aplat volontairement minimal. */}
-        {estSombre ? <DecorSidebar /> : null}
+        {/* Présent dans les deux thèmes : le décor passe par des classes
+            qui atténuent fortement ses valeurs en mode clair (voir
+            index.css), pour rester une texture sans gêner les libellés. */}
+        <DecorSidebar />
 
         <div className="relative flex items-center justify-between gap-2 px-5 py-4">
           <div className="flex items-center gap-2.5">

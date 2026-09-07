@@ -55,15 +55,13 @@ export default function DecorSidebar() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {/* Halo émeraude en tête de colonne. */}
-      <div className="absolute inset-x-0 top-0 h-72 bg-[radial-gradient(80%_100%_at_50%_0%,rgba(46,158,75,0.22),transparent_70%)]" />
+      <div className="decor-sidebar-halo absolute inset-x-0 top-0 h-72" />
 
       {/* Grille technique, effacée vers le bas pour ne pas gêner la lecture
           des libellés de navigation. */}
       <div
-        className="absolute inset-0 motion-safe:animate-derive-grille"
+        className="decor-sidebar-grille absolute inset-0 motion-safe:animate-derive-grille"
         style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(46,158,75,0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(46,158,75,0.16) 1px, transparent 1px)',
           backgroundSize: '44px 44px',
           maskImage: 'linear-gradient(to bottom, black, transparent 70%)',
           WebkitMaskImage: 'linear-gradient(to bottom, black, transparent 70%)',
@@ -73,7 +71,7 @@ export default function DecorSidebar() {
       <svg
         viewBox={`0 0 ${LARGEUR} ${HAUTEUR}`}
         preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full opacity-70"
+        className="absolute inset-0 h-full w-full opacity-50 dark:opacity-70"
         style={{
           maskImage: 'linear-gradient(to bottom, black 5%, transparent 65%)',
           WebkitMaskImage: 'linear-gradient(to bottom, black 5%, transparent 65%)',
@@ -86,7 +84,7 @@ export default function DecorSidebar() {
             y1={arete.a.y}
             x2={arete.b.x}
             y2={arete.b.y}
-            className="stroke-emerald-400"
+            className="stroke-emerald-600 dark:stroke-emerald-400"
             strokeOpacity={arete.opacite}
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
@@ -100,8 +98,8 @@ export default function DecorSidebar() {
             r={noeud.majeur ? 2.2 : 1.4}
             className={
               noeud.majeur
-                ? 'fill-emerald-400 opacity-70 motion-safe:animate-activation-noeud'
-                : 'fill-emerald-400/40'
+                ? 'fill-emerald-600 opacity-70 motion-safe:animate-activation-noeud dark:fill-emerald-400'
+                : 'fill-emerald-600/40 dark:fill-emerald-400/40'
             }
             style={noeud.majeur ? { animationDelay: `${noeud.delai}s` } : undefined}
           />
