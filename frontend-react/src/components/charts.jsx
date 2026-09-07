@@ -33,6 +33,7 @@ export const COULEURS = {
   bleu: '#2563eb',
   bleuClair: 'rgba(37, 99, 235, 0.18)',
   ambre: '#d97706',
+  vert: '#059669',
   rouge: '#e11d48',
   violet: '#7c3aed',
   gris: '#94a3b8',
