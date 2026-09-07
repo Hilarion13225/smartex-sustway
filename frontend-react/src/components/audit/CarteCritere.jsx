@@ -1,6 +1,5 @@
 import { Info, Loader2 } from 'lucide-react';
 import CarteNiveauMaturite from './CarteNiveauMaturite';
-import SectionCommentaire from './SectionCommentaire';
 import DepotPreuves from './DepotPreuves';
 import ListeFichiers from './ListeFichiers';
 import ActionsCritere from './ActionsCritere';
@@ -8,10 +7,13 @@ import CarteReponseBinaire from './CarteReponseBinaire';
 import { NIVEAUX_MATURITE } from './niveauxMaturite';
 
 /**
- * Carte de saisie d'un critère : énoncé, échelle de maturité, commentaire,
- * preuves et actions. Composant contrôlé — l'état de la réponse est tenu par
- * le parent, de sorte que le passage d'un critère à l'autre reste sa
- * responsabilité.
+ * Carte de saisie d'un critère : énoncé, échelle de maturité, preuves et
+ * actions. Composant contrôlé — l'état de la réponse est tenu par le parent,
+ * de sorte que le passage d'un critère à l'autre reste sa responsabilité.
+ *
+ * La saisie ne porte pas de commentaire libre : l'argumentaire d'un critère
+ * est produit par l'analyse IA à partir des preuves déposées, et s'affiche
+ * dans le panneau de droite.
  */
 export default function CarteCritere({
   code,
@@ -24,8 +26,6 @@ export default function CarteCritere({
   surSelectionNiveau,
   reponseBinaire,
   surSelectionBinaire,
-  commentaire,
-  surChangementCommentaire,
   fichiers,
   surAjoutFichiers,
   surSuppressionFichier,
@@ -84,10 +84,6 @@ export default function CarteCritere({
           ))}
         </div>
       )}
-
-      <div className="mt-7">
-        <SectionCommentaire valeur={commentaire} surChangement={surChangementCommentaire} />
-      </div>
 
       <div className="mt-7">
         <p className="flex items-center gap-2 text-sm font-medium text-ink-700">
