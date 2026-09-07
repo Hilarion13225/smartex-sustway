@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'luci
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 
@@ -54,6 +55,12 @@ export default function ReferentielDetail() {
   useEffect(() => {
     rafraichir();
   }, [rafraichir]);
+
+  // Alimente la liste « Derniers consultés » du catalogue, tenue côté
+  // navigateur : l'API ne journalise pas les consultations.
+  useEffect(() => {
+    if (referentiel) memoriserConsultation(referentiel);
+  }, [referentiel]);
 
   return (
     <>

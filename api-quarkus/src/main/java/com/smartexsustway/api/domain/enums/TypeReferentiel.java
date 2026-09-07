@@ -6,5 +6,16 @@ public enum TypeReferentiel {
     PRI,
     GRESB,
     ITIE,
-    IFC_SFI
+    IFC_SFI,
+    // Standards internationaux ouverts par V29 : la plateforme centralise
+    // l'ensemble des cadres d'audit ESG, pas les seuls cinq d'origine.
+    ISO,
+    GRI,
+    SASB,
+    TCFD,
+    CSRD,
+    ISSB,
+    CDP,
+    UNGC,
+    AUTRE
 }
