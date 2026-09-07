@@ -60,14 +60,39 @@ const GROUPES = [
     titre: 'Navigation',
     liens: [
       { vers: '/app', libelle: 'Vue générale', icone: LayoutDashboard, fin: true },
-      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
-      { vers: '/app/entreprises', libelle: 'Organisations', icone: Building2 },
+      {
+        chemin: (id) => `/app/${id}/audits`,
+        libelle: 'Missions d’audit',
+        icone: ClipboardList,
+        // Les sous-entrées visent la même page avec un filtre : « à valider »
+        // n'est pas un statut du modèle mais une mission entièrement évaluée
+        // et non close (voir AuditsListe).
+        enfants: [
+          { libelle: 'Toutes les missions', chemin: (id) => `/app/${id}/audits` },
+          { libelle: 'En cours', chemin: (id) => `/app/${id}/audits?statut=EN_COURS` },
+          { libelle: 'À valider', chemin: (id) => `/app/${id}/audits?vue=a-valider` },
+          { libelle: 'Terminées', chemin: (id) => `/app/${id}/audits?statut=CLOTURE` },
+        ],
+      },
+      {
+        vers: '/app/entreprises',
+        libelle: 'Organisations',
+        icone: Building2,
+        enfants: [
+          { libelle: 'Liste', vers: '/app/entreprises' },
+          { libelle: 'Profil organisation', chemin: (id) => `/app/${id}` },
+          { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
+        ],
+      },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
-      // Consultation ouverte à tous : l'API ne protège pas la lecture des
-      // référentiels, seules création et modification exigent SUPER_ADMIN.
-      { vers: '/app/referentiels', libelle: 'Référentiel RSE', icone: BookOpen },
+      {
+        vers: '/app/referentiels',
+        libelle: 'Référentiel RSE',
+        icone: BookOpen,
+        enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
+      },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
-      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe d’audit', icone: Users },
+      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe', icone: Users },
     ],
   },
   {
@@ -317,9 +342,24 @@ export default function Layout() {
                       );
                     }
 
+                    const cibleParente = cible;
+                    const enfantsVisibles = (lien.enfants ?? [])
+                      .map((enfant) => ({
+                        libelle: enfant.libelle,
+                        cible: enfant.chemin
+                          ? entrepriseCouranteId
+                            ? enfant.chemin(entrepriseCouranteId)
+                            : null
+                          : enfant.vers,
+                      }))
+                      .filter((enfant) => enfant.cible);
+                    const sectionOuverte =
+                      enfantsVisibles.length > 0 &&
+                      location.pathname.startsWith(cibleParente.split('?')[0]);
+
                     return (
+                      <div key={lien.libelle}>
                       <NavLink
-                        key={lien.libelle}
                         to={cible}
                         end={lien.fin}
                         onClick={() => setOuvert(false)}
@@ -340,6 +380,32 @@ export default function Layout() {
                           </>
                         )}
                       </NavLink>
+
+                      {sectionOuverte ? (
+                        <ul className="mt-1 space-y-0.5 border-l border-ink-200 pl-3 dark:border-white/10">
+                          {enfantsVisibles.map((enfant) => {
+                            const actif =
+                              location.pathname + location.search === enfant.cible;
+                            return (
+                              <li key={enfant.libelle}>
+                                <NavLink
+                                  to={enfant.cible}
+                                  onClick={() => setOuvert(false)}
+                                  className={clsx(
+                                    'block rounded-lg px-3 py-1.5 text-[13px] transition-colors',
+                                    actif
+                                      ? 'font-semibold text-brand-700 dark:text-brand-300'
+                                      : 'lien-sidebar-inactif'
+                                  )}
+                                >
+                                  {enfant.libelle}
+                                </NavLink>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      ) : null}
+                      </div>
                     );
                   })}
                 </div>

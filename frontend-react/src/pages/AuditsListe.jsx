@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, PlusCircle, Search } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
@@ -53,8 +53,14 @@ export default function AuditsListe() {
   const [abonnement, setAbonnement] = useState(null);
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
 
+  // Les filtres de statut sont aussi pilotables par l'URL : la barre latérale
+  // pointe sur ?statut=EN_COURS ou ?vue=a-valider, ce qui rend ses entrées de
+  // sous-menu réellement distinctes sans dupliquer la page.
+  const [parametres, setParametres] = useSearchParams();
+  const vue = parametres.get('vue') ?? '';
+
   const [recherche, setRecherche] = useState('');
-  const [filtreStatut, setFiltreStatut] = useState('');
+  const [filtreStatut, setFiltreStatut] = useState(parametres.get('statut') ?? '');
   const [filtreRisque, setFiltreRisque] = useState('');
   const [filtrePeriode, setFiltrePeriode] = useState('');
 
@@ -117,6 +123,16 @@ export default function AuditsListe() {
     [missions, entrepriseId]
   );
 
+  /** Change le statut filtré et reflète le choix dans l'URL. */
+  function changerStatut(valeur) {
+    setFiltreStatut(valeur);
+    const suivant = new URLSearchParams(parametres);
+    if (valeur) suivant.set('statut', valeur);
+    else suivant.delete('statut');
+    suivant.delete('vue');
+    setParametres(suivant, { replace: true });
+  }
+
   const missionsFiltrees = useMemo(() => {
     const requete = recherche.trim().toLowerCase();
     const limite = filtrePeriode
@@ -128,11 +144,16 @@ export default function AuditsListe() {
         return false;
       }
       if (filtreStatut && mission.statut !== filtreStatut) return false;
+      // « À valider » n'est pas un statut du modèle : c'est une mission dont
+      // tous les critères sont évalués mais qui n'est pas encore clôturée.
+      if (vue === 'a-valider' && !(mission.progression === 100 && mission.statut === 'EN_COURS')) {
+        return false;
+      }
       if (filtreRisque && (mission.risque ?? 'NON_EVALUE') !== filtreRisque) return false;
       if (limite && mission.dateDebut && new Date(mission.dateDebut).getTime() < limite) return false;
       return true;
     });
-  }, [missionsVue, recherche, filtreStatut, filtreRisque, filtrePeriode]);
+  }, [missionsVue, recherche, filtreStatut, filtreRisque, filtrePeriode, vue]);
 
   if (!entreprise) {
     return <Vide message="Entreprise introuvable ou non accessible." />;
@@ -147,7 +168,15 @@ export default function AuditsListe() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-ink-900">Missions d’audit</h1>
+          <h1 className="text-2xl font-bold text-ink-900">
+            {vue === 'a-valider'
+              ? 'Missions à valider'
+              : filtreStatut === 'EN_COURS'
+                ? 'Missions en cours'
+                : filtreStatut === 'CLOTURE'
+                  ? 'Missions terminées'
+                  : 'Missions d’audit'}
+          </h1>
           <p className="mt-1 text-sm text-ink-500">
             Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — {entreprise.raisonSociale}.
           </p>
@@ -207,7 +236,7 @@ export default function AuditsListe() {
             className="input"
             aria-label="Filtrer par statut"
             value={filtreStatut}
-            onChange={(e) => setFiltreStatut(e.target.value)}
+            onChange={(e) => changerStatut(e.target.value)}
           >
             {STATUTS.map((s) => (
               <option key={s.valeur} value={s.valeur}>
