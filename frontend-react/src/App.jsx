@@ -36,6 +36,7 @@ import RapportsEntreprise from './pages/RapportsEntreprise';
 import FinancementsVerts from './pages/FinancementsVerts';
 import PipelineIA from './pages/PipelineIA';
 import ComparaisonEntreprises from './pages/ComparaisonEntreprises';
+import Classement from './pages/Classement';
 import ReferentielsListe from './pages/ReferentielsListe';
 import ReferentielDetail from './pages/ReferentielDetail';
 import IndicePreparation from './pages/IndicePreparation';
@@ -105,6 +106,7 @@ export default function App() {
               <Route path=":entrepriseId/audits/:auditId/criteres/:auditCritereId" element={<CritereEvaluation />} />
               <Route path="profil" element={<Profil />} />
               <Route path="comparaison" element={<ComparaisonEntreprises />} />
+              <Route path="classement" element={<Classement />} />
               <Route path="referentiels" element={<ReferentielsListe />} />
               <Route path="referentiels/:code" element={<ReferentielDetail />} />
             </Route>

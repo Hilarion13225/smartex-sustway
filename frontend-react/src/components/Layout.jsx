@@ -15,6 +15,7 @@ import {
   ListTodo,
   Menu,
   Sparkles,
+  Trophy,
   Users,
   UserCog,
   Wallet,
@@ -82,6 +83,7 @@ const GROUPES_AUDIT = [
           { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
         ],
       },
+      { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
       {
         vers: '/app/referentiels',
