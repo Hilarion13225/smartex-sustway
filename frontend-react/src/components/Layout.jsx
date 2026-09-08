@@ -28,7 +28,7 @@ import { useTheme } from '../theme/ThemeContext';
 import EnTeteApp from './EnTeteApp';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { ROLE_LIBELLE } from '../auth/permissions';
+import { ROLE_LIBELLE, ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
 import { SMARTEX } from '../config/smartex';
 
 const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
@@ -38,13 +38,9 @@ const CLE_GROUPES_REPLIES = 'smartex.sidebarGroupesReplies';
 
 /** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
 
-/**
- * Rôles habilités à administrer une entreprise (abonnement, journal) —
- * reflète exactement AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE
- * côté API : ce n'est pas une permission soumise à la formule, mais une
- * capacité de rôle, donc gérée ici par code de rôle plutôt que via peut().
- */
-const ROLES_ADMINISTRATION_ENTREPRISE = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', 'RESPONSABLE_ENTREPRISE']);
+// ROLES_ADMINISTRATION_ENTREPRISE est défini dans auth/permissions.js : le
+// tableau de bord en a besoin lui aussi pour savoir s'il peut lire le
+// journal, et deux copies finiraient par diverger.
 
 /**
  * Navigation groupée façon Pilotage / Audit / Administration. Un lien sans
@@ -176,6 +172,39 @@ const GROUPES_ENTREPRISE = [
       { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
+  },
+];
+
+/**
+ * Navigation du collaborateur — un utilisateur rattaché à une entreprise qui
+ * répond aux questions qui lui sont attribuées et dépose les pièces
+ * justificatives.
+ *
+ * Volontairement courte : sans elle, le collaborateur héritait de la
+ * navigation complète du responsable d'entreprise et voyait la comparaison
+ * d'entreprises, le pipeline IA, les non-conformités et les plans d'actions,
+ * qui ne relèvent pas de ses tâches.
+ *
+ * Ne figurent ici que des pages qui existent réellement : « mes questions »
+ * et « notifications » attendront d'avoir un écran, plutôt que de peupler la
+ * navigation de liens morts.
+ *
+ * Masquer un lien n'est pas une mesure de sécurité — les mêmes restrictions
+ * sont contrôlées par l'API (voir AutorisationService et les 23 tests
+ * d'isolation multi-tenant).
+ */
+const GROUPES_COLLABORATEUR = [
+  {
+    titre: 'Ma participation',
+    liens: [
+      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+      { chemin: (id) => `/app/${id}/audits`, libelle: 'Mes missions', icone: ClipboardList },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Mes documents', icone: FolderOpen },
+    ],
+  },
+  {
+    titre: 'Compte',
+    liens: [{ vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog }],
   },
 ];
 
@@ -326,7 +355,14 @@ export default function Layout() {
 
   // Le responsable audit supervise, les comptes côté client exploitent :
   // leurs navigations n'ont pas le même périmètre ni le même découpage.
-  const groupes = ROLES_NAVIGATION_AUDIT.has(roleCourant) ? GROUPES_AUDIT : GROUPES_ENTREPRISE;
+  // Trois navigations, une par famille de rôle : supervision, entreprise,
+  // participation. Le collaborateur héritait jusqu'ici de celle du
+  // responsable d'entreprise, qui l'emmène bien au-delà de ses tâches.
+  const groupes = ROLES_NAVIGATION_AUDIT.has(roleCourant)
+    ? GROUPES_AUDIT
+    : roleCourant === 'COLLABORATEUR'
+      ? GROUPES_COLLABORATEUR
+      : GROUPES_ENTREPRISE;
 
   const entreprisesFiltrees = useMemo(() => {
     const requete = filtreEntreprise.trim().toLowerCase();

@@ -86,10 +86,24 @@ const RESTRICTIONS_PAR_PLAN = {
 
 const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
 
+/**
+ * Rôles habilités à administrer une entreprise (abonnement, journal d'audit) —
+ * reflète exactement AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE côté
+ * API. Ce n'est pas une permission soumise à la formule mais une capacité de
+ * rôle, d'où un contrôle par code de rôle plutôt que par possedePermission().
+ */
+export const ROLES_ADMINISTRATION_ENTREPRISE = new Set([
+  'SUPER_ADMIN',
+  'ADMIN_AUDIT',
+  'RESPONSABLE_ENTREPRISE',
+]);
+
 export const ROLE_LIBELLE = {
   SUPER_ADMIN: 'Administrateur global',
   ADMIN_AUDIT: 'Administrateur métier',
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
+  COLLABORATEUR: 'Collaborateur',
+  EMPLOYE: 'Employé',
   VISITEUR: 'Visiteur (démonstration)',
   AUCUN_ROLE_ATTRIBUE: 'Free',
 };

@@ -23,6 +23,7 @@ import FilActivite from '../components/tableau-bord/FilActivite';
 import BandeauReprise from '../components/tableau-bord/BandeauReprise';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
+import { ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
 import { exporterCsv, formaterDate } from '../lib/export';
 
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
@@ -58,7 +59,13 @@ function couleurAction(action) {
  * client faute d'endpoint d'agrégation multi-entreprises.
  */
 export default function TableauDeBord() {
-  const { entreprises, utilisateur } = useApiAuth();
+  const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
+  // Même permission que la page des missions : proposer une création à qui
+  // ne peut pas créer donne un raccourci qui mène à une impasse.
+  const peutCreerMission = peut('audit:creer');
+  // Miroir d'AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE, seule
+  // famille de rôles à laquelle l'API ouvre le journal d'audit.
+  const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
 
   const [missions, setMissions] = useState([]);
   const [historique, setHistorique] = useState([]);
@@ -89,18 +96,24 @@ export default function TableauDeBord() {
 
     // Journal de chaque entreprise accessible : le fil d'activité est global,
     // l'API ne l'expose que par entreprise.
-    const journaux = await Promise.all(
-      entreprises.map((entreprise) =>
-        api
-          .get(`/api/v1/entreprises/${entreprise.id}/journal`)
-          .then((entrees) => (entrees ?? []).map((e) => ({ ...e, entreprise })))
-          .catch(() => [])
-      )
-    );
+    //
+    // Le journal est réservé à l'administration de l'entreprise : l'appeler
+    // pour un collaborateur produit un 403 par entreprise, visible en console
+    // et sans effet utile. On s'abstient plutôt que de rattraper l'erreur.
+    const journaux = peutLireLeJournal
+      ? await Promise.all(
+          entreprises.map((entreprise) =>
+            api
+              .get(`/api/v1/entreprises/${entreprise.id}/journal`)
+              .then((entrees) => (entrees ?? []).map((e) => ({ ...e, entreprise })))
+              .catch(() => [])
+          )
+        )
+      : [];
     setJournal(journaux.flat());
 
     setChargement(false);
-  }, [entreprises]);
+  }, [entreprises, peutLireLeJournal]);
 
   useEffect(() => {
     charger();
@@ -339,7 +352,11 @@ export default function TableauDeBord() {
             Voici la situation actuelle de vos missions d’audit RSE.
           </p>
         </div>
-        {premiereEntreprise ? (
+        {/* Le raccourci annonce une création : ne le proposer qu'à qui peut
+            réellement créer une mission. Un collaborateur, qui ne porte pas
+            audit:creer, arrivait sur la liste sans y trouver le bouton
+            promis (voir AuditsListe, qui applique déjà cette permission). */}
+        {premiereEntreprise && peutCreerMission ? (
           <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary shrink-0">
             <Plus className="h-4 w-4" aria-hidden />
             Nouvelle mission d’audit
@@ -513,14 +530,23 @@ export default function TableauDeBord() {
         <div className="flex flex-wrap gap-3">
           {premiereEntreprise ? (
             <>
-              <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
-                <Plus className="h-4 w-4" aria-hidden />
-                Nouvelle mission d’audit
-              </Link>
-              <Link to="/app/entreprises" className="btn-secondary">
-                <Building2 className="h-4 w-4" aria-hidden />
-                Gérer les organisations
-              </Link>
+              {peutCreerMission ? (
+                <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nouvelle mission d’audit
+                </Link>
+              ) : (
+                <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
+                  <ClipboardList className="h-4 w-4" aria-hidden />
+                  Mes missions
+                </Link>
+              )}
+              {peutCreerMission ? (
+                <Link to="/app/entreprises" className="btn-secondary">
+                  <Building2 className="h-4 w-4" aria-hidden />
+                  Gérer les organisations
+                </Link>
+              ) : null}
               <Link to={`/app/${premiereEntreprise}/rapports`} className="btn-secondary">
                 <FileText className="h-4 w-4" aria-hidden />
                 Rapports RSE
