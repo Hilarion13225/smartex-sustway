@@ -7,13 +7,16 @@ import com.smartexsustway.api.domain.entity.Bailleur;
 import com.smartexsustway.api.domain.entity.Evaluation;
 import com.smartexsustway.api.domain.entity.IndicePreparation;
 import com.smartexsustway.api.domain.entity.NonConforme;
+import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.FormatRapport;
 import com.smartexsustway.api.domain.repository.ActionCorrectiveRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
+import com.smartexsustway.api.domain.repository.AuditSiteRepository;
 import com.smartexsustway.api.domain.repository.CritereBailleurRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.NonConformeRepository;
+import com.smartexsustway.api.domain.repository.SiteRepository;
 import com.smartexsustway.api.indice.IndicePreparationService;
 import com.smartexsustway.api.resource.dto.AuditScoreDto;
 import com.smartexsustway.api.scoring.AuditScoreService;
@@ -39,8 +42,10 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Module 12 — génération des rapports d'une mission d'audit, aux formats
@@ -79,6 +84,8 @@ public class RapportGenerationService {
     @Inject EvaluationRepository evaluationRepository;
     @Inject CritereBailleurRepository critereBailleurRepository;
     @Inject IndicePreparationService indicePreparationService;
+    @Inject AuditSiteRepository auditSiteRepository;
+    @Inject SiteRepository siteRepository;
 
     public byte[] genererSynthese(Audit audit, FormatRapport format) {
         AuditScoreDto score = auditScoreService.calculer(audit);
@@ -396,10 +403,33 @@ public class RapportGenerationService {
 
     // --- Blocs communs (en-tête, score) -------------------------------------
 
+    /**
+     * Périmètre de la mission, tel qu'il doit apparaître en tête de rapport.
+     *
+     * Un rapport d'audit dit ce qu'il a examiné : sans cette mention, le
+     * périmètre choisi à l'écran restait une information que personne ne
+     * pouvait lire. Une mission sans site retenu porte sur l'organisation
+     * entière — c'est le cas courant, et le dire vaut mieux que laisser la
+     * ligne vide.
+     */
+    private String perimetre(Audit audit) {
+        List<UUID> siteIds = auditSiteRepository.siteIdsPourAudit(audit.getId());
+        if (siteIds.isEmpty()) {
+            return "Organisation entière";
+        }
+        String sites = siteIds.stream()
+                .map(siteRepository::findById)
+                .filter(Objects::nonNull)
+                .map(Site::getNom)
+                .collect(Collectors.joining(", "));
+        return sites.isEmpty() ? "Organisation entière" : sites;
+    }
+
     private void enTeteCsv(StringBuilder csv, String titre, Audit audit) {
         csv.append(titre).append(" — ").append(audit.getNom()).append('\n');
         csv.append("Référentiel;").append(audit.getReferentiel().getCode()).append('\n');
         csv.append("Entreprise;").append(audit.getEntreprise().getRaisonSociale()).append('\n');
+        csv.append("Périmètre;").append(echapper(perimetre(audit))).append('\n');
         csv.append("Date de début;").append(audit.getDateDebut().format(FORMAT_DATE)).append('\n');
         csv.append("Statut;").append(audit.getStatut()).append('\n');
         csv.append('\n');
@@ -613,6 +643,11 @@ public class RapportGenerationService {
         meta.add(new Chunk("   •   Début le " + audit.getDateDebut().format(FORMAT_DATE), polices.meta()));
         meta.add(new Chunk("   •   Statut " + audit.getStatut(), polices.meta()));
         carte.addElement(meta);
+        // Le périmètre sur sa propre ligne : une liste de sites déborderait de
+        // la ligne des métadonnées dès qu'une mission en couvre plusieurs.
+        Paragraph ligneperimetre = new Paragraph("Périmètre : " + perimetre(audit), polices.meta());
+        ligneperimetre.setSpacingBefore(3);
+        carte.addElement(ligneperimetre);
         enTete.addCell(carte);
 
         return enTete;
