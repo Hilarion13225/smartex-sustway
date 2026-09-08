@@ -5,12 +5,14 @@ import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.enums.TypeApplicabilite;
+import com.smartexsustway.api.domain.repository.CoefficientSecteurRepository;
 import com.smartexsustway.api.domain.repository.CriticiteRepository;
 import com.smartexsustway.api.domain.repository.CriticiteSecteurRepository;
 import com.smartexsustway.api.domain.repository.CritereRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -44,6 +46,9 @@ public class QuestionnaireService {
     @Inject
     CriticiteRepository criticiteRepository;
 
+    @Inject
+    CoefficientSecteurRepository coefficientSecteurRepository;
+
     public List<Critere> composer(Entreprise entreprise, Referentiel referentiel) {
         // Le paramètre 'entreprise' n'est pas encore utilisé pour le filtrage
         // sectoriel (voir javadoc de classe) mais fait partie de la signature
@@ -71,5 +76,29 @@ public class QuestionnaireService {
             }
         }
         return critere.getCriticite();
+    }
+
+    /**
+     * Coefficient de pondération applicable au critère pour le secteur de
+     * l'entreprise auditée, avec repli sur celui de la grille.
+     *
+     * Un critère ne pèse pas partout le même poids : la gestion des déchets
+     * dangereux est déterminante pour une mine, marginale pour une société
+     * de services. Le coefficient entrant dans la note (RG31), cette
+     * résolution est ce qui rend la pondération réellement sectorielle —
+     * là où la criticité, elle, ne joue que sur la priorité des écarts.
+     *
+     * Seules les exceptions sont stockées : un critère sans surcharge pour
+     * ce secteur garde le coefficient de sa grille.
+     */
+    public BigDecimal coefficientEffectif(Critere critere, Entreprise entreprise) {
+        if (entreprise.getSecteur() != null) {
+            var surcharge = coefficientSecteurRepository.coefficientPourSecteur(
+                    critere.getId(), entreprise.getSecteur().getId());
+            if (surcharge.isPresent()) {
+                return surcharge.get();
+            }
+        }
+        return critere.getCoefficientPonderation();
     }
 }

@@ -18,6 +18,7 @@ import com.smartexsustway.api.referentiel.QuestionnaireService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -48,8 +49,10 @@ public class CreationMissionService {
      * profil de l'entreprise, puis figé dans la mission — la faire évoluer
      * ensuite ne doit rien réécrire.
      *
-     * RG37 : la criticité de chaque critère est résolue pour le secteur de
-     * l'entreprise auditée avant d'être gelée.
+     * RG37 : la criticité et le coefficient de pondération de chaque critère
+     * sont résolus pour le secteur de l'entreprise auditée avant d'être
+     * gelés — un critère peut compter davantage dans la note d'une mine que
+     * dans celle d'une société de services.
      */
     public MissionCreee creer(Entreprise entreprise, Referentiel referentiel, String nom,
                               LocalDate dateDebut, LocalDate dateFin, String description,
@@ -66,7 +69,9 @@ public class CreationMissionService {
         List<Critere> criteres = questionnaireService.composer(entreprise, referentiel);
         for (Critere critere : criteres) {
             Criticite criticiteEffective = questionnaireService.criticiteEffective(critere, entreprise);
-            AuditCritere auditCritere = new AuditCritere(audit, critere, criticiteEffective);
+            BigDecimal coefficientEffectif = questionnaireService.coefficientEffectif(critere, entreprise);
+            AuditCritere auditCritere =
+                    new AuditCritere(audit, critere, criticiteEffective, coefficientEffectif);
             auditCritereRepository.persist(auditCritere);
 
             for (Question question : questionRepository.parCritere(critere.getId())) {

@@ -502,6 +502,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState(null);
   const [overrides, setOverrides] = useState(null);
+  const [coefficientsSecteur, setCoefficientsSecteur] = useState(null);
   const [tagsBailleur, setTagsBailleur] = useState(null);
 
   const rafraichirOverrides = useCallback(() => {
@@ -509,6 +510,13 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
       .get(`/api/v1/referentiels/criteres/${critere.id}/criticite-secteur`)
       .then(setOverrides)
       .catch(() => setOverrides([]));
+  }, [critere.id]);
+
+  const rafraichirCoefficients = useCallback(() => {
+    api
+      .get(`/api/v1/referentiels/criteres/${critere.id}/coefficient-secteur`)
+      .then(setCoefficientsSecteur)
+      .catch(() => setCoefficientsSecteur([]));
   }, [critere.id]);
 
   const rafraichirTagsBailleur = useCallback(() => {
@@ -522,6 +530,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
     setOuvert((v) => {
       if (!v) {
         rafraichirOverrides();
+        rafraichirCoefficients();
         rafraichirTagsBailleur();
       }
       return !v;
@@ -668,6 +677,27 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
             </div>
 
             <div className="mt-5 border-t border-ink-200 pt-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                Pondération par secteur
+              </p>
+              <p className="mb-2 mt-0.5 text-xs text-ink-500">
+                Combien ce critère compte dans la note — à distinguer de la criticité, qui fixe
+                l’urgence d’un écart.
+              </p>
+              {coefficientsSecteur === null ? (
+                <SustwayLoader taille="sm" />
+              ) : (
+                <CoefficientSecteurPanel
+                  critereId={critere.id}
+                  coefficientParDefaut={critere.coefficientPonderation}
+                  surcharges={coefficientsSecteur}
+                  secteurs={secteurs}
+                  onChange={rafraichirCoefficients}
+                />
+              )}
+            </div>
+
+            <div className="mt-5 border-t border-ink-200 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-500">
                 Financements verts — bailleur
               </p>
@@ -778,6 +808,121 @@ function CriticiteSecteurPanel({ critereId, overrides, secteurs, onChange }) {
           Définir
         </button>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Pondérations sectorielles d'un critère.
+ *
+ * Le coefficient entre dans la note (note = niveau × coefficient) : le faire
+ * varier par secteur est ce qui fait qu'un critère « compte plus » pour un
+ * métier. La criticité voisine, elle, ne joue que sur la priorité des écarts.
+ *
+ * Seules les exceptions se saisissent : sans ligne, le critère garde le
+ * coefficient de sa grille, rappelé ici pour situer chaque surcharge.
+ */
+function CoefficientSecteurPanel({ critereId, coefficientParDefaut, surcharges, secteurs, onChange }) {
+  const [secteurCode, setSecteurCode] = useState(secteurs[0]?.code ?? '');
+  const [coefficient, setCoefficient] = useState('3');
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  async function ajouter(e) {
+    e.preventDefault();
+    setErreur(null);
+    setChargement(true);
+    try {
+      await api.put(`/api/v1/referentiels/criteres/${critereId}/coefficient-secteur`, {
+        secteurCode,
+        coefficient: Number(coefficient),
+      });
+      onChange();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  async function supprimer(code) {
+    try {
+      await api.delete(`/api/v1/referentiels/criteres/${critereId}/coefficient-secteur/${code}`);
+      onChange();
+    } catch {
+      // le rafraîchissement suivant reflète l'état réel
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {surcharges.length > 0 ? (
+        <ul className="space-y-1">
+          {surcharges.map((s) => (
+            <li
+              key={s.secteurCode}
+              className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-sm"
+            >
+              <span>
+                {s.secteurNom} → <Badge ton="bleu">coefficient {Number(s.coefficient)}</Badge>
+              </span>
+              <button type="button" className="btn-ghost text-xs" onClick={() => supprimer(s.secteurCode)}>
+                Retirer
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-ink-500">
+          Aucune pondération sectorielle — le coefficient {Number(coefficientParDefaut ?? 1)} de la grille
+          s’applique à tous les secteurs.
+        </p>
+      )}
+
+      <form className="flex flex-wrap items-end gap-2" onSubmit={ajouter}>
+        {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+        <div>
+          <label className="label" htmlFor={`coef-secteur-${critereId}`}>
+            Secteur
+          </label>
+          <select
+            id={`coef-secteur-${critereId}`}
+            className="input"
+            value={secteurCode}
+            onChange={(e) => setSecteurCode(e.target.value)}
+          >
+            {secteurs.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.nom}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="label" htmlFor={`coef-valeur-${critereId}`}>
+            Coefficient pour ce secteur
+          </label>
+          <select
+            id={`coef-valeur-${critereId}`}
+            className="input"
+            value={coefficient}
+            onChange={(e) => setCoefficient(e.target.value)}
+          >
+            <option value="1">1 — secondaire</option>
+            <option value="2">2 — important</option>
+            <option value="3">3 — déterminant</option>
+          </select>
+        </div>
+        <button type="submit" className="btn-secondary" disabled={chargement || !secteurCode}>
+          {chargement ? <SustwayLoader taille="sm" /> : null}
+          Définir
+        </button>
+      </form>
+
+      <p className="text-xs text-ink-500">
+        La pondération est figée à la création d’une mission : modifier ce coefficient n’altère pas
+        les missions déjà lancées.
+      </p>
     </div>
   );
 }

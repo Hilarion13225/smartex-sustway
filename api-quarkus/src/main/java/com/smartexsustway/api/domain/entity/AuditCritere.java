@@ -75,18 +75,23 @@ public class AuditCritere {
     }
 
     /**
-     * RG37 — variante utilisée quand la criticité effective a déjà été
-     * résolue en amont (voir QuestionnaireService.criticiteEffective),
-     * qui peut différer de {@code critere.getCriticite()} si une
-     * surcharge sectorielle existe pour le secteur de l'entreprise
-     * auditée. Le constructeur à deux arguments reste disponible pour les
-     * appelants qui n'ont pas besoin de cette résolution (ex. tests).
+     * RG37 — variante utilisée quand la criticité et le coefficient effectifs
+     * ont déjà été résolus en amont (voir QuestionnaireService), car tous
+     * deux peuvent différer de ceux du critère si une surcharge sectorielle
+     * existe pour le secteur de l'entreprise auditée. Le constructeur à deux
+     * arguments reste disponible pour les appelants qui n'ont pas besoin de
+     * cette résolution (ex. tests).
+     *
+     * Les deux valeurs sont figées ici : faire évoluer le référentiel ou la
+     * pondération d'un secteur ne doit pas réécrire le score d'un audit déjà
+     * rendu.
      */
-    public AuditCritere(Audit audit, Critere critere, Criticite criticiteEffective) {
+    public AuditCritere(Audit audit, Critere critere, Criticite criticiteEffective,
+                        BigDecimal coefficientEffectif) {
         this.audit = audit;
         this.critere = critere;
         this.criticite = criticiteEffective;
-        this.coefficientPonderation = critere.getCoefficientPonderation();
+        this.coefficientPonderation = coefficientEffectif;
     }
 
     public UUID getId() {
