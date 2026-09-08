@@ -294,9 +294,11 @@ export default function SaisieCritereMission({
       <EnTeteDomaine
         icone={Landmark}
         domaine={domaineCode ?? '—'}
+        // Consigne neutre : un domaine mélange des critères de maturité et des
+        // constats factuels, la consigne précise se lit sur chaque critère.
         description={
           peutSaisir
-            ? 'Sélectionnez le niveau de maturité qui décrit le mieux la situation observée.'
+            ? 'Répondez critère par critère, puis joignez les preuves à l’appui.'
             : 'Déclarations de l’organisation et preuves déposées, telles que l’IA les analyse.'
         }
         completes={completes}

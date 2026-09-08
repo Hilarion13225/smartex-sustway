@@ -49,6 +49,9 @@ public class ReponseQuestionResource {
 
     private static final String STATUT_REPONDU = "REPONDU";
     private static final String STATUT_A_REPONDRE = "A_REPONDRE";
+    /** Statuts d'AuditCritere (voir EvaluationResource) : la déclaration précède l'analyse. */
+    private static final String STATUT_A_EVALUER = "A_EVALUER";
+    private static final String STATUT_DECLARE = "DECLARE";
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
@@ -89,6 +92,7 @@ public class ReponseQuestionResource {
 
         auditCritere.setScenario(normaliser(requete.scenario()));
 
+        boolean auMoinsUneReponse = false;
         Map<UUID, AuditQuestion> questionsDeLaMission = new HashMap<>();
         auditQuestionRepository.parAuditCritere(auditCritereId)
                 .forEach(aq -> questionsDeLaMission.put(aq.getId(), aq));
@@ -113,6 +117,15 @@ public class ReponseQuestionResource {
 
             boolean renseignee = saisie.niveau() != null || saisie.valeur() != null || commentaire != null;
             auditQuestion.setStatut(renseignee ? STATUT_REPONDU : STATUT_A_REPONDRE);
+            auMoinsUneReponse |= renseignee;
+        }
+
+        // Une réponse au questionnaire est une déclaration au même titre qu'un
+        // niveau de maturité : sans ce report, un critère factuel répondu par
+        // oui ou non resterait « à renseigner » à l'écran et ne serait pas
+        // compté dans l'avancement de la collecte.
+        if (auMoinsUneReponse && STATUT_A_EVALUER.equals(auditCritere.getStatut())) {
+            auditCritere.setStatut(STATUT_DECLARE);
         }
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "REPONSES_CRITERE_ENREGISTREES", "audit_critere", auditCritereId);
