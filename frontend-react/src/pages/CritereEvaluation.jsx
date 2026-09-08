@@ -24,6 +24,13 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
 
+/**
+ * Personnel interne Smartex : il supervise la mission mais ne renseigne pas
+ * le questionnaire déclaratif — celui-ci est la parole de l'organisation
+ * auditée (RG09), que l'IA confronte ensuite aux preuves.
+ */
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
+
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 'vert' };
 // Le questionnaire se répond sur l'échelle de maturité à cinq niveaux, la
@@ -34,7 +41,7 @@ const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 've
 export default function CritereEvaluation() {
   const { entrepriseId, auditId, auditCritereId } = useParams();
   const { state } = useLocation();
-  const { peut } = useApiAuth();
+  const { peut, roleCourant } = useApiAuth();
 
   const [critere, setCritere] = useState(state?.critere ?? null);
   const [preuves, setPreuves] = useState(null);
@@ -42,6 +49,9 @@ export default function CritereEvaluation() {
   const [evaluations, setEvaluations] = useState(null);
   const [audit, setAudit] = useState(null);
   const [chargement, setChargement] = useState(!state?.critere);
+
+  const peutDeclarer =
+    peut('preuve:deposer', audit?.formuleCode) && !ROLES_INTERNES_SMARTEX.has(roleCourant);
 
   const rafraichir = useCallback(() => {
     const promesses = [
@@ -126,7 +136,7 @@ export default function CritereEvaluation() {
                 auditCritereId={auditCritereId}
                 saisie={saisie}
                 onChange={setSaisie}
-                peutRepondre={peut('preuve:deposer', audit?.formuleCode)}
+                peutRepondre={peutDeclarer}
               />
             </Card>
           </Revele>

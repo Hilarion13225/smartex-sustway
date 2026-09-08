@@ -15,7 +15,7 @@ const REPONSES = [
  * question, « oui » signale une exposition à traiter ou une pratique en
  * place, et le laisser deviner par la couleur induirait en erreur.
  */
-export default function CarteReponseBinaire({ valeur, surSelection }) {
+export default function CarteReponseBinaire({ valeur, surSelection, lectureSeule = false }) {
   return (
     <div className="mt-6 grid max-w-md grid-cols-2 gap-3">
       {REPONSES.map(({ code, libelle, icone: Icone }) => {
@@ -26,11 +26,15 @@ export default function CarteReponseBinaire({ valeur, surSelection }) {
             type="button"
             onClick={() => surSelection(code)}
             aria-pressed={selectionne}
+            disabled={lectureSeule}
             className={clsx(
               'flex items-center justify-center gap-2.5 rounded-2xl border p-4 text-sm font-semibold transition duration-200',
               selectionne
                 ? 'border-brand-500 bg-brand-50 text-brand-700 shadow-sm dark:bg-brand-500/10 dark:text-brand-300'
-                : 'border-ink-200 bg-surface text-ink-600 hover:border-brand-300 hover:text-brand-700'
+                : 'border-ink-200 bg-surface text-ink-600',
+              lectureSeule
+                ? 'cursor-default'
+                : !selectionne && 'hover:border-brand-300 hover:text-brand-700'
             )}
           >
             <span

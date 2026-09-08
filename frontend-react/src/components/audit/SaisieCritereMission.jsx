@@ -30,8 +30,21 @@ function signature(niveau, nombrePreuves) {
  * (`PUT .../criteres/{id}/evaluations`) : la note 1-5 y est dérivée d'une
  * probabilité représentative par ScoringEngine, conformément à RG27 qui
  * interdit de poser la note directement.
+ *
+ * Deux droits distincts, et non un seul : déclarer un niveau et déposer une
+ * preuve appartiennent à l'organisation auditée (`peutSaisir`), tandis que
+ * lancer l'analyse relève de la supervision (`peutAnalyser`). Les confondre
+ * revenait à faire remplir le questionnaire par le responsable audit, alors
+ * que son rôle est de superviser un travail d'analyse fait par l'IA.
  */
-export default function SaisieCritereMission({ entrepriseId, auditId, criteres, peutModifier, surChangement }) {
+export default function SaisieCritereMission({
+  entrepriseId,
+  auditId,
+  criteres,
+  peutSaisir,
+  peutAnalyser,
+  surChangement,
+}) {
   const [indice, setIndice] = useState(0);
   const [niveau, setNiveau] = useState(null);
   const [question, setQuestion] = useState(null);
@@ -271,7 +284,11 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
       <EnTeteDomaine
         icone={Landmark}
         domaine={domaineCode ?? '—'}
-        description="Sélectionnez le niveau de maturité qui décrit le mieux la situation observée."
+        description={
+          peutSaisir
+            ? 'Sélectionnez le niveau de maturité qui décrit le mieux la situation observée.'
+            : 'Déclarations de l’organisation et preuves déposées, telles que l’IA les analyse.'
+        }
         completes={completes}
         total={criteres.length}
         listeOuverte={listeOuverte}
@@ -312,10 +329,11 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
               question={question ?? critere.critereLibelle}
               intitule={question ? critere.critereLibelle : null}
               binaire={questionBinaire != null}
+              peutSaisir={peutSaisir}
               niveauSelectionne={niveau}
-              surSelectionNiveau={peutModifier ? setNiveau : () => {}}
+              surSelectionNiveau={peutSaisir ? setNiveau : () => {}}
               reponseBinaire={reponseBinaire}
-              surSelectionBinaire={peutModifier ? setReponseBinaire : () => {}}
+              surSelectionBinaire={peutSaisir ? setReponseBinaire : () => {}}
               fichiers={preuves.map((preuve) => ({
                 id: preuve.id,
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',
@@ -336,7 +354,7 @@ export default function SaisieCritereMission({ entrepriseId, auditId, criteres, 
           analyseEnCours={analyseEnCours}
           analyseDesynchronisee={desynchronisee}
           erreurAnalyse={erreurAnalyse}
-          peutAnalyser={peutModifier}
+          peutAnalyser={peutAnalyser}
           surAnalyser={lancerAnalyse}
           domaine={domaineCode ?? '—'}
           domaineCompletes={completesDuDomaine}

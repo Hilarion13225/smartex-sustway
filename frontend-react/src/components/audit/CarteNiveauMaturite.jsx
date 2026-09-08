@@ -4,18 +4,33 @@ import clsx from 'clsx';
  * Carte d'un niveau de maturité. Rendue en `<button>` plutôt qu'en `<div>`
  * cliquable : le niveau se sélectionne alors aussi au clavier, et
  * `aria-pressed` annonce l'état choisi aux lecteurs d'écran.
+ *
+ * En lecture seule, la carte reste affichée — celui qui supervise doit voir
+ * ce que l'organisation a déclaré — mais cesse d'être actionnable : sans
+ * cela, un clic sans effet laisse croire à une saisie enregistrée.
  */
-export default function CarteNiveauMaturite({ niveau, titre, description, selectionne, surSelection }) {
+export default function CarteNiveauMaturite({
+  niveau,
+  titre,
+  description,
+  selectionne,
+  surSelection,
+  lectureSeule = false,
+}) {
   return (
     <button
       type="button"
       onClick={surSelection}
       aria-pressed={selectionne}
+      disabled={lectureSeule}
       className={clsx(
         'flex h-full flex-col items-center rounded-2xl border p-5 text-center transition duration-200',
         selectionne
           ? 'border-brand-500 bg-brand-50/60 shadow-sm dark:bg-brand-500/10'
-          : 'border-ink-100 bg-surface hover:border-brand-200 hover:bg-ink-50/60'
+          : 'border-ink-100 bg-surface',
+        lectureSeule
+          ? 'cursor-default'
+          : !selectionne && 'hover:border-brand-200 hover:bg-ink-50/60'
       )}
     >
       <span

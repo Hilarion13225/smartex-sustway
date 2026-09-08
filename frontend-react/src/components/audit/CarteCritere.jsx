@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Info, Loader2 } from 'lucide-react';
 import CarteNiveauMaturite from './CarteNiveauMaturite';
 import DepotPreuves from './DepotPreuves';
@@ -35,6 +36,7 @@ export default function CarteCritere({
   surContinuer,
   brouillonEnregistre,
   premier,
+  peutSaisir = true,
 }) {
   return (
     <article className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-sm sm:p-8">
@@ -61,13 +63,19 @@ export default function CarteCritere({
         ) : null}
       </h3>
       <p className="mt-3 text-sm text-ink-500">
-        {binaire
-          ? 'Cette question constate une situation : répondez par oui ou par non.'
-          : 'Sélectionnez le niveau qui décrit le mieux la situation actuelle de votre organisation.'}
+        {!peutSaisir
+          ? 'Réponse déclarée par l’organisation auditée. L’analyse IA la confronte aux preuves déposées.'
+          : binaire
+            ? 'Cette question constate une situation : répondez par oui ou par non.'
+            : 'Sélectionnez le niveau qui décrit le mieux la situation actuelle de votre organisation.'}
       </p>
 
       {binaire ? (
-        <CarteReponseBinaire valeur={reponseBinaire} surSelection={surSelectionBinaire} />
+        <CarteReponseBinaire
+          valeur={reponseBinaire}
+          surSelection={surSelectionBinaire}
+          lectureSeule={!peutSaisir}
+        />
       ) : (
         /* Cinq colonnes seulement à partir de `xl` : en dessous, les
            descriptions deviendraient illisibles sur une colonne de 150 px. */
@@ -80,6 +88,7 @@ export default function CarteCritere({
               description={niveau.description}
               selectionne={niveauSelectionne === niveau.niveau}
               surSelection={() => surSelectionNiveau(niveau.niveau)}
+              lectureSeule={!peutSaisir}
             />
           ))}
         </div>
@@ -87,7 +96,8 @@ export default function CarteCritere({
 
       <div className="mt-7">
         <p className="flex items-center gap-2 text-sm font-medium text-ink-700">
-          Preuves et documents <span className="text-ink-400">(optionnel)</span>
+          Preuves et documents
+          {peutSaisir ? <span className="text-ink-400">(optionnel)</span> : null}
           {depotEnCours ? (
             <span className="inline-flex items-center gap-1.5 text-xs font-normal text-ink-500">
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
@@ -95,21 +105,30 @@ export default function CarteCritere({
             </span>
           ) : null}
         </p>
-        <div className="mt-2.5 grid gap-4 lg:grid-cols-2">
-          <DepotPreuves surAjout={surAjoutFichiers} />
-          <ListeFichiers fichiers={fichiers} surSuppression={surSuppressionFichier} />
+        {/* La zone de dépôt disparaît en lecture seule : les preuves sont
+            fournies par l'organisation auditée, pas par qui supervise. */}
+        <div className={clsx('mt-2.5 grid gap-4', peutSaisir && 'lg:grid-cols-2')}>
+          {peutSaisir ? <DepotPreuves surAjout={surAjoutFichiers} /> : null}
+          <ListeFichiers
+            fichiers={fichiers}
+            surSuppression={peutSaisir ? surSuppressionFichier : undefined}
+          />
         </div>
       </div>
 
-      <div className="mt-8">
-        <ActionsCritere
-          surPrecedent={surPrecedent}
-          surBrouillon={surBrouillon}
-          surContinuer={surContinuer}
-          brouillonEnregistre={brouillonEnregistre}
-          premier={premier}
-        />
-      </div>
+      {/* Sans droit de saisie, il n'y a rien à enregistrer : la navigation
+          reste accessible par les flèches au-dessus de la carte. */}
+      {peutSaisir ? (
+        <div className="mt-8">
+          <ActionsCritere
+            surPrecedent={surPrecedent}
+            surBrouillon={surBrouillon}
+            surContinuer={surContinuer}
+            brouillonEnregistre={brouillonEnregistre}
+            premier={premier}
+          />
+        </div>
+      ) : null}
     </article>
   );
 }

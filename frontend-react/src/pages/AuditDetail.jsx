@@ -14,6 +14,13 @@ import { useApiAuth } from '../auth/useApiAuth';
 
 
 
+/**
+ * Personnel interne Smartex — il pilote les missions mais ne remplit pas le
+ * questionnaire à la place de l'organisation auditée (même liste que
+ * AutorisationService.ROLES_INTERNES_SMARTEX côté API).
+ */
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
+
 const ONGLETS = [
   { cle: 'synthese', libelle: 'Vue d’ensemble' },
   { cle: 'domaines', libelle: 'Domaines' },
@@ -93,7 +100,7 @@ function VoletDomaines({ score, criteres }) {
 /** RG34/RG35 : questionnaire figé de la mission — liste des critères à évaluer. */
 export default function AuditDetail() {
   const { entrepriseId, auditId } = useParams();
-  const { entreprises, peut } = useApiAuth();
+  const { entreprises, peut, roleCourant } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [audit, setAudit] = useState(null);
@@ -149,6 +156,13 @@ export default function AuditDetail() {
   const rafraichirSilencieux = useCallback(() => rafraichir(true), [rafraichir]);
 
   const peutModifier = peut('audit:modifier', audit?.formuleCode);
+
+  // Le responsable audit supervise, il ne remplit pas le questionnaire :
+  // déclarer un niveau et déposer une preuve appartiennent à l'organisation
+  // auditée, l'analyse revient à l'IA. Il conserve en revanche tout le reste
+  // du pilotage de la mission — périmètre de sites, lancement de l'analyse,
+  // lecture des déclarations et des preuves.
+  const peutSaisirLesCriteres = peutModifier && !ROLES_INTERNES_SMARTEX.has(roleCourant);
 
   // Même règle que le tableau de bord et la liste des missions : le risque se
   // lit sur les écarts constatés, pas sur le score.
@@ -307,7 +321,8 @@ export default function AuditDetail() {
                 entrepriseId={entrepriseId}
                 auditId={auditId}
                 criteres={criteres ?? []}
-                peutModifier={peutModifier}
+                peutSaisir={peutSaisirLesCriteres}
+                peutAnalyser={peutModifier}
                 surChangement={rafraichirSilencieux}
               />
             ) : null}
