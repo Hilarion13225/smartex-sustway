@@ -12,7 +12,20 @@ import { useApiAuth } from '../auth/useApiAuth';
 const TONS_STATUT = { ACTIF: 'vert', INACTIF: 'neutre', SUSPENDU: 'ambre', ARCHIVE: 'rouge' };
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const NIVEAUX_CRITICITE = ['FAIBLE', 'MOYENNE', 'ELEVEE', 'CRITIQUE'];
-const TYPES_APPLICABILITE = ['GENERALE', 'SECTORIELLE', 'BAILLEUR'];
+/**
+ * Portée d'un critère dans les questionnaires.
+ *
+ * BAILLEUR reste proposé car des critères peuvent déjà porter cette valeur,
+ * mais elle exclut le critère de tout questionnaire : rien ne relie
+ * aujourd'hui une organisation à un bailleur, la question « ce critère la
+ * concerne-t-il ? » n'a donc pas de réponse. L'écran le dit plutôt que de
+ * laisser le critère disparaître en silence.
+ */
+const TYPES_APPLICABILITE = [
+  { code: 'GENERALE', libelle: 'Générale — posé à toutes les organisations' },
+  { code: 'SECTORIELLE', libelle: 'Sectorielle — réservé aux secteurs rattachés' },
+  { code: 'BAILLEUR', libelle: 'Bailleur — hors questionnaire pour l’instant' },
+];
 
 /** Module 4 (back-office) : domaines, critères et criticité sectorielle d'un référentiel — réservé à SUPER_ADMIN. */
 export default function ReferentielDetail() {
@@ -435,8 +448,8 @@ function NouveauCritereFormulaire({ referentielCode, domaines, onCree }) {
             onChange={(e) => setFormulaire({ ...formulaire, applicabilite: e.target.value })}
           >
             {TYPES_APPLICABILITE.map((t) => (
-              <option key={t} value={t}>
-                {t}
+              <option key={t.code} value={t.code}>
+                {t.libelle}
               </option>
             ))}
           </select>
@@ -503,6 +516,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
   const [erreur, setErreur] = useState(null);
   const [overrides, setOverrides] = useState(null);
   const [coefficientsSecteur, setCoefficientsSecteur] = useState(null);
+  const [secteursDuCritere, setSecteursDuCritere] = useState(null);
   const [tagsBailleur, setTagsBailleur] = useState(null);
 
   const rafraichirOverrides = useCallback(() => {
@@ -519,6 +533,13 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
       .catch(() => setCoefficientsSecteur([]));
   }, [critere.id]);
 
+  const rafraichirSecteurs = useCallback(() => {
+    api
+      .get(`/api/v1/referentiels/criteres/${critere.id}/secteurs`)
+      .then(setSecteursDuCritere)
+      .catch(() => setSecteursDuCritere([]));
+  }, [critere.id]);
+
   const rafraichirTagsBailleur = useCallback(() => {
     api
       .get(`/api/v1/referentiels/criteres/${critere.id}/bailleur`)
@@ -531,6 +552,7 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
       if (!v) {
         rafraichirOverrides();
         rafraichirCoefficients();
+        rafraichirSecteurs();
         rafraichirTagsBailleur();
       }
       return !v;
@@ -608,8 +630,8 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
                     onChange={(e) => setFormulaire({ ...formulaire, applicabilite: e.target.value })}
                   >
                     {TYPES_APPLICABILITE.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
+                      <option key={t.code} value={t.code}>
+                        {t.libelle}
                       </option>
                     ))}
                   </select>
@@ -675,6 +697,40 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
                 />
               )}
             </div>
+
+            {/* Un critère réservé n'est posé qu'aux secteurs rattachés ici :
+                sans rattachement il ne figure dans aucun questionnaire, ce que
+                le panneau signale explicitement. */}
+            {formulaire.applicabilite === 'SECTORIELLE' ? (
+              <div className="mt-5 border-t border-ink-200 pt-4">
+                <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                  Secteurs concernés
+                </p>
+                <p className="mb-2 mt-0.5 text-xs text-ink-500">
+                  Ce critère n’est posé qu’aux organisations de ces secteurs.
+                </p>
+                {secteursDuCritere === null ? (
+                  <SustwayLoader taille="sm" />
+                ) : (
+                  <CritereSecteurPanel
+                    critereId={critere.id}
+                    rattachements={secteursDuCritere}
+                    secteurs={secteurs}
+                    onChange={rafraichirSecteurs}
+                  />
+                )}
+              </div>
+            ) : null}
+
+            {formulaire.applicabilite === 'BAILLEUR' ? (
+              <div className="mt-5 border-t border-ink-200 pt-4">
+                <Alerte ton="ambre">
+                  Un critère « Bailleur » n’est posé à personne : rien ne relie encore une
+                  organisation à un bailleur. Repassez-le en « Générale » ou « Sectorielle » pour
+                  qu’il figure dans les questionnaires.
+                </Alerte>
+              </div>
+            ) : null}
 
             <div className="mt-5 border-t border-ink-200 pt-4">
               <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
@@ -808,6 +864,102 @@ function CriticiteSecteurPanel({ critereId, overrides, secteurs, onChange }) {
           Définir
         </button>
       </form>
+    </div>
+  );
+}
+
+/**
+ * Secteurs auxquels un critère réservé s'applique.
+ *
+ * Sans rattachement, le critère ne figure dans aucun questionnaire — c'est le
+ * sens d'un critère réservé, mais assez facile à obtenir par mégarde pour être
+ * dit à l'écran.
+ */
+function CritereSecteurPanel({ critereId, rattachements, secteurs, onChange }) {
+  const [secteurCode, setSecteurCode] = useState(secteurs[0]?.code ?? '');
+  const [chargement, setChargement] = useState(false);
+  const [erreur, setErreur] = useState(null);
+
+  const retenus = rattachements.filter((r) => r.applicable !== false);
+
+  async function ajouter(e) {
+    e.preventDefault();
+    setErreur(null);
+    setChargement(true);
+    try {
+      await api.put(`/api/v1/referentiels/criteres/${critereId}/secteurs`, {
+        secteurCode,
+        applicable: true,
+      });
+      onChange();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
+    } finally {
+      setChargement(false);
+    }
+  }
+
+  async function supprimer(code) {
+    try {
+      await api.delete(`/api/v1/referentiels/criteres/${critereId}/secteurs/${code}`);
+      onChange();
+    } catch {
+      // le rafraîchissement suivant reflète l'état réel
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {retenus.length > 0 ? (
+        <ul className="space-y-1">
+          {retenus.map((r) => (
+            <li
+              key={r.secteurCode}
+              className="flex items-center justify-between rounded-lg bg-surface px-3 py-2 text-sm"
+            >
+              <span>{r.secteurNom}</span>
+              <button type="button" className="btn-ghost text-xs" onClick={() => supprimer(r.secteurCode)}>
+                Retirer
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <Alerte ton="ambre">
+          Aucun secteur rattaché : ce critère n’est posé à aucune organisation. Rattachez au moins
+          un secteur, ou repassez-le en « Générale ».
+        </Alerte>
+      )}
+
+      <form className="flex flex-wrap items-end gap-2" onSubmit={ajouter}>
+        {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+        <div>
+          <label className="label" htmlFor={`critere-secteur-${critereId}`}>
+            Secteur concerné
+          </label>
+          <select
+            id={`critere-secteur-${critereId}`}
+            className="input"
+            value={secteurCode}
+            onChange={(e) => setSecteurCode(e.target.value)}
+          >
+            {secteurs.map((s) => (
+              <option key={s.code} value={s.code}>
+                {s.nom}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" className="btn-secondary" disabled={chargement || !secteurCode}>
+          {chargement ? <SustwayLoader taille="sm" /> : null}
+          Rattacher
+        </button>
+      </form>
+
+      <p className="text-xs text-ink-500">
+        Le questionnaire est figé à la création d’une mission : ce rattachement ne modifie que les
+        missions créées ensuite.
+      </p>
     </div>
   );
 }

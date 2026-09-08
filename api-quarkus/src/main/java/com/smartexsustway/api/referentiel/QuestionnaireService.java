@@ -9,11 +9,15 @@ import com.smartexsustway.api.domain.repository.CoefficientSecteurRepository;
 import com.smartexsustway.api.domain.repository.CriticiteRepository;
 import com.smartexsustway.api.domain.repository.CriticiteSecteurRepository;
 import com.smartexsustway.api.domain.repository.CritereRepository;
+import com.smartexsustway.api.domain.repository.CritereSecteurRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * RG34 — composition dynamique du questionnaire d'audit selon le profil
@@ -21,18 +25,23 @@ import java.util.List;
  * est composé dynamiquement à partir des critères applicables au profil
  * de l'entreprise".
  *
- * État actuel (phase F) : le filtrage sectoriel (quels critères
- * s'appliquent à quel secteur, table CRITERE_SECTEUR) et le filtrage
- * bailleur (CRITERE_BAILLEUR) ne sont PAS encore actifs, faute de données
- * — leur mapping est un livrable des experts métier / du back-office
- * (CDC §7.7 pour le volet bailleur). composer() continue donc à ne
- * retenir que les critères GENERALE, comme en phase D.
+ * Le filtrage sectoriel est actif : un critère GENERALE est posé à toutes
+ * les organisations, un critère SECTORIELLE seulement à celles dont le
+ * secteur y est rattaché (CRITERE_SECTEUR). Poser la gestion des rejets
+ * industriels à une société de services n'a pas d'objet — la pondération
+ * sectorielle ne suffit pas là où il faut ne pas poser la question du tout.
  *
- * En revanche, RG37 (criticité variable par secteur) EST actif depuis
- * cette phase : criticiteEffective() résout la criticité applicable à un
- * critère donné pour le secteur de l'entreprise auditée, en tenant compte
- * d'une éventuelle surcharge sectorielle (CRITERE_CRITICITE_SECTEUR),
- * avant repli sur la criticité générale du critère.
+ * L'applicabilité BAILLEUR reste sans effet : rien ne relie aujourd'hui une
+ * organisation à un bailleur, la question « ce critère la concerne-t-elle ? »
+ * n'a donc pas de réponse. La table CRITERE_BAILLEUR existe mais sert un
+ * autre usage — quels critères comptent dans l'indice de préparation d'un
+ * bailleur (voir IndicePreparationService). Un critère marqué BAILLEUR est
+ * donc exclu des questionnaires, ce que l'écran d'administration signale.
+ *
+ * RG37 (criticité et pondération variables par secteur) est actif :
+ * criticiteEffective() et coefficientEffectif() résolvent la valeur
+ * applicable au secteur de l'organisation auditée avant repli sur celle du
+ * critère.
  */
 @ApplicationScoped
 public class QuestionnaireService {
@@ -49,12 +58,44 @@ public class QuestionnaireService {
     @Inject
     CoefficientSecteurRepository coefficientSecteurRepository;
 
+    @Inject
+    CritereSecteurRepository critereSecteurRepository;
+
+    /**
+     * Compose le questionnaire d'une mission : les critères généraux, plus
+     * ceux réservés au secteur de l'organisation auditée.
+     *
+     * L'ordre du référentiel est conservé — domaine puis code — pour que la
+     * saisie suive la structure de la grille et non l'ordre d'assemblage.
+     */
     public List<Critere> composer(Entreprise entreprise, Referentiel referentiel) {
-        // Le paramètre 'entreprise' n'est pas encore utilisé pour le filtrage
-        // sectoriel (voir javadoc de classe) mais fait partie de la signature
-        // dès maintenant : RG34 le nécessitera dès que CRITERE_SECTEUR sera
-        // peuplé, sans casser les appelants de cette méthode.
-        return critereRepository.applicables(referentiel, TypeApplicabilite.GENERALE);
+        List<Critere> generaux = critereRepository.applicables(referentiel, TypeApplicabilite.GENERALE);
+
+        if (entreprise.getSecteur() == null) {
+            // Sans secteur renseigné, aucun critère sectoriel ne peut être
+            // rattaché : l'organisation ne reçoit que le tronc commun.
+            return generaux;
+        }
+
+        var idsDuSecteur = Set.copyOf(
+                critereSecteurRepository.critereIdsApplicablesAuSecteur(entreprise.getSecteur().getId()));
+        if (idsDuSecteur.isEmpty()) {
+            return generaux;
+        }
+
+        List<Critere> sectoriels = critereRepository
+                .applicables(referentiel, TypeApplicabilite.SECTORIELLE).stream()
+                .filter(critere -> idsDuSecteur.contains(critere.getId()))
+                .toList();
+        if (sectoriels.isEmpty()) {
+            return generaux;
+        }
+
+        return Stream.concat(generaux.stream(), sectoriels.stream())
+                .sorted(Comparator
+                        .comparingInt((Critere c) -> c.getDomaine().getOrdre())
+                        .thenComparing(Critere::getCode))
+                .toList();
     }
 
     /**
