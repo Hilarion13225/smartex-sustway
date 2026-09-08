@@ -6,6 +6,7 @@ import NavigationCritere from './NavigationCritere';
 import CarteCritere from './CarteCritere';
 import PanneauAnalyseIa from './PanneauAnalyseIa';
 import { analyseDepuisEvaluation, analyserCritere } from './analyseCritere';
+import { memeTexte } from './libelles';
 import { Alerte, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
 
@@ -327,7 +328,14 @@ export default function SaisieCritereMission({
               code={critere.critereCode}
               criticite={LIBELLES_CRITICITE[critere.criticite] ?? critere.criticite ?? '—'}
               question={question ?? critere.critereLibelle}
-              intitule={question ? critere.critereLibelle : null}
+              // L'intitulé déclaratif n'est montré que s'il apporte autre
+              // chose que la question : sur la grille RSE importée, les deux
+              // sont identiques et s'affichaient l'un sous l'autre.
+              intitule={
+                question && !memeTexte(question, critere.critereLibelle)
+                  ? critere.critereLibelle
+                  : null
+              }
               binaire={questionBinaire != null}
               peutSaisir={peutSaisir}
               niveauSelectionne={niveau}

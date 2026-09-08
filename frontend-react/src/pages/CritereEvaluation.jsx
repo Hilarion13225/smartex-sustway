@@ -23,6 +23,7 @@ import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
+import { memeTexte } from '../components/audit/libelles';
 
 /**
  * Personnel interne Smartex : il supervise la mission mais ne renseigne pas
@@ -137,6 +138,7 @@ export default function CritereEvaluation() {
                 saisie={saisie}
                 onChange={setSaisie}
                 peutRepondre={peutDeclarer}
+                libelleCritere={critere.critereLibelle}
               />
             </Card>
           </Revele>
@@ -177,7 +179,15 @@ export default function CritereEvaluation() {
   );
 }
 
-function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange, peutRepondre }) {
+function SaisieSection({
+  entrepriseId,
+  auditId,
+  auditCritereId,
+  saisie,
+  onChange,
+  peutRepondre,
+  libelleCritere,
+}) {
   const [scenario, setScenario] = useState(saisie?.scenario ?? '');
   const [reponses, setReponses] = useState(() => reponsesInitiales(saisie));
   const [enregistrement, setEnregistrement] = useState(false);
@@ -233,7 +243,14 @@ function SaisieSection({ entrepriseId, auditId, auditCritereId, saisie, onChange
         {questions.map((q) => (
           <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
-              <p className="text-sm font-medium text-ink-900">{q.libelle}</p>
+              {/* Le titre de la page porte déjà le libellé du critère : sur la
+                  grille RSE importée, où la question lui est identique, la
+                  réafficher ici imprimait deux fois la même phrase. */}
+              {memeTexte(q.libelle, libelleCritere) ? (
+                <p className="text-sm font-medium text-ink-900">Votre réponse</p>
+              ) : (
+                <p className="text-sm font-medium text-ink-900">{q.libelle}</p>
+              )}
               <Badge ton={q.statut === 'REPONDU' ? 'vert' : 'neutre'}>{q.statut}</Badge>
             </div>
 
