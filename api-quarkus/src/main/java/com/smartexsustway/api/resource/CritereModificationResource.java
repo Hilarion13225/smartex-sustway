@@ -10,6 +10,7 @@ import com.smartexsustway.api.domain.repository.CritereRepository;
 import com.smartexsustway.api.resource.dto.CritereDto;
 import com.smartexsustway.api.resource.dto.CritereUpdateRequestDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -39,8 +40,10 @@ import java.util.UUID;
 @Authenticated
 public class CritereModificationResource {
 
+
     @Inject CritereRepository critereRepository;
     @Inject CriticiteRepository criticiteRepository;
+    @Inject VersionReferentielService versionService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -53,6 +56,10 @@ public class CritereModificationResource {
         if (critere == null) {
             throw new NotFoundException("Critère introuvable : " + critereId);
         }
+        // C'est ici que se jouait la rétroactivité : modifier un critère
+        // changeait l'énoncé des missions déjà clôturées qui s'y référaient.
+        // Le contenu d'une version publiée n'est plus modifiable.
+        versionService.exigerVersionModifiable(critere.getReferentielVersion());
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
         }

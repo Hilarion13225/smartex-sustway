@@ -17,6 +17,7 @@ import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.ProjetCreateRequest;
 import com.smartexsustway.api.resource.dto.ProjetDto;
 import com.smartexsustway.api.security.AutorisationService;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.tenant.TenantContext;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -47,6 +48,7 @@ import java.util.UUID;
 public class ProjetResource {
 
     @Inject ProjetRepository projetRepository;
+    @Inject VersionReferentielService versionService;
     @Inject ProjetEntrepriseRepository projetEntrepriseRepository;
     @Inject EntrepriseRepository entrepriseRepository;
     @Inject ReferentielRepository referentielRepository;
@@ -86,6 +88,15 @@ public class ProjetResource {
             return erreur(400, "Référentiel inconnu : " + requete.referentielCode());
         }
 
+        // Toutes les missions du projet auditent la même version : résolue une
+        // seule fois, avant la boucle, pour qu'une publication survenant
+        // pendant la création ne coupe pas le projet en deux.
+        var version = versionService.versionPubliee(referentiel.getId()).orElse(null);
+        if (version == null) {
+            return erreur(400, "Le référentiel " + referentiel.getCode()
+                    + " n'a aucune version publiée : aucune mission ne peut s'y appuyer");
+        }
+
         // Les organisations sont résolues avant toute écriture : un identifiant
         // inconnu doit faire échouer le projet entier plutôt que de le créer
         // amputé d'une organisation sans que personne ne s'en aperçoive.
@@ -121,7 +132,7 @@ public class ProjetResource {
                 continue;
             }
 
-            var creee = creationMissionService.creer(entreprise, referentiel,
+            var creee = creationMissionService.creer(entreprise, version,
                     requete.nom(), requete.dateDebut(), requete.dateFin(), requete.description(),
                     abonnement, utilisateurRepository.findById(utilisateurId));
             ligne.setAudit(creee.audit());

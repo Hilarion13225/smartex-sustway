@@ -3,7 +3,7 @@ package com.smartexsustway.api.referentiel;
 import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Entreprise;
-import com.smartexsustway.api.domain.entity.Referentiel;
+import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.enums.TypeApplicabilite;
 import com.smartexsustway.api.domain.repository.CoefficientSecteurRepository;
 import com.smartexsustway.api.domain.repository.CriticiteRepository;
@@ -65,11 +65,15 @@ public class QuestionnaireService {
      * Compose le questionnaire d'une mission : les critères généraux, plus
      * ceux réservés au secteur de l'organisation auditée.
      *
+     * La composition part d'une version précise du référentiel, jamais du
+     * référentiel entier : depuis V47 son contenu appartient à une version, et
+     * plusieurs versions coexistent.
+     *
      * L'ordre du référentiel est conservé — domaine puis code — pour que la
      * saisie suive la structure de la grille et non l'ordre d'assemblage.
      */
-    public List<Critere> composer(Entreprise entreprise, Referentiel referentiel) {
-        List<Critere> generaux = critereRepository.applicables(referentiel, TypeApplicabilite.GENERALE);
+    public List<Critere> composer(Entreprise entreprise, ReferentielVersion version) {
+        List<Critere> generaux = critereRepository.applicables(version, TypeApplicabilite.GENERALE);
 
         if (entreprise.getSecteur() == null) {
             // Sans secteur renseigné, aucun critère sectoriel ne peut être
@@ -84,7 +88,7 @@ public class QuestionnaireService {
         }
 
         List<Critere> sectoriels = critereRepository
-                .applicables(referentiel, TypeApplicabilite.SECTORIELLE).stream()
+                .applicables(version, TypeApplicabilite.SECTORIELLE).stream()
                 .filter(critere -> idsDuSecteur.contains(critere.getId()))
                 .toList();
         if (sectoriels.isEmpty()) {

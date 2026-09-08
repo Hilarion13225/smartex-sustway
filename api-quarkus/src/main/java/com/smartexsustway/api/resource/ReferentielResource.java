@@ -20,6 +20,7 @@ import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.ReferentielCreateRequestDto;
 import com.smartexsustway.api.resource.dto.ReferentielDto;
 import com.smartexsustway.api.resource.dto.ReferentielUpdateRequestDto;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -29,6 +30,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -63,6 +65,7 @@ public class ReferentielResource {
     @Inject CritereRepository critereRepository;
     @Inject DomaineRepository domaineRepository;
     @Inject ReferentielVersionRepository referentielVersionRepository;
+    @Inject VersionReferentielService versionService;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
@@ -78,7 +81,11 @@ public class ReferentielResource {
     public Response criteres(@PathParam("code") String code) {
         Referentiel referentiel = trouverParCode(code);
 
-        var criteres = critereRepository.parReferentiel(referentiel.getId()).stream().map(CritereDto::depuis).toList();
+        // Contenu de la version de travail : brouillon s'il y en a un, sinon
+        // version publiée. Interroger par référentiel renverrait les critères
+        // de toutes ses versions confondues.
+        var version = versionService.versionDeTravail(referentiel);
+        var criteres = critereRepository.parVersion(version.getId()).stream().map(CritereDto::depuis).toList();
         return Response.ok(criteres).build();
     }
 
@@ -112,7 +119,12 @@ public class ReferentielResource {
         // createdAt serait alors nul dans la réponse renvoyée au client.
         referentielRepository.persistAndFlush(referentiel);
 
-        auditLogService.journaliser(tenantContext.utilisateurCourantId(), null,
+        // Un référentiel sans version serait inutilisable : rien ne pourrait
+        // y être ajouté, faute de version pour accueillir le contenu.
+        UUID auteurId = tenantContext.utilisateurCourantId();
+        versionService.creerVersionInitiale(referentiel, utilisateurRepository.findById(auteurId));
+
+        auditLogService.journaliser(auteurId, null,
                 "REFERENTIEL_CREE", "referentiel", referentiel.getId());
 
         return Response.status(Response.Status.CREATED).entity(ReferentielDto.depuis(referentiel)).build();
@@ -154,7 +166,7 @@ public class ReferentielResource {
     }
 
     /**
-     * Historique des publications d'un référentiel.
+     * Versions d'un référentiel, de la plus récente à la plus ancienne.
      *
      * Lecture ouverte comme le reste du catalogue : savoir quand un cadre a
      * évolué intéresse l'auditeur qui l'applique, pas seulement celui qui
@@ -171,19 +183,19 @@ public class ReferentielResource {
     }
 
     /**
-     * Publie une nouvelle version du référentiel.
+     * Ouvre une version brouillon, copie conforme de la version publiée.
      *
-     * La volumétrie est figée ici, à la publication : la relire plus tard
-     * décrirait l'état courant et non celui de la version. Les missions en
-     * cours ne sont pas touchées — leur questionnaire est figé à leur création
-     * (RG34/RG35), publier une version ne rejoue donc rien.
+     * C'est le seul moyen de faire évoluer un référentiel publié : la version
+     * courante reste intacte, et les missions qui l'ont auditée continuent de
+     * lire exactement ce qu'elles ont audité. Le brouillon ne sert aucune
+     * mission tant qu'il n'est pas publié.
      */
     @POST
     @Path("/{code}/versions")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
-    public Response publierVersion(@PathParam("code") String code, @Valid PublierVersionRequestDto requete) {
+    @RolesAllowed("SUPER_ADMIN")
+    public Response ouvrirBrouillon(@PathParam("code") String code, @Valid PublierVersionRequestDto requete) {
         Referentiel referentiel = trouverParCode(code);
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
@@ -194,26 +206,66 @@ public class ReferentielResource {
             return erreur(409, "La version " + numero + " existe déjà pour ce référentiel");
         }
 
-        int domaines = domaineRepository.parReferentiel(referentiel.getId()).size();
-        int criteres = (int) critereRepository.parReferentiel(referentiel.getId()).stream()
-                .filter(Critere::isActif)
-                .count();
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        ReferentielVersion brouillon = versionService.creerBrouillon(
+                referentiel, numero, requete.notes(), utilisateurRepository.findById(utilisateurId));
+
+        auditLogService.journaliser(utilisateurId, null, "REFERENTIEL_VERSION_BROUILLON_OUVERTE",
+                "referentiel", referentiel.getId());
+
+        return Response.status(Response.Status.CREATED)
+                .entity(ReferentielVersionDto.depuis(brouillon, referentiel.getVersion()))
+                .build();
+    }
+
+    /**
+     * Publie un brouillon : il devient la version courante et cesse d'être
+     * modifiable, en base comme par l'API. La version qu'il remplace passe en
+     * archive et reste lisible pour les missions qui l'ont auditée.
+     */
+    @POST
+    @Path("/{code}/versions/{numero}/publication")
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response publierVersion(@PathParam("code") String code, @PathParam("numero") String numero) {
+        Referentiel referentiel = trouverParCode(code);
+        ReferentielVersion version = referentielVersionRepository
+                .parNumero(referentiel.getId(), numero)
+                .orElseThrow(() -> new NotFoundException("Version inconnue : " + numero));
 
         UUID utilisateurId = tenantContext.utilisateurCourantId();
-        var version = new ReferentielVersion(referentiel, numero, requete.notes(), domaines, criteres,
-                utilisateurRepository.findById(utilisateurId));
-        referentielVersionRepository.persist(version);
-
-        // La version courante du référentiel suit la publication : sans cela,
-        // le catalogue continuerait d'annoncer l'ancienne.
-        referentiel.setVersion(numero);
+        versionService.publier(version, utilisateurRepository.findById(utilisateurId));
 
         auditLogService.journaliser(utilisateurId, null, "REFERENTIEL_VERSION_PUBLIEE",
                 "referentiel", referentiel.getId());
 
-        return Response.status(Response.Status.CREATED)
-                .entity(ReferentielVersionDto.depuis(version, referentiel.getVersion()))
-                .build();
+        return Response.ok(ReferentielVersionDto.depuis(version, referentiel.getVersion())).build();
+    }
+
+    /**
+     * Abandonne un brouillon et son contenu.
+     *
+     * Sans danger : un brouillon n'est référencé par aucune mission, seule
+     * une version publiée pouvant en recevoir une. Une version publiée ou
+     * archivée ne se supprime jamais (RG14) — le service refuse, et le
+     * déclencheur de V49 refuserait de même.
+     */
+    @DELETE
+    @Path("/{code}/versions/{numero}")
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response supprimerBrouillon(@PathParam("code") String code, @PathParam("numero") String numero) {
+        Referentiel referentiel = trouverParCode(code);
+        ReferentielVersion version = referentielVersionRepository
+                .parNumero(referentiel.getId(), numero)
+                .orElseThrow(() -> new NotFoundException("Version inconnue : " + numero));
+
+        versionService.supprimerBrouillon(version);
+
+        auditLogService.journaliser(tenantContext.utilisateurCourantId(), null,
+                "REFERENTIEL_VERSION_BROUILLON_SUPPRIMEE", "referentiel", referentiel.getId());
+
+        return Response.noContent().build();
     }
 
     private Referentiel trouverParCode(String code) {

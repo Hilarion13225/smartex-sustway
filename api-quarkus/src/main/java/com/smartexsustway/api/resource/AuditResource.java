@@ -28,6 +28,7 @@ import com.smartexsustway.api.domain.repository.SiteRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.referentiel.QuestionnaireService;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.AffecterAuditeurRequest;
 import com.smartexsustway.api.resource.dto.AuditAuditeurDto;
 import com.smartexsustway.api.resource.dto.AuditCreateRequest;
@@ -123,6 +124,7 @@ public class AuditResource {
     @Inject AuditSiteRepository auditSiteRepository;
     @Inject AuditAuditeurRepository auditAuditeurRepository;
     @Inject QuestionnaireService questionnaireService;
+    @Inject VersionReferentielService versionService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
@@ -329,10 +331,18 @@ public class AuditResource {
         Referentiel referentiel = referentielRepository.parCode(requete.referentielCode())
                 .orElseThrow(() -> new BadRequestException("Référentiel inconnu : " + requete.referentielCode()));
 
+        // Une mission audite une version précise, pas un référentiel « en
+        // général » : c'est ce rattachement qui rend son résultat opposable
+        // quand le catalogue évolue ensuite.
+        var version = versionService.versionPubliee(referentiel.getId())
+                .orElseThrow(() -> new BadRequestException(
+                        "Le référentiel " + referentiel.getCode()
+                                + " n'a aucune version publiée : aucune mission ne peut s'y appuyer"));
+
         // La composition du questionnaire est portée par CreationMissionService,
         // partagé avec la création groupée d'un projet : la dupliquer ferait
         // diverger les deux à la première évolution de RG34/RG35.
-        var creee = creationMissionService.creer(entreprise, referentiel, requete.nom(),
+        var creee = creationMissionService.creer(entreprise, version, requete.nom(),
                 requete.dateDebut(), requete.dateFin(), requete.description(), abonnement,
                 utilisateurRepository.findById(utilisateurId));
 

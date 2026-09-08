@@ -45,6 +45,15 @@ public class Audit {
     @JoinColumn(name = "referentiel_id", nullable = false)
     private Referentiel referentiel;
 
+    /**
+     * Version du référentiel auditée. Figée à la création de la mission et
+     * immuable ensuite : c'est ce qui rend le résultat opposable même si le
+     * catalogue évolue par la suite.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "referentiel_version_id", nullable = false)
+    private ReferentielVersion referentielVersion;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "formule_abonnement_id")
     private FormuleAbonnement formuleAbonnement;
@@ -78,9 +87,12 @@ public class Audit {
         // JPA
     }
 
-    public Audit(Entreprise entreprise, Referentiel referentiel, String nom, LocalDate dateDebut) {
+    public Audit(Entreprise entreprise, ReferentielVersion referentielVersion, String nom, LocalDate dateDebut) {
         this.entreprise = entreprise;
-        this.referentiel = referentiel;
+        this.referentielVersion = referentielVersion;
+        // Le référentiel reste porté en direct : toutes les lectures
+        // existantes passent par lui, et il se déduit de la version.
+        this.referentiel = referentielVersion.getReferentiel();
         this.nom = nom;
         this.dateDebut = dateDebut;
     }
@@ -91,6 +103,10 @@ public class Audit {
 
     public Entreprise getEntreprise() {
         return entreprise;
+    }
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
     }
 
     public Referentiel getReferentiel() {

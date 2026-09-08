@@ -11,11 +11,18 @@ import java.util.UUID;
 @ApplicationScoped
 public class DomaineRepository implements PanacheRepositoryBase<Domaine, UUID> {
 
-    public List<Domaine> parReferentiel(UUID referentielId) {
-        return list("referentiel.id = ?1 order by ordre asc", referentielId);
+    /**
+     * Domaines d'une version donnée.
+     *
+     * Depuis V47 le contenu appartient à une version : interroger par
+     * référentiel seul renverrait les domaines de toutes ses versions
+     * confondues, doublonnés autant de fois qu'il en existe.
+     */
+    public List<Domaine> parVersion(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 order by ordre asc", referentielVersionId);
     }
 
-    public Optional<Domaine> parReferentielEtCode(UUID referentielId, String code) {
-        return find("referentiel.id = ?1 and code = ?2", referentielId, code).firstResultOptional();
+    public Optional<Domaine> parVersionEtCode(UUID referentielVersionId, String code) {
+        return find("referentielVersion.id = ?1 and code = ?2", referentielVersionId, code).firstResultOptional();
     }
 }

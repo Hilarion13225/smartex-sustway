@@ -50,6 +50,15 @@ public class Critere {
     @Column(name = "coefficient_ponderation", nullable = false)
     private BigDecimal coefficientPonderation = BigDecimal.ONE;
 
+
+    /**
+     * Version propriétaire de cette ligne. Une ligne d'une version publiée
+     * n'est plus modifiable : le déclencheur de V49 refuse l'écriture.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "referentiel_version_id", nullable = false)
+    private ReferentielVersion referentielVersion;
+
     @Column(name = "code", nullable = false, length = 30)
     private String code;
 
@@ -77,8 +86,26 @@ public class Critere {
 
     public Critere(Domaine domaine, String code, String libelle) {
         this.domaine = domaine;
+        this.referentielVersion = domaine.getReferentielVersion();
         this.code = code;
         this.libelle = libelle;
+    }
+
+    /**
+     * Réplique ce critère sous le domaine correspondant d'une autre version.
+     * Le sous-domaine est passé à part : sa copie appartient elle aussi à la
+     * version cible, et le rattacher à celui de la version source relierait
+     * deux versions entre elles.
+     */
+    public Critere copieSous(Domaine domaineCible, SousDomaine sousDomaineCible) {
+        Critere copie = new Critere(domaineCible, this.code, this.libelle);
+        copie.sousDomaine = sousDomaineCible;
+        copie.description = this.description;
+        copie.applicabilite = this.applicabilite;
+        copie.criticite = this.criticite;
+        copie.coefficientPonderation = this.coefficientPonderation;
+        copie.actif = this.actif;
+        return copie;
     }
 
     public UUID getId() {
@@ -87,6 +114,10 @@ public class Critere {
 
     public Domaine getDomaine() {
         return domaine;
+    }
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
     }
 
     public SousDomaine getSousDomaine() {

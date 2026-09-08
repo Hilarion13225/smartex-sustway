@@ -11,6 +11,11 @@ import java.util.UUID;
 @ApplicationScoped
 public class SousDomaineRepository implements PanacheRepositoryBase<SousDomaine, UUID> {
 
+    /** Sous-domaines d'une version. Voir DomaineRepository.parVersion pour le pourquoi. */
+    public List<SousDomaine> parVersion(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 order by domaine.ordre, ordre", referentielVersionId);
+    }
+
     public List<SousDomaine> parDomaine(UUID domaineId) {
         return list("domaine.id = ?1 order by ordre", domaineId);
     }

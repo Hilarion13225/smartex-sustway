@@ -32,6 +32,15 @@ public class Question {
     @JoinColumn(name = "critere_id", nullable = false)
     private Critere critere;
 
+
+    /**
+     * Version propriétaire de cette ligne. Une ligne d'une version publiée
+     * n'est plus modifiable : le déclencheur de V49 refuse l'écriture.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "referentiel_version_id", nullable = false)
+    private ReferentielVersion referentielVersion;
+
     @Column(name = "code", nullable = false, length = 30)
     private String code;
 
@@ -60,12 +69,33 @@ public class Question {
         // JPA
     }
 
+    private Question(Critere critere, String code, String libelle) {
+        this.critere = critere;
+        this.referentielVersion = critere.getReferentielVersion();
+        this.code = code;
+        this.libelle = libelle;
+    }
+
+    /** Réplique cette question sous le critère correspondant d'une autre version. */
+    public Question copieSous(Critere critereCible) {
+        Question copie = new Question(critereCible, this.code, this.libelle);
+        copie.type = this.type;
+        copie.ordre = this.ordre;
+        copie.obligatoire = this.obligatoire;
+        copie.echelleReponse = this.echelleReponse;
+        return copie;
+    }
+
     public UUID getId() {
         return id;
     }
 
     public Critere getCritere() {
         return critere;
+    }
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
     }
 
     public String getCode() {

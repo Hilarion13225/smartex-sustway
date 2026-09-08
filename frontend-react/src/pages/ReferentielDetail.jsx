@@ -40,6 +40,7 @@ export default function ReferentielDetail() {
   const [criteres, setCriteres] = useState(null);
   const [secteurs, setSecteurs] = useState([]);
   const [bailleurs, setBailleurs] = useState([]);
+  const [versions, setVersions] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreurGlobale, setErreurGlobale] = useState(null);
   const [afficherFormulaireDomaine, setAfficherFormulaireDomaine] = useState(false);
@@ -54,9 +55,11 @@ export default function ReferentielDetail() {
       api.get(`/api/v1/referentiels/${code}/criteres`),
       api.get('/api/v1/secteurs'),
       api.get('/api/v1/bailleurs'),
+      api.get(`/api/v1/referentiels/${code}/versions`),
     ])
-      .then(([tousLesReferentiels, d, c, s, b]) => {
+      .then(([tousLesReferentiels, d, c, s, b, v]) => {
         setReferentiel(tousLesReferentiels.find((r) => r.code === code) ?? null);
+        setVersions(v);
         setDomaines(d);
         setCriteres(c);
         setSecteurs(s);
@@ -69,6 +72,16 @@ export default function ReferentielDetail() {
   useEffect(() => {
     rafraichir();
   }, [rafraichir]);
+
+  // Version de travail : le brouillon s'il en existe un, sinon la version
+  // publiée — c'est elle que l'API renvoie sur /domaines et /criteres.
+  const versionDeTravail =
+    versions.find((v) => v.statut === 'BROUILLON') ?? versions.find((v) => v.statut === 'PUBLIEE');
+
+  // Le contenu d'une version publiée est figé : l'API le refuse, la base
+  // aussi. Masquer les commandes d'édition évite de proposer un geste qui
+  // ne peut qu'échouer — mais ce n'est pas là que la règle est tenue.
+  const peutModifierContenu = peutAdministrer && versionDeTravail?.modifiable === true;
 
   // Alimente la liste « Derniers consultés » du catalogue, tenue côté
   // navigateur : l'API ne journalise pas les consultations.
@@ -98,13 +111,34 @@ export default function ReferentielDetail() {
 
           {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}
 
+          {peutAdministrer && versionDeTravail ? (
+            <div className="mb-6">
+              <Alerte ton={versionDeTravail.modifiable ? 'ambre' : 'bleu'}>
+                {versionDeTravail.modifiable ? (
+                  <>
+                    Version <strong>{versionDeTravail.numero}</strong> en brouillon : le contenu
+                    ci-dessous se modifie librement et aucune mission ne s’y appuie. Publiez-la
+                    depuis l’onglet Versions pour qu’elle serve les prochaines missions.
+                  </>
+                ) : (
+                  <>
+                    Version <strong>{versionDeTravail.numero}</strong> publiée, donc figée : son
+                    contenu ne se modifie plus, ni ici ni en base. Ouvrez une version brouillon
+                    depuis l’onglet Versions pour faire évoluer ce référentiel — les missions déjà
+                    créées continueront d’auditer la version qu’elles ont reçue.
+                  </>
+                )}
+              </Alerte>
+            </div>
+          ) : null}
+
           <Revele>
             <Card className="mb-6">
               <CardHeader
                 titre="Domaines"
                 sousTitre="Un référentiel se décompose en plusieurs domaines"
                 action={
-                  peutAdministrer ? (
+                  peutModifierContenu ? (
                     <button type="button" className="btn-secondary" onClick={() => setAfficherFormulaireDomaine((v) => !v)}>
                       <PlusCircle className="h-4 w-4" aria-hidden />
                       Nouveau domaine
@@ -113,7 +147,7 @@ export default function ReferentielDetail() {
                 }
               />
               <div className="p-5 pt-0">
-                {afficherFormulaireDomaine && peutAdministrer ? (
+                {afficherFormulaireDomaine && peutModifierContenu ? (
                   <div className="mb-4">
                     <NouveauDomaineFormulaire
                       referentielCode={code}
@@ -128,7 +162,7 @@ export default function ReferentielDetail() {
                 {domaines && domaines.length > 0 ? (
                   <div className="space-y-2">
                     {domaines.map((d) => (
-                      <DomaineRow key={d.id} domaine={d} referentielCode={code} onChange={rafraichir} peutAdministrer={peutAdministrer} />
+                      <DomaineRow key={d.id} domaine={d} referentielCode={code} onChange={rafraichir} peutAdministrer={peutModifierContenu} />
                     ))}
                   </div>
                 ) : (
@@ -144,7 +178,7 @@ export default function ReferentielDetail() {
                 titre="Critères"
                 sousTitre="Chaque critère appartient à un domaine et porte une criticité"
                 action={
-                  peutAdministrer ? (
+                  peutModifierContenu ? (
                     <button
                       type="button"
                       className="btn-secondary"
@@ -158,7 +192,7 @@ export default function ReferentielDetail() {
                 }
               />
               <div className="p-5 pt-0">
-                {afficherFormulaireCritere && peutAdministrer ? (
+                {afficherFormulaireCritere && peutModifierContenu ? (
                   <div className="mb-4">
                     <NouveauCritereFormulaire
                       referentielCode={code}
@@ -174,7 +208,7 @@ export default function ReferentielDetail() {
                 {criteres && criteres.length > 0 ? (
                   <Tableau entetes={['Code', 'Critère', 'Domaine', 'Applicabilité', 'Criticité', 'Statut', '']}>
                     {criteres.map((c) => (
-                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} peutAdministrer={peutAdministrer} />
+                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} peutAdministrer={peutModifierContenu} />
                     ))}
                   </Tableau>
                 ) : (
@@ -196,7 +230,7 @@ export default function ReferentielDetail() {
                 <VoletVersions
                   code={code}
                   peutAdministrer={peutAdministrer}
-                  surPublication={rafraichir}
+                  surChangement={rafraichir}
                 />
               </div>
             </Card>

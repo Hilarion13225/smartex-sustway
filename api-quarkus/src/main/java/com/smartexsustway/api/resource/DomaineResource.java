@@ -9,6 +9,7 @@ import com.smartexsustway.api.resource.dto.DomaineCreateRequestDto;
 import com.smartexsustway.api.resource.dto.DomaineDto;
 import com.smartexsustway.api.resource.dto.DomaineUpdateRequestDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -38,13 +39,18 @@ public class DomaineResource {
 
     @Inject ReferentielRepository referentielRepository;
     @Inject DomaineRepository domaineRepository;
+    @Inject VersionReferentielService versionService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
     @GET
     public Response lister(@PathParam("referentielCode") String referentielCode) {
         Referentiel referentiel = trouverReferentiel(referentielCode);
-        var domaines = domaineRepository.parReferentiel(referentiel.getId()).stream().map(DomaineDto::depuis).toList();
+        // Contenu de la version de travail : brouillon s'il y en a un, sinon
+        // version publiée. Lire par référentiel renverrait les domaines de
+        // toutes les versions confondues.
+        var version = versionService.versionDeTravail(referentiel);
+        var domaines = domaineRepository.parVersion(version.getId()).stream().map(DomaineDto::depuis).toList();
         return Response.ok(domaines).build();
     }
 
@@ -57,11 +63,14 @@ public class DomaineResource {
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
         }
-        if (domaineRepository.parReferentielEtCode(referentiel.getId(), requete.code()).isPresent()) {
-            return erreur(409, "Un domaine avec le code '" + requete.code() + "' existe déjà pour ce référentiel");
+        // L'écriture ne porte que sur un brouillon : ajouter un domaine à
+        // une version publiée changerait ce que des missions ont audité.
+        var brouillon = versionService.brouillonPourEcriture(referentiel);
+        if (domaineRepository.parVersionEtCode(brouillon.getId(), requete.code()).isPresent()) {
+            return erreur(409, "Un domaine avec le code '" + requete.code() + "' existe déjà pour cette version");
         }
 
-        Domaine domaine = new Domaine(referentiel, requete.code(), requete.nom());
+        Domaine domaine = new Domaine(brouillon, requete.code(), requete.nom());
         domaine.setDescription(requete.description());
         if (requete.ordre() != null) {
             domaine.setOrdre(requete.ordre());
@@ -82,8 +91,10 @@ public class DomaineResource {
     public Response modifier(@PathParam("referentielCode") String referentielCode,
                               @PathParam("domaineCode") String domaineCode, DomaineUpdateRequestDto requete) {
         Referentiel referentiel = trouverReferentiel(referentielCode);
-        Domaine domaine = domaineRepository.parReferentielEtCode(referentiel.getId(), domaineCode)
+        Domaine domaine = domaineRepository
+                .parVersionEtCode(versionService.versionDeTravail(referentiel).getId(), domaineCode)
                 .orElseThrow(() -> new NotFoundException("Domaine inconnu : " + domaineCode));
+        versionService.exigerVersionModifiable(domaine.getReferentielVersion());
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
         }

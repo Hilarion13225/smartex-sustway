@@ -31,6 +31,15 @@ public class SousDomaine {
     @JoinColumn(name = "domaine_id", nullable = false)
     private Domaine domaine;
 
+
+    /**
+     * Version propriétaire de cette ligne. Une ligne d'une version publiée
+     * n'est plus modifiable : le déclencheur de V49 refuse l'écriture.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "referentiel_version_id", nullable = false)
+    private ReferentielVersion referentielVersion;
+
     @Column(name = "code", nullable = false, length = 30)
     private String code;
 
@@ -49,13 +58,25 @@ public class SousDomaine {
 
     public SousDomaine(Domaine domaine, String code, String nom, int ordre) {
         this.domaine = domaine;
+        this.referentielVersion = domaine.getReferentielVersion();
         this.code = code;
         this.nom = nom;
         this.ordre = ordre;
     }
 
+    /** Réplique ce sous-domaine sous le domaine correspondant d'une autre version. */
+    public SousDomaine copieSous(Domaine domaineCible) {
+        SousDomaine copie = new SousDomaine(domaineCible, this.code, this.nom, this.ordre);
+        copie.description = this.description;
+        return copie;
+    }
+
     public UUID getId() {
         return id;
+    }
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
     }
 
     public Domaine getDomaine() {

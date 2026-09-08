@@ -1,7 +1,7 @@
 package com.smartexsustway.api.domain.repository;
 
 import com.smartexsustway.api.domain.entity.Critere;
-import com.smartexsustway.api.domain.entity.Referentiel;
+import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.enums.TypeApplicabilite;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -14,14 +14,13 @@ import java.util.UUID;
 public class CritereRepository implements PanacheRepositoryBase<Critere, UUID> {
 
     /**
-     * RG14 (back-office, module 4) : renvoie aussi les critères désactivés
-     * — un SUPER_ADMIN doit pouvoir les retrouver pour les réactiver. Seul
-     * consommateur de cette méthode : ReferentielResource.criteres(), pas
-     * la composition de questionnaire (voir {@link #applicables}, qui
-     * filtre bien sur actif=true).
+     * Critères d'une version, désactivés compris — RG14 (back-office,
+     * module 4) : un SUPER_ADMIN doit pouvoir les retrouver pour les
+     * réactiver. Ce n'est pas cette méthode qui compose un questionnaire,
+     * voir {@link #applicables}, qui filtre bien sur actif=true.
      */
-    public List<Critere> parReferentiel(UUID referentielId) {
-        return list("domaine.referentiel.id = ?1 order by domaine.ordre, code", referentielId);
+    public List<Critere> parVersion(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 order by domaine.ordre, code", referentielVersionId);
     }
 
     /** Le code d'un critère est unique par domaine (contrainte {@code critere_domaine_id_code_key}). */
@@ -33,8 +32,8 @@ public class CritereRepository implements PanacheRepositoryBase<Critere, UUID> {
      * RG34 — composition dynamique du questionnaire. Voir QuestionnaireService
      * pour le contexte complet (secteur non encore pris en compte, phase F).
      */
-    public List<Critere> applicables(Referentiel referentiel, TypeApplicabilite applicabilite) {
-        return list("domaine.referentiel = ?1 and actif = true and applicabilite = ?2 order by domaine.ordre, code",
-                referentiel, applicabilite);
+    public List<Critere> applicables(ReferentielVersion version, TypeApplicabilite applicabilite) {
+        return list("referentielVersion = ?1 and actif = true and applicabilite = ?2 order by domaine.ordre, code",
+                version, applicabilite);
     }
 }

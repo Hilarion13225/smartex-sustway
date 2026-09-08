@@ -27,6 +27,15 @@ public class Domaine {
     @JoinColumn(name = "referentiel_id", nullable = false)
     private Referentiel referentiel;
 
+
+    /**
+     * Version propriétaire de cette ligne. Une ligne d'une version publiée
+     * n'est plus modifiable : le déclencheur de V49 refuse l'écriture.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "referentiel_version_id", nullable = false)
+    private ReferentielVersion referentielVersion;
+
     @Column(name = "code", nullable = false, length = 30)
     private String code;
 
@@ -43,10 +52,19 @@ public class Domaine {
         // JPA
     }
 
-    public Domaine(Referentiel referentiel, String code, String nom) {
-        this.referentiel = referentiel;
+    public Domaine(ReferentielVersion referentielVersion, String code, String nom) {
+        this.referentielVersion = referentielVersion;
+        this.referentiel = referentielVersion.getReferentiel();
         this.code = code;
         this.nom = nom;
+    }
+
+    /** Réplique ce domaine dans une autre version, à l'identique. */
+    public Domaine copiePour(ReferentielVersion cible) {
+        Domaine copie = new Domaine(cible, this.code, this.nom);
+        copie.description = this.description;
+        copie.ordre = this.ordre;
+        return copie;
     }
 
     public UUID getId() {
@@ -56,6 +74,11 @@ public class Domaine {
     public Referentiel getReferentiel() {
         return referentiel;
     }
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
+    }
+
 
     public String getCode() {
         return code;

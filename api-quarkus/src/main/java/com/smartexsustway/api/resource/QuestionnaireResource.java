@@ -5,6 +5,7 @@ import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
 import com.smartexsustway.api.domain.repository.ReferentielRepository;
 import com.smartexsustway.api.referentiel.QuestionnaireService;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.CritereDto;
 import com.smartexsustway.api.resource.dto.QuestionnaireDto;
 import com.smartexsustway.api.security.AutorisationService;
@@ -38,6 +39,7 @@ public class QuestionnaireResource {
     @Inject EntrepriseRepository entrepriseRepository;
     @Inject ReferentielRepository referentielRepository;
     @Inject QuestionnaireService questionnaireService;
+    @Inject VersionReferentielService versionService;
     @Inject AutorisationService autorisationService;
     @Inject TenantContext tenantContext;
 
@@ -57,7 +59,12 @@ public class QuestionnaireResource {
         Referentiel referentiel = referentielRepository.parCode(referentielCode)
                 .orElseThrow(() -> new BadRequestException("Référentiel inconnu : " + referentielCode));
 
-        var criteres = questionnaireService.composer(entreprise, referentiel).stream().map(CritereDto::depuis).toList();
+        // Aperçu du questionnaire que produirait une mission créée maintenant :
+        // il part donc de la version publiée, celle qu'une mission recevrait.
+        var version = versionService.versionPubliee(referentiel.getId())
+                .orElseThrow(() -> new BadRequestException(
+                        "Le référentiel " + referentiel.getCode() + " n'a aucune version publiée"));
+        var criteres = questionnaireService.composer(entreprise, version).stream().map(CritereDto::depuis).toList();
         return Response.ok(new QuestionnaireDto(referentiel.getCode(), criteres.size(), criteres)).build();
     }
 }

@@ -14,6 +14,7 @@ import com.smartexsustway.api.domain.repository.ReferentielRepository;
 import com.smartexsustway.api.resource.dto.CritereCreateRequestDto;
 import com.smartexsustway.api.resource.dto.CritereDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -43,6 +44,7 @@ public class CritereCreationResource {
     @Inject DomaineRepository domaineRepository;
     @Inject CritereRepository critereRepository;
     @Inject CriticiteRepository criticiteRepository;
+    @Inject VersionReferentielService versionService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -54,7 +56,10 @@ public class CritereCreationResource {
                            @PathParam("domaineCode") String domaineCode, CritereCreateRequestDto requete) {
         Referentiel referentiel = referentielRepository.parCode(referentielCode)
                 .orElseThrow(() -> new NotFoundException("Référentiel inconnu : " + referentielCode));
-        Domaine domaine = domaineRepository.parReferentielEtCode(referentiel.getId(), domaineCode)
+        // Un critère se crée dans le brouillon, jamais dans une version
+        // publiée : celle-ci sert des missions dont le questionnaire est figé.
+        var brouillon = versionService.brouillonPourEcriture(referentiel);
+        Domaine domaine = domaineRepository.parVersionEtCode(brouillon.getId(), domaineCode)
                 .orElseThrow(() -> new NotFoundException("Domaine inconnu : " + domaineCode));
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");

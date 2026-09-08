@@ -8,7 +8,7 @@ import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.Question;
-import com.smartexsustway.api.domain.entity.Referentiel;
+import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
@@ -49,15 +49,19 @@ public class CreationMissionService {
      * profil de l'entreprise, puis figé dans la mission — la faire évoluer
      * ensuite ne doit rien réécrire.
      *
+     * La version du référentiel est figée avec la mission : ce qu'elle a
+     * audité reste déterminé même si le catalogue publie une version
+     * suivante, et le contenu de cette version est immuable (V49).
+     *
      * RG37 : la criticité et le coefficient de pondération de chaque critère
      * sont résolus pour le secteur de l'entreprise auditée avant d'être
      * gelés — un critère peut compter davantage dans la note d'une mine que
      * dans celle d'une société de services.
      */
-    public MissionCreee creer(Entreprise entreprise, Referentiel referentiel, String nom,
+    public MissionCreee creer(Entreprise entreprise, ReferentielVersion version, String nom,
                               LocalDate dateDebut, LocalDate dateFin, String description,
                               Abonnement abonnement, Utilisateur auteur) {
-        Audit audit = new Audit(entreprise, referentiel, nom, dateDebut);
+        Audit audit = new Audit(entreprise, version, nom, dateDebut);
         audit.setDescription(description);
         audit.setDateFin(dateFin);
         if (abonnement != null) {
@@ -66,7 +70,7 @@ public class CreationMissionService {
         audit.setCreatedBy(auteur);
         auditRepository.persist(audit);
 
-        List<Critere> criteres = questionnaireService.composer(entreprise, referentiel);
+        List<Critere> criteres = questionnaireService.composer(entreprise, version);
         for (Critere critere : criteres) {
             Criticite criticiteEffective = questionnaireService.criticiteEffective(critere, entreprise);
             BigDecimal coefficientEffectif = questionnaireService.coefficientEffectif(critere, entreprise);
