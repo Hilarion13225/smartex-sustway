@@ -67,7 +67,8 @@ public final class UtilisateurDeTest {
     }
 
     /**
-     * Compte de test rattaché à un rôle donné (SUPER_ADMIN, ADMIN_AUDIT...)
+     * Compte de test rattaché à un rôle donné (SUPER_ADMIN, COLLABORATEUR...)
+     * — seuls les rôles actifs sont attribuables depuis V44.
      * sur une entreprise support. Comme il n'existe
      * aucun endpoint pour attribuer un rôle (voir CDC, TODO phase F), le
      * rattachement est posé directement en base — même contournement que

@@ -307,9 +307,11 @@ class AuditResourceTest {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe");
         var interne = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(interne.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+        rattacher(interne.id, ctx.entrepriseId(), "SUPER_ADMIN");
+        // Rôle client actif depuis V44 : VISITEUR est désactivé et la base
+        // refuse désormais de l'attribuer.
         var visiteur = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(visiteur.id, ctx.entrepriseId(), "VISITEUR");
+        rattacher(visiteur.id, ctx.entrepriseId(), "COLLABORATEUR");
 
         given()
                 .header("Authorization", "Bearer " + interne.token)
@@ -329,7 +331,7 @@ class AuditResourceTest {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe 4");
         var expert = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(expert.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+        rattacher(expert.id, ctx.entrepriseId(), "SUPER_ADMIN");
 
         given()
                 .header("Authorization", "Bearer " + ctx.token())
@@ -345,7 +347,7 @@ class AuditResourceTest {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe 2");
         var expert = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(expert.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+        rattacher(expert.id, ctx.entrepriseId(), "SUPER_ADMIN");
 
         given()
                 .header("Authorization", "Bearer " + expert.token)
@@ -383,7 +385,7 @@ class AuditResourceTest {
         var ctx = creerEntrepriseAvecAbonnementActif();
         String auditId = creerAudit(ctx, "Audit Équipe 3");
         var admin = UtilisateurDeTest.creerEtConnecter(jwtService);
-        rattacher(admin.id, ctx.entrepriseId(), "ADMIN_AUDIT");
+        rattacher(admin.id, ctx.entrepriseId(), "SUPER_ADMIN");
 
         given()
                 .header("Authorization", "Bearer " + admin.token)

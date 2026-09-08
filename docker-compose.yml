@@ -110,7 +110,17 @@ services:
       # le palier gratuit et la marche à suivre pour obtenir une clé.
       SMARTEX_GEMINI_API_KEY: ${SMARTEX_GEMINI_API_KEY:-}
     ports:
-      - "8000:8000"
+      # Loopback uniquement, et non "8000:8000" : le service n'authentifie
+      # aucun appelant, et le publier sur toutes les interfaces le rendait
+      # joignable depuis le réseau — n'importe qui pouvait donc déclencher le
+      # pipeline et consommer le quota du modèle.
+      #
+      # L'API Java ne passe pas par ce port : elle joint le service sur le
+      # réseau Docker interne (SMARTEX_IA_SERVICE_URL vaut
+      # http://services-ia-python:8000). La publication ne sert qu'au mode
+      # dev Java hors conteneur, qui vise localhost:8000 par défaut — d'où la
+      # loopback plutôt qu'une suppression pure et simple.
+      - "127.0.0.1:8000:8000"
     depends_on:
       postgres:
         condition: service_healthy

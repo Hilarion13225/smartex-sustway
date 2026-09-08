@@ -46,16 +46,23 @@ export const PERMISSIONS_PAR_ROLE = {
     'membres:gerer',
     'audit:creer',
     'audit:modifier',
+    'audit:cloturer',
+    'analyse:executer',
     'preuve:deposer',
     'referentiel:administrer',
     'rapport:consulter',
     'rapport:detaille',
     'bailleur:consulter',
   ],
+  // Rôle désactivé en base depuis V44, conservé ici tant que d'anciens
+  // jetons peuvent encore le porter : un jeton émis avant la bascule reste
+  // valable jusqu'à son expiration.
   ADMIN_AUDIT: [
     'entreprise:modifier',
     'audit:creer',
     'audit:modifier',
+    'audit:cloturer',
+    'analyse:executer',
     'preuve:deposer',
     // Le responsable audit pilote le dispositif : choisir les cadres
     // d'évaluation et les faire évoluer relève de son métier, non de
@@ -70,10 +77,20 @@ export const PERMISSIONS_PAR_ROLE = {
     'entreprise:modifier',
     'audit:creer',
     'audit:modifier',
+    // Il lance l'analyse de ses propres missions et les clôture : deux
+    // capacités distinctes, l'isolation par entreprise bornant le périmètre.
+    'audit:cloturer',
+    'analyse:executer',
     'preuve:deposer',
     'rapport:consulter',
     'bailleur:consulter',
   ],
+  // Le collaborateur fournit la matière — réponses et pièces — sans jamais
+  // déclencher l'évaluation ni figer une mission. Ni analyse:executer ni
+  // audit:cloturer, ce que l'API refuse également (V42).
+  COLLABORATEUR: ['preuve:deposer', 'rapport:consulter'],
+  // Rôles désactivés en base depuis V44, conservés pour les jetons en cours.
+  EMPLOYE: ['preuve:deposer', 'rapport:consulter'],
   VISITEUR: ['rapport:consulter'],
 };
 

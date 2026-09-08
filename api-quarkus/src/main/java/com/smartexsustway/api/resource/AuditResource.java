@@ -95,6 +95,15 @@ public class AuditResource {
     @Inject ReferentielRepository referentielRepository;
     @Inject AbonnementRepository abonnementRepository;
     @Inject AuditRepository auditRepository;
+    /**
+     * Figer le résultat d'une mission. Distincte de `analyse:executer` : on
+     * peut vouloir relancer une analyse sans pour autant clôturer, et
+     * clôturer sans en avoir soi-même lancé une.
+     */
+    private static final String PERMISSION_CLOTURE = "audit:cloturer";
+    /** Exécuter le pipeline — la clôture en déclenche une passe complète. */
+    private static final String PERMISSION_ANALYSE = "analyse:executer";
+
     @Inject CreationMissionService creationMissionService;
     @Inject ClotureMissionService clotureMissionService;
     @Inject ManagedExecutor executeur;
@@ -130,8 +139,13 @@ public class AuditResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId,
-                AutorisationService.ROLES_INTERNES_SMARTEX);
+        // Deux capacités distinctes, et non un rôle interne : clôturer fige le
+        // résultat, exécuter l'analyse engage un coût. Le responsable
+        // d'entreprise clôture ses propres missions — l'isolation par
+        // entreprise, vérifiée juste au-dessus, borne le périmètre.
+        String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_CLOTURE);
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_ANALYSE);
 
         if (audit.getStatut() == StatutAudit.TERMINE) {
             return erreur(409, "Cette mission est déjà clôturée");
@@ -350,7 +364,7 @@ public class AuditResource {
                         && AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
         if (!staffRattache) {
             return erreur(400, "Cet utilisateur doit être rattaché à l'entreprise avec un rôle interne Smartex "
-                    + "(SUPER_ADMIN, ADMIN_AUDIT) pour être affecté à une mission");
+                    + "(SUPER_ADMIN) pour être affecté à une mission");
         }
 
         auditAuditeurRepository.affecter(audit.getId(), auditeurId, roleMission.name());

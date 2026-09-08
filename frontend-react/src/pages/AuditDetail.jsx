@@ -160,6 +160,11 @@ export default function AuditDetail() {
   const rafraichirSilencieux = useCallback(() => rafraichir(true), [rafraichir]);
 
   const peutModifier = peut('audit:modifier', audit?.formuleCode);
+  // Trois capacités distinctes depuis V42 : modifier une mission, exécuter
+  // le pipeline, clôturer. Le collaborateur n'a aucune des deux dernières,
+  // et l'API le refuse aussi — ce masquage n'est qu'une commodité.
+  const peutAnalyser = peut('analyse:executer', audit?.formuleCode);
+  const peutCloturer = peut('audit:cloturer', audit?.formuleCode);
 
   // Le responsable audit supervise, il ne remplit pas le questionnaire :
   // déclarer un niveau et déposer une preuve appartiennent à l'organisation
@@ -270,7 +275,7 @@ export default function AuditDetail() {
 
                 {/* La clôture appartient à la supervision : c'est elle qui
                     déclenche l'analyse et fige le score. */}
-                {ROLES_INTERNES_SMARTEX.has(roleCourant) ? (
+                {peutCloturer ? (
                   <div className="lg:max-w-xl">
                     <ClotureMission
                       entrepriseId={entrepriseId}
@@ -341,7 +346,7 @@ export default function AuditDetail() {
                 auditId={auditId}
                 criteres={criteres ?? []}
                 peutSaisir={peutSaisirLesCriteres}
-                peutAnalyser={peutModifier}
+                peutAnalyser={peutAnalyser}
                 surChangement={rafraichirSilencieux}
               />
             ) : null}

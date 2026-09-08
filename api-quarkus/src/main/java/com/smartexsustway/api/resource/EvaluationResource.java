@@ -41,6 +41,12 @@ import java.util.UUID;
 @Authenticated
 public class EvaluationResource {
 
+    /**
+     * Exécuter le pipeline d'agents. Distincte de `preuve:deposer` : le
+     * collaborateur fournit la matière, il ne déclenche pas l'évaluation.
+     */
+    private static final String PERMISSION_ANALYSE = "analyse:executer";
+
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject EvaluationRepository evaluationRepository;
@@ -70,10 +76,13 @@ public class EvaluationResource {
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
 
         Audit audit = trouverAudit(entrepriseId, auditId);
-        // Même permission que le dépôt de preuve/questionnaire (ReponseQuestionResource) :
-        // lancer l'évaluation est la suite naturelle de la collecte, pas une action distincte.
+        // Permission dédiée, et non `preuve:deposer` comme auparavant :
+        // déposer une pièce est le travail quotidien d'un collaborateur,
+        // déclencher le pipeline engage un coût et écrit des résultats dans
+        // la mission. Partager la même permission laissait un collaborateur
+        // lancer une analyse par simple appel d'URL.
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
-        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_ANALYSE);
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         var resultat = analyseCritereService.analyser(audit, auditCritere);

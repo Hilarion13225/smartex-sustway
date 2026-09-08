@@ -1,6 +1,9 @@
 package com.smartexsustway.api.domain.entity;
 
+import com.smartexsustway.api.domain.enums.StatutGenerique;
 import jakarta.persistence.Column;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -40,6 +45,16 @@ public class Role {
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
+    /**
+     * Un rôle désactivé (V44 : ADMIN_AUDIT, EMPLOYE, VISITEUR) reste en base
+     * pour l'historique mais ne peut plus être attribué — un déclencheur le
+     * refuse aussi côté base, sur les rattachements comme sur les invitations.
+     */
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "statut", nullable = false)
+    private StatutGenerique statut = StatutGenerique.ACTIF;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "role_permission",
@@ -47,6 +62,10 @@ public class Role {
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<Permission> permissions = new HashSet<>();
+
+    public StatutGenerique getStatut() {
+        return statut;
+    }
 
     protected Role() {
         // JPA

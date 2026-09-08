@@ -19,9 +19,15 @@ public class RoleResource {
     @Inject
     RoleRepository roleRepository;
 
+    /**
+     * Rôles attribuables. Les rôles désactivés (ADMIN_AUDIT, EMPLOYE,
+     * VISITEUR depuis V44) restent en base pour l'historique mais ne sont
+     * plus proposés : les lister reviendrait à offrir un choix que la base
+     * refuse ensuite.
+     */
     @GET
     public Response lister() {
-        var roles = roleRepository.listAll().stream().map(RoleDto::depuis).toList();
+        var roles = roleRepository.actifs().stream().map(RoleDto::depuis).toList();
         return Response.ok(roles).build();
     }
 }
