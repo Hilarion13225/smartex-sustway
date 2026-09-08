@@ -55,6 +55,8 @@ public class AnalyseCritereService {
     private static final String FORMULE_AVANCEES = "AVANCEES";
     /** Reflète AuditCritere.statut (voir AuditCritere.java). */
     public static final String STATUT_EVALUE = "EVALUE";
+    /** Renseigné par l'organisation, en attente d'analyse. Posé à la saisie du questionnaire. */
+    public static final String STATUT_DECLARE = "DECLARE";
 
     @Inject PreuveRepository preuveRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;

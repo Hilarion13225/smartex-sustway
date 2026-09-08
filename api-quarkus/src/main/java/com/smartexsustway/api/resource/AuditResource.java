@@ -32,9 +32,10 @@ import com.smartexsustway.api.resource.dto.AffecterAuditeurRequest;
 import com.smartexsustway.api.resource.dto.AuditAuditeurDto;
 import com.smartexsustway.api.resource.dto.AuditCreateRequest;
 import com.smartexsustway.api.resource.dto.AuditCritereDto;
+import com.smartexsustway.api.mission.AnalyseMissionService;
 import com.smartexsustway.api.mission.ClotureMissionService;
 import com.smartexsustway.api.mission.CreationMissionService;
-import org.eclipse.microprofile.context.ManagedExecutor;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
@@ -101,10 +102,16 @@ public class AuditResource {
      * clôturer sans en avoir soi-même lancé une.
      */
     private static final String PERMISSION_CLOTURE = "audit:cloturer";
+    /**
+     * Faire travailler les agents IA. Seule cette permission ouvre un appel au
+     * modèle, quel que soit le chemin emprunté — critère par critère
+     * (EvaluationResource) ou mission entière (ci-dessous).
+     */
+    private static final String PERMISSION_ANALYSE = "analyse:executer";
 
     @Inject CreationMissionService creationMissionService;
+    @Inject AnalyseMissionService analyseMissionService;
     @Inject ClotureMissionService clotureMissionService;
-    @Inject ManagedExecutor executeur;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject AuditScoreService auditScoreService;
     @Inject AuditQuestionRepository auditQuestionRepository;
@@ -121,15 +128,77 @@ public class AuditResource {
     @Inject TenantContext tenantContext;
 
     /**
-     * Clôt la mission : lance la passe d'analyse IA sur tous ses critères,
-     * puis fige le résultat.
+     * Lance la passe d'analyse IA sur tous les critères de la mission.
      *
      * Les déclarations et les preuves s'accumulent pendant la mission sans
-     * produire de note ; c'est ici que l'ensemble est confronté aux agents et
-     * que le score devient définitif. La passe s'exécute en arrière-plan — un
-     * questionnaire complet demande autant d'appels au pipeline qu'il compte
-     * de critères — d'où le 202 et le suivi d'avancement.
+     * produire de note ; c'est ici que l'ensemble est confronté aux agents.
+     * La passe s'exécute en arrière-plan — un questionnaire complet demande
+     * autant d'appels au pipeline qu'il compte de critères — d'où le 202 et le
+     * suivi d'avancement.
+     *
+     * Opération explicite et rejouable : elle ne clôture rien. On peut
+     * relancer une analyse autant de fois que nécessaire, et décider ensuite,
+     * au vu des résultats, de figer la mission ou de retravailler.
      */
+    @POST
+    @Path("/{auditId}/analyse")
+    public Response lancerAnalyse(@PathParam("entrepriseId") UUID entrepriseId,
+                                  @PathParam("auditId") UUID auditId) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        // Seule `analyse:executer` ouvre un appel au modèle. Ce contrôle est
+        // fait avant toute préparation, pour qu'un refus ne consomme rien.
+        String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
+        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_ANALYSE);
+
+        if (audit.getStatut() == StatutAudit.TERMINE) {
+            return erreur(409, "Cette mission est clôturée : son résultat est figé");
+        }
+        if (analyseMissionService.enCours(auditId)) {
+            return erreur(409, "Une analyse est déjà en cours sur cette mission");
+        }
+
+        int total = analyseMissionService.criteresAAnalyser(auditId).size();
+        var avancement = analyseMissionService.preparer(auditId, total);
+        // Pool de travail brut, et non ManagedExecutor : ce dernier propage
+        // le contexte de la requête HTTP, dont la session de persistance se
+        // ferme dès la réponse envoyée. La passe ouvre ses propres
+        // transactions (voir AnalyseTransactionnelle) et n'a rien à hériter.
+        Infrastructure.getDefaultWorkerPool().execute(() -> analyseMissionService.executer(auditId));
+
+        auditLogService.journaliser(utilisateurId, entrepriseId, "MISSION_ANALYSE_LANCEE", "audit", auditId);
+
+        return Response.status(Response.Status.ACCEPTED).entity(avancement).build();
+    }
+
+    /** Avancement de la passe d'analyse, tant que le serveur n'a pas redémarré. */
+    @GET
+    @Path("/{auditId}/analyse")
+    public Response avancementAnalyse(@PathParam("entrepriseId") UUID entrepriseId,
+                                      @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        trouverAuditDeLEntreprise(entrepriseId, auditId);
+
+        var avancement = analyseMissionService.avancement(auditId);
+        if (avancement == null) {
+            return Response.noContent().build();
+        }
+        return Response.ok(avancement).build();
+    }
+
+    /**
+     * Clôt la mission : fige son résultat.
+     *
+     * Ne déclenche aucune analyse. La clôture constate que le travail attendu
+     * est fait — plus aucun critère renseigné en attente d'analyse — et passe
+     * la mission en TERMINE. Si l'analyse reste à faire, elle est refusée avec
+     * le motif : c'est à quelqu'un détenant `analyse:executer` de la lancer.
+     */
+    // Transactionnel de bout en bout : la vérification des conditions et le
+    // changement de statut doivent lire le même état, et la réponse doit
+    // refléter la mission telle qu'elle vient d'être écrite.
+    @Transactional
     @POST
     @Path("/{auditId}/cloture")
     public Response cloturer(@PathParam("entrepriseId") UUID entrepriseId,
@@ -137,10 +206,9 @@ public class AuditResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        // Une seule capacité est exigée ici : clôturer. Elle ne suppose pas
-        // `analyse:executer`, que la clôture déclenche pourtant — les deux
-        // permissions restent strictement séparées, chacune couvrant une
-        // action métier et une seule.
+        // Une seule capacité est exigée ici, et elle suffit : clôturer
+        // n'appelle plus le modèle, donc n'a aucune raison d'exiger
+        // `analyse:executer`.
         //
         // Le responsable d'entreprise clôture ses propres missions ;
         // l'isolation par entreprise, vérifiée juste au-dessus, borne le
@@ -148,35 +216,34 @@ public class AuditResource {
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_CLOTURE);
 
-        if (audit.getStatut() == StatutAudit.TERMINE) {
-            return erreur(409, "Cette mission est déjà clôturée");
-        }
-        if (clotureMissionService.enCours(auditId)) {
-            return erreur(409, "Une clôture est déjà en cours sur cette mission");
+        var obstacle = clotureMissionService.obstacleACloture(auditId);
+        if (obstacle.isPresent()) {
+            return erreur(409, obstacle.get());
         }
 
-        int total = clotureMissionService.criteresAAnalyser(auditId).size();
-        var avancement = clotureMissionService.preparer(auditId, total);
-        executeur.execute(() -> clotureMissionService.executer(auditId));
+        clotureMissionService.cloturer(auditId);
+        auditLogService.journaliser(utilisateurId, entrepriseId, "MISSION_CLOTUREE", "audit", auditId);
 
-        auditLogService.journaliser(utilisateurId, entrepriseId, "MISSION_CLOTURE_LANCEE", "audit", auditId);
-
-        return Response.status(Response.Status.ACCEPTED).entity(avancement).build();
+        return Response.ok(AuditDto.depuis(audit, auditCritereRepository.parAudit(auditId).size())).build();
     }
 
-    /** Avancement de la passe de clôture, tant que le serveur n'a pas redémarré. */
+    /**
+     * Ce qui empêche encore de clôturer, s'il y a lieu. L'écran s'en sert pour
+     * dire quoi faire avant de proposer le bouton.
+     */
     @GET
     @Path("/{auditId}/cloture")
-    public Response avancementCloture(@PathParam("entrepriseId") UUID entrepriseId,
+    public Response conditionsCloture(@PathParam("entrepriseId") UUID entrepriseId,
                                       @PathParam("auditId") UUID auditId) {
         autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
         trouverAuditDeLEntreprise(entrepriseId, auditId);
 
-        var avancement = clotureMissionService.avancement(auditId);
-        if (avancement == null) {
-            return Response.noContent().build();
-        }
-        return Response.ok(avancement).build();
+        var obstacle = clotureMissionService.obstacleACloture(auditId);
+        return Response.ok(java.util.Map.of(
+                "cloturable", obstacle.isEmpty(),
+                "motif", obstacle.orElse(""),
+                "criteresEnAttenteDAnalyse", analyseMissionService.criteresEnAttenteDAnalyse(auditId).size()
+        )).build();
     }
 
     @GET

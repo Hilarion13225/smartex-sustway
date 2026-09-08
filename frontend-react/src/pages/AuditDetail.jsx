@@ -273,9 +273,10 @@ export default function AuditDetail() {
                   criteresEvalues={score?.nombreCriteresEvalues ?? 0}
                 />
 
-                {/* La clôture appartient à la supervision : c'est elle qui
-                    déclenche l'analyse et fige le score. */}
-                {peutCloturer ? (
+                {/* Fin de mission en deux gestes séparés : analyser fait
+                    travailler les agents, clôturer fige le score. Chaque bloc
+                    n'apparaît qu'à qui détient la permission correspondante. */}
+                {peutAnalyser || peutCloturer ? (
                   <div className="lg:max-w-xl">
                     <ClotureMission
                       entrepriseId={entrepriseId}
@@ -283,6 +284,8 @@ export default function AuditDetail() {
                       statut={audit.statut}
                       renseignes={(criteres ?? []).filter(estRenseigne).length}
                       total={(criteres ?? []).length}
+                      peutAnalyser={peutAnalyser}
+                      peutCloturer={peutCloturer}
                       surTermine={rafraichirSilencieux}
                     />
                   </div>

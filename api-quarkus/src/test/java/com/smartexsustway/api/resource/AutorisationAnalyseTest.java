@@ -240,23 +240,21 @@ class AutorisationAnalyseTest {
     }
 
     /**
-     * Clôture réellement lancée, sur une mission dédiée : elle traverse ses
-     * critères sans rien trouver à analyser, ne consomme aucun appel au
-     * modèle, et prouve que le responsable d'entreprise franchit désormais
-     * un contrôle qui lui était fermé.
+     * Clôture réellement effectuée, sur une mission dédiée : elle prouve que
+     * le responsable d'entreprise franchit un contrôle qui lui était fermé.
      */
     @Test
     void responsableEntreprise_peutCloturerSaPropreMission() {
-        // Mission dédiée : la clôture est réellement lancée, et laisser la
-        // mission de référence changer d'état perturberait les autres tests.
-        // Elle traverse ses critères sans rien trouver à analyser, donc sans
-        // consommer d'appel au modèle.
+        // Mission dédiée : la clôture change réellement l'état, et laisser la
+        // mission de référence passer en TERMINE perturberait les autres
+        // tests. Aucun critère n'y est renseigné, donc rien n'attend d'être
+        // analysé et la règle métier de clôture est satisfaite.
         Mission dediee = construireMission();
 
         // Le créateur d'une entreprise en devient RESPONSABLE_ENTREPRISE
         // (voir EntrepriseResource) : c'est bien ce rôle qui clôture ici,
         // sur une capacité qui lui était fermée avant cette phase.
-        cloturer(dediee.tokenProprietaire(), dediee).statusCode(202);
+        cloturer(dediee.tokenProprietaire(), dediee).statusCode(200);
     }
 
     /**
@@ -282,7 +280,7 @@ class AutorisationAnalyseTest {
                 .then().statusCode(200)
                 .extract().path("token");
 
-        cloturer(jeton, dediee).statusCode(202);
+        cloturer(jeton, dediee).statusCode(200);
     }
 
     /**

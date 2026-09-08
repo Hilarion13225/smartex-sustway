@@ -5,6 +5,7 @@ import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.AuditQuestion;
 import com.smartexsustway.api.domain.entity.ReponseQuestion;
+import com.smartexsustway.api.mission.AnalyseCritereService;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
@@ -51,7 +52,12 @@ public class ReponseQuestionResource {
     private static final String STATUT_A_REPONDRE = "A_REPONDRE";
     /** Statuts d'AuditCritere (voir EvaluationResource) : la déclaration précède l'analyse. */
     private static final String STATUT_A_EVALUER = "A_EVALUER";
-    private static final String STATUT_DECLARE = "DECLARE";
+    /**
+     * Repris d'AnalyseCritereService plutôt que redéclaré : la clôture refuse
+     * de figer une mission tant qu'un critère porte ce statut, et deux copies
+     * de la chaîne finiraient par diverger.
+     */
+    private static final String STATUT_DECLARE = AnalyseCritereService.STATUT_DECLARE;
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
