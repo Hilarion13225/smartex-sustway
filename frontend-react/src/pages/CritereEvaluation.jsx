@@ -5,13 +5,12 @@ import {
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
-  Eraser,
   FileText,
   History,
   Lightbulb,
   ListChecks,
   MessageSquareText,
-  Save,
+  Pencil,
   ShieldAlert,
   Sparkles,
   UploadCloud,
@@ -128,19 +127,22 @@ export default function CritereEvaluation() {
           <Revele>
             <Card className="mb-6 p-5">
               <CardHeader
-                titre="Questionnaire & scénario"
+                titre="Déclaration de l’organisation"
                 icone={ListChecks}
-                sousTitre="Réponses déclaratives et description de la situation, analysées avec les preuves"
+                sousTitre="Réponses et description de la situation, telles qu’analysées avec les preuves"
+                action={
+                  peutDeclarer ? (
+                    <Link
+                      to={`/app/${entrepriseId}/audits/${auditId}`}
+                      className="btn-secondary"
+                    >
+                      <Pencil className="h-4 w-4" aria-hidden />
+                      Modifier dans la mission
+                    </Link>
+                  ) : null
+                }
               />
-              <SaisieSection
-                entrepriseId={entrepriseId}
-                auditId={auditId}
-                auditCritereId={auditCritereId}
-                saisie={saisie}
-                onChange={setSaisie}
-                peutRepondre={peutDeclarer}
-                libelleCritere={critere.critereLibelle}
-              />
+              <DeclarationLecture saisie={saisie} libelleCritere={critere.critereLibelle} />
             </Card>
           </Revele>
 
@@ -180,178 +182,74 @@ export default function CritereEvaluation() {
   );
 }
 
-function SaisieSection({
-  entrepriseId,
-  auditId,
-  auditCritereId,
-  saisie,
-  onChange,
-  peutRepondre,
-  libelleCritere,
-}) {
-  const [scenario, setScenario] = useState(saisie?.scenario ?? '');
-  const [reponses, setReponses] = useState(() => reponsesInitiales(saisie));
-  const [enregistrement, setEnregistrement] = useState(false);
-  const [erreur, setErreur] = useState(null);
-  const [enregistre, setEnregistre] = useState(false);
-
-  useEffect(() => {
-    setScenario(saisie?.scenario ?? '');
-    setReponses(reponsesInitiales(saisie));
-  }, [saisie]);
-
+/**
+ * Déclaration de l'organisation, en lecture seule.
+ *
+ * La saisie a lieu dans l'onglet « Critères » de la mission, seul endroit où
+ * l'organisation répond : cette page en est la fiche de consultation, avec
+ * l'historique des analyses et les preuves rattachées.
+ */
+function DeclarationLecture({ saisie, libelleCritere }) {
   const questions = saisie?.questions ?? [];
 
-  function modifier(auditQuestionId, champ, valeur) {
-    setEnregistre(false);
-    setReponses((precedentes) => ({
-      ...precedentes,
-      [auditQuestionId]: { ...precedentes[auditQuestionId], [champ]: valeur },
-    }));
+  if (questions.length === 0) {
+    return <Vide message="Aucune question rattachée à ce critère." />;
   }
-
-  async function enregistrer(e) {
-    e.preventDefault();
-    setErreur(null);
-    setEnregistrement(true);
-    try {
-      const resultat = await api.put(
-        `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${auditCritereId}/questions`,
-        {
-          scenario,
-          reponses: questions.map((q) => ({
-            auditQuestionId: q.auditQuestionId,
-            niveau: reponses[q.auditQuestionId]?.niveau ?? null,
-            commentaire: reponses[q.auditQuestionId]?.commentaire || null,
-          })),
-        }
-      );
-      onChange(resultat);
-      setEnregistre(true);
-    } catch (err) {
-      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
-    } finally {
-      setEnregistrement(false);
-    }
-  }
-
-  if (!saisie) return <Loader message="Chargement du questionnaire…" />;
-  if (questions.length === 0) return <Vide message="Aucune question rattachée à ce critère." />;
 
   return (
-    <form className="space-y-5" onSubmit={enregistrer}>
-      <ul className="space-y-4">
+    <div className="mt-4 space-y-4">
+      <ul className="space-y-3">
         {questions.map((q) => (
           <li key={q.auditQuestionId} className="rounded-xl border border-ink-100 bg-surface p-4">
             <div className="flex flex-wrap items-start justify-between gap-2">
-              {/* Le titre de la page porte déjà le libellé du critère : sur la
-                  grille RSE importée, où la question lui est identique, la
-                  réafficher ici imprimait deux fois la même phrase. */}
-              {memeTexte(q.libelle, libelleCritere) ? (
-                <p className="text-sm font-medium text-ink-900">Votre réponse</p>
-              ) : (
-                <p className="text-sm font-medium text-ink-900">{q.libelle}</p>
-              )}
+              <p className="text-sm font-medium text-ink-900">
+                {memeTexte(q.libelle, libelleCritere) ? 'Réponse déclarée' : q.libelle}
+              </p>
               <Badge ton={q.statut === 'REPONDU' ? 'vert' : 'neutre'}>{q.statut}</Badge>
             </div>
 
-            {q.type === 'FERMEE' ? (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {NIVEAUX_MATURITE.map((n) => (
-                  <label
-                    key={n.niveau}
-                    title={n.description}
-                    className={`cursor-pointer rounded-lg border px-3 py-1.5 text-sm ${
-                      reponses[q.auditQuestionId]?.niveau === n.niveau
-                        ? 'border-brand-500 bg-brand-50 text-brand-700'
-                        : 'border-ink-200 text-ink-600'
-                    } ${peutRepondre ? '' : 'pointer-events-none opacity-60'}`}
-                  >
-                    <input
-                      type="radio"
-                      className="sr-only"
-                      name={`reponse-${q.auditQuestionId}`}
-                      value={n.niveau}
-                      checked={reponses[q.auditQuestionId]?.niveau === n.niveau}
-                      disabled={!peutRepondre}
-                      onChange={() => modifier(q.auditQuestionId, 'niveau', n.niveau)}
-                    />
-                    {n.niveau} — {n.titre}
-                  </label>
-                ))}
-                {peutRepondre && reponses[q.auditQuestionId]?.niveau ? (
-                  <button
-                    type="button"
-                    className="rounded-lg border border-ink-200 px-3 py-1.5 text-sm text-ink-600"
-                    onClick={() => modifier(q.auditQuestionId, 'niveau', null)}
-                  >
-                    <Eraser className="mr-1 inline h-4 w-4" aria-hidden />
-                    Effacer la réponse
-                  </button>
-                ) : null}
-              </div>
+            <p className="mt-2 text-sm text-ink-700">{reponseLisible(q)}</p>
+            {q.commentaire ? (
+              <p className="mt-1.5 text-sm text-ink-600">{q.commentaire}</p>
             ) : null}
-
-            <label className="label mt-3" htmlFor={`commentaire-${q.auditQuestionId}`}>
-              {q.type === 'FERMEE' ? 'Précision (optionnelle)' : 'Réponse'}
-            </label>
-            <textarea
-              id={`commentaire-${q.auditQuestionId}`}
-              className="input min-h-[70px]"
-              placeholder="Décrivez la pratique en place, les limites constatées…"
-              value={reponses[q.auditQuestionId]?.commentaire ?? ''}
-              disabled={!peutRepondre}
-              onChange={(e) => modifier(q.auditQuestionId, 'commentaire', e.target.value)}
-            />
-
             {q.dateReponse ? (
-              <p className="mt-2 text-xs text-ink-500">Dernière saisie le {formaterDateHeure(q.dateReponse)}</p>
+              <p className="mt-2 text-xs text-ink-500">
+                Dernière saisie le {formaterDateHeure(q.dateReponse)}
+              </p>
             ) : null}
           </li>
         ))}
       </ul>
 
       <div>
-        <label className="label flex items-center gap-2" htmlFor="scenario-critere">
+        <p className="flex items-center gap-2 text-sm font-medium text-ink-700">
           <MessageSquareText className="h-4 w-4 text-ink-400" aria-hidden />
-          Scénario — situation de l’entreprise sur ce critère
-        </label>
-        <textarea
-          id="scenario-critere"
-          className="input min-h-[120px]"
-          placeholder="Contexte, dispositifs en place, écarts connus, projets en cours…"
-          value={scenario}
-          disabled={!peutRepondre}
-          onChange={(e) => {
-            setEnregistre(false);
-            setScenario(e.target.value);
-          }}
-        />
-        <p className="mt-1 text-xs text-ink-500">
-          Analysé par l’IA en complément des preuves ; une déclaration sans document réduit la confiance.
+          Situation décrite par l’organisation
         </p>
+        {saisie?.scenario ? (
+          <p className="mt-2 whitespace-pre-line rounded-xl bg-ink-50 px-4 py-3 text-sm text-ink-700">
+            {saisie.scenario}
+          </p>
+        ) : (
+          <p className="mt-2 text-sm text-ink-400">Aucune situation décrite.</p>
+        )}
       </div>
-
-      {peutRepondre ? (
-        <button type="submit" className="btn-primary" disabled={enregistrement}>
-          {enregistrement ? <SustwayLoader taille="sm" /> : <Save className="h-4 w-4" aria-hidden />}
-          Enregistrer la saisie
-        </button>
-      ) : (
-        <p className="text-xs text-ink-500">Votre formule ou votre rôle ne permet pas de renseigner le questionnaire.</p>
-      )}
-
-      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
-      {enregistre ? <Alerte ton="vert">Saisie enregistrée.</Alerte> : null}
-    </form>
+    </div>
   );
 }
 
-function reponsesInitiales(saisie) {
-  return Object.fromEntries(
-    (saisie?.questions ?? []).map((q) => [q.auditQuestionId, { niveau: q.niveau ?? null, commentaire: q.commentaire ?? '' }])
-  );
+/** Réponse d'une question, rendue lisible quelle que soit son échelle. */
+function reponseLisible(question) {
+  if (question.niveau != null) {
+    const niveau = NIVEAUX_MATURITE.find((n) => n.niveau === question.niveau);
+    return niveau ? `${niveau.niveau} — ${niveau.titre}` : `Niveau ${question.niveau}`;
+  }
+  if (question.valeur) {
+    return question.valeur === 'OUI' ? 'Oui' : question.valeur === 'NON' ? 'Non' : question.valeur;
+  }
+  return 'Pas encore renseignée.';
 }
+
 
 function PreuvesSection({ entrepriseId, auditId, auditCritereId, preuves, onChange, peutDeposer }) {
   const [fichier, setFichier] = useState(null);

@@ -19,9 +19,13 @@ const LIBELLES_CRITICITE = {
   CRITIQUE: 'Critique',
 };
 
-/** Signature de la saisie, pour repérer un écart avec l'analyse IA affichée. */
-function signature(niveau, nombrePreuves) {
-  return `${niveau ?? ''}|${nombrePreuves}`;
+/**
+ * Signature de la saisie, pour repérer un écart avec l'analyse IA affichée.
+ * Le scénario en fait partie : les agents le lisent, le modifier périme donc
+ * l'analyse au même titre qu'un changement de niveau ou de preuve.
+ */
+function signature(niveau, scenario, nombrePreuves) {
+  return `${niveau ?? ''}|${(scenario ?? '').trim().length}|${nombrePreuves}`;
 }
 
 /**
@@ -53,8 +57,11 @@ export default function SaisieCritereMission({
   // Question factuelle : la réponse est un oui/non rangé dans le
   // questionnaire, non un niveau de maturité (voir la migration V27).
   const [questionBinaire, setQuestionBinaire] = useState(null);
+  // Identifiant de la question portée par le critère : c'est elle que la
+  // déclaration renseigne, quelle que soit son échelle de réponse.
+  const [premiereQuestionId, setPremiereQuestionId] = useState(null);
   const [reponseBinaire, setReponseBinaire] = useState(null);
-  const [scenario, setScenario] = useState(null);
+  const [scenario, setScenario] = useState('');
   const [preuves, setPreuves] = useState([]);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(null);
@@ -97,15 +104,13 @@ export default function SaisieCritereMission({
         // tableaux et aux rapports ; c'est la question du référentiel, elle
         // interrogative, qui s'adresse à l'auditeur (voir la migration V21).
         const premiereQuestion = saisie?.questions?.[0] ?? null;
+        setPremiereQuestionId(premiereQuestion?.auditQuestionId ?? null);
         setQuestion(premiereQuestion?.libelle ?? null);
         setQuestionBinaire(
           premiereQuestion?.echelleReponse === 'BINAIRE' ? premiereQuestion : null
         );
         setReponseBinaire(premiereQuestion?.valeur ?? null);
-        // Le scénario appartient à la saisie déclarative du critère et non à
-        // cet écran ; il est retransmis tel quel pour ne pas être effacé par
-        // l'enregistrement d'une réponse.
-        setScenario(saisie?.scenario ?? null);
+        setScenario(saisie?.scenario ?? '');
 
         // Le niveau affiché est celui que l'organisation a déclaré, lu dans le
         // questionnaire — et non la note de la dernière évaluation, qui est le
@@ -133,7 +138,9 @@ export default function SaisieCritereMission({
         const derniereIa = parDateDecroissante.find((e) => e.source === 'IA');
         setAnalyse(analyseDepuisEvaluation(derniereIa));
         setSignatureAnalysee(
-          derniereIa ? signature(derniereIa.note, preuvesDuCritere.length) : null
+          derniereIa
+            ? signature(derniereIa.note, saisie?.scenario, preuvesDuCritere.length)
+            : null
         );
       })
       .catch((err) => setErreur(err instanceof ApiError ? err.message : 'Chargement du critère impossible'))
@@ -160,56 +167,41 @@ export default function SaisieCritereMission({
   );
 
   const desynchronisee =
-    analyse != null && signatureAnalysee !== signature(niveau, preuves.length);
+    analyse != null && signatureAnalysee !== signature(niveau, scenario, preuves.length);
 
   /**
-   * Enregistre une question factuelle : la réponse va au questionnaire
-   * déclaratif (RG09), sans produire d'évaluation — un oui/non ne se convertit
-   * pas en note de maturité. Le critère est ensuite évalué par le pipeline
-   * d'agents, qui lit cette réponse.
+   * Enregistre la déclaration de l'organisation sur le critère : sa réponse —
+   * niveau de maturité ou oui/non selon la question — et sa description de la
+   * situation.
+   *
+   * Un seul appel pour l'ensemble (RG09) : la réponse et le scénario forment
+   * la même déclaration, et les séparer en deux requêtes laissait la porte
+   * ouverte à un enregistrement partiel. Aucune note n'est produite ici,
+   * l'analyse IA a lieu à la clôture de la mission.
    */
-  async function enregistrerReponseBinaire() {
-    await api.put(
-      `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/questions`,
-      {
-        scenario,
-        reponses: [
-          {
-            auditQuestionId: questionBinaire.auditQuestionId,
-            valeur: reponseBinaire,
-            commentaire: null,
-          },
-        ],
-      }
-    );
-    setDernierEnregistrement(new Date().toISOString());
-    surChangement?.();
-    return true;
-  }
-
   async function enregistrer() {
-    if (!critereId) return false;
-    if (questionBinaire) {
-      if (!reponseBinaire) return false;
-      setErreur(null);
-      try {
-        return await enregistrerReponseBinaire();
-      } catch (err) {
-        setErreur(err instanceof ApiError ? err.message : 'Enregistrement impossible');
-        return false;
-      }
-    }
-    if (niveau == null) return false;
+    if (!critereId || !premiereQuestionId) return false;
+    if (questionBinaire ? !reponseBinaire : niveau == null) return false;
+
     setErreur(null);
     try {
-      // Enregistre une déclaration, pas une note : le niveau rejoint le
-      // questionnaire et attend l'analyse IA, qui aura lieu à la clôture de
-      // la mission. La justification n'est plus saisie à la main.
-      const declaration = await api.put(
-        `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/evaluations`,
-        { niveau, justification: null }
+      const saisie = await api.put(
+        `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/questions`,
+        {
+          scenario: scenario?.trim() ? scenario : null,
+          reponses: [
+            {
+              auditQuestionId: premiereQuestionId,
+              valeur: questionBinaire ? reponseBinaire : null,
+              niveau: questionBinaire ? null : niveau,
+              commentaire: null,
+            },
+          ],
+        }
       );
-      setDernierEnregistrement(declaration?.dateDeclaration ?? new Date().toISOString());
+      setDernierEnregistrement(
+        saisie?.questions?.[0]?.dateReponse ?? new Date().toISOString()
+      );
       surChangement?.();
       return true;
     } catch (err) {
@@ -238,7 +230,7 @@ export default function SaisieCritereMission({
     try {
       const resultat = await analyserCritere({ entrepriseId, auditId, critereId });
       setAnalyse(resultat);
-      setSignatureAnalysee(signature(niveau, preuves.length));
+      setSignatureAnalysee(signature(niveau, scenario, preuves.length));
       surChangement?.();
     } catch (err) {
       setErreurAnalyse(err instanceof ApiError ? err.message : 'Analyse IA impossible');
@@ -353,6 +345,8 @@ export default function SaisieCritereMission({
               surSelectionNiveau={peutSaisir ? setNiveau : () => {}}
               reponseBinaire={reponseBinaire}
               surSelectionBinaire={peutSaisir ? setReponseBinaire : () => {}}
+              scenario={scenario}
+              surChangementScenario={peutSaisir ? setScenario : () => {}}
               fichiers={preuves.map((preuve) => ({
                 id: preuve.id,
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',

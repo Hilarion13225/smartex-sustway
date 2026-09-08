@@ -7,6 +7,9 @@ import ActionsCritere from './ActionsCritere';
 import CarteReponseBinaire from './CarteReponseBinaire';
 import { NIVEAUX_MATURITE } from './niveauxMaturite';
 
+/** Même borne que la colonne `scenario` côté API (texte libre, mais borné à la saisie). */
+const LIMITE_SCENARIO = 2000;
+
 /**
  * Carte de saisie d'un critère : énoncé, échelle de maturité, preuves et
  * actions. Composant contrôlé — l'état de la réponse est tenu par le parent,
@@ -27,6 +30,8 @@ export default function CarteCritere({
   surSelectionNiveau,
   reponseBinaire,
   surSelectionBinaire,
+  scenario,
+  surChangementScenario,
   fichiers,
   surAjoutFichiers,
   surSuppressionFichier,
@@ -93,6 +98,40 @@ export default function CarteCritere({
           ))}
         </div>
       )}
+
+      {/* Le scénario est lu par les agents au même titre que les preuves : le
+          reléguer sur un autre écran revenait à priver l'analyse de la seule
+          mise en contexte que l'organisation puisse fournir. */}
+      <div className="mt-7">
+        <label htmlFor="scenario-critere" className="text-sm font-medium text-ink-700">
+          Situation de l’organisation sur ce critère{' '}
+          {peutSaisir ? <span className="text-ink-400">(facultatif)</span> : null}
+        </label>
+        {peutSaisir ? (
+          <>
+            <textarea
+              id="scenario-critere"
+              value={scenario ?? ''}
+              maxLength={LIMITE_SCENARIO}
+              onChange={(evenement) =>
+                surChangementScenario(evenement.target.value.slice(0, LIMITE_SCENARIO))
+              }
+              placeholder="Dispositifs en place, écarts connus, projets en cours…"
+              className="mt-2.5 min-h-[5rem] w-full resize-y rounded-xl border border-ink-200 bg-surface px-4 py-3 text-sm text-ink-800 outline-none transition placeholder:text-ink-400 focus:border-brand-400 focus:ring-4 focus:ring-brand-100 dark:focus:ring-brand-900/40"
+            />
+            <p className="mt-1.5 text-xs text-ink-500">
+              Analysé par l’IA en complément des preuves. Une déclaration sans document à l’appui
+              réduit la confiance accordée.
+            </p>
+          </>
+        ) : scenario ? (
+          <p className="mt-2.5 whitespace-pre-line rounded-xl bg-ink-50 px-4 py-3 text-sm text-ink-700">
+            {scenario}
+          </p>
+        ) : (
+          <p className="mt-2.5 text-sm text-ink-400">Aucune situation décrite par l’organisation.</p>
+        )}
+      </div>
 
       <div className="mt-7">
         <p className="flex items-center gap-2 text-sm font-medium text-ink-700">
