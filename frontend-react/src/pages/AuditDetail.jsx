@@ -11,6 +11,8 @@ import VoletPlanAction from '../components/audit/VoletPlanAction';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
+import { estAnalyse, estRenseigne } from '../components/audit/statutsCritere';
+import ClotureMission from '../components/audit/ClotureMission';
 
 
 
@@ -41,7 +43,9 @@ function VoletDomaines({ score, criteres }) {
   criteres.forEach((critere) => {
     const actuel = parDomaine.get(critere.domaineCode) ?? { total: 0, evalues: 0 };
     actuel.total += 1;
-    if (critere.statut === 'EVALUE') actuel.evalues += 1;
+    // Ce compteur suit la collecte : un critère déclaré est renseigné, même
+    // s'il attend encore l'analyse qui lui donnera sa note.
+    if (estRenseigne(critere)) actuel.evalues += 1;
     parDomaine.set(critere.domaineCode, actuel);
   });
 
@@ -263,6 +267,21 @@ export default function AuditDetail() {
                   criteresTotal={score?.nombreCriteresTotal ?? audit.nombreCriteres ?? 0}
                   criteresEvalues={score?.nombreCriteresEvalues ?? 0}
                 />
+
+                {/* La clôture appartient à la supervision : c'est elle qui
+                    déclenche l'analyse et fige le score. */}
+                {ROLES_INTERNES_SMARTEX.has(roleCourant) ? (
+                  <div className="lg:max-w-xl">
+                    <ClotureMission
+                      entrepriseId={entrepriseId}
+                      auditId={auditId}
+                      statut={audit.statut}
+                      renseignes={(criteres ?? []).filter(estRenseigne).length}
+                      total={(criteres ?? []).length}
+                      surTermine={rafraichirSilencieux}
+                    />
+                  </div>
+                ) : null}
               <div className="lg:max-w-xl">
               <Card className="p-5">
                 <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />

@@ -24,6 +24,7 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
 import { memeTexte } from '../components/audit/libelles';
+import { libelleStatut, tonStatut } from '../components/audit/statutsCritere';
 
 /**
  * Personnel interne Smartex : il supervise la mission mais ne renseigne pas
@@ -119,7 +120,7 @@ export default function CritereEvaluation() {
                 {critere.criticite ? (
                   <Badge ton={TONS_CRITICITE[critere.criticite] ?? 'neutre'}>Criticité {critere.criticite}</Badge>
                 ) : null}
-                <Badge ton={critere.statut === 'EVALUE' ? 'vert' : 'neutre'}>{critere.statut}</Badge>
+                <Badge ton={tonStatut(critere.statut)}>{libelleStatut(critere.statut)}</Badge>
               </>
             }
           />

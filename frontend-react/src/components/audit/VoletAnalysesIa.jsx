@@ -5,6 +5,7 @@ import { Loader } from '../ui';
 import TracabiliteIa from './TracabiliteIa';
 import Rectification from './Rectification';
 import { analyseDepuisEvaluation } from './analyseCritere';
+import { estAnalyse } from './statutsCritere';
 import { api } from '../../lib/apiClient';
 
 /** Découpe une justification en points : l'IA renvoie souvent des phrases enchaînées. */
@@ -28,7 +29,9 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
   const [chargement, setChargement] = useState(true);
 
   useEffect(() => {
-    const evalues = criteres.filter((c) => c.statut === 'EVALUE');
+    // Seuls les critères analysés portent une analyse : un critère simplement
+    // déclaré attend encore la clôture.
+    const evalues = criteres.filter(estAnalyse);
     if (evalues.length === 0) {
       setAnalyses([]);
       setChargement(false);

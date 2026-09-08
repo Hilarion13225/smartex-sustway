@@ -1,35 +1,23 @@
 package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.audit.AuditLogService;
-import com.smartexsustway.api.conformite.NonConformiteService;
 import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
-import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Evaluation;
-import com.smartexsustway.api.domain.repository.EvaluationDocumentAnalyseRepository;
-import com.smartexsustway.api.domain.entity.EvaluationDocumentAnalyse;
-import com.smartexsustway.api.domain.entity.Preuve;
 import com.smartexsustway.api.domain.entity.ReponseQuestion;
-import com.smartexsustway.api.domain.enums.SourceEvaluation;
-import com.smartexsustway.api.domain.enums.StatutEvaluation;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
-import com.smartexsustway.api.domain.repository.AuditRepository;
-import com.smartexsustway.api.domain.repository.EvaluationRepository;
-import com.smartexsustway.api.domain.repository.PreuveRepository;
 import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
+import com.smartexsustway.api.domain.repository.AuditRepository;
+import com.smartexsustway.api.domain.repository.EvaluationDocumentAnalyseRepository;
+import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
-import com.smartexsustway.api.domain.rules.NiveauMaturite;
-import com.smartexsustway.api.domain.rules.ScoringEngine;
-import com.smartexsustway.api.ia.EvaluerCritereRequestDto;
-import com.smartexsustway.api.ia.EvaluerCritereResponseDto;
-import com.smartexsustway.api.ia.IaEvaluationClient;
+import com.smartexsustway.api.mission.AnalyseCritereService;
+import com.smartexsustway.api.resource.dto.DeclarationCritereDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.EvaluationDto;
 import com.smartexsustway.api.resource.dto.EvaluationExperteRequestDto;
-import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.security.AutorisationService;
-import com.smartexsustway.api.stockage.StorageService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -45,14 +33,8 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
-import org.jboss.logging.Logger;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -69,31 +51,25 @@ import java.util.UUID;
 @Authenticated
 public class EvaluationResource {
 
-    private static final Logger LOG = Logger.getLogger(EvaluationResource.class);
-    private static final String FORMULE_AVANCEES = "AVANCEES";
-    /** Reflète AuditCritere.statut par défaut ("A_EVALUER", voir AuditCritere.java). */
-    private static final String STATUT_EVALUE = "EVALUE";
+    /**
+     * Critère dont l'organisation a déclaré un niveau, en attente de l'analyse
+     * IA qui, seule, lui donnera une note.
+     */
+    private static final String STATUT_DECLARE = "DECLARE";
     /** Reflète AuditQuestion.statut (voir ReponseQuestionResource). */
     private static final String STATUT_REPONDU = "REPONDU";
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
-    @Inject PreuveRepository preuveRepository;
     @Inject AuditQuestionRepository auditQuestionRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject EvaluationRepository evaluationRepository;
     @Inject EvaluationDocumentAnalyseRepository documentAnalyseRepository;
-    @Inject NonConformiteService nonConformiteService;
-    @Inject ScoreHistoriqueService scoreHistoriqueService;
-    @Inject StorageService storageService;
+    @Inject AnalyseCritereService analyseCritereService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
-
-    @Inject
-    @RestClient
-    IaEvaluationClient iaEvaluationClient;
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
@@ -121,107 +97,15 @@ public class EvaluationResource {
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
-        List<Preuve> preuves = preuveRepository.parAuditCritere(auditCritereId);
-        List<EvaluerCritereRequestDto.ReponseDeclareeDto> reponses = reponsesDeclarees(auditCritereId);
-        String scenario = auditCritere.getScenario();
-
-        // RG09 : la collecte déclarative (réponses au questionnaire, scénario
-        // textuel) est une source d'analyse au même titre que les preuves
-        // documentaires — l'évaluation reste refusée seulement si le critère
-        // ne porte aucun élément, quel qu'il soit.
-        if (preuves.isEmpty() && reponses.isEmpty() && scenario == null) {
+        var resultat = analyseCritereService.analyser(audit, auditCritere);
+        if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser) {
             return erreur(400, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
-                    + "— impossible de lancer l'évaluation IA");
+                    + "— impossible de lancer l'analyse IA");
         }
-
-        // RG21 : le pipeline d'agents IA dépend de la formule souscrite —
-        // détermine si le Risk Agent et le Recommendation Agent sont exécutés.
-        boolean formuleAvancees = estFormuleAvancees(audit);
-
-        List<EvaluerCritereRequestDto.DocumentPourEvaluationDto> documents = new ArrayList<>();
-        for (Preuve preuve : preuves) {
-            Document document = preuve.getDocument();
-            byte[] contenu;
-            try {
-                contenu = storageService.telecharger(document.getCheminStockage());
-            } catch (Exception e) {
-                LOG.warnf(e, "Lecture du document %s impossible pour l'évaluation IA", document.getId());
-                return erreur(503, "Impossible de lire le document '" + document.getNomOriginal() + "' depuis le stockage");
-            }
-            String contenuBase64 = Base64.getEncoder().encodeToString(contenu);
-            documents.add(new EvaluerCritereRequestDto.DocumentPourEvaluationDto(
-                    document.getNomOriginal(), document.getTypeMime(), contenuBase64));
+        if (resultat instanceof AnalyseCritereService.Resultat.Echec echec) {
+            return erreur(503, echec.message());
         }
-
-        EvaluerCritereRequestDto requete = new EvaluerCritereRequestDto(
-                auditCritereId,
-                auditCritere.getCritere().getCode(),
-                auditCritere.getCritere().getLibelle(),
-                auditCritere.getCritere().getDescription(),
-                documents,
-                scenario,
-                reponses,
-                formuleAvancees, // analyseRisque (Risk Agent)
-                formuleAvancees  // genererRecommandation (Recommendation Agent) — même condition
-                                 // aujourd'hui (RG21), champs distincts pour rester découplables
-        );
-
-        EvaluerCritereResponseDto reponse;
-        try {
-            reponse = iaEvaluationClient.evaluerCritere(requete);
-        } catch (Exception e) {
-            LOG.warnf(e, "Échec du pipeline d'agents IA pour le critère %s", auditCritere.getCritere().getCode());
-            return erreur(503, "Échec du pipeline d'agents IA — réessayez plus tard");
-        }
-
-        BigDecimal probabilite = BigDecimal.valueOf(reponse.probabiliteConformite()).setScale(4, RoundingMode.HALF_UP);
-        BigDecimal confiance = BigDecimal.valueOf(reponse.confianceIa()).setScale(4, RoundingMode.HALF_UP);
-
-        // RG27 : conversion probabilité -> niveau d'engagement (1-5) exclusivement
-        // via ScoringEngine — l'IA ne fournit jamais de note directement.
-        int niveau = ScoringEngine.niveauEngagement(probabilite);
-
-        Evaluation evaluation = new Evaluation(auditCritere, probabilite, (short) niveau);
-        evaluation.setConfianceIa(confiance);
-        evaluation.setJustification(reponse.justification());
-        evaluation.setSource(SourceEvaluation.IA);
-        evaluation.setSignalRisque(reponse.signalRisque());
-        evaluation.setCategorieRisque(reponse.categorieRisque());
-        evaluation.setJustificationRisque(reponse.justificationRisque());
-        evaluation.setRecommandationNecessaire(reponse.recommandationNecessaire());
-        evaluation.setPistesAmelioration(reponse.pistesAmelioration());
-        // Traçabilité : le pipeline dit s'il juge les preuves suffisantes et
-        // quels documents il a lus. Sans ces deux informations, un résultat de
-        // conformité n'est pas contrôlable par le superviseur.
-        evaluation.setCouverturePreuve(reponse.couverturePreuve());
-        // Niveau déclaré au moment de l'analyse, figé ici : le relire plus tard
-        // ne dirait rien, les réponses ayant pu changer depuis.
-        evaluation.setNiveauDeclare(niveauDeclare(auditCritereId));
-        // persistAndFlush (et non persist seul) : @CreationTimestamp n'est
-        // renseigné par Hibernate qu'au flush, qui autrement n'aurait lieu
-        // qu'à la fin de la transaction — sans ce flush explicite,
-        // dateEvaluation reste null dans l'entité en mémoire au moment de
-        // construire la réponse ci-dessous (RG14 : la date fait partie de
-        // l'historique conservé, y compris dans la réponse renvoyée au client).
-        evaluationRepository.persistAndFlush(evaluation);
-
-        var documentsLus = reponse.documentsAnalyses() == null ? List.<EvaluerCritereResponseDto.DocumentAnalyseDto>of()
-                : reponse.documentsAnalyses();
-        for (int rang = 0; rang < documentsLus.size(); rang++) {
-            var lu = documentsLus.get(rang);
-            documentAnalyseRepository.persist(
-                    new EvaluationDocumentAnalyse(evaluation, lu.nom(), lu.resume(), rang));
-        }
-        // Le critère a désormais une évaluation IA — il quitte donc l'onglet
-        // "Non évalués" (voir AuditDetail.jsx, onglets basés sur ce statut).
-        auditCritere.setStatut(STATUT_EVALUE);
-
-        // RG16 : l'analyse IA constitue directement l'évaluation définitive
-        // (la revue experte — supervision humaine des évaluations à faible
-        // confiance — a été retirée du produit).
-        evaluation.setStatut(StatutEvaluation.VALIDEE);
-        nonConformiteService.genererSiNecessaire(evaluation);
-        scoreHistoriqueService.enregistrer(audit);
+        Evaluation evaluation = ((AnalyseCritereService.Resultat.Analyse) resultat).evaluation();
 
         auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_IA_CREEE", "evaluation", evaluation.getId());
 
@@ -231,73 +115,50 @@ public class EvaluationResource {
     }
 
     /**
-     * Enregistre l'évaluation d'un critère saisie par un auditeur, sur
-     * l'échelle de maturité en cinq niveaux.
+     * Enregistre la déclaration de l'organisation sur un critère : le niveau
+     * de maturité qu'elle estime atteint, sur l'échelle en cinq niveaux.
      *
-     * RG27 impose que {@code note} soit toujours dérivée d'une probabilité de
-     * conformité via ScoringEngine, jamais posée telle quelle. Le niveau choisi
-     * est donc converti en probabilité représentative de sa plage Likert
-     * (voir {@link #probabiliteRepresentative}), puis reconverti en note par le
-     * même ScoringEngine que le flux IA : la règle vaut aussi pour la saisie
-     * humaine, et la note reste cohérente avec la probabilité stockée.
+     * Cette déclaration ne produit PAS de note. Seule l'analyse IA en produit
+     * une, après confrontation de la déclaration aux preuves déposées : une
+     * organisation qui s'attribue le niveau 5 sans document à l'appui ne doit
+     * pas voir son score monter parce qu'elle l'a affirmé. Auparavant, la
+     * déclaration créait une évaluation « experte » que le score retenait dès
+     * qu'elle était la plus récente — elle annulait donc silencieusement une
+     * rectification déjà rendue par l'IA.
      *
-     * Ré-évaluer un critère ajoute une évaluation sans supprimer les
-     * précédentes : RG14 impose de conserver l'historique complet.
+     * Le niveau est rangé dans le questionnaire (RG09), d'où le pipeline le
+     * lit à l'analyse suivante.
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    public Response enregistrerEvaluationExperte(@PathParam("entrepriseId") UUID entrepriseId,
-                                                 @PathParam("auditId") UUID auditId,
-                                                 @PathParam("auditCritereId") UUID auditCritereId,
-                                                 @Valid EvaluationExperteRequestDto requete) {
+    public Response enregistrerDeclaration(@PathParam("entrepriseId") UUID entrepriseId,
+                                           @PathParam("auditId") UUID auditId,
+                                           @PathParam("auditCritereId") UUID auditCritereId,
+                                           @Valid EvaluationExperteRequestDto requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
 
         Audit audit = trouverAudit(entrepriseId, auditId);
-        // Même permission que le dépôt de preuve et le questionnaire : saisir
-        // le niveau fait partie de la collecte, pas d'une action distincte.
+        // Même permission que le dépôt de preuve et le questionnaire : déclarer
+        // un niveau fait partie de la collecte, pas d'une action distincte.
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
-        BigDecimal probabilite = probabiliteRepresentative(requete.niveau());
-        int niveau = ScoringEngine.niveauEngagement(probabilite);
-
-        Evaluation evaluation = new Evaluation(auditCritere, probabilite, (short) niveau);
-        evaluation.setSource(SourceEvaluation.EXPERT);
-        evaluation.setJustification(requete.justification());
-        evaluation.setAuteur(utilisateurRepository.findById(utilisateurId));
-        // RG16 : l'évaluation est définitive dès son enregistrement, comme
-        // pour le flux IA (la revue experte a été retirée du produit).
-        evaluation.setStatut(StatutEvaluation.VALIDEE);
-        evaluationRepository.persistAndFlush(evaluation);
-
-        auditCritere.setStatut(STATUT_EVALUE);
         reporterNiveauSurQuestionnaire(auditCritere, requete.niveau(), utilisateurId);
-        nonConformiteService.genererSiNecessaire(evaluation);
-        scoreHistoriqueService.enregistrer(audit);
 
-        auditLogService.journaliser(utilisateurId, entrepriseId, "EVALUATION_EXPERTE_ENREGISTREE", "evaluation",
-                evaluation.getId());
+        // Un critère analysé puis redéclaré redevient « à analyser » : sa note
+        // reste celle de la dernière analyse jusqu'à ce que l'IA repasse, à la
+        // clôture de la mission.
+        auditCritere.setStatut(STATUT_DECLARE);
 
-        return Response.status(Response.Status.CREATED).entity(EvaluationDto.depuis(evaluation)).build();
-    }
+        auditLogService.journaliser(utilisateurId, entrepriseId, "DECLARATION_ENREGISTREE", "audit_critere",
+                auditCritere.getId());
 
-    /**
-     * Niveau déclaré sur ce critère, s'il en existe un.
-     *
-     * Une déclaration se fait question par question ; un critère n'en portant
-     * qu'une aujourd'hui, la première renseignée suffit. La moyenne serait
-     * trompeuse le jour où un critère en portera plusieurs — mieux vaut alors
-     * expliciter la règle que la deviner ici.
-     */
-    private Short niveauDeclare(UUID auditCritereId) {
-        return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
-                .map(ReponseQuestion::getNiveau)
-                .filter(java.util.Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        return Response.ok(new DeclarationCritereDto(
+                auditCritere.getId(), requete.niveau(), auditCritere.getStatut(),
+                OffsetDateTime.now())).build();
     }
 
     /**
@@ -324,54 +185,6 @@ public class EvaluationResource {
             reponse.setAuteur(auteur);
             auditQuestion.setStatut(STATUT_REPONDU);
         }
-    }
-
-    /**
-     * Probabilité de conformité représentative d'un niveau d'engagement : le
-     * milieu de la plage Likert correspondante (voir ScoringEngine). Prendre le
-     * milieu plutôt qu'une borne garantit que reconvertir cette probabilité
-     * redonne exactement le niveau choisi, sans dépendre du sens des
-     * comparaisons aux bornes.
-     */
-    private static BigDecimal probabiliteRepresentative(int niveau) {
-        return switch (niveau) {
-            case 5 -> new BigDecimal("0.9500");
-            case 4 -> new BigDecimal("0.8250");
-            case 3 -> new BigDecimal("0.6250");
-            case 2 -> new BigDecimal("0.3750");
-            default -> new BigDecimal("0.1250");
-        };
-    }
-
-    /** RG09 : réponses déjà saisies sur le critère, transmises au pipeline avec les preuves. */
-    private List<EvaluerCritereRequestDto.ReponseDeclareeDto> reponsesDeclarees(UUID auditCritereId) {
-        return reponseQuestionRepository.parAuditCritere(auditCritereId).stream()
-                .filter(r -> r.getNiveau() != null || r.getValeur() != null || r.getCommentaire() != null)
-                .map(r -> new EvaluerCritereRequestDto.ReponseDeclareeDto(
-                        r.getAuditQuestion().getQuestion().getLibelle(),
-                        valeurDeclaree(r),
-                        r.getCommentaire()))
-                .toList();
-    }
-
-    /**
-     * Réponse transmise aux agents, sous forme de texte : le niveau de
-     * maturité depuis V26 (« 4 — Active »), à défaut l'ancienne valeur fermée
-     * pour les réponses saisies avant ce changement.
-     */
-    private static String valeurDeclaree(ReponseQuestion reponse) {
-        String niveau = NiveauMaturite.libelleComplet(
-                reponse.getNiveau() == null ? null : reponse.getNiveau().intValue());
-        if (niveau != null) {
-            return niveau;
-        }
-        return reponse.getValeur() != null ? reponse.getValeur().name() : null;
-    }
-
-    /** RG21 : le pipeline d'agents exécuté (et donc le Risk Agent) dépend de la formule souscrite. */
-    private boolean estFormuleAvancees(Audit audit) {
-        return audit.getFormuleAbonnement() != null
-                && FORMULE_AVANCEES.equals(audit.getFormuleAbonnement().getCode());
     }
 
     private Audit trouverAudit(UUID entrepriseId, UUID auditId) {

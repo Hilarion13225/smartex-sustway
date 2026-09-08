@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { Check } from 'lucide-react';
+import { estRenseigne } from './statutsCritere';
 
 /**
  * Grille de tous les critères de la mission, servant de raccourci de
@@ -11,7 +12,10 @@ export default function ListeCriteres({ criteres, indiceCourant, surSelection })
     <div className="rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm">
       <ul className="flex flex-wrap gap-2">
         {criteres.map((critere, indice) => {
-          const evalue = critere.statut === 'EVALUE';
+          // Coche verte dès que l'organisation a renseigné le critère : la
+          // grille sert à repérer ce qui reste à faire, or l'analyse IA
+          // n'intervient qu'à la clôture.
+          const evalue = estRenseigne(critere);
           const courant = indice === indiceCourant;
           return (
             <li key={critere.id}>

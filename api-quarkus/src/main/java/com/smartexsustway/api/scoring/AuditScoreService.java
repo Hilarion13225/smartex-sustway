@@ -48,7 +48,13 @@ public class AuditScoreService {
             Domaine domaine = auditCritere.getCritere().getDomaine();
             totalParDomaine.merge(domaine, 1, Integer::sum);
 
-            Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(auditCritere.getId()).orElse(null);
+            // Seule une analyse IA fait la note : une déclaration de
+            // l'organisation, si favorable soit-elle, ne compte qu'une fois
+            // confrontée aux preuves. Le filtre porte sur la source et non
+            // sur la seule antériorité — sans lui, une déclaration postérieure
+            // à l'analyse annulerait la rectification que l'IA vient de rendre.
+            Evaluation derniere = evaluationRepository.laPlusRecenteIaParAuditCritere(auditCritere.getId())
+                    .orElse(null);
             if (derniere == null) {
                 continue;
             }

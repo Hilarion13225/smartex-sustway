@@ -13,6 +13,7 @@ import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.RoleMissionAuditeur;
+import com.smartexsustway.api.domain.enums.StatutAudit;
 import com.smartexsustway.api.domain.repository.AbonnementRepository;
 import com.smartexsustway.api.domain.repository.AuditAuditeurRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
@@ -31,7 +32,9 @@ import com.smartexsustway.api.resource.dto.AffecterAuditeurRequest;
 import com.smartexsustway.api.resource.dto.AuditAuditeurDto;
 import com.smartexsustway.api.resource.dto.AuditCreateRequest;
 import com.smartexsustway.api.resource.dto.AuditCritereDto;
+import com.smartexsustway.api.mission.ClotureMissionService;
 import com.smartexsustway.api.mission.CreationMissionService;
+import org.eclipse.microprofile.context.ManagedExecutor;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
@@ -93,6 +96,8 @@ public class AuditResource {
     @Inject AbonnementRepository abonnementRepository;
     @Inject AuditRepository auditRepository;
     @Inject CreationMissionService creationMissionService;
+    @Inject ClotureMissionService clotureMissionService;
+    @Inject ManagedExecutor executeur;
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject AuditScoreService auditScoreService;
     @Inject AuditQuestionRepository auditQuestionRepository;
@@ -107,6 +112,57 @@ public class AuditResource {
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
+
+    /**
+     * Clôt la mission : lance la passe d'analyse IA sur tous ses critères,
+     * puis fige le résultat.
+     *
+     * Les déclarations et les preuves s'accumulent pendant la mission sans
+     * produire de note ; c'est ici que l'ensemble est confronté aux agents et
+     * que le score devient définitif. La passe s'exécute en arrière-plan — un
+     * questionnaire complet demande autant d'appels au pipeline qu'il compte
+     * de critères — d'où le 202 et le suivi d'avancement.
+     */
+    @POST
+    @Path("/{auditId}/cloture")
+    public Response cloturer(@PathParam("entrepriseId") UUID entrepriseId,
+                             @PathParam("auditId") UUID auditId) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId,
+                AutorisationService.ROLES_INTERNES_SMARTEX);
+
+        if (audit.getStatut() == StatutAudit.TERMINE) {
+            return erreur(409, "Cette mission est déjà clôturée");
+        }
+        if (clotureMissionService.enCours(auditId)) {
+            return erreur(409, "Une clôture est déjà en cours sur cette mission");
+        }
+
+        int total = clotureMissionService.criteresAAnalyser(auditId).size();
+        var avancement = clotureMissionService.preparer(auditId, total);
+        executeur.execute(() -> clotureMissionService.executer(auditId));
+
+        auditLogService.journaliser(utilisateurId, entrepriseId, "MISSION_CLOTURE_LANCEE", "audit", auditId);
+
+        return Response.status(Response.Status.ACCEPTED).entity(avancement).build();
+    }
+
+    /** Avancement de la passe de clôture, tant que le serveur n'a pas redémarré. */
+    @GET
+    @Path("/{auditId}/cloture")
+    public Response avancementCloture(@PathParam("entrepriseId") UUID entrepriseId,
+                                      @PathParam("auditId") UUID auditId) {
+        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        trouverAuditDeLEntreprise(entrepriseId, auditId);
+
+        var avancement = clotureMissionService.avancement(auditId);
+        if (avancement == null) {
+            return Response.noContent().build();
+        }
+        return Response.ok(avancement).build();
+    }
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId) {

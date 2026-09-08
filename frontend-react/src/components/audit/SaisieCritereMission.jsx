@@ -7,6 +7,7 @@ import CarteCritere from './CarteCritere';
 import PanneauAnalyseIa from './PanneauAnalyseIa';
 import { analyseDepuisEvaluation, analyserCritere } from './analyseCritere';
 import { memeTexte } from './libelles';
+import { estRenseigne } from './statutsCritere';
 import { Alerte, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
 
@@ -106,14 +107,18 @@ export default function SaisieCritereMission({
         // l'enregistrement d'une réponse.
         setScenario(saisie?.scenario ?? null);
 
-        // RG14 conserve tout l'historique : la dernière évaluation en date est
-        // celle qui reflète l'état courant du critère.
+        // Le niveau affiché est celui que l'organisation a déclaré, lu dans le
+        // questionnaire — et non la note de la dernière évaluation, qui est le
+        // verdict de l'IA après examen des preuves. Les confondre montrerait à
+        // l'organisation un niveau qu'elle n'a pas choisi.
+        setNiveau(premiereQuestion?.niveau ?? null);
+        setDernierEnregistrement(premiereQuestion?.dateReponse ?? null);
+
+        // RG14 conserve tout l'historique : les évaluations servent ici à
+        // retrouver la dernière analyse IA.
         const parDateDecroissante = [...(evaluations ?? [])].sort(
           (a, b) => new Date(b.dateEvaluation) - new Date(a.dateEvaluation)
         );
-        const derniere = parDateDecroissante[0];
-        setNiveau(derniere?.note ?? null);
-        setDernierEnregistrement(derniere?.dateEvaluation ?? null);
 
         // L'API rattache les preuves au critère par son code métier
         // (`critereCodes`), pas par l'identifiant de la ligne d'audit.
@@ -139,7 +144,10 @@ export default function SaisieCritereMission({
     chargerCritere();
   }, [chargerCritere]);
 
-  const completes = useMemo(() => criteres.filter((c) => c.statut === 'EVALUE').length, [criteres]);
+  // L'avancement de la collecte se mesure sur ce que l'organisation a
+  // renseigné, pas sur ce que l'IA a déjà analysé : l'analyse a lieu à la
+  // clôture, un compteur fondé sur elle resterait à zéro jusqu'au bout.
+  const completes = useMemo(() => criteres.filter(estRenseigne).length, [criteres]);
 
   /** Critères du domaine affiché, pour la carte de progression du panneau. */
   const criteresDuDomaine = useMemo(
@@ -147,7 +155,7 @@ export default function SaisieCritereMission({
     [criteres, domaineCode]
   );
   const completesDuDomaine = useMemo(
-    () => criteresDuDomaine.filter((c) => c.statut === 'EVALUE').length,
+    () => criteresDuDomaine.filter(estRenseigne).length,
     [criteresDuDomaine]
   );
 
@@ -194,13 +202,14 @@ export default function SaisieCritereMission({
     if (niveau == null) return false;
     setErreur(null);
     try {
-      // La justification n'est plus saisie à la main : celle qui compte est
-      // produite par l'analyse IA à partir des preuves.
-      const evaluation = await api.put(
+      // Enregistre une déclaration, pas une note : le niveau rejoint le
+      // questionnaire et attend l'analyse IA, qui aura lieu à la clôture de
+      // la mission. La justification n'est plus saisie à la main.
+      const declaration = await api.put(
         `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${critereId}/evaluations`,
         { niveau, justification: null }
       );
-      setDernierEnregistrement(evaluation?.dateEvaluation ?? new Date().toISOString());
+      setDernierEnregistrement(declaration?.dateDeclaration ?? new Date().toISOString());
       surChangement?.();
       return true;
     } catch (err) {
@@ -246,7 +255,7 @@ export default function SaisieCritereMission({
   /** Amène au premier critère non encore évalué du domaine affiché. */
   function allerAuProchainDuDomaine() {
     const cible = criteres.findIndex(
-      (c) => c.domaineCode === domaineCode && c.statut !== 'EVALUE'
+      (c) => c.domaineCode === domaineCode && !estRenseigne(c)
     );
     if (cible >= 0) allerA(cible);
   }
