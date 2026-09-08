@@ -94,7 +94,7 @@ const GROUPES_AUDIT = [
         libelle: 'Référentiel RSE',
         icone: BookOpen,
         // Réservé aux deux rôles qui administrent le catalogue : depuis V32,
-        // `referentiel:administrer` est portée par ADMIN_AUDIT et SUPER_ADMIN.
+        // `referentiel:administrer` est portée par SUPER_ADMIN.
         permission: 'referentiel:administrer',
         enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
       },
@@ -209,7 +209,9 @@ const GROUPES_COLLABORATEUR = [
 ];
 
 /** Rôles qui conservent la navigation de supervision resserrée. */
-const ROLES_NAVIGATION_AUDIT = new Set(['ADMIN_AUDIT', 'SUPER_ADMIN']);
+// Navigation de supervision. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN
+// (V43) puis désactivé (V44).
+const ROLES_NAVIGATION_AUDIT = new Set(['SUPER_ADMIN']);
 
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = [
@@ -409,6 +411,10 @@ export default function Layout() {
     // pages qui n'en relèvent pas lui sont masquées. Elles restent visibles
     // pour les autres rôles, qui en ont l'usage — le responsable d'entreprise
     // gère son abonnement, le super-administrateur consulte le journal.
+    // Le périmètre resserré valait pour l'ancien responsable audit. Le
+    // super-administrateur, lui, a vocation à tout voir : le filtre ne
+    // s'applique donc plus à personne, mais l'attribut reste porté par les
+    // liens pour la phase où un périmètre de supervision sera redéfini.
     if (lien.horsPerimetreAudit && roleCourant === 'ADMIN_AUDIT') return false;
     return true;
   }

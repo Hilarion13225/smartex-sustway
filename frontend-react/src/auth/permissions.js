@@ -7,7 +7,7 @@
  * PERMISSIONS_PAR_ROLE fixe ce qu'un rôle peut faire en théorie.
  * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule, mais
  * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE, VISITEUR)
- * — le personnel interne Smartex (SUPER_ADMIN, ADMIN_AUDIT) n'est jamais
+ * — le personnel interne Smartex (SUPER_ADMIN) n'est jamais
  * bridé par la formule d'un client : il audite/administre au nom de
  * Smartex, pas au nom de l'entreprise.
  *
@@ -31,7 +31,7 @@
  * première entreprise, précisément l'action qui établit le rôle.
  */
 export const PERMISSIONS_PAR_ROLE = {
-  // RG05 : ni SUPER_ADMIN ni ADMIN_AUDIT n'ont "entreprise:creer" — le
+  // RG05 : SUPER_ADMIN n'a pas "entreprise:creer" — le
   // personnel Smartex administre/audite les entreprises de ses clients, il
   // ne les crée pas à leur place (voir EntrepriseResource.creer, refus 403
   // pour tout rôle interne). Miroir exact de cette contrainte backend.
@@ -54,24 +54,6 @@ export const PERMISSIONS_PAR_ROLE = {
     'rapport:detaille',
     'bailleur:consulter',
   ],
-  // Rôle désactivé en base depuis V44, conservé ici tant que d'anciens
-  // jetons peuvent encore le porter : un jeton émis avant la bascule reste
-  // valable jusqu'à son expiration.
-  ADMIN_AUDIT: [
-    'entreprise:modifier',
-    'audit:creer',
-    'audit:modifier',
-    'audit:cloturer',
-    'analyse:executer',
-    'preuve:deposer',
-    // Le responsable audit pilote le dispositif : choisir les cadres
-    // d'évaluation et les faire évoluer relève de son métier, non de
-    // l'administration technique de la plateforme (voir V32).
-    'referentiel:administrer',
-    'rapport:consulter',
-    'rapport:detaille',
-    'bailleur:consulter',
-  ],
   RESPONSABLE_ENTREPRISE: [
     'entreprise:creer',
     'entreprise:modifier',
@@ -89,9 +71,6 @@ export const PERMISSIONS_PAR_ROLE = {
   // déclencher l'évaluation ni figer une mission. Ni analyse:executer ni
   // audit:cloturer, ce que l'API refuse également (V42).
   COLLABORATEUR: ['preuve:deposer', 'rapport:consulter'],
-  // Rôles désactivés en base depuis V44, conservés pour les jetons en cours.
-  EMPLOYE: ['preuve:deposer', 'rapport:consulter'],
-  VISITEUR: ['rapport:consulter'],
 };
 
 /** Permissions retirées selon la formule souscrite — rôles côté client uniquement (RG21/RG24/RG25/RG41). */
@@ -101,7 +80,9 @@ const RESTRICTIONS_PAR_PLAN = {
   AVANCEES: [],
 };
 
-const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
+// Personnel interne Smartex. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN
+// (V43) puis désactivé (V44) : il n'y figure plus.
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
 
 /**
  * Rôles habilités à administrer une entreprise (abonnement, journal d'audit) —
@@ -111,18 +92,24 @@ const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
  */
 export const ROLES_ADMINISTRATION_ENTREPRISE = new Set([
   'SUPER_ADMIN',
-  'ADMIN_AUDIT',
   'RESPONSABLE_ENTREPRISE',
 ]);
 
+/**
+ * Libellés affichés. Les trois rôles désactivés (V44) y restent : un compte
+ * historique consulté dans le journal d'audit doit se lire, même si le rôle
+ * n'est plus attribuable. Ils n'apparaissent en revanche plus dans
+ * PERMISSIONS_PAR_ROLE — ils n'accordent donc plus rien.
+ */
 export const ROLE_LIBELLE = {
   SUPER_ADMIN: 'Administrateur global',
-  ADMIN_AUDIT: 'Administrateur métier',
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
   COLLABORATEUR: 'Collaborateur',
-  EMPLOYE: 'Employé',
-  VISITEUR: 'Visiteur (démonstration)',
   AUCUN_ROLE_ATTRIBUE: 'Free',
+  // Rôles historiques, conservés pour la lisibilité des traces.
+  ADMIN_AUDIT: 'Administrateur métier (rôle retiré)',
+  EMPLOYE: 'Employé (rôle retiré)',
+  VISITEUR: 'Visiteur (rôle retiré)',
 };
 
 /**

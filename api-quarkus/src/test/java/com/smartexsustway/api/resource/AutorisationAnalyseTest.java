@@ -44,6 +44,7 @@ class AutorisationAnalyseTest {
     @Inject EntrepriseRepository entrepriseRepository;
     @Inject RoleRepository roleRepository;
     @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
+    @Inject jakarta.persistence.EntityManager entityManager;
 
     private record Mission(String entrepriseId, String auditId, String critereId, String tokenProprietaire) {
     }
@@ -96,6 +97,47 @@ class AutorisationAnalyseTest {
                 .extract().path("[0].id");
 
         return new Mission(entrepriseId, auditId, critereId, proprietaire.token);
+    }
+
+    /**
+     * Rôles techniques ne portant qu'une seule des deux permissions. Ils
+     * n'existent que pour isoler la capacité éprouvée : aucun rôle du
+     * produit ne se trouve dans cette situation.
+     */
+    private static final String ROLE_CLOTURE_SEULE = "TEST_CLOTURE_SEULE";
+    private static final String ROLE_ANALYSE_SEULE = "TEST_ANALYSE_SEULE";
+
+    @Transactional
+    void creerRoleCloturerSeul() {
+        creerRoleAvecPermission(ROLE_CLOTURE_SEULE, "Rôle de test — clôture seule", "audit:cloturer");
+    }
+
+    @Transactional
+    void creerRoleAnalyseSeule() {
+        creerRoleAvecPermission(ROLE_ANALYSE_SEULE, "Rôle de test — analyse seule", "analyse:executer");
+    }
+
+    /**
+     * Crée le rôle s'il n'existe pas encore et lui accorde la seule
+     * permission demandée. Les tests partagent une base : le rôle survit
+     * d'une exécution à l'autre, d'où l'insertion conditionnelle.
+     */
+    void creerRoleAvecPermission(String code, String nom, String permission) {
+        entityManager.createNativeQuery(
+                        "INSERT INTO role (code, nom, description) VALUES (?1, ?2, ?3) "
+                                + "ON CONFLICT (code) DO NOTHING")
+                .setParameter(1, code).setParameter(2, nom)
+                .setParameter(3, "Créé par AutorisationAnalyseTest pour isoler une capacité.")
+                .executeUpdate();
+
+        entityManager.createNativeQuery(
+                        "INSERT INTO role_permission (role_id, permission_id) "
+                                + "SELECT r.id, p.id FROM role r, permission p "
+                                + "WHERE r.code = ?1 AND p.code = ?2 "
+                                + "AND NOT EXISTS (SELECT 1 FROM role_permission rp "
+                                + "                WHERE rp.role_id = r.id AND rp.permission_id = p.id)")
+                .setParameter(1, code).setParameter(2, permission)
+                .executeUpdate();
     }
 
     /** Rattache un utilisateur neuf à la mission de référence, avec le rôle demandé. */
@@ -215,6 +257,58 @@ class AutorisationAnalyseTest {
         // (voir EntrepriseResource) : c'est bien ce rôle qui clôture ici,
         // sur une capacité qui lui était fermée avant cette phase.
         cloturer(dediee.tokenProprietaire(), dediee).statusCode(202);
+    }
+
+    /**
+     * `audit:cloturer` suffit à elle seule.
+     *
+     * Les trois rôles du produit portent aujourd'hui les deux permissions,
+     * si bien qu'un test fondé sur eux ne dirait pas laquelle a ouvert la
+     * porte. Ce rôle technique ne porte que la clôture : s'il passe, c'est
+     * que l'endpoint n'exige rien d'autre.
+     */
+    @Test
+    void cloture_nExigePas_lAutorisationDAnalyse() {
+        Mission dediee = construireMission();
+        creerRoleCloturerSeul();
+
+        var candidat = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(UUID.fromString(candidat.id), UUID.fromString(dediee.entrepriseId()), ROLE_CLOTURE_SEULE);
+
+        String jeton = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("email", candidat.email, "motDePasse", candidat.motDePasse))
+                .when().post("/api/v1/auth/connexion")
+                .then().statusCode(200)
+                .extract().path("token");
+
+        cloturer(jeton, dediee).statusCode(202);
+    }
+
+    /**
+     * Symétrique du précédent : `analyse:executer` seule n'ouvre pas la
+     * clôture. Sans ce contrôle, retirer par mégarde la vérification de
+     * `audit:cloturer` passerait inaperçu.
+     */
+    @Test
+    void analyseSeule_nOuvrePas_laCloture() {
+        Mission dediee = construireMission();
+        creerRoleAnalyseSeule();
+
+        var candidat = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(UUID.fromString(candidat.id), UUID.fromString(dediee.entrepriseId()), ROLE_ANALYSE_SEULE);
+
+        String jeton = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("email", candidat.email, "motDePasse", candidat.motDePasse))
+                .when().post("/api/v1/auth/connexion")
+                .then().statusCode(200)
+                .extract().path("token");
+
+        cloturer(jeton, dediee).statusCode(403);
+        // La même identité franchit bien le contrôle d'analyse : c'est donc
+        // la permission de clôture qui manquait, non l'accès à l'entreprise.
+        analyser(jeton, dediee).statusCode(400);
     }
 
     // --- Dépôt de preuve : le collaborateur conserve sa capacité --------------

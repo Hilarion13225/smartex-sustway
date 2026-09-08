@@ -101,8 +101,6 @@ public class AuditResource {
      * clôturer sans en avoir soi-même lancé une.
      */
     private static final String PERMISSION_CLOTURE = "audit:cloturer";
-    /** Exécuter le pipeline — la clôture en déclenche une passe complète. */
-    private static final String PERMISSION_ANALYSE = "analyse:executer";
 
     @Inject CreationMissionService creationMissionService;
     @Inject ClotureMissionService clotureMissionService;
@@ -139,13 +137,16 @@ public class AuditResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        // Deux capacités distinctes, et non un rôle interne : clôturer fige le
-        // résultat, exécuter l'analyse engage un coût. Le responsable
-        // d'entreprise clôture ses propres missions — l'isolation par
-        // entreprise, vérifiée juste au-dessus, borne le périmètre.
+        // Une seule capacité est exigée ici : clôturer. Elle ne suppose pas
+        // `analyse:executer`, que la clôture déclenche pourtant — les deux
+        // permissions restent strictement séparées, chacune couvrant une
+        // action métier et une seule.
+        //
+        // Le responsable d'entreprise clôture ses propres missions ;
+        // l'isolation par entreprise, vérifiée juste au-dessus, borne le
+        // périmètre.
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_CLOTURE);
-        autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_ANALYSE);
 
         if (audit.getStatut() == StatutAudit.TERMINE) {
             return erreur(409, "Cette mission est déjà clôturée");

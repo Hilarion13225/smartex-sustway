@@ -30,7 +30,7 @@ import { libelleStatut, tonStatut } from '../components/audit/statutsCritere';
  * le questionnaire déclaratif — celui-ci est la parole de l'organisation
  * auditée (RG09), que l'IA confronte ensuite aux preuves.
  */
-const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
 
 const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 'vert' };

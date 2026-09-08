@@ -21,7 +21,7 @@ import ClotureMission from '../components/audit/ClotureMission';
  * questionnaire à la place de l'organisation auditée (même liste que
  * AutorisationService.ROLES_INTERNES_SMARTEX côté API).
  */
-const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT']);
+const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
 
 const ONGLETS = [
   { cle: 'synthese', libelle: 'Vue d’ensemble' },

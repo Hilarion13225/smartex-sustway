@@ -147,6 +147,16 @@
       <artifactId>quarkus-junit5</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
+      Permet de substituer le client du service d'agents IA le temps d'un
+      test : le chemin d'analyse se vérifie alors de bout en bout sans
+      appeler le modèle, donc sans consommer de quota ni dépendre du réseau.
+    -->
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit5-mockito</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
