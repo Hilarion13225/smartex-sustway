@@ -9,7 +9,9 @@ import {
   Mail,
   MapPin,
   MessageSquare,
+  Minus,
   Phone,
+  Plus,
   Send,
   ShieldCheck,
   Users,
@@ -44,9 +46,32 @@ const REASSURANCE = [
  * aucun traceur tiers sur une page publique. Le lien « Voir sur Google Maps »
  * reste offert à qui veut préparer un itinéraire.
  */
-const CARTE_OSM =
-  'https://www.openstreetmap.org/export/embed.html?bbox=-4.020%2C5.330%2C-3.955%2C5.385&layer=mapnik&marker=5.3580%2C-3.9880';
+const REPERE = { lat: 5.358, lon: -3.988, quartier: 'Cocody, Abidjan' };
 const LIEN_MAPS = 'https://www.google.com/maps/search/?api=1&query=Cocody%2C+Abidjan%2C+C%C3%B4te+d%27Ivoire';
+
+/*
+ * Niveaux de zoom, exprimés en degrés de longitude couverts par le cadre. Le
+ * contenu d'une iframe d'un autre domaine n'est pas pilotable depuis la page :
+ * les boutons + et − recalculent donc la zone affichée et rechargent le cadre,
+ * plutôt que d'imiter des contrôles qui ne feraient rien.
+ */
+const PORTEES = [0.16, 0.08, 0.04, 0.02, 0.01];
+
+function cadreOsm(portee) {
+  const demiLon = portee / 2;
+  const demiLat = (portee * 0.55) / 2;
+  const zone = [
+    REPERE.lon - demiLon,
+    REPERE.lat - demiLat,
+    REPERE.lon + demiLon,
+    REPERE.lat + demiLat,
+  ]
+    .map((valeur) => valeur.toFixed(4))
+    .join(',');
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
+    zone
+  )}&layer=mapnik&marker=${REPERE.lat}%2C${REPERE.lon}`;
+}
 
 /**
  * Page de contact 100 % côté navigateur : le formulaire n'appelle aucune API.
@@ -57,6 +82,7 @@ export default function Contact() {
   const [champs, setChamps] = useState(CHAMPS_VIDES);
   const [erreur, setErreur] = useState('');
   const [envoye, setEnvoye] = useState(false);
+  const [niveauZoom, setNiveauZoom] = useState(2);
 
   const majChamp = (nom) => (evenement) => {
     setChamps((precedent) => ({ ...precedent, [nom]: evenement.target.value }));
@@ -380,16 +406,59 @@ export default function Contact() {
             {/* ---------- Carte ---------- */}
             <div className="relative mt-5 overflow-hidden rounded-2xl border border-ink-100">
               <iframe
-                src={CARTE_OSM}
-                title={`Localisation de ${SMARTEX.editeur} à ${SMARTEX.adresse}`}
+                src={cadreOsm(PORTEES[niveauZoom])}
+                title={`Localisation de ${SMARTEX.editeur} à ${REPERE.quartier}`}
                 loading="lazy"
-                className="block h-56 w-full border-0 sm:h-64"
+                className="block h-64 w-full border-0 sm:h-72"
               />
+
+              {/* Encart du lieu, posé sur la carte. */}
+              <div className="pointer-events-none absolute left-3 top-3 flex max-w-[15rem] items-start gap-2.5 rounded-xl bg-surface/95 px-3.5 py-3 shadow-soft ring-1 ring-ink-100 backdrop-blur">
+                <span
+                  className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${PASTELS.rouge}`}
+                >
+                  <MapPin className="h-4 w-4" aria-hidden />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-display text-[13px] font-bold leading-tight text-marine">
+                    {SMARTEX.produit}
+                  </span>
+                  <span className="mt-0.5 block text-[12px] leading-tight text-ink-500">{REPERE.quartier}</span>
+                </span>
+              </div>
+
+              {/* Contrôles de zoom. Placés là où le cadre OpenStreetMap pose
+                  les siens, qu'ils recouvrent : deux jeux de boutons côte à
+                  côte se liraient comme un défaut d'intégration. */}
+              <div className="absolute right-2.5 top-2.5 flex w-9 flex-col overflow-hidden rounded-lg bg-surface shadow-soft ring-1 ring-ink-200">
+                <button
+                  type="button"
+                  aria-label="Zoomer sur la carte"
+                  disabled={niveauZoom >= PORTEES.length - 1}
+                  onClick={() => setNiveauZoom((valeur) => Math.min(valeur + 1, PORTEES.length - 1))}
+                  className="flex h-9 items-center justify-center border-b border-ink-100 text-ink-600 transition-colors hover:bg-ink-50 hover:text-marine disabled:opacity-40 disabled:hover:bg-surface"
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Dézoomer la carte"
+                  disabled={niveauZoom <= 0}
+                  onClick={() => setNiveauZoom((valeur) => Math.max(valeur - 1, 0))}
+                  className="flex h-9 items-center justify-center text-ink-600 transition-colors hover:bg-ink-50 hover:text-marine disabled:opacity-40 disabled:hover:bg-surface"
+                >
+                  <Minus className="h-4 w-4" aria-hidden />
+                </button>
+              </div>
+
+              {/* Remonté au-dessus du bandeau d'attribution d'OpenStreetMap,
+                  que la licence impose de laisser visible. Sur petit écran ce
+                  bandeau passe sur deux lignes, d'où le décalage plus haut. */}
               <a
                 href={LIEN_MAPS}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg bg-surface/95 px-3 py-1.5 text-[12px] font-semibold text-marine shadow-sm backdrop-blur transition-colors hover:bg-surface"
+                className="absolute bottom-12 right-3 sm:bottom-7 inline-flex items-center gap-1.5 rounded-lg bg-surface/95 px-3 py-2 text-[12px] font-semibold text-marine shadow-soft ring-1 ring-ink-100 backdrop-blur transition-colors hover:bg-surface"
               >
                 <MapPin className="h-3.5 w-3.5 text-brand-600" aria-hidden />
                 Voir sur Google Maps
