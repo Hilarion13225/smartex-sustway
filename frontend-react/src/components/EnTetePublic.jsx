@@ -9,27 +9,38 @@ import ModaleVideo from './ModaleVideo';
 import { useTheme } from '../theme/ThemeContext';
 
 /*
- * Navigation principale. « Accueil » mène à /accueil, la page de présentation
- * du produit ; le logotype, lui, pointe vers / (la page d'entrée) — ce sont
- * deux destinations distinctes. Se former, Déploiement, Bénéfices, FAQ et
+ * Navigation principale : les cinq pages qui portent l'offre. Le logotype mène
+ * à / (la page d'entrée) et joue le rôle du lien d'accueil, d'où l'absence
+ * d'une entrée « Accueil » qui ferait doublon. Déploiement, Bénéfices, FAQ et
  * À propos restent atteignables par le pied de page et par la recherche.
  */
 const LIENS = [
-  { vers: '/accueil', libelle: 'Accueil' },
   { vers: '/services', libelle: 'Solution' },
   { vers: '/methodologie', libelle: 'Méthodologie' },
   { vers: '/formules', libelle: 'Formules' },
   { vers: '/contact', libelle: 'Contact' },
+  { vers: '/formation', libelle: 'Se former' },
 ];
 
-/** En-tête de la partie publique : marque, navigation, démonstration et appel à l'action. */
+/*
+ * Les liens inactifs sont en marine, la couleur de titraille de la vitrine —
+ * `.lien-nav` les met en `ink-600`. La surcharge passe par une classe
+ * utilitaire posée seulement quand le lien est inactif : appliquée aussi à
+ * l'état actif, elle l'emporterait sur le rouge de `.lien-nav[aria-current]`,
+ * qui vit dans la couche `components` et perd donc contre un utilitaire.
+ */
+function classeLien({ isActive }) {
+  return clsx('lien-nav px-2.5 min-[1360px]:px-3', !isActive && 'text-marine');
+}
+
+/** En-tête de la partie publique : marque, navigation, recherche, thème et appels à l'action. */
 export default function EnTetePublic() {
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
-  // Sur une page qui impose le sombre, BasculeTheme ne rend rien : l'intitulé
-  // « Thème » du menu mobile resterait seul face à un espace vide.
+  // Sur une page qui impose le sombre, BasculeTheme ne rend rien : le
+  // séparateur qui la précède resterait collé à l'icône de recherche.
   const { sombreForce } = useTheme();
 
   useEffect(() => {
@@ -45,13 +56,13 @@ export default function EnTetePublic() {
         'sticky top-0 z-40 border-b transition-all duration-300',
         defile
           ? 'border-ink-100 bg-surface/85 shadow-soft backdrop-blur-xl'
-          : 'border-transparent bg-surface/70 backdrop-blur'
+          : 'border-ink-100/70 bg-surface/80 backdrop-blur'
       )}
     >
-      {/* Marges et espacement resserrés sur téléphone : sous 420 px, 12 px de
-          marge au lieu de 24 rendent 24 px au contenu, ce qui suffit à faire
-          tenir l'appel à l'action sur une ligne. */}
-      <div className="mx-auto flex h-[84px] max-w-[87.5rem] items-center justify-between gap-2 px-3 min-[420px]:px-4 sm:gap-6 sm:px-6 lg:px-10">
+      {/* Marges resserrées sur téléphone : sous 420 px, 12 px de marge au lieu
+          de 24 rendent 24 px au contenu, ce qui suffit à faire tenir l'appel à
+          l'action sur une ligne. */}
+      <div className="mx-auto flex h-[84px] max-w-[87.5rem] items-center gap-4 px-3 min-[420px]:px-4 sm:px-6 lg:px-10">
         <Link
           to="/"
           onClick={() => setOuvert(false)}
@@ -61,38 +72,19 @@ export default function EnTetePublic() {
           <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
 
-        {/* `whitespace-nowrap` : sans lui, « À propos » et les actions se
-            cassent sur deux lignes une fois la place réduite par le logo. */}
-        <nav className="hidden items-center gap-1 whitespace-nowrap xl:flex">
+        {/* `flex-1` : la navigation occupe l'espace laissé libre par le logo et
+            les actions, et s'y centre. `whitespace-nowrap` évite qu'un intitulé
+            se casse sur deux lignes une fois cette place réduite. */}
+        <nav className="hidden flex-1 items-center justify-center gap-1 whitespace-nowrap xl:flex">
           {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
+            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
               {lien.libelle}
             </NavLink>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 whitespace-nowrap xl:flex 2xl:gap-5">
-          {/* La bascule n'apparaît qu'à partir de 1536 px : entre 1280 et
-              1536, la place est réservée à la navigation et aux deux appels à
-              l'action. En dessous, elle reste accessible dans le menu. */}
-          <span className="hidden 2xl:inline-flex">
-            <BasculeTheme />
-          </span>
-
-          {/* Action secondaire : volontairement sans fond plein, pour ne pas
-              rivaliser avec l'appel à l'action principal. */}
-          <button
-            type="button"
-            onClick={() => definirVideoOuverte(true)}
-            aria-label="Voir la démo"
-            className="group flex items-center gap-2.5 text-sm font-medium text-ink-700 transition-colors hover:text-brand-700 dark:hover:text-brand-400"
-          >
-            <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-300 text-brand-600 transition duration-300 group-hover:border-brand-500 group-hover:bg-brand-50 dark:text-brand-400 dark:group-hover:bg-brand-500/15">
-              <Play className="h-3 w-3 fill-current" aria-hidden />
-            </span>
-            Voir la démo
-          </button>
-
+        {/* Recherche, séparateur, thème, puis les deux appels à l'action. */}
+        <div className="hidden shrink-0 items-center gap-3 whitespace-nowrap xl:flex min-[1360px]:gap-4">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
@@ -102,18 +94,25 @@ export default function EnTetePublic() {
             <Search className="h-[18px] w-[18px]" aria-hidden />
           </button>
 
-          <span className="h-6 w-px bg-ink-200" aria-hidden />
+          {sombreForce ? null : (
+            <>
+              <span className="h-6 w-px bg-ink-200" aria-hidden />
+              <BasculeTheme />
+            </>
+          )}
 
+          {/* Les deux boutons partagent la même hauteur fixe : la bordure de
+              l'un ajouterait sinon 2 px que le fond plein de l'autre n'a pas. */}
           <Link
             to="/connexion"
-            className="text-sm font-medium text-ink-700 transition-colors hover:text-brand-700 dark:hover:text-brand-400"
+            className="inline-flex h-10 items-center rounded-[10px] border border-brand-300 px-4 text-sm font-semibold text-brand-600 transition duration-300 hover:border-brand-500 hover:bg-brand-50 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10 min-[1360px]:px-5"
           >
             Se connecter
           </Link>
 
           <Link
             to="/inscription"
-            className="group inline-flex items-center gap-2 rounded-[10px] bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5"
+            className="group inline-flex h-10 items-center gap-2 rounded-[10px] border border-brand-600 bg-brand-600 px-4 text-sm font-semibold text-white shadow-glow transition duration-300 hover:border-brand-700 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5 min-[1360px]:px-5"
           >
             Créer un compte
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
@@ -125,7 +124,7 @@ export default function EnTetePublic() {
             place manque pour l'intitulé complet sur une ligne, et mieux vaut
             un bouton sur deux lignes qu'un en-tête qui sort de l'écran. Le
             bouton retrouve ses dimensions d'origine à partir de 420 px. */}
-        <div className="flex items-center gap-2 xl:hidden">
+        <div className="ml-auto flex items-center gap-2 xl:hidden">
           <Link
             to="/inscription"
             onClick={() => setOuvert(false)}
@@ -162,7 +161,7 @@ export default function EnTetePublic() {
                   'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400'
-                    : 'text-ink-700 hover:bg-ink-100'
+                    : 'text-marine hover:bg-ink-100'
                 )
               }
             >
@@ -188,6 +187,9 @@ export default function EnTetePublic() {
             Rechercher
           </button>
 
+          {/* La démonstration a quitté la barre de bureau, où la maquette ne la
+              prévoit pas. Elle reste ici, et sur les pages Accueil, Solution et
+              Méthodologie, plutôt que de disparaître du site. */}
           <button
             type="button"
             onClick={() => {
@@ -205,13 +207,13 @@ export default function EnTetePublic() {
           <Link
             to="/connexion"
             onClick={() => setOuvert(false)}
-            className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100"
+            className="mt-1 inline-flex items-center justify-center rounded-[10px] border border-brand-300 px-4 py-2.5 text-sm font-semibold text-brand-600 transition-colors hover:bg-brand-50 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10"
           >
             Se connecter
           </Link>
 
           {sombreForce ? null : (
-            <div className="mt-2 flex items-center justify-between gap-2 px-3">
+            <div className="mt-3 flex items-center justify-between gap-2 px-3">
               <span className="text-xs font-medium uppercase tracking-wide text-ink-500">Thème</span>
               <BasculeTheme />
             </div>
