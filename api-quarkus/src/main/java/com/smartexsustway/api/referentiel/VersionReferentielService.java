@@ -75,6 +75,11 @@ public class VersionReferentielService {
 
     // --- Lecture -------------------------------------------------------
 
+    /** Une version par son identifiant, ou null. */
+    public ReferentielVersion parId(UUID versionId) {
+        return versionRepository.findById(versionId);
+    }
+
     /** Version courante d'un référentiel : celle que reçoit toute nouvelle mission. */
     public Optional<ReferentielVersion> versionPubliee(UUID referentielId) {
         return versionRepository.publiee(referentielId);

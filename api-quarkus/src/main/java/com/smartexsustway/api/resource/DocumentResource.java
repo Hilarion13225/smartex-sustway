@@ -1,7 +1,5 @@
 package com.smartexsustway.api.resource;
 
-import com.smartexsustway.api.antivirus.AntivirusService;
-import com.smartexsustway.api.antivirus.ResultatScan;
 import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.Document;
 import com.smartexsustway.api.domain.entity.Entreprise;
@@ -15,6 +13,7 @@ import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.resource.dto.DocumentDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.security.AutorisationService;
+import com.smartexsustway.api.stockage.ControleFichierService;
 import com.smartexsustway.api.stockage.StorageService;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
@@ -29,15 +28,11 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,6 +52,15 @@ public class DocumentResource {
      * (documents, images, tableurs). Aucune liste n'est imposée par le CDC ;
      * à ajuster si des types supplémentaires s'avèrent nécessaires.
      */
+    private static final Set<String> EXTENSIONS_AUTORISEES = Set.of(
+            ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".txt");
+
+    /**
+     * Taille maximale d'une pièce déposée. Alignée sur la limite HTTP du
+     * projet : au-delà, la requête est coupée avant d'arriver ici.
+     */
+    private static final long TAILLE_MAXIMALE = 20L * 1024 * 1024;
+
     private static final Set<String> TYPES_AUTORISES = Set.of(
             "application/pdf",
             "image/jpeg",
@@ -74,13 +78,10 @@ public class DocumentResource {
     @Inject DocumentRepository documentRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject StorageService storageService;
-    @Inject AntivirusService antivirusService;
+    @Inject ControleFichierService controleFichierService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
-
-    @ConfigProperty(name = "smartex.antivirus.echec-bloquant")
-    boolean echecBloquant;
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId) {
@@ -113,10 +114,6 @@ public class DocumentResource {
         }
 
         String typeMime = fichier.contentType();
-        if (typeMime == null || !TYPES_AUTORISES.contains(typeMime)) {
-            return erreur(415, "Type de fichier non autorisé : " + typeMime);
-        }
-
         byte[] contenu;
         try {
             contenu = Files.readAllBytes(fichier.uploadedFile());
@@ -124,27 +121,29 @@ public class DocumentResource {
             return erreur(500, "Échec de lecture du fichier reçu");
         }
 
-        // Exigence sécurité §1.4 : le scan a lieu AVANT tout stockage — un
-        // fichier infecté ne touche jamais S3/MinIO.
-        ResultatScan resultat = antivirusService.scanner(contenu);
-
-        if (resultat.statut() == StatutScanDocument.INFECTE) {
-            auditLogService.journaliser(utilisateurId, entrepriseId, "DOCUMENT_REJETE_INFECTE", "document", null);
-            return erreur(422, "Fichier rejeté : menace détectée (" + resultat.detail() + ")");
+        // Exigence sécurité §1.4 : la séquence de contrôles — dont le scan
+        // avant tout stockage — est portée par ControleFichierService, seul
+        // endroit où elle est écrite. Un fichier infecté ne touche jamais
+        // S3/MinIO.
+        var verdict = controleFichierService.controler(contenu, fichier.fileName(), typeMime,
+                TYPES_AUTORISES, EXTENSIONS_AUTORISEES, TAILLE_MAXIMALE);
+        if (verdict instanceof ControleFichierService.Verdict.Refuse refus) {
+            if (refus.statutScan() == StatutScanDocument.INFECTE) {
+                auditLogService.journaliser(utilisateurId, entrepriseId,
+                        "DOCUMENT_REJETE_INFECTE", "document", null);
+            }
+            return erreur(refus.statutHttp(), refus.message());
         }
-        if (resultat.statut() == StatutScanDocument.ERREUR && echecBloquant) {
-            return erreur(503, "Scan antivirus indisponible — réessayez plus tard");
-        }
+        var accepte = (ControleFichierService.Verdict.Accepte) verdict;
 
-        String hash = sha256(contenu);
-        String extension = extensionDepuis(fichier.fileName());
-        String nomStockage = UUID.randomUUID() + extension;
+        String hash = accepte.hash();
+        String nomStockage = UUID.randomUUID() + accepte.extension();
         String cleStockage = "entreprises/" + entrepriseId + "/documents/" + nomStockage;
 
         storageService.televerser(cleStockage, contenu, typeMime);
 
         Document document = new Document(entreprise, fichier.fileName(), nomStockage, typeMime, contenu.length, cleStockage, hash);
-        document.setStatutScan(resultat.statut());
+        document.setStatutScan(accepte.statutScan());
         document.setUploadedBy(utilisateurRepository.findById(utilisateurId));
 
         if (siteId != null) {
@@ -177,22 +176,6 @@ public class DocumentResource {
                 .type(document.getTypeMime())
                 .header("Content-Disposition", "attachment; filename=\"" + document.getNomOriginal() + "\"")
                 .build();
-    }
-
-    private static String extensionDepuis(String nomFichier) {
-        if (nomFichier == null) return "";
-        int point = nomFichier.lastIndexOf('.');
-        return point >= 0 ? nomFichier.substring(point) : "";
-    }
-
-    private static String sha256(byte[] contenu) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return HexFormat.of().formatHex(digest.digest(contenu));
-        } catch (NoSuchAlgorithmException e) {
-            // SHA-256 fait partie de tout JDK standard — ne devrait jamais arriver.
-            throw new IllegalStateException(e);
-        }
     }
 
     private static Response erreur(int statut, String message) {
