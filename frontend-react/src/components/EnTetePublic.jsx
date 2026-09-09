@@ -1,38 +1,33 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { ArrowRight, Menu, Play, X } from 'lucide-react';
+import { ArrowRight, Menu, Play, Search, X } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
-import MenuDeroulant from './MenuDeroulant';
+import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import { useTheme } from '../theme/ThemeContext';
-import { SMARTEX } from '../config/smartex';
 
-/**
- * Sous-menu « Ressources » : pages de contenu que l'on consulte pour se
- * documenter, par opposition aux pages produit de la navigation principale.
+/*
+ * Navigation principale. « Accueil » mène à /accueil, la page de présentation
+ * du produit ; le logotype, lui, pointe vers / (la page d'entrée) — ce sont
+ * deux destinations distinctes. Se former, Déploiement, Bénéfices, FAQ et
+ * À propos restent atteignables par le pied de page et par la recherche.
  */
-const RESSOURCES_LIENS = [
-  { vers: '/formation', libelle: 'Se former à la RSE, ESG et ISR' },
-  { vers: '/deploiement', libelle: 'Déploiement de la solution' },
-  { vers: '/avantages', libelle: 'Bénéfices de la solution' },
-  { vers: '/faq', libelle: 'Questions fréquentes' },
-];
-
 const LIENS = [
+  { vers: '/accueil', libelle: 'Accueil' },
   { vers: '/services', libelle: 'Solution' },
   { vers: '/methodologie', libelle: 'Méthodologie' },
   { vers: '/formules', libelle: 'Formules' },
+  { vers: '/contact', libelle: 'Contact' },
 ];
-
-const LIENS_FIN = [{ vers: '/a-propos', libelle: 'À propos' }];
 
 /** En-tête de la partie publique : marque, navigation, démonstration et appel à l'action. */
 export default function EnTetePublic() {
   const [ouvert, setOuvert] = useState(false);
   const [defile, setDefile] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
+  const [rechercheOuverte, definirRechercheOuverte] = useState(false);
   // Sur une page qui impose le sombre, BasculeTheme ne rend rien : l'intitulé
   // « Thème » du menu mobile resterait seul face à un espace vide.
   const { sombreForce } = useTheme();
@@ -53,26 +48,23 @@ export default function EnTetePublic() {
           : 'border-transparent bg-surface/70 backdrop-blur'
       )}
     >
-      <div className="mx-auto flex h-[84px] max-w-[87.5rem] items-center justify-between gap-6 px-6 lg:px-10">
+      {/* Marges et espacement resserrés sur téléphone : sous 420 px, 12 px de
+          marge au lieu de 24 rendent 24 px au contenu, ce qui suffit à faire
+          tenir l'appel à l'action sur une ligne. */}
+      <div className="mx-auto flex h-[84px] max-w-[87.5rem] items-center justify-between gap-2 px-3 min-[420px]:px-4 sm:gap-6 sm:px-6 lg:px-10">
         <Link
           to="/"
           onClick={() => setOuvert(false)}
           className="group shrink-0 transition-transform duration-500 motion-safe:group-hover:scale-[1.03]"
         >
           <Logo taille="sm" />
-          <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">Par {SMARTEX.editeur}</p>
+          <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
 
         {/* `whitespace-nowrap` : sans lui, « À propos » et les actions se
             cassent sur deux lignes une fois la place réduite par le logo. */}
         <nav className="hidden items-center gap-1 whitespace-nowrap xl:flex">
           {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
-              {lien.libelle}
-            </NavLink>
-          ))}
-          <MenuDeroulant libelle="Ressources" liens={RESSOURCES_LIENS} />
-          {LIENS_FIN.map((lien) => (
             <NavLink key={lien.vers} to={lien.vers} className="lien-nav">
               {lien.libelle}
             </NavLink>
@@ -92,12 +84,22 @@ export default function EnTetePublic() {
           <button
             type="button"
             onClick={() => definirVideoOuverte(true)}
+            aria-label="Voir la démo"
             className="group flex items-center gap-2.5 text-sm font-medium text-ink-700 transition-colors hover:text-brand-700 dark:hover:text-brand-400"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-300 text-brand-600 transition duration-300 group-hover:border-brand-500 group-hover:bg-brand-50 dark:text-brand-400 dark:group-hover:bg-brand-500/15">
               <Play className="h-3 w-3 fill-current" aria-hidden />
             </span>
             Voir la démo
+          </button>
+
+          <button
+            type="button"
+            onClick={() => definirRechercheOuverte(true)}
+            aria-label="Rechercher dans le site"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-ink-600 transition-colors hover:bg-ink-100 hover:text-brand-700 dark:hover:text-brand-400"
+          >
+            <Search className="h-[18px] w-[18px]" aria-hidden />
           </button>
 
           <span className="h-6 w-px bg-ink-200" aria-hidden />
@@ -118,12 +120,16 @@ export default function EnTetePublic() {
           </Link>
         </div>
 
-        {/* Sur mobile, l'appel à l'action reste visible à côté du menu. */}
+        {/* Sur mobile, l'appel à l'action reste visible à côté du menu.
+            `whitespace-nowrap` seulement à partir de 360 px : en dessous, la
+            place manque pour l'intitulé complet sur une ligne, et mieux vaut
+            un bouton sur deux lignes qu'un en-tête qui sort de l'écran. Le
+            bouton retrouve ses dimensions d'origine à partir de 420 px. */}
         <div className="flex items-center gap-2 xl:hidden">
           <Link
             to="/inscription"
             onClick={() => setOuvert(false)}
-            className="rounded-[10px] bg-brand-600 px-3.5 py-2 text-xs font-semibold text-white shadow-glow transition-colors hover:bg-brand-700"
+            className="rounded-[10px] bg-brand-600 px-2.5 py-2 text-[11px] font-semibold text-white shadow-glow transition-colors hover:bg-brand-700 min-[360px]:whitespace-nowrap min-[420px]:px-3.5 min-[420px]:text-xs"
           >
             Créer un compte
           </Link>
@@ -146,7 +152,7 @@ export default function EnTetePublic() {
         )}
       >
         <nav className="mx-auto flex max-w-[87.5rem] flex-col gap-1 px-6 py-4">
-          {[...LIENS, ...LIENS_FIN].map((lien) => (
+          {LIENS.map((lien) => (
             <NavLink
               key={lien.vers}
               to={lien.vers}
@@ -164,19 +170,23 @@ export default function EnTetePublic() {
             </NavLink>
           ))}
 
-          <p className="mt-3 px-3 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Ressources</p>
-          {RESSOURCES_LIENS.map((lien) => (
-            <Link
-              key={lien.vers}
-              to={lien.vers}
-              onClick={() => setOuvert(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100"
-            >
-              {lien.libelle}
-            </Link>
-          ))}
-
           <div className="my-2 border-t border-ink-100" />
+
+          {/* La recherche n'a pas sa place dans la barre repliée : sous 420 px,
+              logo + appel à l'action + menu occupent déjà toute la largeur. */}
+          <button
+            type="button"
+            onClick={() => {
+              setOuvert(false);
+              definirRechercheOuverte(true);
+            }}
+            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-ink-200 text-ink-500">
+              <Search className="h-3.5 w-3.5" aria-hidden />
+            </span>
+            Rechercher
+          </button>
 
           <button
             type="button"
@@ -208,6 +218,8 @@ export default function EnTetePublic() {
           )}
         </nav>
       </div>
+
+      {rechercheOuverte ? <RechercheVitrine surFermeture={() => definirRechercheOuverte(false)} /> : null}
 
       {videoOuverte ? (
         <ModaleVideo

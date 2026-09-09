@@ -7,6 +7,7 @@ export const SMARTEX = {
   editeur: 'Smartex Expertises',
   produit: 'SMARTEX SustWay',
   accroche: 'Évaluation RSE intelligente',
+  signature: 'Évaluer. Analyser. Progresser.',
   baseline: 'Conseil, audit et outillage numérique de la performance durable.',
   mission: 'Mesurer la maturité et la performance de votre entreprise en matière de RSE et ESG.',
   promesseFinancement: 'Préparez votre éligibilité au financement durable et éthique.',
@@ -18,7 +19,23 @@ export const SMARTEX = {
   horaires: 'Lundi – vendredi, 8h30 – 18h00 (GMT)',
   siteWeb: 'https://www.smartex-expertises.com',
   linkedin: 'https://www.linkedin.com/company/smartex-expertises',
+  // Comptes annoncés dans la maquette du pied de page mais dont l'URL n'est pas
+  // encore connue. Renseigner l'adresse fait apparaître l'icône ; la laisser à
+  // null vaut mieux qu'un lien inventé qui mènerait sur un compte inexistant.
+  youtube: null,
+  x: null,
 };
+
+/**
+ * Réseaux affichés dans le pied de page, dans l'ordre de la maquette. Les
+ * comptes sans URL connue sont écartés plutôt que rendus inactifs : une icône
+ * de marque qui ne mène nulle part se lit comme un lien cassé.
+ */
+export const RESEAUX_SOCIAUX = [
+  { code: 'linkedin', libelle: 'LinkedIn', url: SMARTEX.linkedin },
+  { code: 'youtube', libelle: 'YouTube', url: SMARTEX.youtube },
+  { code: 'x', libelle: 'X', url: SMARTEX.x },
+].filter((reseau) => reseau.url);
 
 /** Domaines d'intervention de Smartex Expertises autour de la plateforme. */
 export const METIERS = [

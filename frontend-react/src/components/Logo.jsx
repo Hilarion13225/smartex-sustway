@@ -2,7 +2,13 @@ import { Leaf } from 'lucide-react';
 import clsx from 'clsx';
 
 const TAILLES = {
-  sm: 'text-2xl',
+  // Deux crans plus petit sur téléphone : à `text-2xl` le logotype occupe
+  // 226 px, à `text-xl` 188 px, à `text-base` 151 px. Sur un écran de 360 px,
+  // l'en-tête ne dispose que de 336 px utiles à partager entre le logo,
+  // l'appel à l'action et le menu — au-delà de 151 px, l'intitulé « Créer un
+  // compte » ne tient plus sur une seule ligne. Inchangé à partir de `sm`, le
+  // rendu bureau ne bouge donc pas.
+  sm: 'text-base min-[420px]:text-xl sm:text-2xl',
   md: 'text-3xl',
   lg: 'text-2xl sm:text-5xl lg:text-6xl',
 };

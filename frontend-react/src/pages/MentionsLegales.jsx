@@ -3,8 +3,13 @@ import EnTeteVitrine from '../components/EnTeteVitrine';
 import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
 
+// `ancre` : cible des liens « Confidentialité », « Cookies » et « Propriété
+// intellectuelle » du pied de page. Identifiants posés explicitement plutôt
+// que dérivés du titre, pour qu'une reformulation d'intitulé ne casse pas les
+// liens existants.
 const SECTIONS = [
   {
+    ancre: 'editeur-du-site',
     titre: 'Éditeur du site',
     contenu: [
       `Le site et la plateforme ${SMARTEX.produit} sont édités par ${SMARTEX.editeur}, dont le siège est situé à ${SMARTEX.adresse}.`,
@@ -12,6 +17,7 @@ const SECTIONS = [
     ],
   },
   {
+    ancre: 'propriete-intellectuelle',
     titre: 'Propriété intellectuelle',
     contenu: [
       `La marque ${SMARTEX.produit}, le référentiel d’évaluation, la méthodologie de scoring, les contenus rédactionnels et les éléments graphiques du site sont la propriété exclusive de ${SMARTEX.editeur}.`,
@@ -19,6 +25,7 @@ const SECTIONS = [
     ],
   },
   {
+    ancre: 'donnees-personnelles',
     titre: 'Données personnelles',
     contenu: [
       'Les données saisies lors de la création d’un compte et les documents déposés dans le cadre d’une évaluation sont traités pour les seules finalités de l’évaluation RSE souscrite.',
@@ -26,12 +33,14 @@ const SECTIONS = [
     ],
   },
   {
+    ancre: 'cookies',
     titre: 'Cookies',
     contenu: [
       'Le site n’utilise que les mécanismes de stockage strictement nécessaires au fonctionnement de la plateforme, notamment la conservation de la session d’authentification.',
     ],
   },
   {
+    ancre: 'limites-interpretation',
     titre: 'Limites d’interprétation des résultats',
     contenu: [
       'Les scores, probabilités de conformité et indices de préparation produits par la plateforme sont des mesures d’alignement méthodologiques.',
@@ -39,6 +48,7 @@ const SECTIONS = [
     ],
   },
   {
+    ancre: 'hebergement',
     titre: 'Hébergement et disponibilité',
     contenu: [
       `${SMARTEX.editeur} met en œuvre les moyens raisonnables pour assurer la disponibilité du service, sans garantie d’absence d’interruption, notamment lors des opérations de maintenance.`,
@@ -60,7 +70,10 @@ export default function MentionsLegales() {
         <div className="space-y-8">
           {SECTIONS.map((section, index) => (
             <Revele key={section.titre} delai={index * 70}>
-              <article className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-soft">
+              <article
+                id={section.ancre}
+                className="scroll-mt-28 rounded-2xl border border-ink-100 bg-surface p-6 shadow-soft"
+              >
                 <h2 className="text-lg font-semibold text-ink-900">{section.titre}</h2>
                 <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-600">
                   {section.contenu.map((paragraphe) => (

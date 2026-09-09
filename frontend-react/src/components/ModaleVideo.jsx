@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 /**
@@ -9,6 +10,12 @@ import { X } from 'lucide-react';
  * Fermeture à la touche Échap et au clic sur le fond. Le focus entre dans la
  * boîte à l'ouverture et revient sur l'élément déclencheur à la fermeture,
  * pour ne pas perdre la navigation au clavier.
+ *
+ * Montée dans <body> par portail plutôt qu'à sa place dans l'arbre : appelée
+ * depuis l'en-tête, qui porte un `backdrop-blur`, elle héritait de lui son bloc
+ * conteneur — un filtre d'arrière-plan en crée un pour ses descendants
+ * `fixed`. La surimpression se retrouvait alors haute de 84 px au lieu de
+ * couvrir la fenêtre, et la vidéo débordait au-dessus de l'écran.
  */
 export default function ModaleVideo({ source, titre = 'Vidéo de présentation', surFermeture }) {
   const boutonFermer = useRef(null);
@@ -33,7 +40,7 @@ export default function ModaleVideo({ source, titre = 'Vidéo de présentation',
     };
   }, [surFermeture]);
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -63,6 +70,7 @@ export default function ModaleVideo({ source, titre = 'Vidéo de présentation',
           <track kind="captions" />
         </video>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

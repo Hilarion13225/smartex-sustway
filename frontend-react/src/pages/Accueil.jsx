@@ -1,323 +1,305 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowRight,
-  BadgeCheck,
-  Bot,
-  Building2,
-  FileSearch,
-  Gauge,
-  Leaf,
-  LineChart,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Users,
-} from 'lucide-react';
-import { Badge } from '../components/ui';
+import { ArrowRight, BarChart3, Leaf, Play, Settings, ShieldCheck, Target, Users } from 'lucide-react';
 import Revele from '../components/Revele';
-import SectionFormules from '../components/SectionFormules';
-import AppelAction from '../components/AppelAction';
+import ModaleVideo from '../components/ModaleVideo';
+import MaquetteTableauBord from '../components/MaquetteTableauBord';
+import CompteurAnime from '../components/CompteurAnime';
+import SectionOrganisations from '../components/vitrine/SectionOrganisations';
+import SectionMethodologie from '../components/vitrine/SectionMethodologie';
+import { Etiquette, PASTELS, TraitManuscrit } from '../components/vitrine/communs';
 import { SMARTEX } from '../config/smartex';
-import Logo from '../components/Logo';
 
-const ATOUTS = [
-  {
-    icone: Bot,
-    titre: 'Pipeline IA multi-agents',
-    texte:
-      'Sept agents analysent les preuves déposées et estiment une probabilité de conformité par critère, plutôt qu’une note saisie à la main.',
-  },
-  {
-    icone: Target,
-    titre: 'Priorisation par le risque',
-    texte: 'Le risque attendu croise la non-conformité probable et la criticité du critère, variable selon le secteur d’activité.',
-  },
+const REASSURANCE = [
   {
     icone: ShieldCheck,
-    titre: 'Transparence et traçabilité',
-    texte: 'Chaque note s’appuie sur une preuve documentaire vérifiée par l’IA, avec probabilité de conformité et indice de confiance explicites.',
+    ton: 'rouge',
+    titre: 'Indépendance',
+    texte: 'Une évaluation objective et impartiale grâce à l’IA intégrée.',
   },
   {
-    icone: Leaf,
-    titre: 'Financements verts IFC/SFI',
-    texte:
-      'Un indice de préparation mesure l’alignement aux 8 Performance Standards du bailleur pilote — une mesure d’alignement, pas une garantie d’éligibilité.',
+    icone: Settings,
+    ton: 'bleu',
+    titre: 'Robustesse',
+    texte: 'Une méthodologie fiable et éprouvée.',
+  },
+  {
+    icone: BarChart3,
+    ton: 'vert',
+    titre: 'Transparence',
+    texte: 'Des résultats clairs et compréhensibles.',
   },
 ];
 
-const ETAPES = [
+const STATISTIQUES = [
+  { prefixe: '+', valeur: 100, libelle: 'Organisations accompagnées' },
+  { valeur: 87, libelle: 'Critères intégrés' },
+  { valeur: 3, libelle: 'Continents' },
+  { valeur: 1, libelle: 'Même ambition' },
+];
+
+const BENEFICES = [
   {
-    titre: 'Étape 1 — Probabilité de conformité',
-    icone: Bot,
-    jauge: 78,
+    icone: Leaf,
+    ton: 'vert',
+    titre: 'Une vision structurée',
+    texte: 'Comprenez votre niveau de maturité RSE et ESG en un coup d’œil.',
   },
   {
-    titre: 'Étape 2 — Score pondéré Smartex',
-    icone: LineChart,
-    jauge: 64,
-  },
-  {
-    titre: 'Étape 3 — Risque attendu et priorité',
     icone: Target,
-    jauge: 41,
+    ton: 'rouge',
+    titre: 'Des écarts identifiés',
+    texte: 'Repérez les domaines nécessitant une attention particulière.',
   },
   {
-    titre: 'Étape complémentaire — Indice bailleur',
-    texte: 'Même formule, restreinte aux critères tagués IFC/SFI. Réservée à la formule Avancées.',
-    icone: Leaf,
-    jauge: 55,
-  },
-];
-
-const PARCOURS = [
-  {
-    icone: Building2,
-    titre: 'Décrivez votre entreprise',
-    texte: 'Secteur, taille et périmètre : le questionnaire ne retient que les critères réellement applicables.',
+    icone: Users,
+    ton: 'bleu',
+    titre: 'Des priorités claires',
+    texte: 'Concentrez vos efforts là où ils génèrent le plus de valeur.',
   },
   {
-    icone: FileSearch,
-    titre: 'Répondez, preuve à l’appui si possible',
-    texte: 'Chaque critère se répond directement ; un document n’est pas obligatoire, mais une fois vérifié par l’IA, il certifie la véracité de votre réponse.',
+    icone: BarChart3,
+    ton: 'violet',
+    titre: 'Une amélioration continue',
+    texte: 'Suivez l’évolution de votre démarche dans le temps.',
   },
-  {
-    icone: Bot,
-    titre: 'Laissez l’IA évaluer',
-    texte: 'Les agents vérifient la cohérence entre réponse et preuve quand elle existe, puis produisent une probabilité de conformité, un niveau d’engagement et un indice de confiance.',
-  },
-  {
-    icone: LineChart,
-    titre: 'Pilotez vos actions',
-    texte: 'Score pondéré, risques prioritaires et rapport exportable pour vos parties prenantes.',
-  },
-];
-
-const DOMAINES = [
-  'Gouvernance',
-  'Droits humains',
-  'Conditions de travail',
-  'Environnement',
-  'Loyauté des pratiques',
-  'Consommateurs',
-  'Communautés locales',
-  'Financements verts',
 ];
 
 export default function Accueil() {
+  const [videoOuverte, definirVideoOuverte] = useState(false);
+
   return (
     <div>
-      {/* ---------------------------------------------------------------- Héros */}
+      {/* ----------------------------------------------------------- Héros */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-halo-vert" aria-hidden />
-        <div
-          className="pointer-events-none absolute inset-0 bg-grille-ink bg-grille [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]"
+        <span
+          className="pointer-events-none absolute -left-32 -top-24 h-80 w-80 rounded-full bg-brand-100/50 blur-3xl dark:bg-brand-500/10"
           aria-hidden
         />
         <span
-          className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-emerald-300/30 blur-3xl motion-safe:animate-respiration"
-          aria-hidden
-        />
-        <span
-          className="pointer-events-none absolute -right-16 top-8 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl motion-safe:animate-respiration [animation-delay:2s]"
+          className="pointer-events-none absolute -right-24 top-32 h-96 w-96 rounded-full bg-emerald-100/50 blur-3xl dark:bg-emerald-500/10"
           aria-hidden
         />
 
-        <div className="relative mx-auto grid max-w-[90rem] items-center gap-12 px-5 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
-          <div className="motion-safe:animate-apparition-bas">
-            <Badge ton="vert" icone={BadgeCheck}>
-              Version 1.5 — volet financements verts intégré
-            </Badge>
-            <h1 className="mt-5 text-4xl font-semibold leading-[1.1] text-ink-900 sm:text-5xl lg:text-[3.4rem]">
-              L’évaluation RSE,{' '}
-              <span className="texte-degrade motion-safe:animate-degrade-anime">pilotée par l’intelligence artificielle</span>, de
-              la preuve au rapport.
+        {/*
+          Deux colonnes sur deux rangées : le texte puis les blocs de
+          réassurance à gauche, l'aperçu produit à droite sur toute la hauteur.
+          En une seule colonne (téléphone), l'ordre du DOM place l'aperçu entre
+          les boutons et les blocs, comme sur la maquette.
+        */}
+        <div className="relative mx-auto grid max-w-[80rem] gap-10 px-5 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:grid-rows-[auto_auto] lg:gap-x-10 lg:gap-y-10 lg:py-14">
+          <div className="motion-safe:animate-apparition-bas lg:col-start-1 lg:row-start-1">
+            <Etiquette filetDroit>Plateforme d’évaluation intelligente RSE &amp; ESG</Etiquette>
+
+            <h1 className="mt-6 font-display text-[1.95rem] font-extrabold leading-[1.12] tracking-tight text-marine sm:text-[2.4rem] lg:text-[2.45rem] xl:text-[2.55rem]">
+              Évaluez et optimisez
+              <br />
+              la maturité et la performance
+              <br />
+              <span className="text-brand-600">RSE et ESG de votre entreprise.</span>
             </h1>
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600">
-              {SMARTEX.produit} digitalise le cycle d’audit RSE : composition dynamique du questionnaire, analyse documentaire
-              automatisée, probabilité de conformité par critère, priorisation des actions correctives et indice de préparation
-              aux financements verts.
+
+            <p className="mt-5 max-w-xl text-base leading-[1.55] text-ink-600">
+              Avec {SMARTEX.produit}, évaluer et optimiser la démarche de maturité et la performance de votre entreprise
+              en matière de bonnes pratiques RSE et ESG en s’appuyant sur l’intelligence artificielle.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-2">
-              <Link to="/inscription" className="btn-vitrine group px-4">
-                Choisir une formule
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                to="/inscription"
+                className="group inline-flex items-center justify-center gap-2.5 rounded-lg bg-brand-600 px-10 py-3 text-sm font-semibold text-white shadow-glow transition duration-300 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5"
+              >
+                Créer un compte
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
               </Link>
-              <Link to="/services" className="btn-vitrine-clair group px-4">
-                Découvrir la méthode
-              </Link>
-              <Link to="/connexion" className="btn-vitrine-fantome group px-4">
-                Se connecter
-              </Link>
+
+              <button
+                type="button"
+                onClick={() => definirVideoOuverte(true)}
+                className="group inline-flex items-center justify-center gap-2.5 rounded-lg border border-brand-300 bg-surface px-8 py-3 text-sm font-semibold text-brand-600 transition duration-300 hover:border-brand-500 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10"
+              >
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
+                  <Play className="h-2.5 w-2.5 fill-current" aria-hidden />
+                </span>
+                Découvrir {SMARTEX.produit}
+              </button>
             </div>
           </div>
 
-          {/* Carte moteur de scoring — jauges animées à l'apparition */}
-          <Revele delai={150}>
-            <div className="relative motion-safe:animate-flottement">
-              <div className="carte-verre relative overflow-hidden p-6">
+          {/*
+            Aperçu du produit, encadré des deux annotations manuscrites de la
+            maquette. Elles restent dans le flux plutôt qu'en position absolue :
+            posées par-dessus, elles recouvraient l'en-tête du tableau de bord.
+          */}
+          <Revele delai={120} className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+            <p className="mb-5 ml-auto hidden w-56 rotate-[-3deg] text-right font-titre text-[0.95rem] font-semibold italic leading-snug text-marine xl:block">
+              Des organisations plus responsables pour un monde plus prospère.
+              <TraitManuscrit className="ml-auto mt-1 h-2 w-28 text-brand-500" />
+            </p>
+
+            <MaquetteTableauBord />
+
+            <p className="ml-auto mt-6 hidden w-40 rotate-[2deg] text-right font-titre text-[0.9rem] font-semibold italic leading-snug text-marine xl:block">
+              Chaque décision compte.
+              <TraitManuscrit className="ml-auto mt-1 h-2 w-24 text-brand-500" />
+            </p>
+          </Revele>
+
+          {/* Blocs de réassurance, sous les appels à l'action */}
+          <div className="grid gap-10 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-ink-100 lg:col-start-1 lg:row-start-2">
+            {REASSURANCE.map((bloc, index) => (
+              <Revele
+                key={bloc.titre}
+                delai={index * 110}
+                className={index === 0 ? 'sm:pr-7' : index === 2 ? 'sm:pl-7' : 'sm:px-7'}
+              >
                 <span
-                  className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-brand-400 to-transparent"
+                  className={`inline-flex h-14 w-14 items-center justify-center rounded-full ${PASTELS[bloc.ton]}`}
+                >
+                  <bloc.icone className="h-6 w-6" aria-hidden />
+                </span>
+                <h2 className="mt-4 font-display text-base font-bold text-marine">{bloc.titre}</h2>
+                <p className="mt-2 text-[13px] leading-snug text-ink-500">{bloc.texte}</p>
+              </Revele>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <SectionOrganisations />
+
+      <SectionMethodologie />
+
+      {/* ------------------------------------------ Pourquoi Smartex SustWay */}
+      <section className="mx-auto max-w-[80rem] px-5 py-10">
+        <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-10">
+          <div>
+            <Revele>
+              <Etiquette>Pourquoi {SMARTEX.produit} ?</Etiquette>
+              <h2 className="mt-4 max-w-2xl font-display text-2xl font-extrabold tracking-tight text-marine sm:text-[1.6rem]">
+                Comprendre votre niveau de maturité pour mieux progresser.
+              </h2>
+            </Revele>
+
+            <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
+              {BENEFICES.map((benefice, index) => (
+                <Revele
+                  key={benefice.titre}
+                  delai={index * 100}
+                  className={index === 0 ? 'lg:pr-6' : index === 3 ? 'lg:pl-6' : 'lg:px-6'}
+                >
+                  <span
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-full ${PASTELS[benefice.ton]}`}
+                  >
+                    <benefice.icone className="h-5 w-5" aria-hidden />
+                  </span>
+                  <h3 className="mt-4 font-display text-[0.95rem] font-bold leading-snug text-marine">
+                    {benefice.titre}
+                  </h3>
+                  <p className="mt-2 text-[13px] leading-snug text-ink-500">{benefice.texte}</p>
+                </Revele>
+              ))}
+            </div>
+          </div>
+
+          {/* Appel à l'action de fin de page */}
+          <Revele delai={140}>
+            {/* Texte à gauche, panneau végétal à droite sur toute la hauteur —
+                disposition de la maquette. En dessous de `sm`, la carte n'est
+                plus assez large pour deux colonnes : elle s'empile. */}
+            <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-ink-100 bg-surface shadow-soft sm:flex-row">
+              <div className="flex flex-1 flex-col justify-center p-5">
+                <h2 className="font-display text-[1.05rem] font-extrabold leading-snug text-marine xl:text-lg">
+                  Bâtissons ensemble une organisation plus durable, éthique et responsable.
+                </h2>
+                <p className="mt-3 text-[0.8rem] leading-snug text-ink-500">
+                  {SMARTEX.produit} vous accompagne dans votre démarche RSE et ESG grâce à des données fiables et une
+                  analyse intelligente.
+                </p>
+                <Link
+                  to="/inscription"
+                  className="group mt-5 inline-flex w-fit items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-[0.82rem] font-semibold text-white shadow-glow transition duration-300 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5"
+                >
+                  Créer un compte
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden
+                  />
+                </Link>
+              </div>
+
+              {/*
+                Panneau végétal dessiné plutôt que photographié : aucune image de
+                feuillage n'existe dans `src/assets`, et les photos disponibles
+                montrent des scènes de bureau sans rapport avec le propos. Pour
+                le remplacer par une vraie photo, poser un <img> en couverture
+                de ce bloc et garder l'annotation par-dessus.
+              */}
+              <div className="relative min-h-[13rem] shrink-0 overflow-hidden bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 sm:min-h-0 sm:w-[40%]">
+                <Leaf
+                  className="absolute -left-8 -top-8 h-44 w-44 rotate-12 text-white/10"
+                  strokeWidth={1}
                   aria-hidden
                 />
-                <div className="flex items-center justify-between gap-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-                    <Gauge className="h-4 w-4 text-brand-600" aria-hidden />
-                    Moteur de scoring unifié
-                  </p>
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-brand-500/70 motion-safe:animate-onde" aria-hidden />
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand-600" aria-hidden />
-                  </span>
-                </div>
+                <Leaf
+                  className="absolute -bottom-12 -right-6 h-48 w-48 -rotate-12 text-white/10"
+                  strokeWidth={1}
+                  aria-hidden
+                />
+                <span className="absolute right-8 top-7 h-2 w-2 rounded-full bg-white/40" aria-hidden />
+                <span className="absolute right-14 top-14 h-1.5 w-1.5 rounded-full bg-white/30" aria-hidden />
 
-                <ol className="mt-6 space-y-5">
-                  {ETAPES.map((etape) => (
-                    <li key={etape.titre} className="group flex gap-3">
-                      <span className="mt-0.5 h-fit rounded-xl bg-brand-50 p-2 text-brand-600 ring-1 ring-brand-100 transition duration-300 group-hover:bg-brand-600 group-hover:text-white">
-                        <etape.icone className="h-4 w-4" aria-hidden />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-ink-900">{etape.titre}</p>
-                        {etape.texte ? <p className="mt-0.5 text-sm leading-relaxed text-ink-500">{etape.texte}</p> : null}
-                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 motion-safe:animate-trace-jauge"
-                            style={{ width: `${etape.jauge}%` }}
-                          />
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
+                <p className="absolute bottom-5 left-5 right-5 font-titre text-[0.85rem] font-semibold italic leading-snug text-white">
+                  Un impact durable commence par une meilleure compréhension.
+                  <TraitManuscrit className="mt-1.5 h-2 w-20 text-white/70" />
+                </p>
               </div>
             </div>
           </Revele>
         </div>
-
-        {/* Bandeau défilant des domaines évalués */}
-        <div className="relative border-y border-ink-100 bg-surface/70 py-4">
-          <div className="masque-lateral overflow-hidden">
-            <div className="flex w-max gap-3 motion-safe:animate-defilement">
-              {[...DOMAINES, ...DOMAINES].map((domaine, index) => (
-                <span
-                  key={`${domaine}-${index}`}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-ink-100 bg-surface px-4 py-1.5 text-xs font-medium text-ink-600"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-brand-500" aria-hidden />
-                  {domaine}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
       </section>
 
-      {/* ------------------------------------------------------------- Atouts */}
-      <section className="bg-ink-50 py-20">
-        <div className="mx-auto max-w-[90rem] px-5">
-          <Revele className="max-w-2xl">
-            <Badge ton="bleu" icone={Sparkles}>
-              Ce que la plateforme apporte
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-              Une évaluation traçable, du critère à la décision
+      {/* -------------------------------------------- Bandeau de statistiques */}
+      <section className="bg-gradient-to-r from-brand-800 via-brand-700 to-brand-700 text-white">
+        <div className="mx-auto flex max-w-[80rem] flex-col gap-8 px-5 py-6 lg:flex-row lg:items-center lg:gap-10">
+          <div className="flex items-center gap-5 lg:w-80 lg:shrink-0">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white">
+              <Leaf className="h-6 w-6 text-brand-600" strokeWidth={2.2} aria-hidden />
+            </span>
+            <h2 className="font-display text-[15px] font-bold leading-snug">
+              La durabilité n’est pas une option, c’est une opportunité.
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-ink-600">
-              Chaque note s’explique : la preuve, l’agent qui l’a analysée, la probabilité obtenue et le poids du critère.
-            </p>
-          </Revele>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {ATOUTS.map((atout, index) => (
-              <Revele key={atout.titre} delai={index * 110}>
-                <article className="carte-vitrine group h-full">
-                  <span className="puce-icone">
-                    <atout.icone className="h-5 w-5" aria-hidden />
-                  </span>
-                  <h3 className="mt-4 text-base font-semibold text-ink-900">{atout.titre}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500">{atout.texte}</p>
-                </article>
-              </Revele>
-            ))}
           </div>
-        </div>
-      </section>
 
-      {/* ------------------------------------------------------------ Parcours */}
-      <section id="parcours" className="mx-auto max-w-[90rem] scroll-mt-20 px-5 py-20">
-        <Revele className="max-w-2xl">
-          <Badge ton="ambre" icone={Users}>
-            Comment ça marche
-          </Badge>
-          <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-            Quatre étapes, de la création d’un compte client à l’édition du rapport de durabilité
-          </h2>
-        </Revele>
-
-        <div className="relative mt-12">
-          <span className="absolute left-6 top-0 hidden h-full w-px bg-gradient-to-b from-brand-200 via-brand-200 to-transparent lg:block" aria-hidden />
-          <div className="grid gap-6 lg:grid-cols-4">
-            {PARCOURS.map((etape, index) => (
-              <Revele key={etape.titre} delai={index * 130}>
-                <article className="carte-vitrine group h-full">
-                  <div className="flex items-center gap-3">
-                    <span className="puce-icone">
-                      <etape.icone className="h-5 w-5" aria-hidden />
-                    </span>
-                    <span className="text-4xl font-semibold text-ink-100 transition-colors duration-300 group-hover:text-brand-100">
-                      0{index + 1}
-                    </span>
-                  </div>
-                  <h3 className="mt-4 text-base font-semibold text-ink-900">{etape.titre}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-500">{etape.texte}</p>
-                </article>
-              </Revele>
+          <ul className="grid flex-1 grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-white/20 lg:border-l lg:border-white/20">
+            {STATISTIQUES.map((statistique) => (
+              <li key={statistique.libelle} className="px-3 text-center sm:px-5">
+                <p className="font-display text-[1.75rem] font-extrabold leading-none">
+                  {statistique.prefixe}
+                  <CompteurAnime valeur={statistique.valeur} />
+                </p>
+                <p className="mt-1.5 text-[11px] leading-snug text-white/80">{statistique.libelle}</p>
+              </li>
             ))}
-          </div>
+          </ul>
+
+          <Link
+            to="/contact"
+            className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-lg bg-white px-6 py-2.5 text-sm font-semibold text-brand-700 shadow-lg transition duration-300 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5 lg:ml-2"
+          >
+            Demander une démonstration
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
+          </Link>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------ Éditeur */}
-      <section className="border-y border-ink-100 bg-ink-50 py-20">
-        <div className="mx-auto grid max-w-[90rem] items-center gap-10 px-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <Revele className="min-w-0">
-            <div className="relative flex items-center justify-center overflow-hidden rounded-3xl border border-ink-100 bg-surface p-8 shadow-soft sm:p-12">
-              <span className="pointer-events-none absolute inset-0 rounded-3xl bg-halo-vert" aria-hidden />
-              <Logo taille="lg" className="relative motion-safe:animate-flottement" />
-            </div>
-          </Revele>
-          <Revele delai={120}>
-            <Badge ton="neutre" icone={BadgeCheck}>
-              Édité par {SMARTEX.editeur}
-            </Badge>
-            <h2 className="mt-4 text-3xl font-semibold text-ink-900">
-              La méthodologie d’un cabinet, outillée par la technologie
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-ink-600">
-              {SMARTEX.produit} industrialise le référentiel d’évaluation de {SMARTEX.editeur}. {SMARTEX.baseline} La
-              plateforme reste au service du jugement d’expert : l’IA prépare, hiérarchise et documente ; l’équipe valide.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link to="/a-propos" className="btn-vitrine group">
-                À propos de nous
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-              </Link>
-              <Link to="/contact" className="btn-vitrine-clair">
-                Nous contacter
-              </Link>
-            </div>
-          </Revele>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ Formules */}
-      <SectionFormules
-        titre="Choisissez votre formule avant de créer votre compte"
-        description="Le choix de la formule est transmis lors de la création du compte et active immédiatement les fonctionnalités correspondantes."
-      />
-
-      <AppelAction />
+      {videoOuverte ? (
+        <ModaleVideo
+          source="/videos/methodologie-overview.mp4"
+          titre={`Démonstration ${SMARTEX.produit}`}
+          surFermeture={() => definirVideoOuverte(false)}
+        />
+      ) : null}
     </div>
   );
 }

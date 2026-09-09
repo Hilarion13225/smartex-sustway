@@ -38,6 +38,11 @@ export default {
           800: 'rgb(var(--ink-800) / <alpha-value>)',
           900: 'rgb(var(--ink-900) / <alpha-value>)',
         },
+        // Bleu marine de la titraille vitrine. Défini en variable CSS comme la
+        // palette ink, et pour la même raison : un titre marine posé sur le
+        // fond sombre du thème nuit serait illisible, la variable bascule donc
+        // vers un bleu très clair au lieu de rester figée.
+        marine: 'rgb(var(--marine) / <alpha-value>)',
         // Fond des cartes/inputs/boutons clairs : blanc pur en clair, une
         // surface légèrement plus claire que le fond de page en sombre —
         // remplace les `bg-white` littéraux, qui eux ne s'inversent jamais.
