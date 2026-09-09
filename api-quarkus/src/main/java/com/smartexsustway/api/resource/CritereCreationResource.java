@@ -4,12 +4,15 @@ import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Criticite;
 import com.smartexsustway.api.domain.entity.Domaine;
+import com.smartexsustway.api.domain.entity.Exigence;
 import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.enums.NiveauCriticite;
+import com.smartexsustway.api.domain.enums.OrigineContenu;
 import com.smartexsustway.api.domain.enums.TypeApplicabilite;
 import com.smartexsustway.api.domain.repository.CriticiteRepository;
 import com.smartexsustway.api.domain.repository.CritereRepository;
 import com.smartexsustway.api.domain.repository.DomaineRepository;
+import com.smartexsustway.api.domain.repository.ExigenceRepository;
 import com.smartexsustway.api.domain.repository.ReferentielRepository;
 import com.smartexsustway.api.resource.dto.CritereCreateRequestDto;
 import com.smartexsustway.api.resource.dto.CritereDto;
@@ -44,6 +47,7 @@ public class CritereCreationResource {
     @Inject DomaineRepository domaineRepository;
     @Inject CritereRepository critereRepository;
     @Inject CriticiteRepository criticiteRepository;
+    @Inject ExigenceRepository exigenceRepository;
     @Inject VersionReferentielService versionService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
@@ -94,6 +98,16 @@ public class CritereCreationResource {
         }
 
         critereRepository.persist(critere);
+
+        // Tout critère porte au moins une exigence : c'est elle qui dit ce
+        // qui est attendu de l'organisation, et sans elle le contexte soumis
+        // aux agents se réduirait au libellé. Même point de départ que pour
+        // les critères repris par V50 — le libellé, marqué comme tel, à
+        // réécrire.
+        Exigence initiale = new Exigence(critere, critere.getCode() + "-E1",
+                critere.getLibelle(), critere.getLibelle());
+        initiale.setOrigine(OrigineContenu.CONTENU_INITIAL);
+        exigenceRepository.persist(initiale);
 
         auditLogService.journaliser(tenantContext.utilisateurCourantId(), null,
                 "CRITERE_CREE", "critere", critere.getId());

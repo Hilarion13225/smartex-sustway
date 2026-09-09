@@ -2,7 +2,10 @@ package com.smartexsustway.api.referentiel;
 
 import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Domaine;
+import com.smartexsustway.api.domain.entity.Exigence;
+import com.smartexsustway.api.domain.entity.PreuveAttendue;
 import com.smartexsustway.api.domain.entity.Question;
+import com.smartexsustway.api.domain.entity.RegleAnalyse;
 import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.entity.SousDomaine;
@@ -10,8 +13,11 @@ import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.StatutVersionReferentiel;
 import com.smartexsustway.api.domain.repository.CritereRepository;
 import com.smartexsustway.api.domain.repository.DomaineRepository;
+import com.smartexsustway.api.domain.repository.ExigenceRepository;
+import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
 import com.smartexsustway.api.domain.repository.QuestionRepository;
 import com.smartexsustway.api.domain.repository.ReferentielVersionRepository;
+import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
 import com.smartexsustway.api.domain.repository.SousDomaineRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -48,6 +54,9 @@ public class VersionReferentielService {
     @Inject SousDomaineRepository sousDomaineRepository;
     @Inject CritereRepository critereRepository;
     @Inject QuestionRepository questionRepository;
+    @Inject ExigenceRepository exigenceRepository;
+    @Inject PreuveAttendueRepository preuveAttendueRepository;
+    @Inject RegleAnalyseRepository regleAnalyseRepository;
     @Inject EntityManager entityManager;
 
     /** Levée quand une opération porterait sur un contenu figé. Traduite en 409 par les ressources. */
@@ -200,8 +209,13 @@ public class VersionReferentielService {
             throw new VersionFigeeException("La version " + version.getNumero()
                     + " est " + version.getStatut() + " : l'historique des versions publiées est conservé");
         }
-        // Des feuilles vers la racine : une question dépend de son critère,
-        // un critère de son domaine.
+        // Des feuilles vers la racine : une règle dépend de sa pièce
+        // attendue, une pièce de son exigence, une exigence de son critère.
+        regleAnalyseRepository.parVersion(version.getId()).forEach(regleAnalyseRepository::delete);
+        entityManager.flush();
+        preuveAttendueRepository.parVersion(version.getId()).forEach(preuveAttendueRepository::delete);
+        entityManager.flush();
+        exigenceRepository.parVersion(version.getId()).forEach(exigenceRepository::delete);
         for (Critere critere : critereRepository.parVersion(version.getId())) {
             questionRepository.parCritere(critere.getId()).forEach(questionRepository::delete);
         }
@@ -218,6 +232,9 @@ public class VersionReferentielService {
     private void copierContenu(ReferentielVersion source, ReferentielVersion cible) {
         Map<UUID, Domaine> domainesCopies = new HashMap<>();
         Map<UUID, SousDomaine> sousDomainesCopies = new HashMap<>();
+        Map<UUID, Critere> criteresCopies = new HashMap<>();
+        Map<UUID, Exigence> exigencesCopiees = new HashMap<>();
+        Map<UUID, PreuveAttendue> preuvesAttenduesCopiees = new HashMap<>();
 
         for (Domaine domaine : domaineRepository.parVersion(source.getId())) {
             Domaine copie = domaine.copiePour(cible);
@@ -238,6 +255,7 @@ public class VersionReferentielService {
                     : sousDomainesCopies.get(critere.getSousDomaine().getId());
             Critere copie = critere.copieSous(domainesCopies.get(critere.getDomaine().getId()), sousDomaineCible);
             critereRepository.persist(copie);
+            criteresCopies.put(critere.getId(), copie);
 
             for (Question question : questionRepository.parCritere(critere.getId())) {
                 questionRepository.persist(question.copieSous(copie));
@@ -246,9 +264,39 @@ public class VersionReferentielService {
             copierRattachementsDuCritere(critere.getId(), copie.getId());
         }
 
+        // Le contenu métier suit la même descente : sans lui, un brouillon
+        // dérivé perdrait ses exigences et ses règles, et la version publiée
+        // suivante appauvrirait le référentiel sans que rien ne le signale.
+        for (Exigence exigence : exigenceRepository.parVersion(source.getId())) {
+            Exigence copie = exigence.copieSous(criteresCopies.get(exigence.getCritere().getId()));
+            exigenceRepository.persist(copie);
+            exigencesCopiees.put(exigence.getId(), copie);
+        }
+
+        for (PreuveAttendue preuve : preuveAttendueRepository.parVersion(source.getId())) {
+            PreuveAttendue copie = preuve.copieSous(exigencesCopiees.get(preuve.getExigence().getId()));
+            preuveAttendueRepository.persist(copie);
+            preuvesAttenduesCopiees.put(preuve.getId(), copie);
+        }
+
+        for (RegleAnalyse regle : regleAnalyseRepository.parVersion(source.getId())) {
+            // La portée est retraduite dans la version cible : recopier les
+            // identifiants d'origine relierait la nouvelle règle à l'ancienne
+            // exigence, donc à une version figée.
+            Exigence exigenceCible = regle.getExigence() == null
+                    ? null : exigencesCopiees.get(regle.getExigence().getId());
+            PreuveAttendue preuveCible = regle.getPreuveAttendue() == null
+                    ? null : preuvesAttenduesCopiees.get(regle.getPreuveAttendue().getId());
+            regleAnalyseRepository.persist(regle.copieSous(
+                    criteresCopies.get(regle.getCritere().getId()), exigenceCible, preuveCible));
+        }
+
         entityManager.flush();
-        LOG.infof("Version %s dérivée de %s : %d domaine(s), %d critère(s)",
-                cible.getNumero(), source.getNumero(), domainesCopies.size(), criteres.size());
+        LOG.infof("Version %s dérivée de %s : %d domaine(s), %d critère(s), %d exigence(s), "
+                        + "%d preuve(s) attendue(s), %d règle(s)",
+                cible.getNumero(), source.getNumero(), domainesCopies.size(), criteres.size(),
+                exigencesCopiees.size(), preuvesAttenduesCopiees.size(),
+                regleAnalyseRepository.parVersion(cible.getId()).size());
     }
 
     /**

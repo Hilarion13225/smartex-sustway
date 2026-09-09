@@ -17,12 +17,56 @@ public record EvaluerCritereRequestDto(
         @JsonProperty("critere_code") String critereCode,
         @JsonProperty("critere_libelle") String critereLibelle,
         @JsonProperty("critere_description") String critereDescription,
+        /** Ce que le critère exige de l'organisation (V50). Vide si rien n'a été rédigé. */
+        @JsonProperty("exigences") List<ExigenceDto> exigences,
+        /** Ce que l'audit attend en démonstration (V51), rattaché à une exigence par son code. */
+        @JsonProperty("preuves_attendues") List<PreuveAttendueDto> preuvesAttendues,
+        /** Comment confronter le fourni à l'exigé (V52), rendu en prompt par le service. */
+        @JsonProperty("regles_analyse") List<RegleAnalyseDto> reglesAnalyse,
         @JsonProperty("documents") List<DocumentPourEvaluationDto> documents,
         @JsonProperty("scenario") String scenario,
         @JsonProperty("reponses") List<ReponseDeclareeDto> reponses,
         @JsonProperty("analyse_risque") boolean analyseRisque,
         @JsonProperty("generer_recommandation") boolean genererRecommandation
 ) {
+    /** Une exigence du critère, désignée par son code dans les règles et les preuves attendues. */
+    public record ExigenceDto(
+            @JsonProperty("code") String code,
+            @JsonProperty("intitule") String intitule,
+            @JsonProperty("enonce") String enonce
+    ) {
+    }
+
+    /**
+     * Ce que l'audit attend pour démontrer une exigence — à ne pas confondre
+     * avec les documents ci-dessous, qui sont ce que l'organisation a
+     * réellement déposé.
+     */
+    public record PreuveAttendueDto(
+            @JsonProperty("exigence_code") String exigenceCode,
+            @JsonProperty("type") String type,
+            @JsonProperty("libelle") String libelle,
+            @JsonProperty("description") String description,
+            @JsonProperty("obligatoire") boolean obligatoire
+    ) {
+    }
+
+    /**
+     * Une règle d'analyse et sa portée. `exigence_code` et
+     * `preuve_attendue_libelle` sont nuls quand la règle porte sur le
+     * critère entier.
+     */
+    public record RegleAnalyseDto(
+            @JsonProperty("code") String code,
+            @JsonProperty("type") String type,
+            @JsonProperty("libelle") String libelle,
+            @JsonProperty("severite") String severite,
+            @JsonProperty("exigence_code") String exigenceCode,
+            @JsonProperty("preuve_attendue_libelle") String preuveAttendueLibelle,
+            @JsonProperty("definition") java.util.Map<String, Object> definition
+    ) {
+    }
+
     public record DocumentPourEvaluationDto(
             @JsonProperty("nom") String nom,
             @JsonProperty("type_mime") String typeMime,

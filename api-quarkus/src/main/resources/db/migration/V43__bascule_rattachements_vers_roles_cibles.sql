@@ -26,8 +26,9 @@
 -- Précondition : les rôles cibles existent et l'archive V41 est en place.
 DO $$
 DECLARE
-    manquants integer;
-    archives  integer;
+    manquants      integer;
+    archives       integer;
+    rattachements  integer;
 BEGIN
     SELECT count(*) INTO manquants FROM (
         SELECT unnest(ARRAY['SUPER_ADMIN','RESPONSABLE_ENTREPRISE','COLLABORATEUR']) AS code
@@ -37,9 +38,16 @@ BEGIN
         RAISE EXCEPTION 'Rôle cible absent : % manquant(s)', manquants;
     END IF;
 
+    -- L'archive doit couvrir la totalité des rattachements, sinon le retour
+    -- arrière serait partiel. On la compare à sa source et non à zéro : sur
+    -- une base neuve il n'y a aucun rattachement, une archive vide y est
+    -- donc exacte, et exiger qu'elle soit peuplée rendait toute installation
+    -- à partir de zéro impossible.
     SELECT count(*) INTO archives FROM utilisateur_entreprise_archive_v41;
-    IF archives = 0 THEN
-        RAISE EXCEPTION 'Archive V41 vide : bascule refusée, aucun retour arrière possible';
+    SELECT count(*) INTO rattachements FROM utilisateur_entreprise;
+    IF archives < rattachements THEN
+        RAISE EXCEPTION 'Archive V41 incomplète (% archivé(s) pour % rattachement(s)) : bascule refusée, retour arrière impossible',
+            archives, rattachements;
     END IF;
 END $$;
 

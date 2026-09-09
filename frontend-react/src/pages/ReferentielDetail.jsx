@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'luci
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import VoletExigences from '../components/referentiel/VoletExigences';
 import VoletVersions from '../components/referentiel/VoletVersions';
 import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
@@ -208,7 +209,7 @@ export default function ReferentielDetail() {
                 {criteres && criteres.length > 0 ? (
                   <Tableau entetes={['Code', 'Critère', 'Domaine', 'Applicabilité', 'Criticité', 'Statut', '']}>
                     {criteres.map((c) => (
-                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} peutAdministrer={peutModifierContenu} />
+                      <CritereRow key={c.id} critere={c} secteurs={secteurs} bailleurs={bailleurs} onChange={rafraichir} peutAdministrer={peutAdministrer} modifiable={peutModifierContenu} />
                     ))}
                   </Tableau>
                 ) : (
@@ -537,7 +538,7 @@ function NouveauCritereFormulaire({ referentielCode, domaines, onCree }) {
   );
 }
 
-function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer }) {
+function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer, modifiable }) {
   const [ouvert, setOuvert] = useState(false);
   const [formulaire, setFormulaire] = useState({
     libelle: critere.libelle,
@@ -710,11 +711,26 @@ function CritereRow({ critere, secteurs, bailleurs, onChange, peutAdministrer })
                   </label>
                 </div>
               </div>
-              <button type="submit" className="btn-primary" disabled={chargement}>
-                {chargement ? <SustwayLoader taille="sm" /> : null}
-                Enregistrer
-              </button>
+              {modifiable ? (
+                <button type="submit" className="btn-primary" disabled={chargement}>
+                  {chargement ? <SustwayLoader taille="sm" /> : null}
+                  Enregistrer
+                </button>
+              ) : (
+                <p className="text-xs text-ink-500">
+                  Version publiée : ce critère est figé. Ouvrez une version brouillon pour le
+                  modifier.
+                </p>
+              )}
             </form>
+
+            {/* Ce qu'exige ce critère, ce qu'il faut produire pour le
+                démontrer, et selon quelles règles conclure. Consultable même
+                sur une version publiée : c'est l'écriture qui est fermée,
+                pas la lecture. */}
+            <div className="mt-5 border-t border-ink-200 pt-4">
+              <VoletExigences critereId={critere.id} modifiable={modifiable} />
+            </div>
 
             <div className="mt-5 border-t border-ink-200 pt-4">
               <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-500">

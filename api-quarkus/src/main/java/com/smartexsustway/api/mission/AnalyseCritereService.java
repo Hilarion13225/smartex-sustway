@@ -12,7 +12,10 @@ import com.smartexsustway.api.domain.enums.SourceEvaluation;
 import com.smartexsustway.api.domain.enums.StatutEvaluation;
 import com.smartexsustway.api.domain.repository.EvaluationDocumentAnalyseRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
+import com.smartexsustway.api.domain.repository.ExigenceRepository;
+import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
+import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.rules.NiveauMaturite;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
@@ -59,6 +62,9 @@ public class AnalyseCritereService {
     public static final String STATUT_DECLARE = "DECLARE";
 
     @Inject PreuveRepository preuveRepository;
+    @Inject ExigenceRepository exigenceRepository;
+    @Inject PreuveAttendueRepository preuveAttendueRepository;
+    @Inject RegleAnalyseRepository regleAnalyseRepository;
     @Inject ReponseQuestionRepository reponseQuestionRepository;
     @Inject EvaluationRepository evaluationRepository;
     @Inject EvaluationDocumentAnalyseRepository documentAnalyseRepository;
@@ -124,11 +130,38 @@ public class AnalyseCritereService {
                     Base64.getEncoder().encodeToString(contenu)));
         }
 
+        // Contexte métier du critère, lu dans la version que la mission a
+        // auditée : ses exigences, ce qu'elles appellent en démonstration, et
+        // les règles qui disent comment confronter les deux. Ces listes sont
+        // vides tant que le référentiel n'a pas été enrichi — le pipeline se
+        // comporte alors exactement comme avant cette phase.
+        UUID critereId = auditCritere.getCritere().getId();
+        var exigences = exigenceRepository.parCritere(critereId);
+        var exigencesTransmises = exigences.stream()
+                .map(e -> new EvaluerCritereRequestDto.ExigenceDto(
+                        e.getCode(), e.getIntitule(), e.getEnonce()))
+                .toList();
+        var preuvesAttendues = preuveAttendueRepository.parCritere(critereId).stream()
+                .map(p -> new EvaluerCritereRequestDto.PreuveAttendueDto(
+                        p.getExigence().getCode(), p.getType().name(), p.getLibelle(),
+                        p.getDescription(), p.isObligatoire()))
+                .toList();
+        var reglesAnalyse = regleAnalyseRepository.parCritere(critereId).stream()
+                .map(r -> new EvaluerCritereRequestDto.RegleAnalyseDto(
+                        r.getCode(), r.getType().name(), r.getLibelle(), r.getSeverite().name(),
+                        r.getExigence() == null ? null : r.getExigence().getCode(),
+                        r.getPreuveAttendue() == null ? null : r.getPreuveAttendue().getLibelle(),
+                        r.getDefinition()))
+                .toList();
+
         EvaluerCritereRequestDto requete = new EvaluerCritereRequestDto(
                 auditCritereId,
                 auditCritere.getCritere().getCode(),
                 auditCritere.getCritere().getLibelle(),
                 auditCritere.getCritere().getDescription(),
+                exigencesTransmises,
+                preuvesAttendues,
+                reglesAnalyse,
                 documents,
                 scenario,
                 reponses,

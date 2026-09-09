@@ -34,11 +34,59 @@ class DocumentPourEvaluation(BaseModel):
     contenu_base64: str
 
 
+class Exigence(BaseModel):
+    """Ce que le critere exige de l'organisation (referentiel, V50)."""
+
+    code: str
+    intitule: str
+    enonce: str
+
+
+class PreuveAttendue(BaseModel):
+    """
+    Ce que l'audit attend en demonstration d'une exigence (referentiel, V51).
+
+    A ne pas confondre avec `documents`, qui sont les pieces reellement
+    deposees par l'organisation : ici, il s'agit de ce qu'il faudrait
+    fournir, decrit avant meme qu'une piece n'existe.
+    """
+
+    exigence_code: str | None = None
+    type: str = "AUTRE"
+    libelle: str
+    description: str | None = None
+    obligatoire: bool = True
+
+
+class RegleAnalyse(BaseModel):
+    """
+    Regle d'evaluation portee par le referentiel (V52).
+
+    La regle est une donnee, le prompt en est le rendu : ce service compose
+    ses instructions a partir de ces champs, il ne recoit jamais de prompt
+    tout fait.
+    """
+
+    code: str
+    type: str
+    libelle: str
+    severite: str = "MOYENNE"
+    exigence_code: str | None = None
+    preuve_attendue_libelle: str | None = None
+    definition: dict = Field(default_factory=dict)
+
+
 class EvaluerCritereRequest(BaseModel):
     audit_critere_id: UUID
     critere_code: str
     critere_libelle: str
     critere_description: str | None = None
+    # Contexte metier du referentiel. Listes vides tant qu'il n'a pas ete
+    # enrichi : le prompt est alors exactement celui d'avant, ce qui rend
+    # l'enrichissement progressif sans rupture de contrat.
+    exigences: list[Exigence] = Field(default_factory=list)
+    preuves_attendues: list[PreuveAttendue] = Field(default_factory=list)
+    regles_analyse: list[RegleAnalyse] = Field(default_factory=list)
     # RG09 : la collecte declarative (scenario textuel + reponses au
     # questionnaire) complete les preuves documentaires. Un critere peut
     # donc etre evalue sans document si l'entreprise a decrit sa situation,
@@ -109,6 +157,9 @@ async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereRespo
             resumes=[d.resume for d in documents_analyses],
             scenario=payload.scenario,
             reponses=payload.reponses,
+            exigences=payload.exigences,
+            preuves_attendues=payload.preuves_attendues,
+            regles=payload.regles_analyse,
         )
 
         justification = f"{resultat.justification_couverture} {resultat.justification_conformite}".strip()
