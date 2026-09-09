@@ -195,14 +195,22 @@ class ContenuMetierReferentielTest {
         assertTrue(initiales.longValue() > 0,
                 "Les exigences semées par l'initialisation doivent être reconnaissables à leur origine.");
 
-        // Leur énoncé reprend le libellé du critère : c'est un point de
-        // départ, pas une exigence rédigée.
+        // À la création, l'énoncé reprend le libellé du critère : c'est un
+        // point de départ, pas une exigence rédigée. La vérification porte sur
+        // le catalogue semé par les migrations — ailleurs, un libellé modifié
+        // après coup fait légitimement diverger l'exigence, qui est une
+        // photographie de la création et non un miroir permanent. La faire
+        // suivre écraserait le travail de qui l'a réécrite.
         Number divergentes = (Number) entityManager.createNativeQuery(
-                        "SELECT count(*) FROM exigence e JOIN critere c ON c.id = e.critere_id "
-                                + "WHERE e.origine = 'CONTENU_INITIAL' AND e.enonce <> c.libelle")
+                        "SELECT count(*) FROM exigence e "
+                                + "JOIN critere c ON c.id = e.critere_id "
+                                + "JOIN referentiel_version v ON v.id = c.referentiel_version_id "
+                                + "JOIN referentiel r ON r.id = v.referentiel_id "
+                                + "WHERE e.origine = 'CONTENU_INITIAL' AND e.enonce <> c.libelle "
+                                + "AND r.code IN ('SMARTEX_SUSTWAY','IFC_SFI','PRI')")
                 .getSingleResult();
         assertEquals(0L, divergentes.longValue(),
-                "Une exigence d'origine CONTENU_INITIAL reprend le libellé de son critère.");
+                "Dans le catalogue semé, une exigence d'amorçage reprend le libellé de son critère.");
     }
 
     // === 2, 4, 6 ============================================================

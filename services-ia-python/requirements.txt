@@ -13,3 +13,13 @@ boto3==1.35.90
 # comportement prévu en v3 sur l'appel de fonctions automatique — sans
 # impact ici, mais épinglé par prudence).
 google-genai>=2.18.0,<3.0.0
+
+# Extraction de référentiels importés (Phase 3D). Ces trois bibliothèques
+# servent à MESURER la localisation — page, feuille et ligne, paragraphe —
+# plutôt qu'à la demander au modèle, qui répondrait quelque chose de
+# plausible sans être vérifiable. Elles permettent aussi de découper un
+# document volumineux sur des frontières connues avant de l'envoyer au
+# modèle, ce qu'un envoi multimodal direct ne permettrait pas.
+pypdf==5.1.0
+python-docx==1.1.2
+openpyxl==3.1.5

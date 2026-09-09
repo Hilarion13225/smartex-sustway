@@ -28,6 +28,19 @@ class Settings(BaseSettings):
     # pour un test mais pas recommandé en continu).
     gemini_model: str = "gemini-3.5-flash-lite"
 
+    # --- Import de référentiel ---
+    # Ces trois valeurs gouvernent le découpage d'un document avant envoi au
+    # modèle. Elles sont configurables parce qu'aucune n'est établie : elles
+    # devront être calibrées sur des documents réels, et les valeurs ci-dessous
+    # sont un point de départ prudent, pas une décision.
+    #
+    # La seule contrainte mesurée est le plafond du fournisseur, 15 requêtes
+    # par minute sur l'offre gratuite — c'est lui qui interdit un appel par
+    # critère et impose de regrouper.
+    import_taille_lot_caracteres: int = 20000
+    import_lots_maximum: int = 12
+    import_delai_entre_lots_ms: int = 4500
+
     model_config = SettingsConfigDict(env_prefix="SMARTEX_", env_file=".env", extra="ignore")
 
 
