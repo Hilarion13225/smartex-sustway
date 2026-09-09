@@ -23,4 +23,16 @@ public class ExigenceRepository implements PanacheRepositoryBase<Exigence, UUID>
     public Optional<Exigence> parCritereEtCode(UUID critereId, String code) {
         return find("critere.id = ?1 and code = ?2", critereId, code).firstResultOptional();
     }
+
+    /**
+     * Exigences proposées par l'IA et non encore acceptées.
+     *
+     * S'appuie sur l'index partiel {@code idx_exigence_a_valider} (V57), posé
+     * exactement sur ce prédicat.
+     */
+    public List<Exigence> aValider(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 and origine = ?2 and valideePar is null "
+                        + "order by critere.code, ordre",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
 }

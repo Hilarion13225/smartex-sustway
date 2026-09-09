@@ -10,12 +10,13 @@ publie rien, ne valide rien.
 import base64
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.agents import referentiel_import_agent
 from app.extraction.base import ExtractionImpossible
 from app.models.import_referentiel import BrouillonImporte
+from app.services.authentification import exiger_appel_de_service
 from app.services.gemini_client import GeminiNonConfigure
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,10 @@ class ExtraireReferentielResponse(BaseModel):
 
 
 @router.post("/extraction", response_model=ExtraireReferentielResponse)
-async def extraire_referentiel(payload: ExtraireReferentielRequest) -> ExtraireReferentielResponse:
+async def extraire_referentiel(
+    payload: ExtraireReferentielRequest,
+    _appelant: str = Depends(exiger_appel_de_service),
+) -> ExtraireReferentielResponse:
     try:
         contenu = base64.b64decode(payload.contenu_base64, validate=True)
     except Exception as exc:

@@ -15,11 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Le service d'agents IA ne doit pas être joignable depuis le réseau.
  *
- * Il n'authentifie aucun appelant : toute personne capable de l'atteindre
- * peut déclencher le pipeline, donc consommer le quota du modèle et faire
- * écrire des résultats. Le chemin légitime passe par l'API Java, qui
- * vérifie le jeton, l'appartenance à l'entreprise et la permission
- * `analyse:executer`.
+ * Il vérifie désormais un jeton de service signé (phase 3D), mais cette
+ * vérification et le non-exposition du port sont deux gardes distinctes, et
+ * chacune répond d'une défaillance de l'autre : une clé mal configurée, ou un
+ * jeton dérobé, ne doivent pas suffire à atteindre le service depuis
+ * l'extérieur. Le chemin légitime reste l'API Java, qui vérifie le jeton de
+ * l'utilisateur, l'appartenance à l'entreprise et la permission
+ * `analyse:executer` avant de signer son propre appel.
  *
  * Ce test lit la déclaration Docker plutôt que d'ouvrir une connexion :
  * l'exposition est une propriété du déploiement, pas du code, et une

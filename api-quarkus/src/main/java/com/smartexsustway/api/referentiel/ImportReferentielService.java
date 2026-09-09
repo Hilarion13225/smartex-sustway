@@ -109,6 +109,20 @@ public class ImportReferentielService {
     public record ImportCree(ImportReferentiel importReferentiel, List<UUID> doublonsPossibles) {
     }
 
+    /**
+     * Où le contenu proposé doit atterrir.
+     *
+     * Soit un référentiel existant, désigné par son identifiant, et le numéro
+     * de la version à ouvrir ; soit un référentiel neuf, décrit par son code,
+     * son nom et son type. Cette désignation est une décision humaine et non
+     * une déduction faite sur ce que le fichier semble annoncer : rattacher un
+     * import au mauvais référentiel y ouvrirait un brouillon qu'il faudrait
+     * ensuite démêler.
+     */
+    public record CibleImport(UUID referentielId, String codeReferentiel, String nomReferentiel,
+                              String typeReferentiel, String numeroVersion) {
+    }
+
     // --- Réception -----------------------------------------------------
 
     /**
@@ -158,22 +172,47 @@ public class ImportReferentielService {
     // --- Cycle de vie ---------------------------------------------------
 
     /**
-     * Marque le début de l'extraction, dans sa propre transaction.
+     * Prend l'import pour analyse, ou rend faux s'il est déjà pris.
      *
-     * Le traitement de fond s'exécute après la fin de la requête HTTP qui l'a
-     * lancé et ne peut pas emprunter sa session : c'est le défaut corrigé en
-     * phase 2, où la passe d'analyse mourait par intermittence sur
-     * « statement fermé ». Chaque étape ouvre donc la sienne.
+     * C'est le seul chemin vers « analyse en cours », et il n'y en a qu'un
+     * exprès. Le passage d'état est fait par la base en une écriture
+     * conditionnelle (voir {@code ImportReferentielRepository.reclamerPourAnalyse}) :
+     * une seconde méthode qui se contenterait de poser le statut rendrait la
+     * garantie contournable par mégarde, et deux requêtes simultanées
+     * enverraient deux fois le même fichier au fournisseur.
+     *
+     * Chaque étape du traitement ouvre sa propre transaction. Le travail de
+     * fond s'exécute après la fin de la requête HTTP qui l'a lancé et ne peut
+     * pas emprunter sa session : c'est le défaut corrigé en phase 2, où la
+     * passe d'analyse mourait par intermittence sur « statement fermé ».
      */
     @Transactional
-    public void demarrerAnalyse(UUID importId) {
+    public boolean reclamerPourAnalyse(UUID importId, UUID utilisateurId) {
+        if (!importRepository.reclamerPourAnalyse(importId)) {
+            return false;
+        }
+        auditLogService.journaliser(utilisateurId, null,
+                "IMPORT_REFERENTIEL_ANALYSE_LANCEE", "import_referentiel", importId);
+        return true;
+    }
+
+    /** De quoi retrouver le fichier sans garder de transaction pendant sa lecture. */
+    public record FichierSource(String nomFichier, String typeMime, String cleStockage) {
+    }
+
+    @Transactional
+    public FichierSource descripteurFichier(UUID importId) {
         ImportReferentiel importReferentiel = importRepository.findById(importId);
         if (importReferentiel == null) {
-            return;
+            throw new FichierRefuseException(404, "Import introuvable");
         }
-        importReferentiel.marquerAnalyseEnCours();
-        auditLogService.journaliser(auteurDe(importReferentiel), null,
-                "IMPORT_REFERENTIEL_ANALYSE_LANCEE", "import_referentiel", importId);
+        return new FichierSource(importReferentiel.getNomFichier(),
+                importReferentiel.getTypeMime(), importReferentiel.getCleStockage());
+    }
+
+    /** Contenu du fichier, lu hors transaction. */
+    public byte[] contenuDe(FichierSource source) {
+        return storageService.telecharger(source.cleStockage());
     }
 
     /**
@@ -229,15 +268,20 @@ public class ImportReferentielService {
      * reste seul maître de la création des versions.
      */
     @Transactional
-    public ReferentielVersion ouvrirBrouillonCible(String codeReferentiel, String nomReferentiel,
-                                                   String typeReferentiel, String numeroVersion,
-                                                   UUID utilisateurId) {
+    public ReferentielVersion ouvrirBrouillonCible(CibleImport cible, UUID utilisateurId) {
         Utilisateur auteur = utilisateurRepository.findById(utilisateurId);
-        Optional<Referentiel> existant = referentielRepository.parCode(codeReferentiel);
+
+        Optional<Referentiel> existant = cible.referentielId() != null
+                ? Optional.ofNullable(referentielRepository.findById(cible.referentielId()))
+                : referentielRepository.parCode(cible.codeReferentiel());
 
         if (existant.isEmpty()) {
-            var referentiel = new Referentiel(codeReferentiel, nomReferentiel,
-                    com.smartexsustway.api.domain.enums.TypeReferentiel.valueOf(typeReferentiel));
+            if (cible.referentielId() != null) {
+                throw new FichierRefuseException(404, "Le référentiel visé n'existe pas");
+            }
+            var referentiel = new Referentiel(exiger(cible.codeReferentiel(), "code du référentiel"),
+                    exiger(cible.nomReferentiel(), "nom du référentiel"),
+                    typeReferentiel(cible.typeReferentiel()));
             referentielRepository.persistAndFlush(referentiel);
             auditLogService.journaliser(utilisateurId, null, "REFERENTIEL_CREE",
                     "referentiel", referentiel.getId());
@@ -245,8 +289,33 @@ public class ImportReferentielService {
         }
 
         Referentiel referentiel = existant.get();
-        return versionService.creerBrouillon(referentiel, numeroVersion,
+        // Le numéro n'est pas déduit. Une numérotation inventée s'inscrirait
+        // dans le catalogue et suivrait chaque mission menée sur cette
+        // version ; c'est à la personne qui importe de dire ce qu'elle ouvre.
+        String numero = cible.numeroVersion();
+        if (numero == null || numero.isBlank()) {
+            throw new FichierRefuseException(400, "Le numéro de la version à ouvrir sur le référentiel "
+                    + referentiel.getCode() + " doit être précisé");
+        }
+        return versionService.creerBrouillon(referentiel, numero,
                 "Brouillon issu d'un import assisté.", auteur);
+    }
+
+    private static String exiger(String valeur, String quoi) {
+        if (valeur == null || valeur.isBlank()) {
+            throw new FichierRefuseException(400, "Le " + quoi + " doit être précisé");
+        }
+        return valeur;
+    }
+
+    private static com.smartexsustway.api.domain.enums.TypeReferentiel typeReferentiel(String valeur) {
+        try {
+            return com.smartexsustway.api.domain.enums.TypeReferentiel.valueOf(
+                    exiger(valeur, "type du référentiel"));
+        } catch (IllegalArgumentException e) {
+            throw new FichierRefuseException(400,
+                    "Le type de référentiel « " + valeur + " » n'est pas reconnu");
+        }
     }
 
     // --- Lecture ---------------------------------------------------------

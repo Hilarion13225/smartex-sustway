@@ -15,6 +15,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -67,6 +68,34 @@ public class Exigence {
     @Column(name = "origine", nullable = false, columnDefinition = "origine_contenu")
     private OrigineContenu origine = OrigineContenu.CONTENU_HUMAIN;
 
+    /**
+     * Origine à la création, conservée quand {@link #origine} évolue.
+     *
+     * Reprendre à son compte une proposition de l'IA en fait un contenu
+     * humain, et c'est bien ce que doit dire {@code origine}. Mais si rien ne
+     * gardait trace de la provenance, plus personne ne pourrait dire après
+     * coup quelles lignes du catalogue ont été suggérées par une machine.
+     * Nulle pour le contenu antérieur à l'import assisté.
+     */
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "origine_initiale", columnDefinition = "origine_contenu")
+    private OrigineContenu origineInitiale;
+
+    /**
+     * Qui a accepté cette exigence, et quand.
+     *
+     * Nuls tant que personne ne l'a fait, et c'est cette nullité qui interdit
+     * la publication d'une version contenant des propositions non relues
+     * (déclencheur {@code refuser_publication_sans_validation}, V57).
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "validee_par")
+    private Utilisateur valideePar;
+
+    @Column(name = "validee_le")
+    private Instant valideeLe;
+
     protected Exigence() {
         // JPA
     }
@@ -86,6 +115,13 @@ public class Exigence {
         // L'origine suit la copie : la reprise d'un contenu initial reste un
         // contenu initial tant que personne ne l'a réécrit.
         copie.origine = this.origine;
+        copie.origineInitiale = this.origineInitiale;
+        // La validation suit elle aussi. Une personne a relu ce texte ; le
+        // recopier à l'identique ne le remet pas en cause. Sans cela, dériver
+        // un brouillon d'une version publiée produirait un brouillon
+        // impubliable, dont chaque ligne serait à revalider sans avoir changé.
+        copie.valideePar = this.valideePar;
+        copie.valideeLe = this.valideeLe;
         return copie;
     }
 
@@ -135,5 +171,33 @@ public class Exigence {
 
     public void setOrigine(OrigineContenu origine) {
         this.origine = origine;
+    }
+
+    public OrigineContenu getOrigineInitiale() {
+        return origineInitiale;
+    }
+
+    public void setOrigineInitiale(OrigineContenu origineInitiale) {
+        this.origineInitiale = origineInitiale;
+    }
+
+    public Utilisateur getValideePar() {
+        return valideePar;
+    }
+
+    public Instant getValideeLe() {
+        return valideeLe;
+    }
+
+    /**
+     * Enregistre l'acceptation par une personne.
+     *
+     * Les deux champs sont posés ensemble parce que la base l'impose
+     * ({@code exigence_validation_complete}) : un validateur sans date, ou
+     * l'inverse, ne dit rien d'exploitable.
+     */
+    public void validerPar(Utilisateur utilisateur, Instant quand) {
+        this.valideePar = utilisateur;
+        this.valideeLe = quand;
     }
 }

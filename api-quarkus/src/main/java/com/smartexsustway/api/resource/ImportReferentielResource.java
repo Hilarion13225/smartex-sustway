@@ -1,9 +1,17 @@
 package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.domain.entity.ImportReferentiel;
+import com.smartexsustway.api.domain.entity.ReferentielVersion;
+import com.smartexsustway.api.domain.enums.StatutScanDocument;
+import com.smartexsustway.api.domain.repository.ExigenceRepository;
+import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
+import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
+import com.smartexsustway.api.referentiel.AnalyseImportOrchestrateur;
 import com.smartexsustway.api.referentiel.ImportReferentielService;
+import com.smartexsustway.api.resource.dto.BrouillonImporteDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.ImportReferentielDto;
+import com.smartexsustway.api.resource.dto.LancerAnalyseImportDto;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -45,6 +53,10 @@ import java.util.UUID;
 public class ImportReferentielResource {
 
     @Inject ImportReferentielService importService;
+    @Inject AnalyseImportOrchestrateur orchestrateur;
+    @Inject ExigenceRepository exigenceRepository;
+    @Inject PreuveAttendueRepository preuveAttendueRepository;
+    @Inject RegleAnalyseRepository regleAnalyseRepository;
     @Inject TenantContext tenantContext;
 
     /**
@@ -96,6 +108,70 @@ public class ImportReferentielResource {
     @RolesAllowed("SUPER_ADMIN")
     public Response consulter(@PathParam("importId") UUID importId) {
         return Response.ok(ImportReferentielDto.depuis(trouver(importId))).build();
+    }
+
+    /**
+     * Lance l'extraction, et rend la main immédiatement.
+     *
+     * Répond 202 : la lecture d'un référentiel dure des minutes — le document
+     * part au service d'agents en plusieurs lots, espacés pour tenir le quota
+     * du fournisseur — et tenir la requête ouverte pendant ce temps n'aurait
+     * pour effet que de la faire expirer. L'avancement se suit sur le statut
+     * de l'import.
+     *
+     * Un import déjà en analyse rend 409. La prise est faite par une écriture
+     * conditionnelle en base, et non par une lecture suivie d'une écriture :
+     * deux requêtes simultanées ne peuvent pas se croire toutes deux
+     * légitimes et envoyer deux fois le même fichier au fournisseur.
+     */
+    @POST
+    @Path("/{importId}/analyse")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("SUPER_ADMIN")
+    public Response lancerAnalyse(@PathParam("importId") UUID importId,
+                                  LancerAnalyseImportDto requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        ImportReferentiel importReferentiel = trouver(importId);
+
+        if (requete == null) {
+            return erreur(400, "Le référentiel visé doit être précisé");
+        }
+        if (importReferentiel.getStatutScan() != StatutScanDocument.SAIN) {
+            // Le contrôle a déjà eu lieu à la réception. Le refaire ici ferme
+            // le chemin à un import qui aurait été créé autrement.
+            return erreur(409, "Ce fichier n'a pas été déclaré sain par l'antivirus");
+        }
+        if (!importService.peutEtreAnalyse(importReferentiel)) {
+            return erreur(409, "Cet import est déjà en cours d'analyse ou a déjà produit un brouillon");
+        }
+
+        if (!orchestrateur.lancer(importId, requete.versCible(), utilisateurId)) {
+            return erreur(409, "Une analyse de cet import vient d'être lancée");
+        }
+        return Response.status(Response.Status.ACCEPTED)
+                .entity(ImportReferentielDto.depuis(importService.parId(importId)))
+                .build();
+    }
+
+    /**
+     * Ce que l'import a déposé, et ce qu'il reste à relire.
+     *
+     * Sert l'écran de relecture : compteurs, provenance, et liste des
+     * éléments proposés que personne n'a encore acceptés.
+     */
+    @GET
+    @Path("/{importId}/brouillon")
+    @RolesAllowed("SUPER_ADMIN")
+    public Response brouillon(@PathParam("importId") UUID importId) {
+        ImportReferentiel importReferentiel = trouver(importId);
+        ReferentielVersion version = importReferentiel.getReferentielVersion();
+        if (version == null) {
+            return erreur(409, "Cet import n'a pas encore produit de brouillon");
+        }
+        return Response.ok(BrouillonImporteDto.depuis(version, importReferentiel.getMetadonnees(),
+                exigenceRepository.aValider(version.getId()),
+                preuveAttendueRepository.aValider(version.getId()),
+                regleAnalyseRepository.aValider(version.getId()))).build();
     }
 
     /**

@@ -25,6 +25,7 @@ from app.models.import_referentiel import (
     ReferentielExtrait,
 )
 from app.services.gemini_client import get_client
+from app.services.schema_gemini import schema_pour_gemini
 from app.services.validation_regles import DefinitionInvalide, verifier_definition
 
 logger = logging.getLogger(__name__)
@@ -201,22 +202,23 @@ async def _analyser_lot(lot: list[Section], index: int, total: int) -> Brouillon
         f"{_rendre_lot(lot)}"
     )
 
+    # Le schéma est dérivé du modèle, pas le modèle lui-même : l'API Gemini
+    # Developer refuse le `additionalProperties` que produit `extra="forbid"`,
+    # et ne déréférence pas les `$ref` des modèles imbriqués. Voir
+    # `schema_gemini`. Le contrat reste celui du modèle — c'est lui qui valide
+    # la réponse ci-dessous.
     reponse = await client.aio.models.generate_content(
         model=settings.gemini_model,
         contents=prompt,
         config={
             "response_mime_type": "application/json",
-            "response_schema": BrouillonImporte,
+            "response_schema": schema_pour_gemini(BrouillonImporte),
         },
     )
 
-    analyse = getattr(reponse, "parsed", None)
-    if isinstance(analyse, BrouillonImporte):
-        return analyse
-
-    # Repli si le SDK ne peuple pas .parsed : la réponse brute est validée par
-    # le même modèle, jamais réparée. Une sortie non conforme est un échec
-    # d'extraction, pas quelque chose à rattraper.
+    # Le SDK ne peuple `.parsed` que lorsqu'on lui passe une classe ; avec un
+    # schéma explicite, la réponse est validée ici par le modèle strict. Elle
+    # n'est jamais réparée : une sortie non conforme est un échec d'extraction.
     try:
         return BrouillonImporte.model_validate_json(reponse.text or "")
     except Exception as exc:

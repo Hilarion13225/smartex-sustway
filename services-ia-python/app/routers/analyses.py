@@ -8,10 +8,16 @@ fixe uniquement le contrat d'API entre Quarkus et les services Python.
 
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
-router = APIRouter()
+from app.services.authentification import exiger_appel_de_service
+
+# Ces routes ne font encore rien — le pipeline arrive en phases D et E — mais
+# elles sont protégées dès maintenant. Laisser une porte ouverte au motif que
+# la pièce est vide revient à compter sur le fait que personne n'oubliera de
+# la fermer le jour où on la meublera.
+router = APIRouter(dependencies=[Depends(exiger_appel_de_service)])
 
 
 class DeclencherAnalyseRequest(BaseModel):

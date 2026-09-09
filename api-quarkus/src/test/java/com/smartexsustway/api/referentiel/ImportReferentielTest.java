@@ -300,7 +300,7 @@ class ImportReferentielTest {
         UUID id = UUID.fromString(deposer(jeton, "grille.json", "application/json", fichierJson())
                 .statusCode(201).extract().path("id"));
 
-        importService.demarrerAnalyse(id);
+        assertTrue(importService.reclamerPourAnalyse(id, administrateur));
         given().header("Authorization", "Bearer " + jeton)
                 .when().get(CHEMIN + "/" + id)
                 .then().statusCode(200)
@@ -309,9 +309,10 @@ class ImportReferentielTest {
 
         // Un brouillon est ouvert par le versionnement, jamais par un INSERT
         // direct dans les tables de contenu.
-        var version = importService.ouvrirBrouillonCible(
-                "TEST_IMP_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
-                "Référentiel importé", "SMARTEX", "1.0", administrateur);
+        var version = importService.ouvrirBrouillonCible(new ImportReferentielService.CibleImport(
+                        null, "TEST_IMP_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
+                        "Référentiel importé", "SMARTEX", "1.0"),
+                administrateur);
 
         importService.marquerBrouillonGenere(id, version.getId(), java.util.Map.of("pages", 12));
 
@@ -335,12 +336,13 @@ class ImportReferentielTest {
         UUID utilisateur = UUID.fromString(superAdmin().id);
         String code = "TEST_IMP_" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
 
-        importService.ouvrirBrouillonCible(code, "Référentiel importé", "SMARTEX", "1.0", utilisateur);
+        importService.ouvrirBrouillonCible(new ImportReferentielService.CibleImport(
+                null, code, "Référentiel importé", "SMARTEX", "1.0"), utilisateur);
 
         var refus = org.junit.jupiter.api.Assertions.assertThrows(
                 VersionReferentielService.VersionFigeeException.class,
-                () -> importService.ouvrirBrouillonCible(code, "Référentiel importé", "SMARTEX",
-                        "2.0", utilisateur));
+                () -> importService.ouvrirBrouillonCible(new ImportReferentielService.CibleImport(
+                        null, code, "Référentiel importé", "SMARTEX", "2.0"), utilisateur));
         assertTrue(refus.getMessage().contains("brouillon"),
                 "Le refus doit dire qu'un brouillon existe déjà : " + refus.getMessage());
     }
@@ -353,7 +355,7 @@ class ImportReferentielTest {
 
         assertTrue(relire(id), "Un import qui vient d'être déposé doit pouvoir être analysé.");
 
-        importService.demarrerAnalyse(id);
+        assertTrue(importService.reclamerPourAnalyse(id, null));
         org.junit.jupiter.api.Assertions.assertFalse(relire(id),
                 "Une analyse en cours ne doit pas pouvoir être relancée.");
 
@@ -381,7 +383,7 @@ class ImportReferentielTest {
         String jeton = jetonSuperAdmin();
         UUID id = UUID.fromString(deposer(jeton, "grille.json", "application/json", fichierJson())
                 .statusCode(201).extract().path("id"));
-        importService.demarrerAnalyse(id);
+        importService.reclamerPourAnalyse(id, null);
         importService.marquerEchec(id, "Structure non reconnue");
 
         List<?> actions = entityManager.createNativeQuery(

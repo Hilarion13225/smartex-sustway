@@ -109,11 +109,17 @@ services:
       # local — voir README, section "Agents IA" pour la mise en garde sur
       # le palier gratuit et la marche à suivre pour obtenir une clé.
       SMARTEX_GEMINI_API_KEY: ${SMARTEX_GEMINI_API_KEY:-}
+      # Verification des appels entrants : le service n'accepte que les jetons
+      # signes par l'API. Seule la cle PUBLIQUE est montee ici - la cle privee
+      # ne quitte jamais l'API, et une cle publique n'est pas un secret.
+      SMARTEX_JWT_PUBLIC_KEY_PATH: /app/publicKey.pem
+      SMARTEX_JWT_ISSUER: ${SMARTEX_JWT_ISSUER:-https://smartex-sustway.local}
     ports:
-      # Loopback uniquement, et non "8000:8000" : le service n'authentifie
-      # aucun appelant, et le publier sur toutes les interfaces le rendait
-      # joignable depuis le réseau — n'importe qui pouvait donc déclencher le
-      # pipeline et consommer le quota du modèle.
+      # Loopback uniquement, et non "8000:8000". Le service vérifie désormais
+      # un jeton de service signé, mais les deux gardes restent distinctes et
+      # chacune répond d'une défaillance de l'autre : une clé mal configurée
+      # ou un jeton dérobé ne doivent pas suffire à atteindre le service, qui
+      # fait travailler un modèle payant au quota limité.
       #
       # L'API Java ne passe pas par ce port : elle joint le service sur le
       # réseau Docker interne (SMARTEX_IA_SERVICE_URL vaut
@@ -130,6 +136,7 @@ services:
         condition: service_healthy
     volumes:
       - ./services-ia-python/app:/app/app
+      - ./api-quarkus/src/main/resources/publicKey.pem:/app/publicKey.pem:ro
 
   api-quarkus:
     build:
@@ -150,6 +157,12 @@ services:
       SMARTEX_DB_PASSWORD: smartex
       SMARTEX_REDIS_URL: redis://redis:6379
       SMARTEX_IA_SERVICE_URL: http://services-ia-python:8000
+      # Même variable que côté service d'agents, et c'est le point : l'API
+      # signe avec cet émetteur, le service le vérifie. Déclarée ici bien
+      # qu'un défaut existe dans application.properties — sans cela, la
+      # renseigner dans .env ne changerait que l'un des deux côtés, et les
+      # appels seraient refusés sans que rien n'indique pourquoi.
+      SMARTEX_JWT_ISSUER: ${SMARTEX_JWT_ISSUER:-https://smartex-sustway.local}
       # Les deux origines sont acceptees : localhost (poste de dev) et l'IP
       # locale du poste sur le Wi-Fi (test depuis un telephone sur le meme
       # reseau) - a ajuster si l'IP change (voir "ipconfig"/Get-NetIPAddress).

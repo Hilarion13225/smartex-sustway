@@ -11,7 +11,7 @@ import base64
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
 from app.agents import (
@@ -21,6 +21,7 @@ from app.agents import (
     risk_agent,
 )
 from app.agents.evidence_compliance_agent import ReponseDeclaree
+from app.services.authentification import exiger_appel_de_service
 from app.services.gemini_client import GeminiNonConfigure
 
 logger = logging.getLogger(__name__)
@@ -135,7 +136,10 @@ class EvaluerCritereResponse(BaseModel):
 
 
 @router.post("/critere", response_model=EvaluerCritereResponse)
-async def evaluer_critere(payload: EvaluerCritereRequest) -> EvaluerCritereResponse:
+async def evaluer_critere(
+    payload: EvaluerCritereRequest,
+    _appelant: str = Depends(exiger_appel_de_service),
+) -> EvaluerCritereResponse:
     try:
         documents_analyses: list[DocumentAnalyseDto] = []
         for document in payload.documents:

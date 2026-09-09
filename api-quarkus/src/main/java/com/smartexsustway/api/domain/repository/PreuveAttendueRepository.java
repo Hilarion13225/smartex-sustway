@@ -22,4 +22,11 @@ public class PreuveAttendueRepository implements PanacheRepositoryBase<PreuveAtt
     public List<PreuveAttendue> parVersion(UUID referentielVersionId) {
         return list("referentielVersion.id = ?1 order by exigence.ordre, ordre", referentielVersionId);
     }
+
+    /** Preuves attendues proposées par l'IA et non encore acceptées (V57). */
+    public List<PreuveAttendue> aValider(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 and origine = ?2 and valideePar is null "
+                        + "order by exigence.critere.code, ordre",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
 }

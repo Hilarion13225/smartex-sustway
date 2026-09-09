@@ -42,6 +42,13 @@ public class JwtService {
     private static final Duration DUREE_VALIDITE_PRE_AUTH_2FA = Duration.ofMinutes(5);
     private static final Duration DUREE_VALIDITE_ACTIVATION_SMS = Duration.ofMinutes(10);
     private static final Duration DUREE_VALIDITE_REINITIALISATION_MDP = Duration.ofHours(1);
+    /**
+     * Un jeton de service ne sert qu'à un appel sortant immédiat vers le
+     * service d'agents. Sa durée est donc comptée en minutes : intercepté, il
+     * ne vaut presque rien, et rien ne justifierait qu'il survive à l'appel
+     * qu'il accompagne.
+     */
+    private static final Duration DUREE_VALIDITE_SERVICE = Duration.ofMinutes(5);
 
     private static final String CLAIM_PURPOSE = "purpose";
     private static final String CLAIM_CODE_HASH = "code_hash";
@@ -50,6 +57,37 @@ public class JwtService {
     public static final String PURPOSE_PRE_AUTH_2FA = "PRE_AUTH_2FA";
     public static final String PURPOSE_ACTIVATION_SMS_2FA = "ACTIVATION_SMS_2FA";
     public static final String PURPOSE_PASSWORD_RESET = "PASSWORD_RESET";
+    /** Appel sortant de l'API vers le service d'agents. Jamais une session. */
+    public static final String PURPOSE_SERVICE_IA = "SERVICE_IA";
+
+    /** Destinataire attendu d'un jeton de service : le service d'agents, et lui seul. */
+    public static final String AUDIENCE_SERVICE_IA = "services-ia";
+
+    private static final String SUJET_SERVICE = "api-quarkus";
+
+    // --- Appels vers le service d'agents ---------------------------------
+
+    /**
+     * Jeton d'appel vers le service d'agents.
+     *
+     * Signé avec la même clé privée que les jetons de session, mais il ne peut
+     * pas en tenir lieu : SessionPurposeFilter n'accepte que purpose=SESSION,
+     * donc ce jeton présenté à l'API serait refusé. Symétriquement, un jeton
+     * de session présenté au service d'agents ne porte ni cette audience ni ce
+     * purpose. Les deux directions sont fermées, ce qui est le point — un
+     * secret qui ouvre les deux portes n'en ferme aucune.
+     *
+     * La clé privée ne quitte jamais ce service : le service d'agents vérifie
+     * avec la clé publique, qui n'est pas un secret.
+     */
+    public String genererTokenServiceIa() {
+        return Jwt.issuer(issuer)
+                .subject(SUJET_SERVICE)
+                .audience(AUDIENCE_SERVICE_IA)
+                .claim(CLAIM_PURPOSE, PURPOSE_SERVICE_IA)
+                .expiresIn(DUREE_VALIDITE_SERVICE)
+                .sign();
+    }
 
     // --- Session (connexion normale) ------------------------------------
 

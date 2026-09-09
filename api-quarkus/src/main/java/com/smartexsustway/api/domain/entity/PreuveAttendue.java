@@ -1,5 +1,6 @@
 package com.smartexsustway.api.domain.entity;
 
+import com.smartexsustway.api.domain.enums.OrigineContenu;
 import com.smartexsustway.api.domain.enums.TypePreuveAttendue;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +16,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -67,6 +69,29 @@ public class PreuveAttendue {
     @Column(name = "ordre", nullable = false)
     private int ordre;
 
+    /**
+     * Provenance de cette pièce attendue, et sa provenance à la création.
+     *
+     * Voir {@link Exigence#getOrigineInitiale()} : ces trois tables portent
+     * la même paire, pour la même raison.
+     */
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "origine", nullable = false, columnDefinition = "origine_contenu")
+    private OrigineContenu origine = OrigineContenu.CONTENU_HUMAIN;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "origine_initiale", columnDefinition = "origine_contenu")
+    private OrigineContenu origineInitiale;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "validee_par")
+    private Utilisateur valideePar;
+
+    @Column(name = "validee_le")
+    private Instant valideeLe;
+
     protected PreuveAttendue() {
         // JPA
     }
@@ -84,6 +109,10 @@ public class PreuveAttendue {
         copie.description = this.description;
         copie.obligatoire = this.obligatoire;
         copie.ordre = this.ordre;
+        copie.origine = this.origine;
+        copie.origineInitiale = this.origineInitiale;
+        copie.valideePar = this.valideePar;
+        copie.valideeLe = this.valideeLe;
         return copie;
     }
 
@@ -137,5 +166,34 @@ public class PreuveAttendue {
 
     public void setOrdre(int ordre) {
         this.ordre = ordre;
+    }
+
+    public OrigineContenu getOrigine() {
+        return origine;
+    }
+
+    public void setOrigine(OrigineContenu origine) {
+        this.origine = origine;
+    }
+
+    public OrigineContenu getOrigineInitiale() {
+        return origineInitiale;
+    }
+
+    public void setOrigineInitiale(OrigineContenu origineInitiale) {
+        this.origineInitiale = origineInitiale;
+    }
+
+    public Utilisateur getValideePar() {
+        return valideePar;
+    }
+
+    public Instant getValideeLe() {
+        return valideeLe;
+    }
+
+    public void validerPar(Utilisateur utilisateur, Instant quand) {
+        this.valideePar = utilisateur;
+        this.valideeLe = quand;
     }
 }

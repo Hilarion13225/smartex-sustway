@@ -27,4 +27,11 @@ public class RegleAnalyseRepository implements PanacheRepositoryBase<RegleAnalys
     public Optional<RegleAnalyse> parCritereEtCode(UUID critereId, String code) {
         return find("critere.id = ?1 and code = ?2", critereId, code).firstResultOptional();
     }
+
+    /** Règles proposées par l'IA et non encore acceptées (V57). */
+    public List<RegleAnalyse> aValider(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 and origine = ?2 and valideePar is null "
+                        + "order by critere.code, ordre",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
 }

@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     # pour un test mais pas recommandé en continu).
     gemini_model: str = "gemini-3.5-flash-lite"
 
+    # --- Authentification des appels entrants ---
+    # Vérification des jetons de service émis par l'API. La clé publique
+    # suffit : la clé privée ne quitte jamais l'API. Deux formes selon
+    # l'environnement, comme le fait déjà l'API pour la même paire — un
+    # fichier monté en développement, une variable en production.
+    jwt_issuer: str = "https://smartex-sustway.local"
+    jwt_public_key_path: str = ""
+    jwt_public_key: str = ""
+
     # --- Import de référentiel ---
     # Ces trois valeurs gouvernent le découpage d'un document avant envoi au
     # modèle. Elles sont configurables parce qu'aucune n'est établie : elles

@@ -69,7 +69,13 @@ public class Question {
         // JPA
     }
 
-    private Question(Critere critere, String code, String libelle) {
+    /**
+     * Le constructeur est resté privé tant que les questions n'entraient dans
+     * le catalogue que par les scripts de peuplement et par la copie d'une
+     * version à l'autre. L'import assisté en crée désormais, et il ne peut
+     * pas passer par le SQL.
+     */
+    public Question(Critere critere, String code, String libelle) {
         this.critere = critere;
         this.referentielVersion = critere.getReferentielVersion();
         this.code = code;
@@ -114,12 +120,28 @@ public class Question {
         return type;
     }
 
+    public void setType(TypeQuestion type) {
+        this.type = type;
+    }
+
+    public void setEchelleReponse(String echelleReponse) {
+        this.echelleReponse = echelleReponse;
+    }
+
     public int getOrdre() {
         return ordre;
     }
 
+    public void setOrdre(int ordre) {
+        this.ordre = ordre;
+    }
+
     public boolean isObligatoire() {
         return obligatoire;
+    }
+
+    public void setObligatoire(boolean obligatoire) {
+        this.obligatoire = obligatoire;
     }
 
     @Override
