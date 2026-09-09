@@ -15,7 +15,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 
-/** RG07/RG08/RG09/RG34 — référentiel Smartex Sustway (87 critères) et composition dynamique du questionnaire. */
+/** RG07/RG08/RG09/RG34 — référentiel Smartex Sustway (catalogue réel, 92 critères) et composition dynamique du questionnaire. */
 @QuarkusTest
 class ReferentielResourceTest {
 
@@ -34,8 +34,14 @@ class ReferentielResourceTest {
                 .body("code", hasItem("SMARTEX_SUSTWAY"));
     }
 
+    /**
+     * Le catalogue servi est le catalogue réel, semé depuis
+     * referentiel-source : 92 critères aux codes du questionnaire, et non les
+     * 87 de la grille que semaient V11 et V20. Voir CatalogueReelTest pour la
+     * comparaison exhaustive avec la source.
+     */
     @Test
-    void criteresSmartexSustway_retourneLes87Criteres() {
+    void criteresSmartexSustway_retourneLeCatalogueReel() {
         var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
 
         given()
@@ -43,9 +49,9 @@ class ReferentielResourceTest {
                 .when().get("/api/v1/referentiels/SMARTEX_SUSTWAY/criteres")
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(87))
-                .body("code", hasItem("GOUV-09"))
-                .body("code", hasItem("ENV-01"));
+                .body("$", hasSize(92))
+                .body("code", hasItem("D2-14"))
+                .body("code", hasItem("D4-47"));
     }
 
     @Test
@@ -60,7 +66,7 @@ class ReferentielResourceTest {
     }
 
     @Test
-    void questionnaireDynamique_retourneLes87CriteresGeneraux() {
+    void questionnaireDynamique_retourneLesCriteresGenerauxDuCatalogueReel() {
         var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
         String entrepriseId = creerEntreprise(utilisateur.token);
 
@@ -71,8 +77,8 @@ class ReferentielResourceTest {
                 .then()
                 .statusCode(200)
                 .body("referentielCode", equalTo("SMARTEX_SUSTWAY"))
-                .body("nombreCriteres", equalTo(87))
-                .body("criteres", hasSize(87));
+                .body("nombreCriteres", equalTo(92))
+                .body("criteres", hasSize(92));
     }
 
     @Test

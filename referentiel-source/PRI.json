@@ -1,0 +1,384 @@
+{
+    "nom": "Principes pour l'investissement responsable",
+    "code": "PRI",
+    "type": "PRI",
+    "statut": "ACTIF",
+    "version": "1.0",
+    "domaines": [
+        {
+            "nom": "Incorporer les enjeux ESG dans l’analyse et la décision d’investissement",
+            "code": "D1",
+            "ordre": 1,
+            "criteres": [
+                {
+                    "code": "D1-01",
+                    "actif": true,
+                    "libelle": "L’entreprise intègre‑t‑elle des critères ESG dans ses décisions d’investissement ? (Environnement avec enjeux clés de Réduction des émissions de CO₂, gestion de l’énergie et de l’eau, protection de la biodiversité; Social avecdes enjeux clés de Conditions de travail, inclusion, droits humains, relations avec les communautés; et Gouvernance avec les enjeux clés Transparence, lutte contre la corruption, composition des conseils, rémunération des dirigeants).",
+                    "questions": [
+                        {
+                            "code": "D1-01-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise intègre‑t‑elle des critères ESG dans ses décisions d’investissement ? (Environnement avec enjeux clés de Réduction des émissions de CO₂, gestion de l’énergie et de l’eau, protection de la biodiversité; Social avecdes enjeux clés de Conditions de travail, inclusion, droits humains, relations avec les communautés; et Gouvernance avec les enjeux clés Transparence, lutte contre la corruption, composition des conseils, rémunération des dirigeants).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-14",
+                    "actif": true,
+                    "libelle": "Existe‑t‑il une méthodologie formalisée pour évaluer les risques/opportunités ESG ?",
+                    "questions": [
+                        {
+                            "code": "D1-14-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Existe‑t‑il une méthodologie formalisée pour évaluer les risques/opportunités ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-15",
+                    "actif": true,
+                    "libelle": ". Les projets sont‑ils comparés selon leur performance ESG avant validation ?",
+                    "questions": [
+                        {
+                            "code": "D1-15-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": ". Les projets sont‑ils comparés selon leur performance ESG avant validation ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                }
+            ],
+            "description": "1. Incorporer les enjeux ESG dans l’analyse et la décision d’investissement avec pour objectif principal Intégrer les risques / opportunités ESG dans les portefeuilles",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Être des propriétaires actifs",
+            "code": "D2",
+            "ordre": 2,
+            "criteres": [
+                {
+                    "code": "D2-16",
+                    "actif": true,
+                    "libelle": "L’entreprise exerce‑t‑elle ses droits de vote en assemblée générale en tenant compte des enjeux ESG ?",
+                    "questions": [
+                        {
+                            "code": "D2-16-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise exerce‑t‑elle ses droits de vote en assemblée générale en tenant compte des enjeux ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-17",
+                    "actif": true,
+                    "libelle": "Des dialogues réguliers sont‑ils menés avec les sociétés investies sur leurs pratiques ESG ?",
+                    "questions": [
+                        {
+                            "code": "D2-17-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Des dialogues réguliers sont‑ils menés avec les sociétés investies sur leurs pratiques ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-18",
+                    "actif": true,
+                    "libelle": "Y a‑t‑il une politique d’engagement actionnarial documentée ?",
+                    "questions": [
+                        {
+                            "code": "D2-18-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Y a‑t‑il une politique d’engagement actionnarial documentée ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "2. Être des propriétaires actifs avec pour objectif principal Exercer les droits d’actionnaires en tenant compte des enjeux ESG",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Exiger une divulgation appropriée des enjeux ESG",
+            "code": "D3",
+            "ordre": 3,
+            "criteres": [
+                {
+                    "code": "D3-19",
+                    "actif": true,
+                    "libelle": "L’entreprise demande‑t‑elle aux sociétés investies de publier des rapports ESG ?",
+                    "questions": [
+                        {
+                            "code": "D3-19-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise demande‑t‑elle aux sociétés investies de publier des rapports ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-20",
+                    "actif": true,
+                    "libelle": "Les données publiées sont‑elles vérifiées par des tiers indépendants ?",
+                    "questions": [
+                        {
+                            "code": "D3-20-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les données publiées sont‑elles vérifiées par des tiers indépendants ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "3. Exiger une divulgation appropriée des enjeux ESG avec pour objectif principal Demander aux entreprises de publier des données ESG fiables",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Promouvoir l’acceptation des PRI dans l’industrie",
+            "code": "D4",
+            "ordre": 4,
+            "criteres": [
+                {
+                    "code": "D4-22",
+                    "actif": true,
+                    "libelle": "L’entreprise encourage‑t‑elle ses partenaires financiers à adopter les PRI ?",
+                    "questions": [
+                        {
+                            "code": "D4-22-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise encourage‑t‑elle ses partenaires financiers à adopter les PRI ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-23",
+                    "actif": true,
+                    "libelle": "Participe‑t‑elle à des initiatives collectives ou associations professionnelles ESG ?",
+                    "questions": [
+                        {
+                            "code": "D4-23-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Participe‑t‑elle à des initiatives collectives ou associations professionnelles ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-24",
+                    "actif": true,
+                    "libelle": "Les PRI sont‑ils intégrés dans les contrats ou chartes de collaboration ?",
+                    "questions": [
+                        {
+                            "code": "D4-24-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les PRI sont‑ils intégrés dans les contrats ou chartes de collaboration ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "4. Promouvoir l’acceptation des PRI dans l’industrie avec pour objectif principal Encourager d’autres acteurs financiers à adopter les PRI",
+            "sousDomaines": null
+        },
+        {
+            "nom": "5. Travailler ensemble pour plus d’efficacité",
+            "code": "D5",
+            "ordre": 5,
+            "criteres": [
+                {
+                    "code": "D5-25",
+                    "actif": true,
+                    "libelle": "L’entreprise collabore‑t‑elle avec d’autres signataires PRI pour renforcer l’impact ?",
+                    "questions": [
+                        {
+                            "code": "D5-25-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise collabore‑t‑elle avec d’autres signataires PRI pour renforcer l’impact ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-26",
+                    "actif": true,
+                    "libelle": "Participe‑t‑elle à des coalitions d’investisseurs sur des thématiques ESG (climat, droits humains) ?",
+                    "questions": [
+                        {
+                            "code": "D5-26-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Participe‑t‑elle à des coalitions d’investisseurs sur des thématiques ESG (climat, droits humains) ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-27",
+                    "actif": true,
+                    "libelle": "Des projets communs de plaidoyer ou de recherche ESG sont‑ils menés ?",
+                    "questions": [
+                        {
+                            "code": "D5-27-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Des projets communs de plaidoyer ou de recherche ESG sont‑ils menés ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                }
+            ],
+            "description": "5. 5. Travailler ensemble pour plus d’efficacité avec pour objectif principal Coopérer entre signataires pour renforcer l’impact",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Rendre compte des activités et progrès",
+            "code": "D6",
+            "ordre": 6,
+            "criteres": [
+                {
+                    "code": "D6-28",
+                    "actif": true,
+                    "libelle": "L’entreprise publie‑t‑elle un rapport annuel PRI ou ESG ?",
+                    "questions": [
+                        {
+                            "code": "D6-28-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise publie‑t‑elle un rapport annuel PRI ou ESG ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D6-29",
+                    "actif": true,
+                    "libelle": "Les progrès réalisés sont‑ils mesurés par des indicateurs chiffrés ?",
+                    "questions": [
+                        {
+                            "code": "D6-29-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les progrès réalisés sont‑ils mesurés par des indicateurs chiffrés ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "6. Rendre compte des activités et progrès avec pour objectif principal Publier régulièrement les actions et résultats ESG",
+            "sousDomaines": null
+        }
+    ],
+    "description": "Six principes PRI/ISR."
+}

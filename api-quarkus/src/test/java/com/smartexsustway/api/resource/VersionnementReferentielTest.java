@@ -239,19 +239,23 @@ class VersionnementReferentielTest {
     // === E ==================================================================
 
     /**
-     * Une mission sur le référentiel semé — dont la version courante a été
-     * reconstituée par la reprise V46/V47, exactement comme celles des
-     * missions antérieures à la migration — reste pleinement exploitable :
+     * Une mission sur le référentiel semé reste pleinement exploitable :
      * questionnaire complet, critères lisibles, version rattachée.
+     *
+     * La version attendue est lue en base plutôt qu'écrite en dur : le
+     * catalogue publie de nouvelles versions au fil des migrations de contenu,
+     * et figer un numéro ici ferait échouer ce test à chaque publication sans
+     * rien dire de la santé de la mission.
      */
     @Test
     void e_missionSurLeReferentielRepris_resteExploitable() {
         var mission = creerMission("SMARTEX_SUSTWAY", "Mission sur référentiel repris");
+        String versionCourante = versionPublieeDe("SMARTEX_SUSTWAY");
 
         int nombreCriteres = given().header("Authorization", "Bearer " + mission.token())
                 .when().get("/api/v1/entreprises/" + mission.entrepriseId() + "/audits/" + mission.auditId())
                 .then().statusCode(200)
-                .body("referentielVersion", equalTo("1.0"))
+                .body("referentielVersion", equalTo(versionCourante))
                 .extract().path("nombreCriteres");
 
         org.junit.jupiter.api.Assertions.assertTrue(nombreCriteres > 0,
@@ -502,6 +506,15 @@ class VersionnementReferentielTest {
                 .when().get("/api/v1/referentiels/" + cadre.code() + "/criteres")
                 .then().statusCode(200)
                 .extract().path("[0].id");
+    }
+
+    /** Version courante d'un référentiel du catalogue, telle qu'elle est en base. */
+    private String versionPublieeDe(String referentielCode) {
+        return (String) entityManager.createNativeQuery(
+                        "SELECT v.numero FROM referentiel_version v "
+                                + "JOIN referentiel r ON r.id = v.referentiel_id "
+                                + "WHERE r.code = ?1 AND v.statut = 'PUBLIEE'")
+                .setParameter(1, referentielCode).getSingleResult();
     }
 
     private String libelleEnBase(String critereId) {

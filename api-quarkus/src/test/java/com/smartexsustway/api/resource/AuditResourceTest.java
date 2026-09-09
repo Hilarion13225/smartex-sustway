@@ -95,7 +95,7 @@ class AuditResourceTest {
                 .statusCode(201)
                 .body("referentielCode", equalTo("SMARTEX_SUSTWAY"))
                 .body("statut", equalTo("BROUILLON"))
-                .body("nombreCriteres", equalTo(87))
+                .body("nombreCriteres", equalTo(92))
                 .extract().path("id");
 
         given()
@@ -103,7 +103,7 @@ class AuditResourceTest {
                 .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/criteres")
                 .then()
                 .statusCode(200)
-                .body("$", hasSize(87));
+                .body("$", hasSize(92));
     }
 
     @Test
@@ -184,11 +184,11 @@ class AuditResourceTest {
                 .statusCode(200)
                 .body("auditId", equalTo(auditId))
                 .body("scoreGlobal", equalTo(0))
-                .body("nombreCriteresTotal", equalTo(87))
+                .body("nombreCriteresTotal", equalTo(92))
                 .body("nombreCriteresEvalues", equalTo(0))
                 .body("nombreCriteresEnRevue", equalTo(0))
-                .body("nombreCriteresNonEvalues", equalTo(87))
-                .body("domaines.nombreCriteresTotal.sum()", equalTo(87))
+                .body("nombreCriteresNonEvalues", equalTo(92))
+                .body("domaines.nombreCriteresTotal.sum()", equalTo(92))
                 .body("domaines.nombreCriteresEvalues", everyItem(equalTo(0)));
     }
 

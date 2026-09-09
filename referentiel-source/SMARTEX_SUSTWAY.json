@@ -1,0 +1,2016 @@
+{
+    "nom": "Référentiel Smartex Sustway",
+    "code": "SMARTEX_SUSTWAY",
+    "type": "SMARTEX",
+    "statut": "ACTIF",
+    "version": "1.0",
+    "domaines": [
+        {
+            "nom": "Les valeurs et principes éthiques, de RSE / ESG / Développement Durable qui régissent le fonctionnement de l'entreprise dans son environnement concurrentiel",
+            "code": "D1",
+            "ordre": 1,
+            "criteres": [
+                {
+                    "code": "D1-01",
+                    "actif": true,
+                    "libelle": "Avez-vous défini et formalisé, au sein de votre entreprise, dans un \"Code de conduite et d'éthique\", les valeurs et principes sur lesquels se fondent vos relations avec l'ensemble de vos parties prenantes (internes comme externes) ?",
+                    "questions": [
+                        {
+                            "code": "D1-01-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avez-vous défini et formalisé, au sein de votre entreprise, dans un \"Code de conduite et d'éthique\", les valeurs et principes sur lesquels se fondent vos relations avec l'ensemble de vos parties prenantes (internes comme externes) ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-02",
+                    "actif": true,
+                    "libelle": "Initiez les salariés à l’importance des valeurs et des règles de conduite de l'entreprise",
+                    "questions": [
+                        {
+                            "code": "D1-02-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Initiez les salariés à l’importance des valeurs et des règles de conduite de l'entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-03",
+                    "actif": true,
+                    "libelle": "Communiquez les valeurs de l'entreprise aux clients, partenaires commerciaux, fournisseurs et autres parties intéressées (par ex., lors de présentations commerciales, dans le matériel de marketing ou les communications informelles) ?",
+                    "questions": [
+                        {
+                            "code": "D1-03-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Communiquez les valeurs de l'entreprise aux clients, partenaires commerciaux, fournisseurs et autres parties intéressées (par ex., lors de présentations commerciales, dans le matériel de marketing ou les communications informelles) ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-04",
+                    "actif": true,
+                    "libelle": "Redevabilité : Rendre des comptes à la société sur les impacts engendrés par un organisme, par ses activités et ses décisions : Votre entreprise rend-t-elle compte des impacts de ces décisions et activités au personnel et aux autres parties prenantes (les fournisseurs, l’Etat, Clients, Consommateurs, actionnaires, les riverains) ? (impacts environnementaux ; impacts économiques ; impacts sociaux ; risques de santé – sécurité ; ….,).",
+                    "questions": [
+                        {
+                            "code": "D1-04-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Redevabilité : Rendre des comptes à la société sur les impacts engendrés par un organisme, par ses activités et ses décisions : Votre entreprise rend-t-elle compte des impacts de ces décisions et activités au personnel et aux autres parties prenantes (les fournisseurs, l’Etat, Clients, Consommateurs, actionnaires, les riverains) ? (impacts environnementaux ; impacts économiques ; impacts sociaux ; risques de santé – sécurité ; ….,).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-05",
+                    "actif": true,
+                    "libelle": "Transparence : communiquer et fournir des informations sur les décisions et sur les activités qui ont un impact significatif sur la société, l'économie, l'environnement présent et futur ?",
+                    "questions": [
+                        {
+                            "code": "D1-05-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Transparence : communiquer et fournir des informations sur les décisions et sur les activités qui ont un impact significatif sur la société, l'économie, l'environnement présent et futur ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-06",
+                    "actif": true,
+                    "libelle": "Reconnaissance des intérêts des parties prenantes : Construire la cartographie des parties prenantes, Identifier leurs attentes, leurs besoins et exigences et s'assurer que les décisions et activités répondent à ces attentes identifiées ?",
+                    "questions": [
+                        {
+                            "code": "D1-06-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Reconnaissance des intérêts des parties prenantes : Construire la cartographie des parties prenantes, Identifier leurs attentes, leurs besoins et exigences et s'assurer que les décisions et activités répondent à ces attentes identifiées ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-07",
+                    "actif": true,
+                    "libelle": "Respect des droits de l'homme : L’entreprise doit disposer d’un dispositif administratif qui permet le respect des droits de l’homme et la reconnaissance de leur importance ?",
+                    "questions": [
+                        {
+                            "code": "D1-07-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Respect des droits de l'homme : L’entreprise doit disposer d’un dispositif administratif qui permet le respect des droits de l’homme et la reconnaissance de leur importance ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                }
+            ],
+            "description": "Dimension \"Les valeurs et principes éthiques, de RSE / ESG / Développement Durable qui régissent le fonctionnement de l'entreprise dans son environnement concurrentiel\" (adaptation aux principes de l'ISO 26000).",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Bonnes pratiques relatives à la dimension « Gouvernance d’entreprise",
+            "code": "D2",
+            "ordre": 2,
+            "criteres": [
+                {
+                    "code": "D2-08",
+                    "actif": true,
+                    "libelle": "Diffuser les informations sur les résultats financiers et non financiers de l’entreprise et garantir leur transparence et leur accès.",
+                    "questions": [
+                        {
+                            "code": "D2-08-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Diffuser les informations sur les résultats financiers et non financiers de l’entreprise et garantir leur transparence et leur accès.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-09",
+                    "actif": true,
+                    "libelle": "Garantir le respect des droits de propriété tels que mentionnés dans les textes (les propriétaires de l’entreprise sont bénéficiaires des résultats de l’utilisation de leurs droits).",
+                    "questions": [
+                        {
+                            "code": "D2-09-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Garantir le respect des droits de propriété tels que mentionnés dans les textes (les propriétaires de l’entreprise sont bénéficiaires des résultats de l’utilisation de leurs droits).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-10",
+                    "actif": true,
+                    "libelle": "Promouvoir l’actionnariat salarié (analyse structure du capital).",
+                    "questions": [
+                        {
+                            "code": "D2-10-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Promouvoir l’actionnariat salarié (analyse structure du capital).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-11",
+                    "actif": true,
+                    "libelle": "Admettre le principe de représentation des salariés au conseil d’administration (analyse du Conseil d'administration)",
+                    "questions": [
+                        {
+                            "code": "D2-11-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Admettre le principe de représentation des salariés au conseil d’administration (analyse du Conseil d'administration)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-12",
+                    "actif": true,
+                    "libelle": "Admettre le principe d’indépendance des administrateurs (analyse du Conseil d'administration)",
+                    "questions": [
+                        {
+                            "code": "D2-12-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Admettre le principe d’indépendance des administrateurs (analyse du Conseil d'administration)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-13",
+                    "actif": true,
+                    "libelle": "Admettre l’existence de comités spécialisés de contrôle (analyse du Conseil d'administration)",
+                    "questions": [
+                        {
+                            "code": "D2-13-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Admettre l’existence de comités spécialisés de contrôle (analyse du Conseil d'administration)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D2-14",
+                    "actif": true,
+                    "libelle": "Connaître la législation nationale en matière de lutte contre la corruption et formaliser de façon concrète une politique de lutte contre la corruption",
+                    "questions": [
+                        {
+                            "code": "D2-14-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Connaître la législation nationale en matière de lutte contre la corruption et formaliser de façon concrète une politique de lutte contre la corruption",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-15",
+                    "actif": true,
+                    "libelle": "désigner une personne ou un comité en charge d’exiger le respect et de superviser la conformité aux mesures anti-corruption, de la formation et la sensibilisation de l’ensemble du personnel, de l’évaluation des risques de corruption et de l’exercice d’un devoir de vigilance quant aux projets associés aux activités de l’entreprise.",
+                    "questions": [
+                        {
+                            "code": "D2-15-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "désigner une personne ou un comité en charge d’exiger le respect et de superviser la conformité aux mesures anti-corruption, de la formation et la sensibilisation de l’ensemble du personnel, de l’évaluation des risques de corruption et de l’exercice d’un devoir de vigilance quant aux projets associés aux activités de l’entreprise.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-16",
+                    "actif": true,
+                    "libelle": "Agir contre la corruption sous toutes ses formes (la corruption publique et privée, ainsi que la corruption active et passive), y compris l’extorsion de fonds et les pots-de-vin.",
+                    "questions": [
+                        {
+                            "code": "D2-16-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Agir contre la corruption sous toutes ses formes (la corruption publique et privée, ainsi que la corruption active et passive), y compris l’extorsion de fonds et les pots-de-vin.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-17",
+                    "actif": true,
+                    "libelle": "Déployer un système de management anti-corruption qui vise à la certification ISO 37001 v 2017, (qui définit une série de mesures pour aider les organismes à prévenir, détecter et traiter les problèmes de corruption)",
+                    "questions": [
+                        {
+                            "code": "D2-17-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Déployer un système de management anti-corruption qui vise à la certification ISO 37001 v 2017, (qui définit une série de mesures pour aider les organismes à prévenir, détecter et traiter les problèmes de corruption)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-18",
+                    "actif": true,
+                    "libelle": "Agir en toute conformité avec la lettre et l’esprit des lois et règlements fiscaux et coopérer avec les autorités compétentes.",
+                    "questions": [
+                        {
+                            "code": "D2-18-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Agir en toute conformité avec la lettre et l’esprit des lois et règlements fiscaux et coopérer avec les autorités compétentes.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-19",
+                    "actif": true,
+                    "libelle": "Développer des politiques spécifiques qui protègent les droits des salariés dans l’entreprise et plus globalement tout au long de la chaîne de valeur",
+                    "questions": [
+                        {
+                            "code": "D2-19-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Développer des politiques spécifiques qui protègent les droits des salariés dans l’entreprise et plus globalement tout au long de la chaîne de valeur",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S4",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-20",
+                    "actif": true,
+                    "libelle": "Engager le dialogue avec les gouvernements, les syndicats, les ONG et autres organismes afin de mieux faire connaître les problèmes liés à l’application des droits de l’homme.",
+                    "questions": [
+                        {
+                            "code": "D2-20-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Engager le dialogue avec les gouvernements, les syndicats, les ONG et autres organismes afin de mieux faire connaître les problèmes liés à l’application des droits de l’homme.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S4",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-21",
+                    "actif": true,
+                    "libelle": "Veiller à ce que l’entreprise ne se rende pas complice de violations des droits de l’homme.",
+                    "questions": [
+                        {
+                            "code": "D2-21-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Veiller à ce que l’entreprise ne se rende pas complice de violations des droits de l’homme.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D2-S4",
+                    "coefficientPonderation": "1.0"
+                }
+            ],
+            "description": "Dimension Bonnes pratiques relatives à la dimension « Gouvernance d’entreprise »",
+            "sousDomaines": [
+                {
+                    "nom": "A) Information financière et conseil d’administration",
+                    "code": "D2-S1",
+                    "ordre": 1,
+                    "description": "A) Information financière et conseil d’administration"
+                },
+                {
+                    "nom": "B) Lutte contre la corruption",
+                    "code": "D2-S2",
+                    "ordre": 2,
+                    "description": "B) Lutte contre la corruption"
+                },
+                {
+                    "nom": "C) Discipline fiscale",
+                    "code": "D2-S3",
+                    "ordre": 3,
+                    "description": "C) Discipline fiscale"
+                },
+                {
+                    "nom": "D) Droits de l’homme",
+                    "code": "D2-S4",
+                    "ordre": 4,
+                    "description": "D) Droits de l’homme"
+                }
+            ]
+        },
+        {
+            "nom": "Bonnes pratiques sociales",
+            "code": "D3",
+            "ordre": 3,
+            "criteres": [
+                {
+                    "code": "D3-22",
+                    "actif": true,
+                    "libelle": "Contribuer à l’abolition du travail des enfants par une bonne connaissance et le respect de la législation en vigueur par rapport à l’âge minimum d’admission à l’emploi.",
+                    "questions": [
+                        {
+                            "code": "D3-22-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Contribuer à l’abolition du travail des enfants par une bonne connaissance et le respect de la législation en vigueur par rapport à l’âge minimum d’admission à l’emploi.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-23",
+                    "actif": true,
+                    "libelle": "Coopérer avec les différents partenaires de la chaîne de fournisseurs et sous-traitants afin de ne pas employer des enfants en dessous de l’âge légal.",
+                    "questions": [
+                        {
+                            "code": "D3-23-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Coopérer avec les différents partenaires de la chaîne de fournisseurs et sous-traitants afin de ne pas employer des enfants en dessous de l’âge légal.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-24",
+                    "actif": true,
+                    "libelle": "Connaître et prendre des mesures afin de respecter la législation en vigueur par rapport à la durée du travail, au salaire minimum qu'il faut verser aux travailleurs, à la prime de temps supplémentaire, aux jours de repos hebdomadaire, aux jours fériés et congés annuels payés, aux congés parentaux.",
+                    "questions": [
+                        {
+                            "code": "D3-24-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Connaître et prendre des mesures afin de respecter la législation en vigueur par rapport à la durée du travail, au salaire minimum qu'il faut verser aux travailleurs, à la prime de temps supplémentaire, aux jours de repos hebdomadaire, aux jours fériés et congés annuels payés, aux congés parentaux.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-25",
+                    "actif": true,
+                    "libelle": "Disposer d’une politique formalisée d’égalité des chances au sein de l'entreprise et lutter ainsi contre les toutes les formes de discriminations et les inégalités ou disparités, (surtout dans les processus de recrutement, la gestion des carrières, les conditions de salaires, la promotion de diversité, la promotion de la parité hommes et femmes ; …)",
+                    "questions": [
+                        {
+                            "code": "D3-25-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’une politique formalisée d’égalité des chances au sein de l'entreprise et lutter ainsi contre les toutes les formes de discriminations et les inégalités ou disparités, (surtout dans les processus de recrutement, la gestion des carrières, les conditions de salaires, la promotion de diversité, la promotion de la parité hommes et femmes ; …)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-26",
+                    "actif": true,
+                    "libelle": "désigner une personne ou un comité en charge d’exiger le respect et de superviser la conformité aux mesures prises en matière d’égalité des chances au sein de l’entreprise.",
+                    "questions": [
+                        {
+                            "code": "D3-26-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "désigner une personne ou un comité en charge d’exiger le respect et de superviser la conformité aux mesures prises en matière d’égalité des chances au sein de l’entreprise.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-27",
+                    "actif": true,
+                    "libelle": "Prendre des dispositions afin de donner l’opportunité à l’entreprise de pouvoir soutenir des initiatives sociales portant sur l’emploi des personnes à handicap",
+                    "questions": [
+                        {
+                            "code": "D3-27-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des dispositions afin de donner l’opportunité à l’entreprise de pouvoir soutenir des initiatives sociales portant sur l’emploi des personnes à handicap",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D3-28",
+                    "actif": true,
+                    "libelle": "Prendre des mesures afin d’éliminer toutes les formes de travail forcé ou obligatoire.",
+                    "questions": [
+                        {
+                            "code": "D3-28-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des mesures afin d’éliminer toutes les formes de travail forcé ou obligatoire.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D3-29",
+                    "actif": true,
+                    "libelle": "Conduire régulièrement des audits afin de déterminer si de la main d’œuvre forcée est employée sur la chaîne de valeur de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D3-29-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Conduire régulièrement des audits afin de déterminer si de la main d’œuvre forcée est employée sur la chaîne de valeur de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-30",
+                    "actif": true,
+                    "libelle": "Renforcer la lutte contre la précarité des emplois en prenant des dispositions pour garantir leur sécurité",
+                    "questions": [
+                        {
+                            "code": "D3-30-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Renforcer la lutte contre la précarité des emplois en prenant des dispositions pour garantir leur sécurité",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-31",
+                    "actif": true,
+                    "libelle": "Prendre des dispositions pour promouvoir des emplois productifs ou décents dans l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D3-31-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des dispositions pour promouvoir des emplois productifs ou décents dans l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-32",
+                    "actif": true,
+                    "libelle": "Disposer d’une politique formalisée et cohérente de formation en vue de développer les compétences des collaborateurs sur leurs postes spécifiques.",
+                    "questions": [
+                        {
+                            "code": "D3-32-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’une politique formalisée et cohérente de formation en vue de développer les compétences des collaborateurs sur leurs postes spécifiques.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-33",
+                    "actif": true,
+                    "libelle": "désigner une personne ou un comité en charge du déploiement des programmes de formation de l’entreprise en faveur des collaborateurs",
+                    "questions": [
+                        {
+                            "code": "D3-33-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "désigner une personne ou un comité en charge du déploiement des programmes de formation de l’entreprise en faveur des collaborateurs",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S2",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-34",
+                    "actif": true,
+                    "libelle": "Assurer les normes les plus élevées de santé, sécurité et d’hygiène sur le lieu du travail.",
+                    "questions": [
+                        {
+                            "code": "D3-34-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Assurer les normes les plus élevées de santé, sécurité et d’hygiène sur le lieu du travail.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-35",
+                    "actif": true,
+                    "libelle": "Entreprendre des actions qui visent à améliorer l’environnement de travail des collaborateurs, (notamment, mise à disposition de salle, de coin repas, restaurant d’entreprise, vestiaire ; ….).",
+                    "questions": [
+                        {
+                            "code": "D3-35-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Entreprendre des actions qui visent à améliorer l’environnement de travail des collaborateurs, (notamment, mise à disposition de salle, de coin repas, restaurant d’entreprise, vestiaire ; ….).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-36",
+                    "actif": true,
+                    "libelle": "Formaliser l’engagement de l’entreprise en faveur des conditions de travail décentes et de sécurité en déployant un système de management qui vise à la certification OHSAS 18001 v 2007 (Santé et Sécurité sur le lieu du travail), qui est un grand signal, ou ISO 45001 v 2018.",
+                    "questions": [
+                        {
+                            "code": "D3-36-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Formaliser l’engagement de l’entreprise en faveur des conditions de travail décentes et de sécurité en déployant un système de management qui vise à la certification OHSAS 18001 v 2007 (Santé et Sécurité sur le lieu du travail), qui est un grand signal, ou ISO 45001 v 2018.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-37",
+                    "actif": true,
+                    "libelle": "Formaliser l’engagement de l’entreprise en faveur des conditions de travail décentes en déployant un système de management qui vise à la certification SA 8000 (les bonnes pratiques sociales relatives aux conditions de travail), qui est un grand signal.",
+                    "questions": [
+                        {
+                            "code": "D3-37-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Formaliser l’engagement de l’entreprise en faveur des conditions de travail décentes en déployant un système de management qui vise à la certification SA 8000 (les bonnes pratiques sociales relatives aux conditions de travail), qui est un grand signal.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-38",
+                    "actif": true,
+                    "libelle": "Prendre des mesures afin de renforcer le dialogue social au sein de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D3-38-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des mesures afin de renforcer le dialogue social au sein de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S4",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-39",
+                    "actif": true,
+                    "libelle": "Prendre des mesures afin de respecter la liberté d’association des salariés.",
+                    "questions": [
+                        {
+                            "code": "D3-39-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des mesures afin de respecter la liberté d’association des salariés.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S4",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D3-40",
+                    "actif": true,
+                    "libelle": "Reconnaître et faciliter le droit de négociation collective des salariés.",
+                    "questions": [
+                        {
+                            "code": "D3-40-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Reconnaître et faciliter le droit de négociation collective des salariés.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S4",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D3-41",
+                    "actif": true,
+                    "libelle": "Etablir des procédures pour l’examen de réclamations individuelles ou collectives et des mécanismes de conciliation volontaire.",
+                    "questions": [
+                        {
+                            "code": "D3-41-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Etablir des procédures pour l’examen de réclamations individuelles ou collectives et des mécanismes de conciliation volontaire.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S4",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-42",
+                    "actif": true,
+                    "libelle": "Permettre aux représentants des salariés d’exercer leurs fonctions en les autorisant à se retrouver dans les locaux de l’entreprise, distribuer les notes du syndicat, etc.",
+                    "questions": [
+                        {
+                            "code": "D3-42-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Permettre aux représentants des salariés d’exercer leurs fonctions en les autorisant à se retrouver dans les locaux de l’entreprise, distribuer les notes du syndicat, etc.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S4",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-43",
+                    "actif": true,
+                    "libelle": "Etre attentif à ce que les activités de l’entreprise aient des retombées positives pour les communautés où elle est implantée (en termes d’emplois, de formation, de développement de la culture locale, d’éducation, de développement des technologies et leur accès ; …).",
+                    "questions": [
+                        {
+                            "code": "D3-43-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Etre attentif à ce que les activités de l’entreprise aient des retombées positives pour les communautés où elle est implantée (en termes d’emplois, de formation, de développement de la culture locale, d’éducation, de développement des technologies et leur accès ; …).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S5",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-44",
+                    "actif": true,
+                    "libelle": "Dialogue ouvert et constructif avec les communautés locales sur les questions controversées ou sensibles qui impliquent l’entreprise (par exemple, l’accumulation de déchets à l’extérieur des locaux, les véhicules obstruant les rues et les trottoirs ; …)",
+                    "questions": [
+                        {
+                            "code": "D3-44-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Dialogue ouvert et constructif avec les communautés locales sur les questions controversées ou sensibles qui impliquent l’entreprise (par exemple, l’accumulation de déchets à l’extérieur des locaux, les véhicules obstruant les rues et les trottoirs ; …)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S5",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-45",
+                    "actif": true,
+                    "libelle": "Soutenir financièrement les activités et les projets de la communauté locale (notamment à travers des dons de bienfaisance, actions de lutte contre le SIDA, sponsoring ou mécénat culturel, sportif, environnemental), et contribuer ainsi au développement économique du tissu local.",
+                    "questions": [
+                        {
+                            "code": "D3-45-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Soutenir financièrement les activités et les projets de la communauté locale (notamment à travers des dons de bienfaisance, actions de lutte contre le SIDA, sponsoring ou mécénat culturel, sportif, environnemental), et contribuer ainsi au développement économique du tissu local.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S5",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D3-46",
+                    "actif": true,
+                    "libelle": "S’acquitter de façon régulière de ses impôts locaux.",
+                    "questions": [
+                        {
+                            "code": "D3-46-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "S’acquitter de façon régulière de ses impôts locaux.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D3-S5",
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "Dimension Bonnes pratiques sociales (normes fondamentales de travail) et sociétales (implication de l’entreprise auprès des communautés et en faveur du développement local / ancrage territorial de l’entreprise)",
+            "sousDomaines": [
+                {
+                    "nom": "A) L’emploi",
+                    "code": "D3-S1",
+                    "ordre": 1,
+                    "description": "A) L’emploi"
+                },
+                {
+                    "nom": "B) La formation",
+                    "code": "D3-S2",
+                    "ordre": 2,
+                    "description": "B) La formation"
+                },
+                {
+                    "nom": "C) Les conditions de travail et de vie",
+                    "code": "D3-S3",
+                    "ordre": 3,
+                    "description": "C) Les conditions de travail et de vie"
+                },
+                {
+                    "nom": "D) Les relations professionnelles",
+                    "code": "D3-S4",
+                    "ordre": 4,
+                    "description": "D) Les relations professionnelles"
+                },
+                {
+                    "nom": "E) Implication de l’entreprise auprès des communautés et en faveur du développement local",
+                    "code": "D3-S5",
+                    "ordre": 5,
+                    "description": "E) Implication de l’entreprise auprès des communautés et en faveur du développement local"
+                }
+            ]
+        },
+        {
+            "nom": "Bonnes pratiques de protection de l’environnement et de l’atmosphère",
+            "code": "D4",
+            "ordre": 4,
+            "criteres": [
+                {
+                    "code": "D4-47",
+                    "actif": true,
+                    "libelle": "Prendre des mesures pour assurer la conformité de ses activités aux dispositions législatives et réglementaires applicables en matière de protection de d’environnement",
+                    "questions": [
+                        {
+                            "code": "D4-47-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des mesures pour assurer la conformité de ses activités aux dispositions législatives et réglementaires applicables en matière de protection de d’environnement",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-48",
+                    "actif": true,
+                    "libelle": "Disposer d'un système interne de management de l'environnement, avec des objectifs bien fixés, des responsables et moyens concrètement mobilisés et suivi des réalisations (par exemple, appliquer une charte environnementale).",
+                    "questions": [
+                        {
+                            "code": "D4-48-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d'un système interne de management de l'environnement, avec des objectifs bien fixés, des responsables et moyens concrètement mobilisés et suivi des réalisations (par exemple, appliquer une charte environnementale).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-49",
+                    "actif": true,
+                    "libelle": "Prendre des initiatives pour promouvoir une plus grande responsabilité environnementale auprès de tout le personnel, (par exemple, établir un programme de formation du personnel visant la connaissance et la mise en œuvre pratique des mesures concernant la protection de l'environnement).",
+                    "questions": [
+                        {
+                            "code": "D4-49-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des initiatives pour promouvoir une plus grande responsabilité environnementale auprès de tout le personnel, (par exemple, établir un programme de formation du personnel visant la connaissance et la mise en œuvre pratique des mesures concernant la protection de l'environnement).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-50",
+                    "actif": true,
+                    "libelle": "Formaliser l’engagement de l’entreprise en faveur de la protection de l’environnement et de l’atmosphère en déployant un système de management environnemental, sur tous ses sites, qui vise à la certification ISO 14001 v 2004 qui est un grand signal envoyé au marché",
+                    "questions": [
+                        {
+                            "code": "D4-50-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Formaliser l’engagement de l’entreprise en faveur de la protection de l’environnement et de l’atmosphère en déployant un système de management environnemental, sur tous ses sites, qui vise à la certification ISO 14001 v 2004 qui est un grand signal envoyé au marché",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-51",
+                    "actif": true,
+                    "libelle": "Disposer de dispositifs d’intervention plus efficaces concernant les impacts de ses activités sur l’environnement",
+                    "questions": [
+                        {
+                            "code": "D4-51-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer de dispositifs d’intervention plus efficaces concernant les impacts de ses activités sur l’environnement",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-52",
+                    "actif": true,
+                    "libelle": "Conduire régulièrement et en toute transparence des études d’impacts environnementaux.",
+                    "questions": [
+                        {
+                            "code": "D4-52-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Conduire régulièrement et en toute transparence des études d’impacts environnementaux.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-53",
+                    "actif": true,
+                    "libelle": "Adopter une attitude de précaution face aux défis environnementaux",
+                    "questions": [
+                        {
+                            "code": "D4-53-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Adopter une attitude de précaution face aux défis environnementaux",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-54",
+                    "actif": true,
+                    "libelle": "Tenir compte de l’impact environnemental potentiel lorsque l’entreprise développe de nouveaux produits et services (par exemple, en évaluant la consommation d’énergie, la recyclabilité ou la pollution).",
+                    "questions": [
+                        {
+                            "code": "D4-54-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Tenir compte de l’impact environnemental potentiel lorsque l’entreprise développe de nouveaux produits et services (par exemple, en évaluant la consommation d’énergie, la recyclabilité ou la pollution).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-55",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de suivi et de contrôle des consommations d’eau de l’entreprise (l’eau étant un bien précieux, sa consommation doit être maîtrisée afin d'éviter toute sur-consommation ou fuite. De plus, cette maîtrise apporte une économie sur la facture d'eau).",
+                    "questions": [
+                        {
+                            "code": "D4-55-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de suivi et de contrôle des consommations d’eau de l’entreprise (l’eau étant un bien précieux, sa consommation doit être maîtrisée afin d'éviter toute sur-consommation ou fuite. De plus, cette maîtrise apporte une économie sur la facture d'eau).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-56",
+                    "actif": true,
+                    "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de la consommation d’eau de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D4-56-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de la consommation d’eau de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-57",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de management de la consommation d’eau (certifiable ou pas)",
+                    "questions": [
+                        {
+                            "code": "D4-57-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de management de la consommation d’eau (certifiable ou pas)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S2",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-58",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de suivi et de contrôle de votre consommation d’énergie",
+                    "questions": [
+                        {
+                            "code": "D4-58-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de suivi et de contrôle de votre consommation d’énergie",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-59",
+                    "actif": true,
+                    "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de votre consommation d’énergie",
+                    "questions": [
+                        {
+                            "code": "D4-59-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de votre consommation d’énergie",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-60",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de management de la consommation d’énergie certifiable ou pas, notamment, avec la norme ISO 51001 v 2011",
+                    "questions": [
+                        {
+                            "code": "D4-60-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de management de la consommation d’énergie certifiable ou pas, notamment, avec la norme ISO 51001 v 2011",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-61",
+                    "actif": true,
+                    "libelle": "Recourir à des sources d’énergie alternatives notamment les énergies renouvelables / le solaire.",
+                    "questions": [
+                        {
+                            "code": "D4-61-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Recourir à des sources d’énergie alternatives notamment les énergies renouvelables / le solaire.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S3",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-62",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de suivi et de contrôle des rejets atmosphériques de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D4-62-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de suivi et de contrôle des rejets atmosphériques de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S4",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-63",
+                    "actif": true,
+                    "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction des rejets atmosphériques de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D4-63-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction des rejets atmosphériques de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S4",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-64",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de management de des rejets atmosphériques de l’entreprise, (certifiable ou pas)",
+                    "questions": [
+                        {
+                            "code": "D4-64-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de management de des rejets atmosphériques de l’entreprise, (certifiable ou pas)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S4",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-65",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de suivi et de contrôle des rejets liquides de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D4-65-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de suivi et de contrôle des rejets liquides de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S5",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-66",
+                    "actif": true,
+                    "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de vos rejets liquides",
+                    "questions": [
+                        {
+                            "code": "D4-66-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de vos rejets liquides",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S5",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-67",
+                    "actif": true,
+                    "libelle": "Disposer d'un système de management des rejets liquides de l’entreprise, (certifiable ou pas)",
+                    "questions": [
+                        {
+                            "code": "D4-67-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d'un système de management des rejets liquides de l’entreprise, (certifiable ou pas)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S5",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-68",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de suivi et de contrôle de vos déchets solides divers",
+                    "questions": [
+                        {
+                            "code": "D4-68-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de suivi et de contrôle de vos déchets solides divers",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S6",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-69",
+                    "actif": true,
+                    "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de vos déchets solides divers",
+                    "questions": [
+                        {
+                            "code": "D4-69-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Avoir des objectifs quantitatifs et/ou qualitatifs de réduction de vos déchets solides divers",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S6",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D4-70",
+                    "actif": true,
+                    "libelle": "Disposer d’un système de management de vos déchets solides divers, (certifiable ou pas)",
+                    "questions": [
+                        {
+                            "code": "D4-70-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Disposer d’un système de management de vos déchets solides divers, (certifiable ou pas)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D4-S6",
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "Dimension Bonnes pratiques de protection de l’environnement et de l’atmosphère",
+            "sousDomaines": [
+                {
+                    "nom": "A) Mesures d’ordre général",
+                    "code": "D4-S1",
+                    "ordre": 1,
+                    "description": "A) Mesures d’ordre général"
+                },
+                {
+                    "nom": "B) Gestion des consommations d’eau",
+                    "code": "D4-S2",
+                    "ordre": 2,
+                    "description": "B) Gestion des consommations d’eau"
+                },
+                {
+                    "nom": "C) Gestion des consommations d’énergie",
+                    "code": "D4-S3",
+                    "ordre": 3,
+                    "description": "C) Gestion des consommations d’énergie"
+                },
+                {
+                    "nom": "D) Gestion des rejets atmosphériques",
+                    "code": "D4-S4",
+                    "ordre": 4,
+                    "description": "D) Gestion des rejets atmosphériques"
+                },
+                {
+                    "nom": "E) Gestion des rejets liquides",
+                    "code": "D4-S5",
+                    "ordre": 5,
+                    "description": "E) Gestion des rejets liquides"
+                },
+                {
+                    "nom": "F) Gestion des déchets solides",
+                    "code": "D4-S6",
+                    "ordre": 6,
+                    "description": "F) Gestion des déchets solides"
+                }
+            ]
+        },
+        {
+            "nom": "Bonnes pratiques relatives à la dimension « Economie",
+            "code": "D5",
+            "ordre": 5,
+            "criteres": [
+                {
+                    "code": "D5-71",
+                    "actif": true,
+                    "libelle": "Prendre des dispositions afin de garantir la protection des données et la vie privée des clients / consommateurs",
+                    "questions": [
+                        {
+                            "code": "D5-71-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des dispositions afin de garantir la protection des données et la vie privée des clients / consommateurs",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-72",
+                    "actif": true,
+                    "libelle": "Fournir toutes les informations nécessaires sur les produits et services afin de permettre aux clients / consommateurs d’opérer des choix en toute connaissance de cause",
+                    "questions": [
+                        {
+                            "code": "D5-72-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Fournir toutes les informations nécessaires sur les produits et services afin de permettre aux clients / consommateurs d’opérer des choix en toute connaissance de cause",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D5-73",
+                    "actif": true,
+                    "libelle": "Prendre des mesures qui garantissent la sécurité et la santé des clients/ consommateurs dans l’utilisation des biens ou services de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D5-73-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre des mesures qui garantissent la sécurité et la santé des clients/ consommateurs dans l’utilisation des biens ou services de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-74",
+                    "actif": true,
+                    "libelle": "Faire de la qualité des biens ou services fournis aux clients / consommateurs un des objectifs centraux de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D5-74-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Faire de la qualité des biens ou services fournis aux clients / consommateurs un des objectifs centraux de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D5-75",
+                    "actif": true,
+                    "libelle": "Promouvoir une consommation responsable / durable auprès des consommateurs par l’éducation et la sensibilisation",
+                    "questions": [
+                        {
+                            "code": "D5-75-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Promouvoir une consommation responsable / durable auprès des consommateurs par l’éducation et la sensibilisation",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-76",
+                    "actif": true,
+                    "libelle": "Mettre en place un service après-vente afin d’assister et de résoudre les réclamations et litiges des clients / consommateurs",
+                    "questions": [
+                        {
+                            "code": "D5-76-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Mettre en place un service après-vente afin d’assister et de résoudre les réclamations et litiges des clients / consommateurs",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-77",
+                    "actif": true,
+                    "libelle": "Mener des études de satisfaction clients.",
+                    "questions": [
+                        {
+                            "code": "D5-77-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Mener des études de satisfaction clients.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D5-78",
+                    "actif": true,
+                    "libelle": "Déployer un système de management qui vise à la certification ISO 9001 v 2015. qui est un grand signal envoyé au marché.",
+                    "questions": [
+                        {
+                            "code": "D5-78-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Déployer un système de management qui vise à la certification ISO 9001 v 2015. qui est un grand signal envoyé au marché.",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S1",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-79",
+                    "actif": true,
+                    "libelle": "Connaître et Respecter les règles qui régissent le secteur et éviter toute forme de « concurrence déloyale ».",
+                    "questions": [
+                        {
+                            "code": "D5-79-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Connaître et Respecter les règles qui régissent le secteur et éviter toute forme de « concurrence déloyale ».",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S2",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-80",
+                    "actif": true,
+                    "libelle": "Sensibiliser les fournisseurs et sous-traitants à la RSE en les encourageant à identifier les principaux impacts environnementaux de leurs activités et à les réduire",
+                    "questions": [
+                        {
+                            "code": "D5-80-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Sensibiliser les fournisseurs et sous-traitants à la RSE en les encourageant à identifier les principaux impacts environnementaux de leurs activités et à les réduire",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-81",
+                    "actif": true,
+                    "libelle": "Sensibiliser les fournisseurs et sous-traitants à la RSE en les encourageant à identifier les principaux impacts sociaux de leurs activités et à les réduire",
+                    "questions": [
+                        {
+                            "code": "D5-81-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Sensibiliser les fournisseurs et sous-traitants à la RSE en les encourageant à identifier les principaux impacts sociaux de leurs activités et à les réduire",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D5-82",
+                    "actif": true,
+                    "libelle": "Analyser les offres des fournisseurs / sous-traitants suivant les critères d'attribution en « mieux disance » et en raisonnant en « coût total » par la prise en compte de l’ensemble des composantes du coût (prix du bien ou du service, les coûts logistiques associés supportés, les coûts après vente, …) et sur le long terme",
+                    "questions": [
+                        {
+                            "code": "D5-82-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Analyser les offres des fournisseurs / sous-traitants suivant les critères d'attribution en « mieux disance » et en raisonnant en « coût total » par la prise en compte de l’ensemble des composantes du coût (prix du bien ou du service, les coûts logistiques associés supportés, les coûts après vente, …) et sur le long terme",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D5-83",
+                    "actif": true,
+                    "libelle": "Prendre en compte des critères sociaux et environnementaux dans le processus d’achats de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D5-83-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Prendre en compte des critères sociaux et environnementaux dans le processus d’achats de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-84",
+                    "actif": true,
+                    "libelle": "Formaliser de façon concrète une politique d’achats responsables pour l’entreprise fondée sur des principes environnementaux, sociaux, de gouvernance et d’éthique",
+                    "questions": [
+                        {
+                            "code": "D5-84-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Formaliser de façon concrète une politique d’achats responsables pour l’entreprise fondée sur des principes environnementaux, sociaux, de gouvernance et d’éthique",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-85",
+                    "actif": true,
+                    "libelle": "Impliquer et former l’ensemble des acteurs de la supply-chain à la politique d’achats responsables de l’entreprise (acheteurs, logistique, comptabilité fournisseurs, qualité fournisseurs …).",
+                    "questions": [
+                        {
+                            "code": "D5-85-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Impliquer et former l’ensemble des acteurs de la supply-chain à la politique d’achats responsables de l’entreprise (acheteurs, logistique, comptabilité fournisseurs, qualité fournisseurs …).",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-86",
+                    "actif": true,
+                    "libelle": "Déployer un système de management des achats qui vise à la certification ISO 20400 v 2017, (lignes directrices pour intégrer la responsabilité sociétale dans le processus achats de l’entreprise)",
+                    "questions": [
+                        {
+                            "code": "D5-86-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Déployer un système de management des achats qui vise à la certification ISO 20400 v 2017, (lignes directrices pour intégrer la responsabilité sociétale dans le processus achats de l’entreprise)",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-87",
+                    "actif": true,
+                    "libelle": "Encourager ou associer les fournisseurs et sous-traitants à la politique d’achats responsables de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D5-87-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Encourager ou associer les fournisseurs et sous-traitants à la politique d’achats responsables de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-88",
+                    "actif": true,
+                    "libelle": "Réaliser des audits fournisseurs / sous-traitants au regard des exigences RSE / DD de l’entreprise",
+                    "questions": [
+                        {
+                            "code": "D5-88-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Réaliser des audits fournisseurs / sous-traitants au regard des exigences RSE / DD de l’entreprise",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-90",
+                    "actif": true,
+                    "libelle": "Réaliser des enquêtes de satisfaction fournisseurs / sous-traitants relativement à l’assurance d’une équité financière à leur égard, aux bons échanges de relations d’affaires et de collaboration, de gestion des litiges",
+                    "questions": [
+                        {
+                            "code": "D5-90-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Réaliser des enquêtes de satisfaction fournisseurs / sous-traitants relativement à l’assurance d’une équité financière à leur égard, aux bons échanges de relations d’affaires et de collaboration, de gestion des litiges",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": "D5-S3",
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "Dimension Bonnes pratiques relatives à la dimension « Economie » intégrant les parties prenantes / comportement de l’entreprise sur le marché",
+            "sousDomaines": [
+                {
+                    "nom": "A) Les relations avec les clients/consommateurs",
+                    "code": "D5-S1",
+                    "ordre": 1,
+                    "description": "A) Les relations avec les clients/consommateurs."
+                },
+                {
+                    "nom": "B) La concurrence",
+                    "code": "D5-S2",
+                    "ordre": 2,
+                    "description": "B) La concurrence."
+                },
+                {
+                    "nom": "C) Les relations avec les fournisseurs et sous-traitants",
+                    "code": "D5-S3",
+                    "ordre": 3,
+                    "description": "C) Les relations avec les fournisseurs et sous-traitants."
+                }
+            ]
+        },
+        {
+            "nom": "Prise en charge organisationnelle de la RSE dans l’entreprise",
+            "code": "D6",
+            "ordre": 6,
+            "criteres": [
+                {
+                    "code": "D6-91",
+                    "actif": true,
+                    "libelle": "Une équipe est-elle mise en place et dédiée à la RSE, peu importe la ou les dimensions de cette dernière traitée/s par l’entreprise ?",
+                    "questions": [
+                        {
+                            "code": "D6-91-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Une équipe est-elle mise en place et dédiée à la RSE, peu importe la ou les dimensions de cette dernière traitée/s par l’entreprise ?",
+                            "obligatoire": true,
+                            "echelleReponse": "BINAIRE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D6-92",
+                    "actif": true,
+                    "libelle": "Publiez-vous un rapport de RSE / ESG / Développement Durable chaque année ?",
+                    "questions": [
+                        {
+                            "code": "D6-92-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Publiez-vous un rapport de RSE / ESG / Développement Durable chaque année ?",
+                            "obligatoire": true,
+                            "echelleReponse": "BINAIRE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D6-93",
+                    "actif": true,
+                    "libelle": "Le rapport de RSE / ESG / Développement Durable publié chaque année est il accessible à tous ceux qui voudraient en savoir davantage sur vos pratiques pour des questions de transparence ?",
+                    "questions": [
+                        {
+                            "code": "D6-93-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Le rapport de RSE / ESG / Développement Durable publié chaque année est il accessible à tous ceux qui voudraient en savoir davantage sur vos pratiques pour des questions de transparence ?",
+                            "obligatoire": true,
+                            "echelleReponse": "BINAIRE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "Dimension Prise en charge organisationnelle de la RSE dans l’entreprise.",
+            "sousDomaines": null
+        }
+    ],
+    "description": "Grille d'analyse de durabilité — six dimensions, dix-huit sous-domaines."
+}

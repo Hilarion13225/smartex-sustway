@@ -1,0 +1,642 @@
+{
+    "nom": "Normes de performance IFC/SFI",
+    "code": "IFC_SFI",
+    "type": "IFC_SFI",
+    "statut": "ACTIF",
+    "version": "1.0",
+    "domaines": [
+        {
+            "nom": "Évaluation et gestion des risques et impacts",
+            "code": "D1",
+            "ordre": 1,
+            "criteres": [
+                {
+                    "code": "D1-01",
+                    "actif": true,
+                    "libelle": "L’entreprise dispose‑t‑elle d’un système de gestion environnemental documenté ?",
+                    "questions": [
+                        {
+                            "code": "D1-01-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise dispose‑t‑elle d’un système de gestion environnemental documenté ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-02",
+                    "actif": true,
+                    "libelle": "L’entreprise dispose‑t‑elle d’un système de gestion social documenté ?",
+                    "questions": [
+                        {
+                            "code": "D1-02-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise dispose‑t‑elle d’un système de gestion social documenté ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D1-03",
+                    "actif": true,
+                    "libelle": "Les études d’impact sont‑elles réalisées avant chaque projet ?",
+                    "questions": [
+                        {
+                            "code": "D1-03-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les études d’impact sont‑elles réalisées avant chaque projet ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D1-04",
+                    "actif": true,
+                    "libelle": "Existe‑t‑il un plan de suivi et de reporting régulier ?",
+                    "questions": [
+                        {
+                            "code": "D1-04-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Existe‑t‑il un plan de suivi et de reporting régulier ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "1. Évaluation et gestion des risques et impacts avec pour objectif principal Mettre en place un système de gestion environnementale et sociale",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Main-d’œuvre et conditions de travail",
+            "code": "D2",
+            "ordre": 2,
+            "criteres": [
+                {
+                    "code": "D2-05",
+                    "actif": true,
+                    "libelle": "Les contrats respectent‑ils les normes de l’OIT concernant le travail forcé ?",
+                    "questions": [
+                        {
+                            "code": "D2-05-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les contrats respectent‑ils les normes de l’OIT concernant le travail forcé ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-06",
+                    "actif": true,
+                    "libelle": "Les contrats respectent‑ils les normes de l’OIT concernant le travail des enfants ?",
+                    "questions": [
+                        {
+                            "code": "D2-06-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les contrats respectent‑ils les normes de l’OIT concernant le travail des enfants ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-07",
+                    "actif": true,
+                    "libelle": "Les employés bénéficient‑ils de formations en matière de santé/sécurité au travail ?",
+                    "questions": [
+                        {
+                            "code": "D2-07-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les employés bénéficient‑ils de formations en matière de santé/sécurité au travail ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D2-08",
+                    "actif": true,
+                    "libelle": "Y a‑t‑il un mécanisme de plainte pour les travailleurs ?",
+                    "questions": [
+                        {
+                            "code": "D2-08-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Y a‑t‑il un mécanisme de plainte pour les travailleurs ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D2-09",
+                    "actif": true,
+                    "libelle": "Y a‑t‑il un mécanisme de résolution de conflits pour les travailleurs ?",
+                    "questions": [
+                        {
+                            "code": "D2-09-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Y a‑t‑il un mécanisme de résolution de conflits pour les travailleurs ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                }
+            ],
+            "description": "2. Main-d’œuvre et conditions de travail avec pour objectif principal Respect des droits des travailleurs et normes OIT",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Utilisation rationnelle des ressources et prévention de la pollution",
+            "code": "D3",
+            "ordre": 3,
+            "criteres": [
+                {
+                    "code": "D3-10",
+                    "actif": true,
+                    "libelle": "L’entreprise mesure‑t‑elle sa consommation d’énergie avec l'ambiiton de la maîtriser, ou la réduire ?",
+                    "questions": [
+                        {
+                            "code": "D3-10-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise mesure‑t‑elle sa consommation d’énergie avec l'ambiiton de la maîtriser, ou la réduire ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-11",
+                    "actif": true,
+                    "libelle": "L’entreprise mesure‑t‑elle sa consommation d’eau avec l'ambiiton de la maîtriser, ou la réduire ?",
+                    "questions": [
+                        {
+                            "code": "D3-11-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise mesure‑t‑elle sa consommation d’eau avec l'ambiiton de la maîtriser, ou la réduire ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D3-14",
+                    "actif": true,
+                    "libelle": "Les différents déchets de l'entreprise sont‑ils triés ?",
+                    "questions": [
+                        {
+                            "code": "D3-14-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les différents déchets de l'entreprise sont‑ils triés ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D3-15",
+                    "actif": true,
+                    "libelle": "Les différents déchets de l'entreprise sont‑ils recyclés ou valorisés ?",
+                    "questions": [
+                        {
+                            "code": "D3-15-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les différents déchets de l'entreprise sont‑ils recyclés ou valorisés ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "3. Utilisation rationnelle des ressources et prévention de la pollution avec pour objectif principal Réduction des émissions et gestion des déchets",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Santé, sécurité et sûreté des communautés",
+            "code": "D4",
+            "ordre": 4,
+            "criteres": [
+                {
+                    "code": "D4-16",
+                    "actif": true,
+                    "libelle": "L’entreprise a‑t‑elle un plan d’urgence en cas d’accident industriel ?",
+                    "questions": [
+                        {
+                            "code": "D4-16-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise a‑t‑elle un plan d’urgence en cas d’accident industriel ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D4-17",
+                    "actif": true,
+                    "libelle": "Les communautés locales sont‑elles informées des risques liés aux activités de l'entreprise ?",
+                    "questions": [
+                        {
+                            "code": "D4-17-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les communautés locales sont‑elles informées des risques liés aux activités de l'entreprise ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D4-18",
+                    "actif": true,
+                    "libelle": "Des mesures de sécurité (signalisation, clôtures, gardiennage) sont‑elles en place ?",
+                    "questions": [
+                        {
+                            "code": "D4-18-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Des mesures de sécurité (signalisation, clôtures, gardiennage) sont‑elles en place ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "4. Santé, sécurité et sûreté des communautés avec pour objectif principal Protéger les populations locales contre les risques",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Acquisition de terres et réinstallation involontaire",
+            "code": "D5",
+            "ordre": 5,
+            "criteres": [
+                {
+                    "code": "D5-19",
+                    "actif": true,
+                    "libelle": "Les populations affectées sont‑elles consultées avant toute acquisition ?",
+                    "questions": [
+                        {
+                            "code": "D5-19-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les populations affectées sont‑elles consultées avant toute acquisition ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "1.0"
+                },
+                {
+                    "code": "D5-20",
+                    "actif": true,
+                    "libelle": "Existe‑t‑il un plan de compensation équitable et transparent ?",
+                    "questions": [
+                        {
+                            "code": "D5-20-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Existe‑t‑il un plan de compensation équitable et transparent ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D5-21",
+                    "actif": true,
+                    "libelle": "Le suivi des personnes réinstallées est‑il assuré ?",
+                    "questions": [
+                        {
+                            "code": "D5-21-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Le suivi des personnes réinstallées est‑il assuré ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                }
+            ],
+            "description": "5. Acquisition de terres et réinstallation involontaire avec pour objectif principal Minimiser les déplacements forcés et indemniser équitablement",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Conservation de la biodiversité et gestion durable des ressources naturelles vivantes",
+            "code": "D6",
+            "ordre": 6,
+            "criteres": [
+                {
+                    "code": "D6-22",
+                    "actif": true,
+                    "libelle": "Aavant le lancement de tout projet ou toute activité dans une zone donénée, l’entreprise identifie-t-elle les zones sensibles ou protégées ?",
+                    "questions": [
+                        {
+                            "code": "D6-22-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Aavant le lancement de tout projet ou toute activité dans une zone donénée, l’entreprise identifie-t-elle les zones sensibles ou protégées ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D6-23",
+                    "actif": true,
+                    "libelle": "L'entreprise prévoit-elle des mesures de restauration écologique dans le cadre de ses activités lorsque des zones à forte biodiversité et ressources naturelles sont touchées",
+                    "questions": [
+                        {
+                            "code": "D6-23-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L'entreprise prévoit-elle des mesures de restauration écologique dans le cadre de ses activités lorsque des zones à forte biodiversité et ressources naturelles sont touchées",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D6-26",
+                    "actif": true,
+                    "libelle": "Les ressources naturelles pêche sont‑elles exploitées de manière durable ? Comment ?",
+                    "questions": [
+                        {
+                            "code": "D6-26-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les ressources naturelles pêche sont‑elles exploitées de manière durable ? Comment ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "6. Conservation de la biodiversité et gestion durable des ressources naturelles vivantes avec pour objectif principal Protéger les écosystèmes et espèces",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Peuples autochtones",
+            "code": "D7",
+            "ordre": 7,
+            "criteres": [
+                {
+                    "code": "D7-27",
+                    "actif": true,
+                    "libelle": "Les communautés autochtones sont‑elles consultées avec consentement libre, préalable et éclairé (CLPE) ?",
+                    "questions": [
+                        {
+                            "code": "D7-27-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les communautés autochtones sont‑elles consultées avec consentement libre, préalable et éclairé (CLPE) ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D7-28",
+                    "actif": true,
+                    "libelle": "Les projets respectent‑ils les traditions et cultures locales ?",
+                    "questions": [
+                        {
+                            "code": "D7-28-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les projets respectent‑ils les traditions et cultures locales ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D7-29",
+                    "actif": true,
+                    "libelle": "Des bénéfices directs (emploi, infrastructures) sont‑ils partagés avec ces communautés ?",
+                    "questions": [
+                        {
+                            "code": "D7-29-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Des bénéfices directs (emploi, infrastructures) sont‑ils partagés avec ces communautés ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "7. Peuples autochtones avec pour objectif principal Respect des droits et consentement libre, préalable et éclairé (CLPE)",
+            "sousDomaines": null
+        },
+        {
+            "nom": "Patrimoine culturel",
+            "code": "D8",
+            "ordre": 8,
+            "criteres": [
+                {
+                    "code": "D8-30",
+                    "actif": true,
+                    "libelle": "L’entreprise a‑t‑elle identifié les sites archéologiques ou historiques proches de ses activités ?",
+                    "questions": [
+                        {
+                            "code": "D8-30-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "L’entreprise a‑t‑elle identifié les sites archéologiques ou historiques proches de ses activités ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "2.0"
+                },
+                {
+                    "code": "D8-31",
+                    "actif": true,
+                    "libelle": "Existe‑t‑il un plan de sauvegarde en cas de découverte fortuite ?",
+                    "questions": [
+                        {
+                            "code": "D8-31-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Existe‑t‑il un plan de sauvegarde en cas de découverte fortuite ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                },
+                {
+                    "code": "D8-32",
+                    "actif": true,
+                    "libelle": "Les traditions culturelles locales sont‑elles respectées et valorisées ?",
+                    "questions": [
+                        {
+                            "code": "D8-32-Q1",
+                            "type": "FERMEE",
+                            "ordre": 1,
+                            "libelle": "Les traditions culturelles locales sont‑elles respectées et valorisées ?",
+                            "obligatoire": true,
+                            "echelleReponse": "MATURITE"
+                        }
+                    ],
+                    "description": null,
+                    "applicabilite": "GENERALE",
+                    "criticiteCode": "MOYENNE",
+                    "sousDomaineCode": null,
+                    "coefficientPonderation": "3.0"
+                }
+            ],
+            "description": "8. Patrimoine culturel avec pour objectif principal Préserver les sites et traditions",
+            "sousDomaines": null
+        }
+    ],
+    "description": "Huit normes de performance de la Société financière internationale."
+}

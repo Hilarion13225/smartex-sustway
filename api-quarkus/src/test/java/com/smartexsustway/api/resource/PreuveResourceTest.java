@@ -83,10 +83,18 @@ class PreuveResourceTest {
                 .then().statusCode(200)
                 .extract().jsonPath().getList("$");
 
-        // RG15 : un même document peut couvrir plusieurs critères (ici GOUV-07 et GOUV-08).
+        // RG15 : un même document peut couvrir plusieurs critères. Les deux
+        // premiers du questionnaire suffisent — ce qui est éprouvé ici est le
+        // rattachement multiple, pas l'identité des critères. Les nommer par
+        // leur code lierait ce test au catalogue en vigueur, qui a vocation à
+        // évoluer d'une version à l'autre.
         List<String> auditCritereIds = criteres.stream()
-                .filter(c -> "GOUV-07".equals(c.get("critereCode")) || "GOUV-08".equals(c.get("critereCode")))
+                .limit(2)
                 .map(c -> (String) c.get("id"))
+                .toList();
+        List<String> codesAttendus = criteres.stream()
+                .limit(2)
+                .map(c -> (String) c.get("critereCode"))
                 .toList();
 
         given()
@@ -101,8 +109,8 @@ class PreuveResourceTest {
                 .then()
                 .statusCode(201)
                 .body("documentId", equalTo(documentId))
-                .body("critereCodes", hasItem("GOUV-07"))
-                .body("critereCodes", hasItem("GOUV-08"));
+                .body("critereCodes", hasItem(codesAttendus.get(0)))
+                .body("critereCodes", hasItem(codesAttendus.get(1)));
 
         given()
                 .header("Authorization", "Bearer " + ctx.token())
