@@ -8,9 +8,11 @@ import {
   Check,
   ClipboardCheck,
   FileText,
+  Gauge,
   Landmark,
   Layers,
   Leaf,
+  ListChecks,
   Play,
   Users,
 } from 'lucide-react';
@@ -33,32 +35,39 @@ const GARANTIES = ['Simple à utiliser', 'Sécurisée', 'Adaptée à tous les se
  */
 const FONCTIONNALITES = [
   {
-    icone: FileText,
+    icone: ClipboardCheck,
     fond: 'bg-rose-50/70 border-rose-100 dark:bg-rose-500/[0.07] dark:border-rose-500/20',
     ton: 'rouge',
-    titre: 'Évaluation complète',
-    texte: 'Des questionnaires adaptés à votre secteur et à votre contexte.',
+    titre: 'Évaluation intelligente',
+    texte: 'Un questionnaire adapté à votre secteur, bâti sur des référentiels reconnus.',
   },
   {
-    icone: BarChart3,
+    icone: FileText,
     fond: 'bg-blue-50/70 border-blue-100 dark:bg-blue-500/[0.07] dark:border-blue-500/20',
     ton: 'bleu',
-    titre: 'Analyses intelligentes',
-    texte: 'Des insights fiables grâce à l’IA.',
+    titre: 'Analyse des preuves',
+    texte: 'Vos documents justificatifs lus et confrontés au référentiel par l’IA.',
   },
   {
-    icone: ClipboardCheck,
+    icone: Gauge,
     fond: 'bg-emerald-50/70 border-emerald-100 dark:bg-emerald-500/[0.07] dark:border-emerald-500/20',
     ton: 'vert',
-    titre: 'Plans d’actions personnalisés',
-    texte: 'Des recommandations concrètes et priorisées.',
+    titre: 'Scoring et priorisation',
+    texte: 'Une vision claire des risques et des opportunités, hiérarchisée.',
+  },
+  {
+    icone: ListChecks,
+    fond: 'bg-amber-50/70 border-amber-100 dark:bg-amber-500/[0.07] dark:border-amber-500/20',
+    ton: 'orange',
+    titre: 'Plans d’actions',
+    texte: 'Des recommandations concrètes sur chaque non-conformité relevée.',
   },
   {
     icone: Activity,
-    fond: 'bg-amber-50/70 border-amber-100 dark:bg-amber-500/[0.07] dark:border-amber-500/20',
-    ton: 'orange',
-    titre: 'Suivi en temps réel',
-    texte: 'Des tableaux de bord clairs et des rapports détaillés.',
+    fond: 'bg-violet-50/70 border-violet-100 dark:bg-violet-500/[0.07] dark:border-violet-500/20',
+    ton: 'violet',
+    titre: 'Suivi et reporting',
+    texte: 'Des progrès mesurables dans le temps, et un rapport exportable.',
   },
 ];
 
@@ -139,24 +148,33 @@ export default function Services() {
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">
               <Link
-                to="/inscription"
+                to="/contact"
                 className="group inline-flex items-center justify-center gap-2.5 rounded-lg bg-brand-600 px-10 py-3.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5"
               >
-                Créer un compte
+                Demander une démonstration
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
               </Link>
 
-              <button
-                type="button"
-                onClick={() => definirVideoOuverte(true)}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-lg border border-brand-300 bg-surface px-8 py-3.5 text-sm font-semibold text-brand-600 transition duration-300 hover:border-brand-500 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10"
+              <Link
+                to="/formules"
+                className="inline-flex items-center justify-center gap-2.5 rounded-lg border border-brand-300 bg-surface px-8 py-3.5 text-sm font-semibold text-brand-600 transition duration-300 hover:border-brand-500 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10"
               >
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-white">
-                  <Play className="h-2.5 w-2.5 fill-current" aria-hidden />
-                </span>
-                Voir la démonstration
-              </button>
+                Voir les formules
+              </Link>
             </div>
+
+            {/* La vidéo reste offerte, mais en retrait : la maquette ne donne
+                que deux boutons pleins au héros. */}
+            <button
+              type="button"
+              onClick={() => definirVideoOuverte(true)}
+              className="group mt-5 inline-flex items-center gap-2.5 text-sm font-semibold text-ink-600 transition-colors hover:text-brand-700 dark:hover:text-brand-400"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-600 text-white">
+                <Play className="h-2.5 w-2.5 fill-current" aria-hidden />
+              </span>
+              Voir la vidéo de présentation
+            </button>
 
             <ul className="mt-8 flex flex-wrap items-center gap-x-9 gap-y-4">
               {GARANTIES.map((garantie, index) => (
@@ -182,9 +200,20 @@ export default function Services() {
         </div>
       </section>
 
-      {/* --------------------------------------------- Quatre fonctionnalités */}
+      {/* --------------------------------------------- Une solution complète */}
       <section className="mx-auto max-w-[80rem] px-5 pb-16">
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Revele className="text-center">
+          <Etiquette filetDroit>Une solution complète</Etiquette>
+          <h2 className="mx-auto mt-4 max-w-2xl font-display text-2xl font-extrabold leading-tight tracking-tight text-marine sm:text-[1.9rem]">
+            De la preuve déposée au plan d’action.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-[1.6] text-ink-600">
+            Cinq étapes enchaînées dans un seul outil : vous ne changez pas d’application entre l’évaluation et le
+            suivi des corrections.
+          </p>
+        </Revele>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {FONCTIONNALITES.map((fonctionnalite, index) => (
             <Revele key={fonctionnalite.titre} delai={index * 100}>
               <article
@@ -195,9 +224,9 @@ export default function Services() {
                 >
                   <fonctionnalite.icone className="h-6 w-6" aria-hidden />
                 </span>
-                <h2 className="mt-5 font-display text-[0.95rem] font-bold leading-snug text-marine">
+                <h3 className="mt-5 font-display text-[0.95rem] font-bold leading-snug text-marine">
                   {fonctionnalite.titre}
-                </h2>
+                </h3>
                 <p className="mt-2.5 text-[13px] leading-relaxed text-ink-500">{fonctionnalite.texte}</p>
               </article>
             </Revele>
@@ -209,7 +238,7 @@ export default function Services() {
       <section className="mx-auto max-w-[80rem] px-5 pb-16">
         <div className="grid gap-12 lg:grid-cols-[0.88fr_1.12fr] lg:gap-10">
           <Revele className="lg:self-center">
-            <Etiquette>Une solution pour tous les types d’organisations</Etiquette>
+            <Etiquette>Une solution adaptée à votre réalité</Etiquette>
 
             <h2 className="mt-4 font-display text-2xl font-extrabold leading-snug tracking-tight text-marine sm:text-[1.7rem]">
               Quel que soit votre secteur, {SMARTEX.produit} s’adapte{' '}
@@ -309,7 +338,7 @@ export default function Services() {
 
           <div className="flex-1">
             <h2 className="font-display text-xl font-extrabold leading-snug sm:text-[1.5rem]">
-              Prêt à évaluer votre organisation ?
+              Passez à l’action.
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-white/85">
               Rejoignez les organisations qui construisent un avenir plus durable avec {SMARTEX.produit}.
@@ -317,10 +346,10 @@ export default function Services() {
           </div>
 
           <Link
-            to="/inscription"
+            to="/contact"
             className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-lg bg-white px-8 py-3.5 text-sm font-semibold text-brand-700 shadow-lg transition duration-300 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5"
           >
-            Créer un compte
+            Demander une démonstration
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
           </Link>
         </Revele>

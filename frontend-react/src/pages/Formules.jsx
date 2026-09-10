@@ -3,13 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
   BarChart3,
+  CalendarCheck,
   Check,
   CheckCircle2,
+  ClipboardCheck,
   Landmark,
   Leaf,
   Lock,
   Minus,
   Plus,
+  ShieldCheck,
+  Sparkles,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -17,7 +21,7 @@ import clsx from 'clsx';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterMontant } from '../lib/export';
 import { COMPARATIF, FORMULE_ENTREPRISE, QUESTIONS, SOUS_TITRES, pointsDescription } from '../lib/formules';
-import { Loader } from '../components/ui';
+import { Alerte, Loader } from '../components/ui';
 import Revele from '../components/Revele';
 import { Etiquette, PASTELS, TraitManuscrit } from '../components/vitrine/communs';
 import { SMARTEX } from '../config/smartex';
@@ -64,21 +68,62 @@ function Cellule({ valeur }) {
   return <span className="text-ink-600">{valeur}</span>;
 }
 
+/*
+ * Socle commun aux trois formules. Chaque ligne est déjà affirmée ailleurs sur
+ * la page — dans le comparatif ou dans les questions fréquentes — plutôt que
+ * d'être une promesse commerciale ajoutée pour l'occasion.
+ */
+const INCLUS = [
+  {
+    icone: ClipboardCheck,
+    ton: 'rouge',
+    titre: 'Accès à la plateforme',
+    texte: 'Questionnaire RSE et ESG adapté à votre secteur d’activité.',
+  },
+  {
+    icone: Sparkles,
+    ton: 'bleu',
+    titre: 'Analyse IA des preuves',
+    texte: 'Vos documents confrontés au référentiel, avec un niveau de profondeur selon la formule.',
+  },
+  {
+    icone: ShieldCheck,
+    ton: 'vert',
+    titre: 'Sécurité des données',
+    texte: 'Chiffrement au repos et en transit, isolation par entreprise, conformité RGPD.',
+  },
+  {
+    icone: CalendarCheck,
+    ton: 'orange',
+    titre: 'Licence annuelle',
+    texte: 'Renouvelable, sans reconduction automatique tacite.',
+  },
+];
+
 export default function Formules() {
   const navigate = useNavigate();
   const { listerFormules } = useApiAuth();
   const [formules, setFormules] = useState([]);
   const [chargement, setChargement] = useState(true);
+  const [catalogueIndisponible, setCatalogueIndisponible] = useState(false);
   const [questionOuverte, definirQuestionOuverte] = useState(null);
 
   useEffect(() => {
     let actif = true;
     listerFormules()
       .then((liste) => {
-        if (actif) setFormules(Array.isArray(liste) ? liste : []);
+        if (!actif) return;
+        const recues = Array.isArray(liste) ? liste : [];
+        setFormules(recues);
+        // Une liste vide est traitée comme une indisponibilité : afficher la
+        // seule offre sur devis reviendrait à présenter un catalogue amputé
+        // comme s'il était complet.
+        setCatalogueIndisponible(recues.length === 0);
       })
       .catch(() => {
-        if (actif) setFormules([]);
+        if (!actif) return;
+        setFormules([]);
+        setCatalogueIndisponible(true);
       })
       .finally(() => {
         if (actif) setChargement(false);
@@ -134,9 +179,9 @@ export default function Formules() {
             <Etiquette>Nos formules</Etiquette>
 
             <h1 className="mt-5 font-display text-[1.95rem] font-extrabold leading-[1.14] tracking-tight text-marine sm:text-[2.4rem] lg:text-[2.45rem] xl:text-[2.6rem]">
-              Une offre adaptée
+              Choisissez la formule
               <br />
-              à <span className="text-brand-600">chaque organisation.</span>
+              <span className="text-brand-600">adaptée à vos besoins.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-[1.6] text-ink-600">
@@ -201,7 +246,24 @@ export default function Formules() {
         {chargement ? (
           <Loader message="Chargement des formules…" />
         ) : (
-          <div className={clsx('grid gap-6', colonnes)}>
+          <>
+            {/* Le message du client d'API vise le développeur (« lancez
+                quarkus:dev ») : le visiteur reçoit ici une phrase qui lui dit
+                quoi faire, et l'offre sur devis reste affichée puisqu'elle ne
+                dépend pas du serveur. */}
+            {catalogueIndisponible ? (
+              <div className="mb-6">
+                <Alerte ton="rouge">
+                  Nos formules Standard et Avancées ne peuvent pas être affichées pour le moment.{' '}
+                  <Link to="/contact" className="font-semibold underline">
+                    Contactez-nous
+                  </Link>{' '}
+                  et nous vous transmettons la grille tarifaire.
+                </Alerte>
+              </div>
+            ) : null}
+
+            <div className={clsx('grid gap-6', colonnes)}>
             {cartes.map((carte, index) => {
               const misEnAvant = carte.code === 'AVANCEES';
               const surDevis = carte.code === 'ENTREPRISE';
@@ -298,13 +360,41 @@ export default function Formules() {
                 </Revele>
               );
             })}
-          </div>
+            </div>
+          </>
         )}
 
         <p className="mt-8 flex items-center justify-center gap-2 text-xs text-ink-500">
           <Lock className="h-3.5 w-3.5" aria-hidden />
           Paiement des formules Standard et Avancées via PI-SPI et Wave.
         </p>
+      </section>
+
+      {/* ------------------------------------------- Ce que tout le monde a */}
+      <section className="border-y border-ink-100 bg-ink-50/60 py-10 dark:bg-ink-100/30">
+        <div className="mx-auto max-w-[80rem] px-5">
+          <Revele>
+            <h2 className="text-center font-display text-lg font-extrabold tracking-tight text-marine sm:text-xl">
+              Toutes nos formules incluent
+            </h2>
+          </Revele>
+
+          {/* Rien d'inventé ici : chaque point reprend une ligne du comparatif
+              ou une réponse déjà donnée dans les questions fréquentes. */}
+          <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-200/70">
+            {INCLUS.map((element, index) => (
+              <Revele key={element.titre} delai={index * 100} as="li" className="text-center lg:px-6">
+                <span
+                  className={`mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full ${PASTELS[element.ton]}`}
+                >
+                  <element.icone className="h-5 w-5" aria-hidden />
+                </span>
+                <p className="mt-3.5 font-display text-[14px] font-bold leading-snug text-marine">{element.titre}</p>
+                <p className="mx-auto mt-1.5 max-w-[15rem] text-[12px] leading-snug text-ink-500">{element.texte}</p>
+              </Revele>
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* ------------------------------------------ Comparatif et questions */}
@@ -430,18 +520,18 @@ export default function Formules() {
 
           <div className="flex-1">
             <h2 className="font-display text-xl font-extrabold leading-snug sm:text-[1.5rem]">
-              Prêt à rejoindre les organisations qui construisent un avenir plus durable ?
+              Besoin d’une offre sur mesure ?
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-white/85">
-              Choisissez la formule qui correspond à vos besoins et commencez dès aujourd’hui avec {SMARTEX.produit}.
+              Décrivez-nous votre périmètre et vos échéances : nous revenons vers vous avec la démarche adaptée.
             </p>
           </div>
 
           <Link
-            to="/inscription"
+            to="/contact"
             className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-lg bg-white px-8 py-3.5 text-sm font-semibold text-brand-700 shadow-lg transition duration-300 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5"
           >
-            Créer un compte
+            Nous contacter
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
           </Link>
         </Revele>

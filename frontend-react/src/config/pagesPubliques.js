@@ -23,14 +23,14 @@ export const PAGES_PUBLIQUES = [
   {
     chemin: '/methodologie',
     titre: 'Méthodologie',
-    description: 'Le référentiel, les critères et la façon dont une note est produite.',
-    motsCles: ['methodologie', 'referentiel', 'criteres', 'notation', 'score', 'iso 26000', 'demarche'],
+    description: 'La démarche en trois étapes, la roue de Deming et les standards mobilisés.',
+    motsCles: ['methodologie', 'referentiel', 'criteres', 'notation', 'score', 'iso 26000', 'iso 45001', 'demarche', 'pdca', 'deming', 'global compact', 'oit', 'ocde', 'principes'],
   },
   {
     chemin: '/formules',
     titre: 'Formules',
-    description: 'Free, Standard et Avancées : ce que chaque formule ouvre.',
-    motsCles: ['formules', 'tarifs', 'prix', 'abonnement', 'combien', 'cout', 'gratuit', 'free', 'standard', 'avancees'],
+    description: 'Standard, Avancées et Entreprise : ce que chaque formule ouvre.',
+    motsCles: ['formules', 'tarifs', 'prix', 'abonnement', 'combien', 'cout', 'standard', 'avancees', 'entreprise', 'devis'],
   },
   {
     chemin: '/contact',

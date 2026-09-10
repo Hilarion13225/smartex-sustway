@@ -2,9 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
+  Building2,
   CheckCircle2,
+  Clock,
+  Globe2,
   GraduationCap,
   HelpCircle,
+  Landmark,
   Leaf,
   Mail,
   MapPin,
@@ -72,6 +76,38 @@ function cadreOsm(portee) {
     zone
   )}&layer=mapnik&marker=${REPERE.lat}%2C${REPERE.lon}`;
 }
+
+/** Les quatre coordonnées, en bande sous le héros comme sur la maquette. */
+const COORDONNEES = [
+  { icone: MapPin, libelle: 'Adresse', valeur: SMARTEX.adresse, detail: SMARTEX.editeur },
+  {
+    icone: Mail,
+    libelle: 'E-mail',
+    valeur: SMARTEX.email,
+    lien: `mailto:${SMARTEX.email}`,
+    detail: 'Réponse sous 24 h ouvrées',
+  },
+  {
+    icone: Phone,
+    libelle: 'Téléphone',
+    valeur: SMARTEX.telephone,
+    lien: `tel:${SMARTEX.telephone.replace(/\s/g, '')}`,
+    detail: 'Du lundi au vendredi',
+  },
+  { icone: Clock, libelle: 'Horaires', valeur: SMARTEX.horaires, detail: 'Heure de Côte d’Ivoire' },
+];
+
+/*
+ * Profils d'organisations accompagnées. Repris de la page Solution, où ces
+ * quatre catégories sont déjà celles du produit : la page Contact les
+ * rappelle pour situer le visiteur, elle n'en invente pas d'autres.
+ */
+const PROFILS = [
+  { icone: Building2, ton: 'bleu', libelle: 'Entreprises' },
+  { icone: Landmark, ton: 'violet', libelle: 'Institutions publiques' },
+  { icone: Leaf, ton: 'vert', libelle: 'ONG et associations' },
+  { icone: Globe2, ton: 'orange', libelle: 'Organisations internationales' },
+];
 
 /**
  * Page de contact 100 % côté navigateur : le formulaire n'appelle aucune API.
@@ -144,9 +180,9 @@ export default function Contact() {
             <Etiquette filetDroit>Contactez-nous</Etiquette>
 
             <h1 className="mt-5 font-display text-[1.95rem] font-extrabold leading-[1.14] tracking-tight text-marine sm:text-[2.4rem] lg:text-[2.45rem] xl:text-[2.6rem]">
-              Échangeons sur votre
+              Parlons de
               <br />
-              <span className="text-brand-600">démarche RSE et ESG.</span>
+              <span className="text-brand-600">votre projet.</span>
             </h1>
 
             <p className="mt-5 max-w-lg text-base leading-[1.6] text-ink-600">
@@ -188,6 +224,33 @@ export default function Contact() {
             </blockquote>
           </div>
         </div>
+      </section>
+
+      {/* --------------------------------------------- Bande de coordonnées */}
+      <section className="border-y border-ink-100 bg-ink-50/60 py-8 dark:bg-ink-100/30">
+        <ul className="mx-auto grid max-w-[80rem] gap-6 px-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-200/70">
+          {COORDONNEES.map((bloc, index) => (
+            <Revele key={bloc.libelle} delai={index * 90} as="li" className="flex items-start gap-3 lg:px-6">
+              <span className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${PASTELS.rouge}`}>
+                <bloc.icone className="h-5 w-5" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-[13px] font-bold text-marine">{bloc.libelle}</span>
+                {bloc.lien ? (
+                  <a
+                    href={bloc.lien}
+                    className="mt-1 block break-words text-[13px] leading-snug text-ink-600 transition-colors hover:text-brand-700 dark:hover:text-brand-400"
+                  >
+                    {bloc.valeur}
+                  </a>
+                ) : (
+                  <span className="mt-1 block text-[13px] leading-snug text-ink-600">{bloc.valeur}</span>
+                )}
+                <span className="mt-1 block text-[12px] leading-snug text-ink-400">{bloc.detail}</span>
+              </span>
+            </Revele>
+          ))}
+        </ul>
       </section>
 
       {/* ------------------------------------------ Formulaire + coordonnées */}
@@ -335,73 +398,36 @@ export default function Contact() {
             </form>
           </Revele>
 
-          {/* ---------- Coordonnées ---------- */}
+          {/* ---------- Rassurance et carte ---------- */}
           <Revele delai={120} className="min-w-0">
-            <Etiquette>Nos coordonnées</Etiquette>
+            <Etiquette>Ils nous font confiance</Etiquette>
             <h2 className="mt-4 font-display text-2xl font-extrabold tracking-tight text-marine sm:text-[1.7rem]">
               Nous sommes à votre écoute.
             </h2>
+            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-ink-600">
+              Entreprises, institutions, ONG ou organisations internationales : nous adaptons la démarche au périmètre
+              que vous avez à évaluer.
+            </p>
 
-            <div className="mt-8 grid gap-5 sm:grid-cols-2">
-              <article className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${PASTELS.rouge}`}>
-                  <MapPin className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-[0.95rem] font-bold text-marine">Notre adresse</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-ink-600">{SMARTEX.adresse}</p>
-                <p className="mt-2 text-[12px] leading-snug text-ink-400">{SMARTEX.editeur}</p>
-              </article>
-
-              <article className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${PASTELS.rouge}`}>
-                  <Phone className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-[0.95rem] font-bold text-marine">Téléphone</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-ink-600">
-                  <a className="transition-colors hover:text-brand-700" href={`tel:${SMARTEX.telephone.replace(/\s/g, '')}`}>
-                    {SMARTEX.telephone}
-                  </a>
-                </p>
-                <p className="mt-2 text-[12px] leading-snug text-ink-400">{SMARTEX.horaires}</p>
-              </article>
-
-              <article className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${PASTELS.rouge}`}>
-                  <Mail className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-[0.95rem] font-bold text-marine">E-mail</h3>
-                <p className="mt-2 break-words text-[13px] leading-relaxed text-ink-600">
-                  <a className="block transition-colors hover:text-brand-700" href={`mailto:${SMARTEX.email}`}>
-                    {SMARTEX.email}
-                  </a>
-                  <a className="block transition-colors hover:text-brand-700" href={`mailto:${SMARTEX.emailSupport}`}>
-                    {SMARTEX.emailSupport}
-                  </a>
-                </p>
-                <p className="mt-2 text-[12px] leading-snug text-ink-400">Nous vous répondons sous 24 h ouvrées.</p>
-              </article>
-
-              <article className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-                <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${PASTELS.rouge}`}>
-                  <Users className="h-5 w-5" aria-hidden />
-                </span>
-                <h3 className="mt-4 font-display text-[0.95rem] font-bold text-marine">Suivez-nous</h3>
-                <p className="mt-2 text-[13px] leading-relaxed">
-                  <a
-                    className="inline-flex items-center gap-1.5 font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
-                    href={SMARTEX.linkedin}
-                    target="_blank"
-                    rel="noreferrer noopener"
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+              {PROFILS.map((profil, index) => (
+                <Revele
+                  key={profil.libelle}
+                  delai={index * 90}
+                  as="li"
+                  className="flex items-center gap-3 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm"
+                >
+                  <span
+                    className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${PASTELS[profil.ton]}`}
                   >
-                    LinkedIn
-                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                  </a>
-                </p>
-                <p className="mt-2 text-[12px] leading-snug text-ink-400">
-                  Restez informé de nos actualités et de nos contenus.
-                </p>
-              </article>
-            </div>
+                    <profil.icone className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 font-display text-[13px] font-bold leading-snug text-marine">
+                    {profil.libelle}
+                  </span>
+                </Revele>
+              ))}
+            </ul>
 
             {/* ---------- Carte ---------- */}
             <div className="relative mt-5 overflow-hidden rounded-2xl border border-ink-100">
@@ -478,7 +504,7 @@ export default function Contact() {
                 <HelpCircle className="h-5 w-5" aria-hidden />
               </span>
               <div className="mt-5">
-                <Etiquette>Une question ?</Etiquette>
+                <Etiquette>Une question ? Une demande spécifique ?</Etiquette>
               </div>
               <h2 className="mt-3 font-display text-xl font-extrabold leading-snug tracking-tight text-marine sm:text-[1.45rem]">
                 Consultez notre foire aux questions.

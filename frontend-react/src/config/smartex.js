@@ -84,14 +84,13 @@ export const FONDEMENTS = [
     titre: 'Pratiques professionnelles',
     texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
   },
-  {
-    titre: 'Robustesse',
-    texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
-  },
-  {
-    titre: 'Indépendance',
-    texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
-  },
+  // Robustesse et Indépendance n'ont pas encore de description propre : le
+  // texte qui figurait ici était la copie mot pour mot de celui de « Pratiques
+  // professionnelles ». Plutôt que d'inventer une définition métier ou
+  // d'afficher trois fois la même phrase, le champ reste vide et la page
+  // n'affiche que l'intitulé. À renseigner par Smartex Expertises.
+  { titre: 'Robustesse', texte: null },
+  { titre: 'Indépendance', texte: null },
 ];
 
 /**
@@ -102,6 +101,21 @@ export const FONDEMENTS = [
 export const REFERENCES_METHODOLOGIQUES = [
   { code: 'ISO_26000', nom: 'ISO 26000', texte: 'Lignes directrices relatives à la responsabilité sociétale.' },
   { code: 'ISO_45001', nom: 'ISO 45001', texte: 'Santé et sécurité au travail.' },
+  {
+    code: 'GLOBAL_COMPACT',
+    nom: 'Pacte mondial des Nations unies',
+    texte: 'Dix principes couvrant notamment les droits humains, le travail, l’environnement et la lutte contre la corruption.',
+  },
+  {
+    code: 'OIT',
+    nom: 'OIT',
+    texte: 'Conventions fondamentales de l’Organisation internationale du travail.',
+  },
+  {
+    code: 'OCDE',
+    nom: 'OCDE',
+    texte: 'Principes directeurs à l’intention des entreprises multinationales.',
+  },
 ];
 
 /** Référentiels réellement chargés dans la plateforme et sélectionnables pour une évaluation. */
