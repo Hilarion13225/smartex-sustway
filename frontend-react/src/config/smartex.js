@@ -16,7 +16,7 @@ export const SMARTEX = {
   telephone: '+225 07 88 95 03 62',
   whatsapp: '+225 07 88 95 03 62',
   adresse: 'Abidjan, Côte d’Ivoire',
-  horaires: 'Lundi – vendredi, 8h30 – 18h00 (GMT)',
+  horaires: 'Lundi – vendredi, 8h00 – 17h00 (GMT)',
   siteWeb: 'https://www.smartex-expertises.com',
   linkedin: 'https://www.linkedin.com/company/smartex-expertises',
   // Comptes annoncés dans la maquette du pied de page mais dont l'URL n'est pas

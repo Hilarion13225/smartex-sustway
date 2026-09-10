@@ -142,8 +142,8 @@ export default function Services() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-[1.6] text-ink-600">
-              {SMARTEX.produit} vous offre une solution digitale tout-en-un pour évaluer, documenter, analyser et
-              améliorer vos pratiques RSE, ESG et Développement Durable.
+              {SMARTEX.produit} est une solution digitale tout-en-un de {SMARTEX.editeur} pour évaluer, documenter,
+              analyser et améliorer vos pratiques RSE, ESG et Développement Durable.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center">

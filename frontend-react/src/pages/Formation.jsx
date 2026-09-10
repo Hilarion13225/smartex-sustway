@@ -44,7 +44,12 @@ import photoDistribution from '../assets/formation/distribution.jpg';
 /** Ce que le visiteur retient du héros, avant même de faire défiler. */
 const REASSURANCE = [
   { icone: Wrench, ton: 'rouge', titre: 'Formations pratiques', texte: 'Des cas concrets tirés de votre secteur.' },
-  { icone: Users, ton: 'bleu', titre: 'Experts reconnus', texte: 'Animées par les consultants Smartex.' },
+  {
+    icone: Users,
+    ton: 'bleu',
+    titre: 'Experts reconnus',
+    texte: `Animées par les consultants ${SMARTEX.editeur}.`,
+  },
   { icone: Award, ton: 'vert', titre: 'Attestation', texte: 'Remise à l’issue de chaque parcours.' },
 ];
 

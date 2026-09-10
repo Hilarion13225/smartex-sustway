@@ -446,8 +446,10 @@ export default function Contact() {
                   <MapPin className="h-4 w-4" aria-hidden />
                 </span>
                 <span className="min-w-0">
+                  {/* L'adresse est celle de l'entreprise : c'est elle que
+                      l'encart nomme, pas la solution qu'elle édite. */}
                   <span className="block font-display text-[13px] font-bold leading-tight text-marine">
-                    {SMARTEX.produit}
+                    {SMARTEX.editeur}
                   </span>
                   <span className="mt-0.5 block text-[12px] leading-tight text-ink-500">{REPERE.quartier}</span>
                 </span>

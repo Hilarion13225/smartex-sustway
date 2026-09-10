@@ -398,7 +398,8 @@ export default function Methodologie() {
               Passez de l’évaluation à l’amélioration continue.
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-white/85">
-              Découvrez comment {SMARTEX.produit} peut accompagner votre organisation dans sa démarche RSE et ESG.
+              Découvrez comment {SMARTEX.editeur} accompagne votre organisation avec {SMARTEX.produit}, dans sa
+              démarche RSE et ESG.
             </p>
           </div>
 
