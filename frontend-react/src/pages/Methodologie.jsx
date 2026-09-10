@@ -91,14 +91,6 @@ const CHAINE = [
   { icone: ListChecks, libelle: 'Actions', detail: 'Un plan correctif priorisé' },
 ];
 
-/** Les quatre temps de la roue de Deming, en regard de l'illustration. */
-const PDCA = [
-  { code: 'Plan', libelle: 'Planifier', texte: 'Cadrer le périmètre et les critères applicables.' },
-  { code: 'Do', libelle: 'Mettre en œuvre', texte: 'Collecter les preuves et lancer l’évaluation.' },
-  { code: 'Check', libelle: 'Évaluer', texte: 'Mesurer les écarts et le degré de maturité.' },
-  { code: 'Act', libelle: 'Agir', texte: 'Corriger, puis repartir sur un cycle mieux informé.' },
-];
-
 export default function Methodologie() {
   const [videoOuverte, definirVideoOuverte] = useState(false);
 
@@ -277,32 +269,22 @@ export default function Methodologie() {
 
       {/* --------------------------------------------- Amélioration continue */}
       <section className="border-y border-ink-100 bg-ink-50/60 dark:bg-ink-100/30">
-        <div className="mx-auto grid max-w-[80rem] items-center gap-10 px-5 py-14 lg:grid-cols-2 lg:gap-14">
-          <Revele>
-            <RoueDeming className="mx-auto h-auto w-full max-w-[26rem]" />
-          </Revele>
-
-          <Revele delai={110}>
-            <Etiquette>Amélioration continue</Etiquette>
-            <h2 className="mt-4 font-display text-2xl font-extrabold leading-tight tracking-tight text-marine sm:text-[1.9rem]">
+        <div className="mx-auto max-w-[80rem] px-5 py-14">
+          <Revele className="text-center">
+            <Etiquette filetDroit>Amélioration continue</Etiquette>
+            <h2 className="mx-auto mt-4 max-w-2xl font-display text-2xl font-extrabold leading-tight tracking-tight text-marine sm:text-[1.9rem]">
               L’amélioration continue au cœur de notre approche.
             </h2>
-            <p className="mt-5 text-base leading-[1.6] text-ink-600">
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-[1.6] text-ink-600">
               Nous nous appuyons sur la roue de Deming (PDCA) pour aider les organisations à sortir de la stagnation et
               à progresser durablement, avec le soutien de l’intelligence artificielle.
             </p>
+          </Revele>
 
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-              {PDCA.map((temps) => (
-                <li key={temps.code} className="rounded-xl border border-ink-100 bg-surface p-4">
-                  <p className="font-display text-sm font-extrabold text-brand-600 dark:text-brand-400">
-                    {temps.code}
-                    <span className="ml-1.5 font-semibold text-ink-400">({temps.libelle})</span>
-                  </p>
-                  <p className="mt-1.5 text-[13px] leading-snug text-ink-500">{temps.texte}</p>
-                </li>
-              ))}
-            </ul>
+          {/* Les quatre temps sont portés par la roue elle-même : leurs fiches
+              l'encadrent au lieu de former une liste à côté du dessin. */}
+          <Revele delai={110}>
+            <RoueDeming className="mt-10" />
           </Revele>
         </div>
       </section>
