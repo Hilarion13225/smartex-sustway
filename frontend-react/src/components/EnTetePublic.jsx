@@ -23,14 +23,21 @@ const LIENS = [
 ];
 
 /*
- * Les liens inactifs sont en marine, la couleur de titraille de la vitrine —
- * `.lien-nav` les met en `ink-600`. La surcharge passe par une classe
- * utilitaire posée seulement quand le lien est inactif : appliquée aussi à
- * l'état actif, elle l'emporterait sur le rouge de `.lien-nav[aria-current]`,
- * qui vit dans la couche `components` et perd donc contre un utilitaire.
+ * Le lien de navigation est décrit ici plutôt que repris de `.lien-nav` :
+ * la maquette impose un corps de 13 px et un soulignement à 10 px sous la
+ * ligne de base, quand la classe partagée vaut 14 px et 19 px — et elle sert
+ * aussi au menu déroulant de l'espace connecté, qu'un réglage taillé pour la
+ * vitrine dérèglerait.
  */
 function classeLien({ isActive }) {
-  return clsx('lien-nav px-2.5 min-[1360px]:px-3', !isActive && 'text-marine');
+  return clsx(
+    'relative inline-flex items-center rounded-md px-2 py-2 text-[13px] font-semibold leading-5 transition-colors min-[1400px]:px-3',
+    'after:absolute after:inset-x-2 after:bottom-px after:h-0.5 after:origin-left after:rounded-full',
+    'after:bg-brand-600 after:transition-transform after:duration-300 dark:after:bg-brand-400 min-[1400px]:after:inset-x-3.5',
+    isActive
+      ? 'text-brand-600 after:scale-x-100 dark:text-brand-400'
+      : 'text-marine after:scale-x-0 hover:text-brand-600 hover:after:scale-x-100 dark:hover:text-brand-400'
+  );
 }
 
 /** En-tête de la partie publique : marque, navigation, recherche, thème et appels à l'action. */
@@ -62,7 +69,7 @@ export default function EnTetePublic() {
       {/* Marges resserrées sur téléphone : sous 420 px, 12 px de marge au lieu
           de 24 rendent 24 px au contenu, ce qui suffit à faire tenir l'appel à
           l'action sur une ligne. */}
-      <div className="mx-auto flex h-[84px] max-w-[87.5rem] items-center gap-4 px-3 min-[420px]:px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex h-[62px] max-w-[87.5rem] items-center gap-3 px-3 min-[420px]:px-4 sm:px-6 min-[1400px]:gap-4 min-[1400px]:px-10">
         <Link
           to="/"
           onClick={() => setOuvert(false)}
@@ -72,19 +79,31 @@ export default function EnTetePublic() {
           <p className="hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
 
-        {/* `flex-1` : la navigation occupe l'espace laissé libre par le logo et
-            les actions, et s'y centre. `whitespace-nowrap` évite qu'un intitulé
-            se casse sur deux lignes une fois cette place réduite. */}
-        <nav className="hidden flex-1 items-center justify-center gap-1 whitespace-nowrap xl:flex">
-          {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
-              {lien.libelle}
-            </NavLink>
-          ))}
-        </nav>
+        {/* La maquette ne centre pas la navigation : elle laisse 120 px après le
+            logo et 50 px avant la recherche. Deux ressorts de forces 7 et 3
+            reproduisent ce rapport à toutes les largeurs, plutôt qu'un
+            `justify-center` qui égaliserait les deux écarts. */}
+        <div className="hidden flex-1 items-center min-[1200px]:flex">
+          <span className="flex-[7]" aria-hidden />
+          {/* `whitespace-nowrap` évite qu'un intitulé se casse sur deux lignes
+              une fois la place réduite par le logo et les actions. */}
+          <nav className="flex items-center gap-1 whitespace-nowrap">
+            {LIENS.map((lien) => (
+              <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
+                {lien.libelle}
+              </NavLink>
+            ))}
+          </nav>
+          <span className="flex-[3]" aria-hidden />
+        </div>
 
-        {/* Recherche, séparateur, thème, puis les deux appels à l'action. */}
-        <div className="hidden shrink-0 items-center gap-3 whitespace-nowrap xl:flex min-[1360px]:gap-4">
+        {/* Recherche, séparateur, thème, puis les deux appels à l'action. La
+            maquette espace ces éléments de 20 px, mais colle les deux boutons
+            à 8 px l'un de l'autre — d'où leur groupe imbriqué. Les valeurs
+            sont resserrées sous 1400 px : la barre complète, sélecteur de
+            thème compris, tient alors dès 1200 px — la largeur de la maquette
+            (1217 px) montre bien la navigation de bureau. */}
+        <div className="hidden shrink-0 items-center gap-3 whitespace-nowrap min-[1200px]:flex min-[1400px]:gap-5">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
@@ -103,20 +122,22 @@ export default function EnTetePublic() {
 
           {/* Les deux boutons partagent la même hauteur fixe : la bordure de
               l'un ajouterait sinon 2 px que le fond plein de l'autre n'a pas. */}
-          <Link
-            to="/connexion"
-            className="inline-flex h-10 items-center rounded-[10px] border border-brand-300 px-4 text-sm font-semibold text-brand-600 transition duration-300 hover:border-brand-500 hover:bg-brand-50 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10 min-[1360px]:px-5"
-          >
-            Se connecter
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/connexion"
+              className="inline-flex h-[42px] items-center rounded-md border border-brand-400 px-3 text-[13px] font-semibold text-brand-600 transition duration-300 hover:border-brand-600 hover:bg-brand-50 dark:border-brand-500/50 dark:text-brand-400 dark:hover:bg-brand-500/10 min-[1400px]:px-5"
+            >
+              Se connecter
+            </Link>
 
-          <Link
-            to="/inscription"
-            className="group inline-flex h-10 items-center gap-2 rounded-[10px] border border-brand-600 bg-brand-600 px-4 text-sm font-semibold text-white shadow-glow transition duration-300 hover:border-brand-700 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5 min-[1360px]:px-5"
-          >
-            Créer un compte
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-          </Link>
+            <Link
+              to="/inscription"
+              className="group inline-flex h-[42px] items-center gap-4 rounded-md border border-brand-600 bg-brand-600 px-4 text-[13px] font-semibold text-white shadow-glow transition duration-300 hover:border-brand-700 hover:bg-brand-700 motion-safe:hover:-translate-y-0.5 min-[1400px]:gap-6 min-[1400px]:px-6"
+            >
+              Créer un compte
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
+            </Link>
+          </div>
         </div>
 
         {/* Sur mobile, l'appel à l'action reste visible à côté du menu.
@@ -124,7 +145,7 @@ export default function EnTetePublic() {
             place manque pour l'intitulé complet sur une ligne, et mieux vaut
             un bouton sur deux lignes qu'un en-tête qui sort de l'écran. Le
             bouton retrouve ses dimensions d'origine à partir de 420 px. */}
-        <div className="ml-auto flex items-center gap-2 xl:hidden">
+        <div className="ml-auto flex items-center gap-2 min-[1200px]:hidden">
           <Link
             to="/inscription"
             onClick={() => setOuvert(false)}
@@ -146,7 +167,7 @@ export default function EnTetePublic() {
 
       <div
         className={clsx(
-          'overflow-hidden border-ink-100 bg-surface/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 xl:hidden',
+          'overflow-hidden border-ink-100 bg-surface/95 backdrop-blur-xl transition-[max-height,opacity] duration-300 min-[1200px]:hidden',
           ouvert ? 'max-h-[36rem] border-t opacity-100' : 'max-h-0 opacity-0'
         )}
       >
