@@ -4,11 +4,25 @@ import clsx from 'clsx';
 import { TAILLE_MAX_FICHIER, TYPES_FICHIERS_ACCEPTES, formaterTailleFichier } from './niveauxMaturite';
 
 /**
- * Zone de dépôt de preuves : glisser-déposer et sélection classique aboutissent
- * au même traitement. Les fichiers trop volumineux sont écartés avec un
- * message nommant chaque fichier refusé, plutôt qu'un rejet silencieux.
+ * Zone de dépôt de fichiers : glisser-déposer et sélection classique
+ * aboutissent au même traitement. Les fichiers trop volumineux sont écartés
+ * avec un message nommant chaque fichier refusé, plutôt qu'un rejet
+ * silencieux.
+ *
+ * Les limites sont paramétrables, et valent par défaut celles des pièces
+ * d'audit — son premier usage. L'import de référentiel n'admet pas les mêmes
+ * formats ni la même taille : lui imposer celles-ci ferait refuser par
+ * l'écran des fichiers que l'API accepte. Un second composant de dépôt aurait
+ * été l'autre solution ; deux zones de glisser-déposer à maintenir en
+ * parallèle finissent toujours par diverger.
  */
-export default function DepotPreuves({ surAjout }) {
+export default function DepotPreuves({
+  surAjout,
+  typesAcceptes = TYPES_FICHIERS_ACCEPTES,
+  tailleMax = TAILLE_MAX_FICHIER,
+  libelleFormats = 'PDF, Word, Excel, Images',
+  multiple = true,
+}) {
   const champFichier = useRef(null);
   const [survol, setSurvol] = useState(false);
   const [erreur, setErreur] = useState(null);
@@ -17,13 +31,13 @@ export default function DepotPreuves({ surAjout }) {
     const fichiers = [...listeFichiers];
     if (fichiers.length === 0) return;
 
-    const tropVolumineux = fichiers.filter((fichier) => fichier.size > TAILLE_MAX_FICHIER);
-    const acceptes = fichiers.filter((fichier) => fichier.size <= TAILLE_MAX_FICHIER);
+    const tropVolumineux = fichiers.filter((fichier) => fichier.size > tailleMax);
+    const acceptes = fichiers.filter((fichier) => fichier.size <= tailleMax);
 
     setErreur(
       tropVolumineux.length === 0
         ? null
-        : `Fichier trop volumineux (max. ${formaterTailleFichier(TAILLE_MAX_FICHIER)}) : ${tropVolumineux
+        : `Fichier trop volumineux (max. ${formaterTailleFichier(tailleMax)}) : ${tropVolumineux
             .map((fichier) => fichier.name)
             .join(', ')}`
     );
@@ -64,15 +78,15 @@ export default function DepotPreuves({ surAjout }) {
             </button>
           </p>
           <p className="mt-1 text-xs text-ink-400">
-            PDF, Word, Excel, Images (max. {formaterTailleFichier(TAILLE_MAX_FICHIER)} par fichier)
+            {libelleFormats} (max. {formaterTailleFichier(tailleMax)} par fichier)
           </p>
         </div>
 
         <input
           ref={champFichier}
           type="file"
-          multiple
-          accept={TYPES_FICHIERS_ACCEPTES}
+          multiple={multiple}
+          accept={typesAcceptes}
           className="sr-only"
           onChange={(evenement) => {
             traiter(evenement.target.files);

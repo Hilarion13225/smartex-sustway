@@ -41,6 +41,7 @@ import Projets from './pages/Projets';
 import ProjetDetail from './pages/ProjetDetail';
 import ReferentielsListe from './pages/ReferentielsListe';
 import ReferentielDetail from './pages/ReferentielDetail';
+import ImportReferentiel from './pages/ImportReferentiel';
 import IndicePreparation from './pages/IndicePreparation';
 import CritereEvaluation from './pages/CritereEvaluation';
 import Documents from './pages/Documents';
@@ -112,6 +113,10 @@ export default function App() {
               <Route path="projets" element={<Projets />} />
               <Route path="projets/:projetId" element={<ProjetDetail />} />
               <Route path="referentiels" element={<ReferentielsListe />} />
+              {/* Avant la route par code : sinon « import » serait lu comme
+                  le code d'un référentiel, et l'assistant inatteignable. */}
+              <Route path="referentiels/import" element={<ImportReferentiel />} />
+              <Route path="referentiels/import/:importId" element={<ImportReferentiel />} />
               <Route path="referentiels/:code" element={<ReferentielDetail />} />
             </Route>
           </Route>

@@ -96,7 +96,10 @@ const GROUPES_AUDIT = [
         // Réservé aux deux rôles qui administrent le catalogue : depuis V32,
         // `referentiel:administrer` est portée par SUPER_ADMIN.
         permission: 'referentiel:administrer',
-        enfants: [{ libelle: 'Domaines et critères', vers: '/app/referentiels' }],
+        enfants: [
+          { libelle: 'Domaines et critères', vers: '/app/referentiels' },
+          { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
+        ],
       },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
       { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe', icone: Users },
