@@ -21,7 +21,8 @@ public record ExigenceDto(
         int ordre,
         String origine,
         boolean modifiable,
-        List<PreuveAttendueDto> preuvesAttendues
+        List<PreuveAttendueDto> preuvesAttendues,
+        ProvenanceDto provenance
 ) {
     public static ExigenceDto depuis(Exigence e, List<PreuveAttendueDto> preuvesAttendues) {
         return new ExigenceDto(
@@ -31,9 +32,13 @@ public record ExigenceDto(
                 e.getIntitule(),
                 e.getEnonce(),
                 e.getOrdre(),
+                // `origine` reste à sa place : des écrans la lisent déjà, et la
+                // déplacer dans `provenance` casserait leur contrat pour rien.
                 e.getOrigine().name(),
                 e.getReferentielVersion().estBrouillon(),
-                preuvesAttendues
+                preuvesAttendues,
+                ProvenanceDto.depuis(e.getOrigine(), e.getOrigineInitiale(),
+                        e.getValideePar(), e.getValideeLe())
         );
     }
 }

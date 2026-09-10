@@ -27,3 +27,10 @@ openpyxl==3.1.5
 # Vérification des jetons de service émis par l'API (RS256). Seule la clé
 # publique est nécessaire ici : la clé privée ne quitte jamais l'API.
 pyjwt[crypto]==2.10.1
+
+# Exécution de la suite de tests. Déclarée ici plutôt que dans un fichier
+# séparé : l'image ne sert qu'au développement et à l'exécution locale, et
+# pytest y était jusqu'ici installé à la main — la suite n'était donc pas
+# rejouable sur une image reconstruite. Version épinglée sur celle éprouvée
+# avec le Python 3.12 de l'image.
+pytest==9.1.1

@@ -34,4 +34,18 @@ public class RegleAnalyseRepository implements PanacheRepositoryBase<RegleAnalys
                         + "order by critere.code, ordre",
                 referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
     }
+
+    /**
+     * Nombre d'éléments que l'import a déposés dans cette version, validés
+     * compris.
+     *
+     * Compte sur `origine_initiale`, et non sur `origine` : c'est la seule
+     * colonne qui ne bouge pas quand une personne reprend la proposition à son
+     * compte. Compter sur `origine` ferait diminuer le total à chaque
+     * validation, et l'avancement afficherait toujours zéro sur zéro.
+     */
+    public long compterImportes(UUID referentielVersionId) {
+        return count("referentielVersion.id = ?1 and origineInitiale = ?2",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
 }

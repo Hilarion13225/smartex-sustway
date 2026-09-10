@@ -41,6 +41,26 @@ public class AuditLogService {
         auditLogRepository.persist(entree);
     }
 
+    /**
+     * Journalise en attachant un contexte JSON à l'entrée.
+     *
+     * Certaines opérations ne se retrouvent pas à partir de la seule paire
+     * (entité, identifiant) : valider une exigence importée, par exemple, doit
+     * pouvoir se relire en sachant de quelle version du référentiel elle
+     * relevait. Écrire une seconde entrée pour porter ce contexte le
+     * dissocierait de l'acte lui-même ; la colonne `details` existe pour cela.
+     *
+     * Le JSON est sérialisé par l'appelant et stocké tel quel — c'est la
+     * convention de la colonne depuis son introduction.
+     */
+    @Transactional
+    public void journaliserAvecDetails(UUID utilisateurId, UUID entrepriseId, String action,
+                                       String entite, UUID entiteId, String detailsJson) {
+        AuditLog entree = new AuditLog(utilisateurId, entrepriseId, action, entite, entiteId);
+        entree.setDetails(detailsJson);
+        auditLogRepository.persist(entree);
+    }
+
     @Transactional
     public void journaliser(UUID utilisateurId, UUID entrepriseId, String action, String entite,
                              UUID entiteId, String ipAddress, String userAgent) {

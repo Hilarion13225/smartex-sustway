@@ -7,12 +7,14 @@ import com.smartexsustway.api.domain.enums.OrigineContenu;
 import com.smartexsustway.api.domain.enums.TypePreuveAttendue;
 import com.smartexsustway.api.domain.repository.ExigenceRepository;
 import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
+import com.smartexsustway.api.referentiel.ValidationContenuImporteService;
 import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.ExigenceDto;
 import com.smartexsustway.api.resource.dto.ExigenceRequestDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueRequestDto;
+import com.smartexsustway.api.resource.dto.ValidationContenuRequestDto;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
@@ -53,6 +55,7 @@ public class ExigenceModificationResource {
     @Inject ExigenceRepository exigenceRepository;
     @Inject PreuveAttendueRepository preuveAttendueRepository;
     @Inject VersionReferentielService versionService;
+    @Inject ValidationContenuImporteService validationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -104,6 +107,32 @@ public class ExigenceModificationResource {
                 "EXIGENCE_SUPPRIMEE", "exigence", exigenceId);
 
         return Response.noContent().build();
+    }
+
+    /**
+     * Accepte une exigence proposée par un import assisté.
+     *
+     * Opération distincte de la modification : elle seule écrit la provenance
+     * et le validateur, qu'aucun DTO de modification n'expose. Rejouable sans
+     * effet — une seconde validation ne réécrit pas la date, qui dirait alors
+     * autre chose que le moment de la relecture.
+     */
+    @POST
+    @Path("/validation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response valider(@PathParam("exigenceId") UUID exigenceId,
+                            ValidationContenuRequestDto requete) {
+        Exigence exigence = trouverExigence(exigenceId);
+        try {
+            validationService.validerExigence(exigence,
+                    ValidationContenuRequestDto.versionAttendue(requete),
+                    tenantContext.utilisateurCourantId());
+        } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
+            return erreur(e.statutHttp(), e.getMessage());
+        }
+        return Response.ok(ExigenceDto.depuis(exigence, preuvesAttendues(exigenceId))).build();
     }
 
     @POST

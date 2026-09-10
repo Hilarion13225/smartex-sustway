@@ -168,10 +168,15 @@ public class ImportReferentielResource {
         if (version == null) {
             return erreur(409, "Cet import n'a pas encore produit de brouillon");
         }
+        int importesTotal = (int) (exigenceRepository.compterImportes(version.getId())
+                + preuveAttendueRepository.compterImportes(version.getId())
+                + regleAnalyseRepository.compterImportes(version.getId()));
+
         return Response.ok(BrouillonImporteDto.depuis(version, importReferentiel.getMetadonnees(),
                 exigenceRepository.aValider(version.getId()),
                 preuveAttendueRepository.aValider(version.getId()),
-                regleAnalyseRepository.aValider(version.getId()))).build();
+                regleAnalyseRepository.aValider(version.getId()),
+                importesTotal)).build();
     }
 
     /**

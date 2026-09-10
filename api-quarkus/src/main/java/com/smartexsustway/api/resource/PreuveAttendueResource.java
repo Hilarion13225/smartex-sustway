@@ -4,9 +4,11 @@ import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.PreuveAttendue;
 import com.smartexsustway.api.domain.enums.TypePreuveAttendue;
 import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
+import com.smartexsustway.api.referentiel.ValidationContenuImporteService;
 import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueDto;
+import com.smartexsustway.api.resource.dto.ValidationContenuRequestDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueRequestDto;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
@@ -17,6 +19,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -41,6 +44,7 @@ public class PreuveAttendueResource {
 
     @Inject PreuveAttendueRepository preuveAttendueRepository;
     @Inject VersionReferentielService versionService;
+    @Inject ValidationContenuImporteService validationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -94,6 +98,30 @@ public class PreuveAttendueResource {
                 "PREUVE_ATTENDUE_SUPPRIMEE", "preuve_attendue", preuveAttendueId);
 
         return Response.noContent().build();
+    }
+
+    /**
+     * Accepte une preuve attendue proposée par un import assisté.
+     *
+     * Voir ExigenceModificationResource.valider : même opération, même
+     * garanties, sur l'autre étage du contenu importé.
+     */
+    @POST
+    @Path("/validation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response valider(@PathParam("preuveAttendueId") UUID preuveAttendueId,
+                            ValidationContenuRequestDto requete) {
+        PreuveAttendue preuve = trouver(preuveAttendueId);
+        try {
+            validationService.validerPreuveAttendue(preuve,
+                    ValidationContenuRequestDto.versionAttendue(requete),
+                    tenantContext.utilisateurCourantId());
+        } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
+            return erreur(e.statutHttp(), e.getMessage());
+        }
+        return Response.ok(PreuveAttendueDto.depuis(preuve)).build();
     }
 
     private PreuveAttendue trouver(UUID preuveAttendueId) {

@@ -13,7 +13,8 @@ public record PreuveAttendueDto(
         String description,
         boolean obligatoire,
         int ordre,
-        boolean modifiable
+        boolean modifiable,
+        ProvenanceDto provenance
 ) {
     public static PreuveAttendueDto depuis(PreuveAttendue p) {
         return new PreuveAttendueDto(
@@ -24,7 +25,9 @@ public record PreuveAttendueDto(
                 p.getDescription(),
                 p.isObligatoire(),
                 p.getOrdre(),
-                p.getReferentielVersion().estBrouillon()
+                p.getReferentielVersion().estBrouillon(),
+                ProvenanceDto.depuis(p.getOrigine(), p.getOrigineInitiale(),
+                        p.getValideePar(), p.getValideeLe())
         );
     }
 }

@@ -6,9 +6,11 @@ import com.smartexsustway.api.domain.enums.NiveauCriticite;
 import com.smartexsustway.api.domain.enums.TypeRegleAnalyse;
 import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
 import com.smartexsustway.api.referentiel.RegleAnalyseValidation;
+import com.smartexsustway.api.referentiel.ValidationContenuImporteService;
 import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.RegleAnalyseDto;
+import com.smartexsustway.api.resource.dto.ValidationContenuRequestDto;
 import com.smartexsustway.api.resource.dto.RegleAnalyseRequestDto;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
@@ -19,6 +21,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -44,6 +47,7 @@ public class RegleAnalyseModificationResource {
 
     @Inject RegleAnalyseRepository regleAnalyseRepository;
     @Inject VersionReferentielService versionService;
+    @Inject ValidationContenuImporteService validationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
 
@@ -112,6 +116,30 @@ public class RegleAnalyseModificationResource {
                 "REGLE_ANALYSE_SUPPRIMEE", "regle_analyse", regleId);
 
         return Response.noContent().build();
+    }
+
+    /**
+     * Accepte une règle d'analyse proposée par un import assisté.
+     *
+     * Voir ExigenceModificationResource.valider : même opération, même
+     * garanties, sur la portée la plus fine du contenu importé.
+     */
+    @POST
+    @Path("/validation")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response valider(@PathParam("regleId") UUID regleId,
+                            ValidationContenuRequestDto requete) {
+        RegleAnalyse regle = trouver(regleId);
+        try {
+            validationService.validerRegle(regle,
+                    ValidationContenuRequestDto.versionAttendue(requete),
+                    tenantContext.utilisateurCourantId());
+        } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
+            return erreur(e.statutHttp(), e.getMessage());
+        }
+        return Response.ok(RegleAnalyseDto.depuis(regle)).build();
     }
 
     private RegleAnalyse trouver(UUID regleId) {

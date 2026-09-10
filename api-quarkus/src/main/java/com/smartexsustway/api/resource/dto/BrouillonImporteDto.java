@@ -33,7 +33,9 @@ public record BrouillonImporteDto(
         int preuvesAttenduesAValider,
         int reglesAValider,
         boolean publiable,
-        List<ElementAValiderDto> elementsAValider
+        List<ElementAValiderDto> elementsAValider,
+        int elementsValides,
+        int elementsImportesTotal
 ) {
 
     /**
@@ -52,11 +54,22 @@ public record BrouillonImporteDto(
     ) {
     }
 
+    /**
+     * @param exigences        exigences importées restant à valider
+     * @param preuves          preuves attendues importées restant à valider
+     * @param regles           règles importées restant à valider
+     * @param importesTotal    nombre total d'éléments que l'import a déposés,
+     *                         validés compris — sans lui, l'écran de relecture
+     *                         ne saurait pas dire « 4 sur 12 » mais seulement
+     *                         « 8 restants », et l'avancement disparaîtrait au
+     *                         moment précis où il devient intéressant.
+     */
     public static BrouillonImporteDto depuis(ReferentielVersion version,
                                              Map<String, Object> metadonneesImport,
                                              List<Exigence> exigences,
                                              List<PreuveAttendue> preuves,
-                                             List<RegleAnalyse> regles) {
+                                             List<RegleAnalyse> regles,
+                                             int importesTotal) {
         var elements = new java.util.ArrayList<ElementAValiderDto>();
         exigences.forEach(e -> elements.add(new ElementAValiderDto(
                 "EXIGENCE", e.getId(), e.getCritere().getCode(), e.getCode(), e.getIntitule())));
@@ -77,6 +90,8 @@ public record BrouillonImporteDto(
                 preuves.size(),
                 regles.size(),
                 elements.isEmpty(),
-                elements);
+                elements,
+                Math.max(0, importesTotal - elements.size()),
+                importesTotal);
     }
 }

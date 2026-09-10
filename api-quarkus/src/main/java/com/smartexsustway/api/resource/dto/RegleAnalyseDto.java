@@ -23,7 +23,8 @@ public record RegleAnalyseDto(
         String severite,
         Map<String, Object> definition,
         int ordre,
-        boolean modifiable
+        boolean modifiable,
+        ProvenanceDto provenance
 ) {
     public static RegleAnalyseDto depuis(RegleAnalyse r) {
         return new RegleAnalyseDto(
@@ -37,7 +38,9 @@ public record RegleAnalyseDto(
                 r.getSeverite().name(),
                 r.getDefinition(),
                 r.getOrdre(),
-                r.getReferentielVersion().estBrouillon()
+                r.getReferentielVersion().estBrouillon(),
+                ProvenanceDto.depuis(r.getOrigine(), r.getOrigineInitiale(),
+                        r.getValideePar(), r.getValideeLe())
         );
     }
 }
