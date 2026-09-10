@@ -88,10 +88,10 @@ const GROUPES_AUDIT = [
         icone: FolderKanban,
       },
       { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
-      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Intelligence IA', icone: Sparkles },
+      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
       {
         vers: '/app/referentiels',
-        libelle: 'Référentiel RSE',
+        libelle: 'Référentiels',
         icone: BookOpen,
         // Réservé aux deux rôles qui administrent le catalogue : depuis V32,
         // `referentiel:administrer` est portée par SUPER_ADMIN.
@@ -110,24 +110,23 @@ const GROUPES_AUDIT = [
     // les rendrait inatteignables alors qu'elles existent et sont routées.
     titre: 'Suivi',
     liens: [
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen , horsPerimetreAudit: true },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX , horsPerimetreAudit: true },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo , horsPerimetreAudit: true },
-      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 , horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
+      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
         libelle: 'Financements verts',
         icone: Leaf,
         permission: 'bailleur:consulter',
-        horsPerimetreAudit: true,
       },
     ],
   },
   {
     titre: 'Paramètres',
     liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true, horsPerimetreAudit: true },
-      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true, horsPerimetreAudit: true },
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
+      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -172,7 +171,19 @@ const GROUPES_ENTREPRISE = [
     liens: [
       { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
       { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
-      { vers: '/app/referentiels', libelle: 'Référentiels', icone: BookOpen, permission: 'referentiel:administrer' },
+      {
+        vers: '/app/referentiels',
+        libelle: 'Référentiels',
+        icone: BookOpen,
+        permission: 'referentiel:administrer',
+        // Même sous-menu que dans la navigation de supervision. L'entrée reste
+        // masquée tant que le rôle ne porte pas `referentiel:administrer` —
+        // c'est le filtre existant qui décide, pas cette déclaration.
+        enfants: [
+          { libelle: 'Domaines et critères', vers: '/app/referentiels' },
+          { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
+        ],
+      },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -202,6 +213,11 @@ const GROUPES_COLLABORATEUR = [
     liens: [
       { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Mes missions', icone: ClipboardList },
+      // Répondre au questionnaire est le travail même du collaborateur, et
+      // l'API l'y autorise déjà (`preuve:deposer` sur ReponseQuestionResource).
+      // Sans cette entrée il fallait traverser une mission puis un critère
+      // pour atteindre sa propre tâche.
+      { chemin: (id) => `/app/${id}/questionnaire`, libelle: 'Questionnaire', icone: ClipboardList },
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Mes documents', icone: FolderOpen },
     ],
   },
@@ -410,15 +426,6 @@ export default function Layout() {
   function lienVisible(lien) {
     if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
     if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
-    // Le périmètre du responsable d'audit est arrêté (voir GROUPES) : les
-    // pages qui n'en relèvent pas lui sont masquées. Elles restent visibles
-    // pour les autres rôles, qui en ont l'usage — le responsable d'entreprise
-    // gère son abonnement, le super-administrateur consulte le journal.
-    // Le périmètre resserré valait pour l'ancien responsable audit. Le
-    // super-administrateur, lui, a vocation à tout voir : le filtre ne
-    // s'applique donc plus à personne, mais l'attribut reste porté par les
-    // liens pour la phase où un périmètre de supervision sera redéfini.
-    if (lien.horsPerimetreAudit && roleCourant === 'ADMIN_AUDIT') return false;
     return true;
   }
 
