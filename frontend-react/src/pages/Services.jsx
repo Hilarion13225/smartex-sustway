@@ -299,7 +299,7 @@ export default function Services() {
             </h2>
           </Revele>
 
-          <ul className="grid flex-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-200/70">
+          <ul className="grid flex-1 gap-8 sm:grid-cols-2 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-ink-200/70">
             {INDICATEURS.map((indicateur, index) => (
               <Revele key={indicateur.libelle} delai={index * 110} as="li" className="lg:px-6">
                 <div className="flex items-center gap-4">

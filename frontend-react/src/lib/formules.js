@@ -25,7 +25,11 @@ export function pointsDescription(description) {
     }
   }
   points.push(courant.trim());
-  return points.filter(Boolean);
+  // Capitale à l'affichage : la description stockée enchaîne les segments après
+  // une virgule, si bien que « rapport simple » ou « revue experte » arrivaient
+  // en minuscule au milieu d'une liste à puces. Le texte métier n'est pas
+  // touché, seule sa première lettre est mise en forme.
+  return points.filter(Boolean).map((point) => point.charAt(0).toUpperCase() + point.slice(1));
 }
 
 /**

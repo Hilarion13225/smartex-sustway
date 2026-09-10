@@ -189,7 +189,7 @@ export default function Formules() {
               flexibles pour évoluer à votre rythme vers une performance durable.
             </p>
 
-            <ul className="mt-9 grid gap-6 sm:grid-cols-3">
+            <ul className="mt-9 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {AVANTAGES.map((avantage, index) => (
                 <Revele key={avantage.texte} delai={index * 110} as="li" className="flex items-start gap-3">
                   <span
@@ -216,7 +216,7 @@ export default function Formules() {
               forment une pile en perspective, comme les cubes de bois de la
               maquette. Le `z-index` décroissant garde le cube du haut devant.
             */}
-            <ul className="ml-auto flex w-full max-w-[10.5rem] flex-col">
+            <ul className="mx-auto flex w-full max-w-[10.5rem] flex-col lg:ml-auto lg:mr-0">
               {THEMATIQUES.map((thematique, index) => (
                 <li
                   key={thematique.libelle}
@@ -381,7 +381,7 @@ export default function Formules() {
 
           {/* Rien d'inventé ici : chaque point reprend une ligne du comparatif
               ou une réponse déjà donnée dans les questions fréquentes. */}
-          <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-200/70">
+          <ul className="mt-8 grid gap-8 sm:grid-cols-2 xl:grid-cols-4 xl:gap-0 xl:divide-x xl:divide-ink-200/70">
             {INCLUS.map((element, index) => (
               <Revele key={element.titre} delai={index * 100} as="li" className="text-center lg:px-6">
                 <span

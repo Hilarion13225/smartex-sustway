@@ -190,7 +190,7 @@ export default function Contact() {
               pour vous accompagner.
             </p>
 
-            <ul className="mt-9 grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-9 grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
               {REASSURANCE.map((element, index) => (
                 <Revele key={element.titre} delai={index * 110} as="li" className="flex items-start gap-3">
                   <span
@@ -254,7 +254,7 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Formulaire + coordonnées */}
-      <section className="mx-auto max-w-[80rem] px-5 pb-16">
+      <section id="formulaire" className="mx-auto max-w-[80rem] scroll-mt-24 px-5 pb-16">
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
 
           {/* ---------- Formulaire ---------- */}
@@ -578,13 +578,16 @@ export default function Contact() {
             </p>
           </div>
 
-          <Link
-            to="/inscription"
+          {/* Le bandeau invitait à écrire, mais son bouton menait à
+              l'inscription : il ramène désormais au formulaire, seule action
+              que cette page demande vraiment. */}
+          <a
+            href="#formulaire"
             className="group inline-flex shrink-0 items-center justify-center gap-2.5 rounded-lg bg-white px-8 py-3.5 text-sm font-semibold text-brand-700 shadow-lg transition duration-300 hover:bg-brand-50 motion-safe:hover:-translate-y-0.5"
           >
-            Créer un compte
+            Envoyer un message
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
-          </Link>
+          </a>
         </Revele>
       </section>
     </div>
