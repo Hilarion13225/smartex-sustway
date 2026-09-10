@@ -20,7 +20,17 @@ import {
 import clsx from 'clsx';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterMontant } from '../lib/export';
-import { COMPARATIF, FORMULE_ENTREPRISE, QUESTIONS, SOUS_TITRES, pointsDescription } from '../lib/formules';
+import {
+  ACCROCHES,
+  COMPARATIF,
+  FORMULE_ENTREPRISE,
+  HERITAGE,
+  METHODOLOGIE_INCLUSE,
+  POINTS_CLAIRS,
+  QUESTIONS,
+  SOUS_TITRES,
+  pointsDescription,
+} from '../lib/formules';
 import { Alerte, Loader } from '../components/ui';
 import Revele from '../components/Revele';
 import { Etiquette, PASTELS, TraitManuscrit } from '../components/vitrine/communs';
@@ -134,15 +144,22 @@ export default function Formules() {
   }, [listerFormules]);
 
   // Les formules actives viennent de l'API ; l'offre sur devis les complète.
+  // La description stockée décrit la chaîne d'analyse ; la démarche incluse la
+  // complète. Les deux listes restent distinctes à la construction pour que la
+  // carte puisse les séparer d'un filet.
   const cartes = [
     ...formules.map((formule) => ({
       code: formule.code,
       nom: formule.nom,
       sousTitre: SOUS_TITRES[formule.code] ?? '',
       prix: formule.prix,
-      points: pointsDescription(formule.description),
+      // La description stockée est écrite pour l'équipe technique : la carte
+      // affiche sa version en français courant, et retombe sur elle si le code
+      // n'est pas encore listé.
+      points: POINTS_CLAIRS[formule.code] ?? pointsDescription(formule.description),
+      demarche: METHODOLOGIE_INCLUSE[formule.code] ?? [],
     })),
-    FORMULE_ENTREPRISE,
+    { ...FORMULE_ENTREPRISE, demarche: [] },
   ];
   const colonnes = cartes.length >= 4 ? 'lg:grid-cols-2 xl:grid-cols-4' : 'lg:grid-cols-3';
 
@@ -185,7 +202,7 @@ export default function Formules() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-[1.6] text-ink-600">
-              Quel que soit votre secteur ou la taille de votre structure, {SMARTEX.produit} vous propose des formules
+              Quel que soit votre secteur ou la taille de votre structure, {SMARTEX.editeur} vous propose des formules
               flexibles pour évoluer à votre rythme vers une performance durable.
             </p>
 
@@ -310,7 +327,22 @@ export default function Formules() {
                           : 'Licence annuelle, renouvelable'}
                     </p>
 
-                    <ul className="mt-6 space-y-3 border-t border-ink-100 pt-6">
+                    {ACCROCHES[carte.code] ? (
+                      <p className="mt-5 text-[13px] font-medium leading-snug text-marine">{ACCROCHES[carte.code]}</p>
+                    ) : null}
+
+                    {HERITAGE[carte.code] ? (
+                      <p className="mt-5 border-t border-ink-100 pt-5 text-[12px] font-semibold text-ink-500">
+                        {HERITAGE[carte.code]}
+                      </p>
+                    ) : null}
+
+                    <ul
+                      className={clsx(
+                        'space-y-3',
+                        HERITAGE[carte.code] ? 'mt-4' : 'mt-5 border-t border-ink-100 pt-5'
+                      )}
+                    >
                       {carte.points.map((point) => (
                         <li key={point} className="flex gap-2.5 text-[13px] leading-snug text-ink-600">
                           <Check
@@ -324,6 +356,25 @@ export default function Formules() {
                         </li>
                       ))}
                     </ul>
+
+                    {carte.demarche.length ? (
+                      <ul className="mt-3 space-y-3 border-t border-ink-100 pt-4">
+                        {carte.demarche.map((point) => (
+                          <li key={point} className="flex gap-2.5 text-[13px] leading-snug text-ink-600">
+                            <Check
+                              className={clsx(
+                                'mt-0.5 h-4 w-4 shrink-0',
+                                misEnAvant
+                                  ? 'text-brand-600 dark:text-brand-400'
+                                  : 'text-emerald-600 dark:text-emerald-400'
+                              )}
+                              aria-hidden
+                            />
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
 
                     <div className="flex-1" />
 

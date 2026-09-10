@@ -44,6 +44,71 @@ export const SOUS_TITRES = {
 };
 
 /**
+ * Bénéfice mis en avant sur chaque carte, juste sous le prix. Le visiteur doit
+ * pouvoir répondre à « qu'est-ce que j'y gagne ? » avant de lire la liste des
+ * fonctionnalités — une carte tarifaire qui n'aligne que des puces techniques
+ * laisse le choix au hasard.
+ */
+export const ACCROCHES = {
+  STANDARD: 'Faites votre première évaluation RSE.',
+  AVANCEES: 'Allez plus loin, avec nos experts à vos côtés.',
+  ENTREPRISE: 'Une offre construite avec vous, pour tout votre groupe.',
+};
+
+/**
+ * Ce que chaque formule contient, dit simplement.
+ *
+ * La description stockée dans `formule_abonnement` est écrite pour l'équipe
+ * technique : « Pipeline IA basique (Document, Compliance, Scoring) » ne dit
+ * rien à un dirigeant qui compare deux prix. Ces listes disent la même chose
+ * en français courant, sans rien ajouter ni retirer à l'offre.
+ *
+ * Contrepartie assumée : la carte ne suit plus automatiquement la base. Une
+ * formule dont le code n'est pas listé ici retombe sur la description stockée,
+ * pour qu'une nouvelle offre ne s'affiche jamais sans contenu.
+ *
+ * Le support reste « par e-mail » sur Standard : l'ancienne grille annonçait
+ * « dédié » partout, ce que le comparatif de la même page contredit, le
+ * support dédié étant l'un des apports de l'offre Entreprise.
+ */
+export const POINTS_CLAIRS = {
+  STANDARD: [
+    'L’IA lit vos documents et note chaque critère',
+    'Un rapport clair de vos résultats',
+  ],
+  AVANCEES: [
+    'L’IA repère aussi vos risques et vous conseille',
+    'Un expert vérifie vos résultats',
+    'Un rapport détaillé, domaine par domaine',
+    'Votre niveau de préparation aux financements verts',
+  ],
+};
+
+/** La démarche qui accompagne la plateforme, dite tout aussi simplement. */
+export const METHODOLOGIE_INCLUSE = {
+  STANDARD: [
+    'La méthode Smartex SustWay au complet',
+    'Vous évaluez votre entreprise vous-même',
+    'Un plan d’action à appliquer',
+    'Une équipe qui répond par e-mail',
+  ],
+  AVANCEES: [
+    'Nos experts vous accompagnent pendant l’évaluation',
+    'Des analyses poussées de vos performances',
+  ],
+};
+
+/**
+ * Chaque formule contient la précédente : le pipeline d'Avancées est celui de
+ * Standard augmenté du risque et de la recommandation, et Entreprise reprend
+ * l'ensemble. Le dire évite de répéter les mêmes puces d'une carte à l'autre.
+ */
+export const HERITAGE = {
+  AVANCEES: 'Tout ce que contient Standard, plus :',
+  ENTREPRISE: 'Tout ce que contient Avancées, plus :',
+};
+
+/**
  * Offre sur mesure, sans équivalent dans `formule_abonnement` : elle ne mène
  * pas à l'inscription avec un code de formule, mais au formulaire de contact.
  * D'où une carte décrite ici plutôt que reçue de l'API.
@@ -54,12 +119,12 @@ export const FORMULE_ENTREPRISE = {
   sousTitre: 'Pour les grandes organisations',
   mentionPrix: 'Sur devis',
   points: [
-    'Solution sur mesure',
-    'Multi-entités et multi-sites',
-    'Intégration avec vos outils (API)',
-    'Accompagnement par un expert',
-    'Formation des équipes',
-    'Support dédié',
+    'Une solution adaptée à votre organisation',
+    'Plusieurs filiales et plusieurs sites',
+    'Connexion à vos outils existants',
+    'Un expert dédié à vos côtés',
+    'La formation de vos équipes',
+    'Un support rien que pour vous',
   ],
 };
 
