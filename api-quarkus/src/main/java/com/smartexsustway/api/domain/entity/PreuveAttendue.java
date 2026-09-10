@@ -16,7 +16,9 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -92,6 +94,50 @@ public class PreuveAttendue {
     @Column(name = "validee_le")
     private Instant valideeLe;
 
+    /**
+     * Qui a écarté cette proposition, et quand — avec un motif s'il en a
+     * donné un.
+     *
+     * Miroir exact de la validation, et pour la même raison : la décision
+     * d'une personne se lit sur la ligne elle-même. Écarter ne supprime pas —
+     * supprimer effacerait la trace qu'une machine l'avait proposée, et
+     * l'import deviendrait invérifiable après coup. Le motif reste facultatif :
+     * exiger une justification serait une décision métier que rien n'a
+     * tranchée, et une proposition manifestement hors sujet doit pouvoir
+     * partir sans plaidoirie.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rejetee_par")
+    private Utilisateur rejeteePar;
+
+    @Column(name = "rejetee_le")
+    private Instant rejeteeLe;
+
+    @Column(name = "motif_rejet", columnDefinition = "text")
+    private String motifRejet;
+
+    /**
+     * D'où la proposition a été tirée du document.
+     *
+     * Ces trois champs sont renseignés seulement quand le service d'agents les
+     * a réellement mesurés, et restent nuls sinon. Une localisation
+     * approximative serait pire qu'absente : elle enverrait le relecteur au
+     * mauvais endroit avec confiance. De même, une confiance absente ne
+     * devient jamais zéro — l'ignorance n'est pas une certitude négative.
+     *
+     * Ils survivent à la validation : comprendre après coup d'où vient une
+     * ligne du catalogue reste utile longtemps après qu'on l'a acceptée.
+     */
+    @Column(name = "texte_source", columnDefinition = "text")
+    private String texteSource;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "localisation", columnDefinition = "jsonb")
+    private Map<String, Object> localisation;
+
+    @Column(name = "confiance")
+    private BigDecimal confiance;
+
     protected PreuveAttendue() {
         // JPA
     }
@@ -113,6 +159,12 @@ public class PreuveAttendue {
         copie.origineInitiale = this.origineInitiale;
         copie.valideePar = this.valideePar;
         copie.valideeLe = this.valideeLe;
+        copie.rejeteePar = this.rejeteePar;
+        copie.rejeteeLe = this.rejeteeLe;
+        copie.motifRejet = this.motifRejet;
+        copie.texteSource = this.texteSource;
+        copie.localisation = this.localisation;
+        copie.confiance = this.confiance;
         return copie;
     }
 
@@ -195,5 +247,53 @@ public class PreuveAttendue {
     public void validerPar(Utilisateur utilisateur, Instant quand) {
         this.valideePar = utilisateur;
         this.valideeLe = quand;
+    }
+
+    public Utilisateur getRejeteePar() {
+        return rejeteePar;
+    }
+
+    public Instant getRejeteeLe() {
+        return rejeteeLe;
+    }
+
+    public String getMotifRejet() {
+        return motifRejet;
+    }
+
+    /**
+     * Enregistre le refus par une personne.
+     *
+     * Les champs sont posés ensemble parce que la base l'impose : un rejet
+     * sans date, ou un motif sans rejet, ne dit rien d'exploitable.
+     */
+    public void rejeterPar(Utilisateur utilisateur, Instant quand, String motif) {
+        this.rejeteePar = utilisateur;
+        this.rejeteeLe = quand;
+        this.motifRejet = motif;
+    }
+
+    public String getTexteSource() {
+        return texteSource;
+    }
+
+    public void setTexteSource(String texteSource) {
+        this.texteSource = texteSource;
+    }
+
+    public Map<String, Object> getLocalisation() {
+        return localisation;
+    }
+
+    public void setLocalisation(Map<String, Object> localisation) {
+        this.localisation = localisation;
+    }
+
+    public BigDecimal getConfiance() {
+        return confiance;
+    }
+
+    public void setConfiance(BigDecimal confiance) {
+        this.confiance = confiance;
     }
 }

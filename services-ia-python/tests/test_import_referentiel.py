@@ -352,8 +352,9 @@ def test_la_fusion_reunit_les_criteres_dun_meme_domaine():
     premier = _brouillon_minimal("D1-01")
     second = _brouillon_minimal("D1-02")
 
-    fusionne = _fusionner([premier, second])
+    fusionne, doublons = _fusionner([premier, second])
 
+    assert doublons == []
     assert len(fusionne.domaines) == 1
     assert {c.code for c in fusionne.domaines[0].criteres} == {"D1-01", "D1-02"}
 
@@ -364,15 +365,23 @@ def test_la_fusion_ecarte_un_doublon_sans_le_supprimer_du_journal(caplog):
 
     Le second est écarté du brouillon et la duplication rapportée : c'est au
     relecteur de trancher, pas au pipeline.
+
+    Elle est désormais rendue à l'appelant, et pas seulement écrite dans les
+    journaux : côté produit, personne ne lit les journaux du service, et un
+    critère mis de côté sans que quiconque le sache est une information
+    perdue.
     """
     premier = _brouillon_minimal("D1-01")
     second = _brouillon_minimal("D1-01")
 
     with caplog.at_level("WARNING"):
-        fusionne = _fusionner([premier, second])
+        fusionne, doublons = _fusionner([premier, second])
 
     assert len(fusionne.domaines[0].criteres) == 1
     assert "double" in caplog.text
+    assert doublons == [
+        {"type": "CRITERE", "code": "D1-01", "domaine_code": "D1", "libelle": "Un critère"}
+    ]
 
 
 def test_la_fusion_sans_resultat_echoue():

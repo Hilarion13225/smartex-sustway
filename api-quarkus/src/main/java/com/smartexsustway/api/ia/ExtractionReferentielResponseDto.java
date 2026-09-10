@@ -10,6 +10,12 @@ import java.util.UUID;
 /**
  * Structure proposée par le service d'agents pour un référentiel importé.
  *
+ * Chaque élément porte, quand le service d'agents a pu les mesurer, le
+ * passage dont il est tiré, sa localisation dans le document et
+ * l'appréciation du modèle sur sa propre extraction. Ces champs restent nuls
+ * sinon : une localisation approximative enverrait le relecteur au mauvais
+ * endroit avec confiance, et une confiance absente ne devient jamais zéro.
+ *
  * Le contenu est reçu tel qu'il a été validé côté Python, puis revalidé ici
  * avant insertion : ce service ne fait pas autorité sur ce qui entre dans le
  * catalogue, il propose. Les annotations {@code @JsonIgnoreProperties} laissent
@@ -60,6 +66,9 @@ public record ExtractionReferentielResponseDto(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record CritereDto(
+            @JsonProperty("localisation") Map<String, Object> localisation,
+            @JsonProperty("texte_source") String texteSource,
+            @JsonProperty("confiance") Double confiance,
             @JsonProperty("code") String code,
             @JsonProperty("libelle") String libelle,
             @JsonProperty("description") String description,
@@ -87,6 +96,9 @@ public record ExtractionReferentielResponseDto(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ExigenceDto(
+            @JsonProperty("localisation") Map<String, Object> localisation,
+            @JsonProperty("texte_source") String texteSource,
+            @JsonProperty("confiance") Double confiance,
             @JsonProperty("code") String code,
             @JsonProperty("intitule") String intitule,
             @JsonProperty("enonce") String enonce,
@@ -97,6 +109,9 @@ public record ExtractionReferentielResponseDto(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record PreuveAttendueDto(
+            @JsonProperty("localisation") Map<String, Object> localisation,
+            @JsonProperty("texte_source") String texteSource,
+            @JsonProperty("confiance") Double confiance,
             @JsonProperty("type") String type,
             @JsonProperty("libelle") String libelle,
             @JsonProperty("description") String description,
@@ -107,6 +122,9 @@ public record ExtractionReferentielResponseDto(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record RegleDto(
+            @JsonProperty("localisation") Map<String, Object> localisation,
+            @JsonProperty("texte_source") String texteSource,
+            @JsonProperty("confiance") Double confiance,
             @JsonProperty("code") String code,
             @JsonProperty("type") String type,
             @JsonProperty("libelle") String libelle,

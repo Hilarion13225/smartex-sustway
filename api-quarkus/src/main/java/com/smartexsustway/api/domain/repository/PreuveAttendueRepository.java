@@ -23,12 +23,6 @@ public class PreuveAttendueRepository implements PanacheRepositoryBase<PreuveAtt
         return list("referentielVersion.id = ?1 order by exigence.ordre, ordre", referentielVersionId);
     }
 
-    /** Preuves attendues proposées par l'IA et non encore acceptées (V57). */
-    public List<PreuveAttendue> aValider(UUID referentielVersionId) {
-        return list("referentielVersion.id = ?1 and origine = ?2 and valideePar is null "
-                        + "order by exigence.critere.code, ordre",
-                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
-    }
 
     /**
      * Nombre d'éléments que l'import a déposés dans cette version, validés
@@ -41,6 +35,25 @@ public class PreuveAttendueRepository implements PanacheRepositoryBase<PreuveAtt
      */
     public long compterImportes(UUID referentielVersionId) {
         return count("referentielVersion.id = ?1 and origineInitiale = ?2",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
+
+    /**
+     * Éléments proposés par l'IA que personne n'a encore tranchés.
+     *
+     * Ni validés ni rejetés : ce sont eux, et eux seuls, qui bloquent la
+     * publication. S'appuie sur l'index partiel posé sur exactement ce
+     * prédicat (V58).
+     */
+    public List<PreuveAttendue> aTraiter(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 and origine = ?2 "
+                        + "and valideePar is null and rejeteePar is null order by exigence.critere.code, ordre",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
+
+    /** Propositions écartées : conservées, mais hors du contenu retenu. */
+    public long compterRejetes(UUID referentielVersionId) {
+        return count("referentielVersion.id = ?1 and origineInitiale = ?2 and rejeteePar is not null",
                 referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
     }
 }

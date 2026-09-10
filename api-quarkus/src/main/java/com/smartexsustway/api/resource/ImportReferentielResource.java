@@ -8,14 +8,18 @@ import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
 import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
 import com.smartexsustway.api.referentiel.AnalyseImportOrchestrateur;
 import com.smartexsustway.api.referentiel.ImportReferentielService;
+import com.smartexsustway.api.referentiel.ValidationContenuImporteService;
+import com.smartexsustway.api.referentiel.ValidationLotService;
 import com.smartexsustway.api.resource.dto.BrouillonImporteDto;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.ImportReferentielDto;
 import com.smartexsustway.api.resource.dto.LancerAnalyseImportDto;
+import com.smartexsustway.api.resource.dto.ValidationLotRequestDto;
 import com.smartexsustway.api.tenant.TenantContext;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -30,6 +34,8 @@ import org.jboss.resteasy.reactive.multipart.FileUpload;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -54,6 +60,7 @@ public class ImportReferentielResource {
 
     @Inject ImportReferentielService importService;
     @Inject AnalyseImportOrchestrateur orchestrateur;
+    @Inject ValidationLotService lotService;
     @Inject ExigenceRepository exigenceRepository;
     @Inject PreuveAttendueRepository preuveAttendueRepository;
     @Inject RegleAnalyseRepository regleAnalyseRepository;
@@ -168,15 +175,84 @@ public class ImportReferentielResource {
         if (version == null) {
             return erreur(409, "Cet import n'a pas encore produit de brouillon");
         }
-        int importesTotal = (int) (exigenceRepository.compterImportes(version.getId())
-                + preuveAttendueRepository.compterImportes(version.getId())
-                + regleAnalyseRepository.compterImportes(version.getId()));
+        UUID versionId = version.getId();
+        int importesTotal = (int) (exigenceRepository.compterImportes(versionId)
+                + preuveAttendueRepository.compterImportes(versionId)
+                + regleAnalyseRepository.compterImportes(versionId));
+        int rejetes = (int) (exigenceRepository.compterRejetes(versionId)
+                + preuveAttendueRepository.compterRejetes(versionId)
+                + regleAnalyseRepository.compterRejetes(versionId));
+
+        var aTraiterExigences = exigenceRepository.aTraiter(versionId);
+        var aTraiterPreuves = preuveAttendueRepository.aTraiter(versionId);
+        var aTraiterRegles = regleAnalyseRepository.aTraiter(versionId);
+        int aTraiter = aTraiterExigences.size() + aTraiterPreuves.size() + aTraiterRegles.size();
 
         return Response.ok(BrouillonImporteDto.depuis(version, importReferentiel.getMetadonnees(),
-                exigenceRepository.aValider(version.getId()),
-                preuveAttendueRepository.aValider(version.getId()),
-                regleAnalyseRepository.aValider(version.getId()),
-                importesTotal)).build();
+                aTraiterExigences, aTraiterPreuves, aTraiterRegles,
+                Math.max(0, importesTotal - rejetes - aTraiter), rejetes, importesTotal,
+                doublons(importReferentiel))).build();
+    }
+
+    /**
+     * Doublons repérés par le service d'agents pendant l'extraction.
+     *
+     * Ils sont rapportés, jamais appliqués : un critère apparaissant deux fois
+     * dans un document peut être une redite comme deux critères distincts mal
+     * codés, et rien dans le produit ne tranche entre les deux. Le second est
+     * écarté du brouillon et signalé ici — le supprimer sans le dire ferait
+     * disparaître une information que personne n'aurait vue passer.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> doublons(ImportReferentiel importReferentiel) {
+        Object brut = importReferentiel.getMetadonnees() == null
+                ? null : importReferentiel.getMetadonnees().get("doublons");
+        if (!(brut instanceof List<?> liste)) {
+            return List.of();
+        }
+        return liste.stream()
+                .filter(Map.class::isInstance)
+                .map(element -> (Map<String, Object>) element)
+                .toList();
+    }
+
+    /**
+     * Valide plusieurs propositions du brouillon en une seule fois.
+     *
+     * Monté sur l'import, et non sur chaque élément : c'est la version issue
+     * de cet import qui borne le lot. Un identifiant appartenant à un autre
+     * référentiel fait échouer l'ensemble au lieu d'être appliqué ailleurs —
+     * la garde contre l'accès indirect tient à ce bornage, pas à la confiance
+     * accordée au corps de la requête.
+     *
+     * Tout passe ou rien : une validation partielle silencieuse laisserait un
+     * avancement affiché sans que personne sache ce qui a réellement été
+     * retenu.
+     */
+    @POST
+    @Path("/{importId}/validations")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("SUPER_ADMIN")
+    public Response validerEnLot(@PathParam("importId") UUID importId,
+                                 @Valid ValidationLotRequestDto requete) {
+        ImportReferentiel importReferentiel = trouver(importId);
+        ReferentielVersion version = importReferentiel.getReferentielVersion();
+        if (version == null) {
+            return erreur(409, "Cet import n'a pas encore produit de brouillon");
+        }
+        if (requete == null) {
+            return erreur(400, "Le lot ne désigne aucun élément");
+        }
+
+        try {
+            var resultat = lotService.validerTout(version, requete.versElements(),
+                    tenantContext.utilisateurCourantId());
+            return Response.ok(Map.of(
+                    "traites", resultat.traites(),
+                    "dejaValides", resultat.dejaValides())).build();
+        } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
+            return erreur(e.statutHttp(), e.getMessage());
+        }
     }
 
     /**

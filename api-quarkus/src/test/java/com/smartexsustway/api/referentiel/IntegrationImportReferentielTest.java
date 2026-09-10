@@ -139,20 +139,25 @@ class IntegrationImportReferentielTest {
     /** Une structure minimale mais complète : un domaine, un critère, tout l'étage métier. */
     private static ExtractionReferentielResponseDto reponseComplete(UUID importId) {
         var preuve = new ExtractionReferentielResponseDto.PreuveAttendueDto(
+                null, null, null,
                 "PROCEDURE", "Procédure de gestion des déchets", "Datée et signée", true, 1);
         var exigence = new ExtractionReferentielResponseDto.ExigenceDto(
+                null, null, null,
                 "D1-01-E1", "Disposer d'une procédure",
                 "L'organisation dispose d'une procédure écrite de gestion des déchets.",
                 1, List.of(preuve));
         var question = new ExtractionReferentielResponseDto.QuestionDto(
                 "D1-01-Q1", "Une procédure existe-t-elle ?", "FERMEE", "BINAIRE", true, 1);
         var reglePreuve = new ExtractionReferentielResponseDto.RegleDto(
+                null, null, null,
                 "D1-01-R1", "SIGNATURE", "La procédure doit être signée", "ELEVEE",
                 "D1-01-E1", "Procédure de gestion des déchets", Map.of());
         var regleCritere = new ExtractionReferentielResponseDto.RegleDto(
+                null, null, null,
                 "D1-01-R2", "PRESENCE", "Présence des éléments attendus", "MOYENNE",
                 null, null, Map.of("elements", List.of("procédure", "registre")));
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Gestion des déchets", "Description du critère", "D1-SD1",
                 "GENERALE", "ELEVEE", 2.0, 1,
                 List.of(question), List.of(exigence), List.of(reglePreuve, regleCritere));
@@ -551,6 +556,7 @@ class IntegrationImportReferentielTest {
         // Un critère se rattache à un sous-domaine qui n'existe pas : la
         // hiérarchie ne peut pas être reconstruite.
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Critère orphelin", null, "SD-INEXISTANT", "GENERALE", null, 1.0, 1,
                 List.of(), List.of(), List.of());
         var domaine = new ExtractionReferentielResponseDto.DomaineDto(
@@ -579,8 +585,10 @@ class IntegrationImportReferentielTest {
         // DATE_VALIDITE attend un champ ; sans lui la règle serait insérée
         // vide, et l'agent d'analyse ne saurait pas quoi contrôler.
         var regle = new ExtractionReferentielResponseDto.RegleDto(
+                null, null, null,
                 "R1", "DATE_VALIDITE", "Vérifier la validité", "MOYENNE", null, null, Map.of());
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Critère", null, null, "GENERALE", null, 1.0, 1,
                 List.of(), List.of(), List.of(regle));
         var domaine = new ExtractionReferentielResponseDto.DomaineDto(
@@ -606,10 +614,13 @@ class IntegrationImportReferentielTest {
         String importId = deposer(jeton);
 
         var preuve = new ExtractionReferentielResponseDto.PreuveAttendueDto(
+                null, null, null,
                 "TYPE_QUI_N_EXISTE_PAS", "Une pièce", null, true, 1);
         var exigence = new ExtractionReferentielResponseDto.ExigenceDto(
+                null, null, null,
                 "E1", "Intitulé", "Énoncé", 1, List.of(preuve));
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Critère", null, null, "GENERALE", null, 1.0, 1,
                 List.of(), List.of(exigence), List.of());
         var domaine = new ExtractionReferentielResponseDto.DomaineDto(
@@ -636,6 +647,7 @@ class IntegrationImportReferentielTest {
         String importId = deposer(jeton);
 
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Critère", null, null, "GENERALE", null, 1.0, 1,
                 List.of(), List.of(), List.of());
         var domaine = new ExtractionReferentielResponseDto.DomaineDto(

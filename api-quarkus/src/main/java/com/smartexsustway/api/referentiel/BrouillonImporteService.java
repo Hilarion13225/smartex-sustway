@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Dépose dans un brouillon la structure proposée par le service d'agents.
@@ -235,6 +236,8 @@ public class BrouillonImporteService {
         // posées ici, et aucun validateur n'est renseigné.
         exigence.setOrigine(OrigineContenu.IMPORT_IA);
         exigence.setOrigineInitiale(OrigineContenu.IMPORT_IA);
+        conserverSource(dto.localisation(), dto.texteSource(), dto.confiance(),
+                exigence::setLocalisation, exigence::setTexteSource, exigence::setConfiance);
         exigenceRepository.persist(exigence);
         compte.merge("exigences", 1, Integer::sum);
         return exigence;
@@ -255,6 +258,8 @@ public class BrouillonImporteService {
             preuve.setOrdre(preuveDto.ordre());
             preuve.setOrigine(OrigineContenu.IMPORT_IA);
             preuve.setOrigineInitiale(OrigineContenu.IMPORT_IA);
+            conserverSource(preuveDto.localisation(), preuveDto.texteSource(), preuveDto.confiance(),
+                    preuve::setLocalisation, preuve::setTexteSource, preuve::setConfiance);
             preuveAttendueRepository.persist(preuve);
             parLibelle.put(libelle, preuve);
             compte.merge("preuves_attendues", 1, Integer::sum);
@@ -312,8 +317,37 @@ public class BrouillonImporteService {
                 "sévérité"));
         regle.setOrigine(OrigineContenu.IMPORT_IA);
         regle.setOrigineInitiale(OrigineContenu.IMPORT_IA);
+        conserverSource(dto.localisation(), dto.texteSource(), dto.confiance(),
+                regle::setLocalisation, regle::setTexteSource, regle::setConfiance);
         regleAnalyseRepository.persist(regle);
         compte.merge("regles_analyse", 1, Integer::sum);
+    }
+
+
+    /**
+     * Conserve ce que l'extraction a mesuré de la source, et rien d'autre.
+     *
+     * Une absence reste une absence : un texte manquant ne devient pas une
+     * chaîne vide, une localisation manquante n'est pas estimée, et une
+     * confiance manquante ne devient pas zéro — l'ignorance n'est pas une
+     * certitude négative. Une confiance hors de [0, 1] est écartée plutôt que
+     * ramenée aux bornes : elle signale une sortie que le contrat aurait dû
+     * refuser, et la corriger en silence masquerait le problème.
+     */
+    private static void conserverSource(Map<String, Object> localisation, String texteSource,
+                                        Double confiance,
+                                        Consumer<Map<String, Object>> poserLocalisation,
+                                        Consumer<String> poserTexte,
+                                        Consumer<BigDecimal> poserConfiance) {
+        if (localisation != null && !localisation.isEmpty()) {
+            poserLocalisation.accept(localisation);
+        }
+        if (texteSource != null && !texteSource.isBlank()) {
+            poserTexte.accept(texteSource);
+        }
+        if (confiance != null && confiance >= 0 && confiance <= 1) {
+            poserConfiance.accept(BigDecimal.valueOf(confiance));
+        }
     }
 
     // --- Contrôles ------------------------------------------------------

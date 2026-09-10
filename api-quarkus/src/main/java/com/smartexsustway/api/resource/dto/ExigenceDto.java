@@ -37,8 +37,7 @@ public record ExigenceDto(
                 e.getOrigine().name(),
                 e.getReferentielVersion().estBrouillon(),
                 preuvesAttendues,
-                ProvenanceDto.depuis(e.getOrigine(), e.getOrigineInitiale(),
-                        e.getValideePar(), e.getValideeLe())
+                ProvenanceDto.depuis(e)
         );
     }
 }

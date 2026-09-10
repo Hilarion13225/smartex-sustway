@@ -28,12 +28,6 @@ public class RegleAnalyseRepository implements PanacheRepositoryBase<RegleAnalys
         return find("critere.id = ?1 and code = ?2", critereId, code).firstResultOptional();
     }
 
-    /** Règles proposées par l'IA et non encore acceptées (V57). */
-    public List<RegleAnalyse> aValider(UUID referentielVersionId) {
-        return list("referentielVersion.id = ?1 and origine = ?2 and valideePar is null "
-                        + "order by critere.code, ordre",
-                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
-    }
 
     /**
      * Nombre d'éléments que l'import a déposés dans cette version, validés
@@ -46,6 +40,25 @@ public class RegleAnalyseRepository implements PanacheRepositoryBase<RegleAnalys
      */
     public long compterImportes(UUID referentielVersionId) {
         return count("referentielVersion.id = ?1 and origineInitiale = ?2",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
+
+    /**
+     * Éléments proposés par l'IA que personne n'a encore tranchés.
+     *
+     * Ni validés ni rejetés : ce sont eux, et eux seuls, qui bloquent la
+     * publication. S'appuie sur l'index partiel posé sur exactement ce
+     * prédicat (V58).
+     */
+    public List<RegleAnalyse> aTraiter(UUID referentielVersionId) {
+        return list("referentielVersion.id = ?1 and origine = ?2 "
+                        + "and valideePar is null and rejeteePar is null order by critere.code, ordre",
+                referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
+
+    /** Propositions écartées : conservées, mais hors du contenu retenu. */
+    public long compterRejetes(UUID referentielVersionId) {
+        return count("referentielVersion.id = ?1 and origineInitiale = ?2 and rejeteePar is not null",
                 referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
     }
 }

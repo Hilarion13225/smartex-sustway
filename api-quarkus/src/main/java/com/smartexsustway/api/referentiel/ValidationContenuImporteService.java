@@ -84,6 +84,7 @@ public class ValidationContenuImporteService {
         if (dejaValidee(exigence.getOrigine(), exigence.getValideePar())) {
             return new Resultat(true);
         }
+        exigerNonRejetee(exigence.getRejeteePar(), "exigence");
         exigerProposition(exigence.getOrigine(), exigence.getOrigineInitiale(), "exigence");
 
         exigence.setOrigine(OrigineContenu.CONTENU_HUMAIN);
@@ -102,6 +103,7 @@ public class ValidationContenuImporteService {
         if (dejaValidee(preuve.getOrigine(), preuve.getValideePar())) {
             return new Resultat(true);
         }
+        exigerNonRejetee(preuve.getRejeteePar(), "preuve attendue");
         exigerProposition(preuve.getOrigine(), preuve.getOrigineInitiale(), "preuve attendue");
 
         preuve.setOrigine(OrigineContenu.CONTENU_HUMAIN);
@@ -119,6 +121,7 @@ public class ValidationContenuImporteService {
         if (dejaValidee(regle.getOrigine(), regle.getValideePar())) {
             return new Resultat(true);
         }
+        exigerNonRejetee(regle.getRejeteePar(), "règle d'analyse");
         exigerProposition(regle.getOrigine(), regle.getOrigineInitiale(), "règle d'analyse");
 
         regle.setOrigine(OrigineContenu.CONTENU_HUMAIN);
@@ -126,6 +129,95 @@ public class ValidationContenuImporteService {
         journaliser(utilisateurId, "REGLE_ANALYSE_IMPORTEE_VALIDEE", "regle_analyse",
                 regle.getId(), regle.getReferentielVersion());
         return new Resultat(false);
+    }
+
+
+    // --- Rejet ------------------------------------------------------------
+    //
+    // Écarter n'est pas supprimer. La ligne subsiste, marquée : sans elle, la
+    // trace qu'une machine l'avait proposée disparaîtrait, et l'import
+    // deviendrait invérifiable après coup. `origine` reste à IMPORT_IA —
+    // personne n'a repris cette proposition à son compte.
+
+    @Transactional
+    public Resultat rejeterExigence(Exigence exigence, UUID versionAttendue, String motif,
+                                    UUID utilisateurId) {
+        Utilisateur auteur = exigerValidateur(exigence.getReferentielVersion(), versionAttendue,
+                utilisateurId, "exigence", exigence.getId());
+
+        if (exigence.getRejeteePar() != null) {
+            return new Resultat(true);
+        }
+        exigerNonValidee(exigence.getValideePar(), "exigence");
+        exigerProposition(exigence.getOrigine(), exigence.getOrigineInitiale(), "exigence");
+
+        exigence.rejeterPar(auteur, Instant.now(), motifPropre(motif));
+        journaliser(utilisateurId, "EXIGENCE_IMPORTEE_REJETEE", "exigence", exigence.getId(),
+                exigence.getReferentielVersion(), motifPropre(motif));
+        return new Resultat(false);
+    }
+
+    @Transactional
+    public Resultat rejeterPreuveAttendue(PreuveAttendue preuve, UUID versionAttendue, String motif,
+                                          UUID utilisateurId) {
+        Utilisateur auteur = exigerValidateur(preuve.getReferentielVersion(), versionAttendue,
+                utilisateurId, "preuve_attendue", preuve.getId());
+
+        if (preuve.getRejeteePar() != null) {
+            return new Resultat(true);
+        }
+        exigerNonValidee(preuve.getValideePar(), "preuve attendue");
+        exigerProposition(preuve.getOrigine(), preuve.getOrigineInitiale(), "preuve attendue");
+
+        preuve.rejeterPar(auteur, Instant.now(), motifPropre(motif));
+        journaliser(utilisateurId, "PREUVE_ATTENDUE_IMPORTEE_REJETEE", "preuve_attendue",
+                preuve.getId(), preuve.getReferentielVersion(), motifPropre(motif));
+        return new Resultat(false);
+    }
+
+    @Transactional
+    public Resultat rejeterRegle(RegleAnalyse regle, UUID versionAttendue, String motif,
+                                 UUID utilisateurId) {
+        Utilisateur auteur = exigerValidateur(regle.getReferentielVersion(), versionAttendue,
+                utilisateurId, "regle_analyse", regle.getId());
+
+        if (regle.getRejeteePar() != null) {
+            return new Resultat(true);
+        }
+        exigerNonValidee(regle.getValideePar(), "règle d'analyse");
+        exigerProposition(regle.getOrigine(), regle.getOrigineInitiale(), "règle d'analyse");
+
+        regle.rejeterPar(auteur, Instant.now(), motifPropre(motif));
+        journaliser(utilisateurId, "REGLE_ANALYSE_IMPORTEE_REJETEE", "regle_analyse",
+                regle.getId(), regle.getReferentielVersion(), motifPropre(motif));
+        return new Resultat(false);
+    }
+
+    /**
+     * Un motif vide vaut absence de motif.
+     *
+     * La base refuse un motif sans rejet, mais accepte un rejet sans motif :
+     * exiger une justification serait une décision métier que rien n'a
+     * tranchée. Une chaîne blanche, elle, ne dit rien tout en occupant la
+     * place d'une explication.
+     */
+    private static String motifPropre(String motif) {
+        return motif == null || motif.isBlank() ? null : motif.trim();
+    }
+
+    /** On ne revient pas sur une décision par la porte opposée. */
+    private static void exigerNonRejetee(Utilisateur rejeteur, String quoi) {
+        if (rejeteur != null) {
+            throw new ValidationRefuseeException(409,
+                    "Cette " + quoi + " a été écartée : elle ne peut plus être validée");
+        }
+    }
+
+    private static void exigerNonValidee(Utilisateur validateur, String quoi) {
+        if (validateur != null) {
+            throw new ValidationRefuseeException(409,
+                    "Cette " + quoi + " a été validée : elle ne peut plus être écartée");
+        }
     }
 
     // --- Gardes ----------------------------------------------------------
@@ -205,10 +297,16 @@ public class ValidationContenuImporteService {
      */
     private void journaliser(UUID utilisateurId, String action, String entite, UUID entiteId,
                              ReferentielVersion version) {
+        journaliser(utilisateurId, action, entite, entiteId, version, null);
+    }
+
+    private void journaliser(UUID utilisateurId, String action, String entite, UUID entiteId,
+                             ReferentielVersion version, String motif) {
         String details = """
-                {"referentiel_version_id":"%s","version_numero":"%s","referentiel_code":"%s"}"""
+                {"referentiel_version_id":"%s","version_numero":"%s","referentiel_code":"%s","nature":"%s","motif":%s}"""
                 .formatted(version.getId(), echapper(version.getNumero()),
-                        echapper(version.getReferentiel().getCode()));
+                        echapper(version.getReferentiel().getCode()), entite,
+                        motif == null ? "null" : "\"" + echapper(motif) + "\"");
         auditLogService.journaliserAvecDetails(utilisateurId, null, action, entite, entiteId, details);
     }
 

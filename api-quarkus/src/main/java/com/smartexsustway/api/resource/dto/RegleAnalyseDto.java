@@ -39,8 +39,7 @@ public record RegleAnalyseDto(
                 r.getDefinition(),
                 r.getOrdre(),
                 r.getReferentielVersion().estBrouillon(),
-                ProvenanceDto.depuis(r.getOrigine(), r.getOrigineInitiale(),
-                        r.getValideePar(), r.getValideeLe())
+                ProvenanceDto.depuis(r)
         );
     }
 }

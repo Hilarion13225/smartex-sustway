@@ -26,8 +26,7 @@ public record PreuveAttendueDto(
                 p.isObligatoire(),
                 p.getOrdre(),
                 p.getReferentielVersion().estBrouillon(),
-                ProvenanceDto.depuis(p.getOrigine(), p.getOrigineInitiale(),
-                        p.getValideePar(), p.getValideeLe())
+                ProvenanceDto.depuis(p)
         );
     }
 }

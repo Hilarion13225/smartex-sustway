@@ -121,14 +121,18 @@ class ValidationContenuImporteTest {
 
     private static ExtractionReferentielResponseDto propositionComplete(UUID importId) {
         var preuve = new ExtractionReferentielResponseDto.PreuveAttendueDto(
+                null, null, null,
                 "PROCEDURE", "Procédure de gestion des déchets", "Datée et signée", true, 1);
         var exigence = new ExtractionReferentielResponseDto.ExigenceDto(
+                null, null, null,
                 "D1-01-E1", "Disposer d'une procédure",
                 "L'organisation dispose d'une procédure écrite.", 1, List.of(preuve));
         var regle = new ExtractionReferentielResponseDto.RegleDto(
+                null, null, null,
                 "D1-01-R1", "SIGNATURE", "La procédure doit être signée", "ELEVEE",
                 "D1-01-E1", "Procédure de gestion des déchets", Map.of());
         var critere = new ExtractionReferentielResponseDto.CritereDto(
+                null, null, null,
                 "D1-01", "Gestion des déchets", null, null, "GENERALE", "ELEVEE", 1.0, 1,
                 List.of(), List.of(exigence), List.of(regle));
         var domaine = new ExtractionReferentielResponseDto.DomaineDto(

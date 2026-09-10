@@ -8,6 +8,7 @@ import com.smartexsustway.api.referentiel.ValidationContenuImporteService;
 import com.smartexsustway.api.referentiel.VersionReferentielService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueDto;
+import com.smartexsustway.api.resource.dto.RejetContenuRequestDto;
 import com.smartexsustway.api.resource.dto.ValidationContenuRequestDto;
 import com.smartexsustway.api.resource.dto.PreuveAttendueRequestDto;
 import com.smartexsustway.api.tenant.TenantContext;
@@ -117,6 +118,36 @@ public class PreuveAttendueResource {
         try {
             validationService.validerPreuveAttendue(preuve,
                     ValidationContenuRequestDto.versionAttendue(requete),
+                    tenantContext.utilisateurCourantId());
+        } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
+            return erreur(e.statutHttp(), e.getMessage());
+        }
+        return Response.ok(PreuveAttendueDto.depuis(preuve)).build();
+    }
+
+    /**
+     * Écarte une preuve attendue proposée par un import assisté.
+     *
+     * Opération distincte de la suppression : la ligne subsiste, marquée du
+     * relecteur, de la date et d'un motif s'il en a donné un. Supprimer
+     * effacerait la trace qu'une machine l'avait proposée, et l'import
+     * deviendrait invérifiable après coup. Une proposition écartée cesse de
+     * bloquer la publication sans pour autant entrer dans le contenu retenu.
+     *
+     * Rejouable sans effet — un second rejet ne déplace ni la date ni le motif.
+     */
+    @POST
+    @Path("/rejet")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    @RolesAllowed("SUPER_ADMIN")
+    public Response rejeter(@PathParam("preuveAttendueId") UUID preuveAttendueId,
+                            @Valid RejetContenuRequestDto requete) {
+        PreuveAttendue preuve = trouver(preuveAttendueId);
+        try {
+            validationService.rejeterPreuveAttendue(preuve,
+                    RejetContenuRequestDto.versionAttendue(requete),
+                    RejetContenuRequestDto.motif(requete),
                     tenantContext.utilisateurCourantId());
         } catch (ValidationContenuImporteService.ValidationRefuseeException e) {
             return erreur(e.statutHttp(), e.getMessage());

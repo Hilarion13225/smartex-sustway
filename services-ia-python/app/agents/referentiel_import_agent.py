@@ -143,7 +143,7 @@ def _valider_regles(brouillon: BrouillonImporte) -> None:
                     ) from exc
 
 
-def _fusionner(brouillons: list[BrouillonImporte]) -> BrouillonImporte:
+def _fusionner(brouillons: list[BrouillonImporte]) -> tuple[BrouillonImporte, list[dict]]:
     """
     Assemble les résultats des lots dans l'ordre où ils ont été produits.
 
@@ -153,6 +153,10 @@ def _fusionner(brouillons: list[BrouillonImporte]) -> BrouillonImporte:
     écarté du brouillon et la duplication est rapportée, à charge pour le
     relecteur de trancher. Supprimer silencieusement ferait disparaître une
     information que personne n'aurait vue passer.
+
+    Rend le brouillon et la liste des doublons écartés. Ils étaient jusqu'ici
+    seulement écrits dans les journaux du service : personne, côté produit, ne
+    pouvait savoir qu'un critère avait été mis de côté.
     """
     if not brouillons:
         raise ExtractionRefusee("Aucun lot n'a produit de résultat exploitable")
@@ -161,7 +165,7 @@ def _fusionner(brouillons: list[BrouillonImporte]) -> BrouillonImporte:
         (b.referentiel for b in brouillons if b.referentiel.code), brouillons[0].referentiel
     )
     par_code: dict[str, DomaineExtrait] = {}
-    doublons: list[str] = []
+    doublons: list[dict] = []
 
     for brouillon in brouillons:
         for domaine in brouillon.domaines:
@@ -172,7 +176,17 @@ def _fusionner(brouillons: list[BrouillonImporte]) -> BrouillonImporte:
             codes_connus = {c.code for c in existant.criteres}
             for critere in domaine.criteres:
                 if critere.code in codes_connus:
-                    doublons.append(f"{domaine.code}/{critere.code}")
+                    # Ce que l'on sait réellement : la nature, le code, et le
+                    # domaine où la redite est apparue. Le numéro du lot n'est
+                    # pas connu ici — l'inventer donnerait une fausse piste.
+                    doublons.append(
+                        {
+                            "type": "CRITERE",
+                            "code": critere.code,
+                            "domaine_code": domaine.code,
+                            "libelle": critere.libelle,
+                        }
+                    )
                     continue
                 existant.criteres.append(critere.model_copy(deep=True))
                 codes_connus.add(critere.code)
@@ -185,10 +199,10 @@ def _fusionner(brouillons: list[BrouillonImporte]) -> BrouillonImporte:
         logger.warning(
             "Import : %d critère(s) en double entre lots, écartés du brouillon : %s",
             len(doublons),
-            ", ".join(doublons[:10]),
+            ", ".join(d["code"] for d in doublons[:10]),
         )
 
-    return BrouillonImporte(referentiel=referentiel, domaines=list(par_code.values()))
+    return BrouillonImporte(referentiel=referentiel, domaines=list(par_code.values())), doublons
 
 
 async def _analyser_lot(lot: list[Section], index: int, total: int) -> BrouillonImporte | None:
@@ -258,7 +272,7 @@ async def analyser(contenu: bytes, nom_fichier: str, type_mime: str) -> dict:
         if resultat is not None:
             resultats.append(resultat)
 
-    brouillon = _fusionner(resultats)
+    brouillon, doublons = _fusionner(resultats)
     _valider_regles(brouillon)
 
     return {
@@ -269,6 +283,10 @@ async def analyser(contenu: bytes, nom_fichier: str, type_mime: str) -> dict:
             "sections": len(source.sections),
             "lots": len(lots),
             "modele": settings.gemini_model,
+            # Remontés jusqu'au relecteur plutôt que laissés aux journaux :
+            # un critère écarté sans que personne ne le sache est une
+            # information perdue, pas un détail d'implémentation.
+            "doublons": doublons,
             **brouillon.compter(),
         },
     }
