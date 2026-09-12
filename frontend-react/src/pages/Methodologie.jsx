@@ -155,12 +155,16 @@ export default function Methodologie() {
               <TraitManuscrit className="ml-auto mt-1 h-2 w-28 text-brand-500" />
             </p>
 
+            {/* Non différée : cette photo est dans le premier écran sur
+                téléphone, et la reporter retarderait le plus grand affichage
+                de la page. */}
             <div className="relative overflow-hidden rounded-2xl shadow-soft">
               <img
                 src={photoHero}
                 alt="Cubes ESG, roue des objectifs de développement durable et plante posés sur un bureau"
                 className="h-64 w-full object-cover sm:h-80"
-                loading="lazy"
+                loading="eager"
+                fetchPriority="high"
               />
             </div>
 

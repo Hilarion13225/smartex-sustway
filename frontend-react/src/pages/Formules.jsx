@@ -182,11 +182,15 @@ export default function Formules() {
           concurrencer le texte. Masqué sous `lg`, où le héros passe sur une
           seule colonne et où la photo écraserait le contenu.
         */}
+        {/* Fond décoratif posé en `background-image` et non en `<img>` : une
+            balise image est téléchargée même sous `display:none`, alors qu'un
+            fond CSS ne l'est que si l'élément est rendu. Le panneau étant
+            masqué sous `lg`, un téléphone ne paie plus ces 261 Ko pour une
+            photo qu'il n'affichera jamais. */}
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] lg:block" aria-hidden>
-          <img
-            src={photoHero}
-            alt=""
-            className="h-full w-full scale-110 object-cover blur-[9px] [mask-image:linear-gradient(to_right,transparent,black_55%)]"
+          <div
+            className="h-full w-full scale-110 bg-cover bg-center blur-[9px] [mask-image:linear-gradient(to_right,transparent,black_55%)]"
+            style={{ backgroundImage: `url(${photoHero})` }}
           />
           <span className="absolute inset-0 bg-gradient-to-r from-surface/0 via-surface/35 to-surface/5" />
         </div>
@@ -312,7 +316,9 @@ export default function Formules() {
                         </span>
                       ) : (
                         <>
-                          <span className="font-display text-[1.9rem] font-extrabold leading-none text-marine">
+                          {/* Chiffres tabulaires : les trois prix s'alignent
+                              verticalement d'une carte à l'autre. */}
+                          <span className="font-chiffres text-[1.9rem] font-extrabold leading-none text-marine [font-variant-numeric:tabular-nums]">
                             {gratuit ? 'Gratuit' : formaterMontant(carte.prix)}
                           </span>
                           {gratuit ? null : <span className="text-xs font-medium text-ink-500">/ an</span>}

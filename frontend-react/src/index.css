@@ -91,8 +91,12 @@
   .btn-danger {
     @apply btn bg-rose-600 text-white hover:bg-rose-700;
   }
+  /* 16 px sur téléphone, 14 au-delà : iOS zoome automatiquement sur un champ
+     dont le texte fait moins de 16 px, et le visiteur doit ensuite dézoomer à
+     la main. Le formulaire de contact est la seule action de sa page — il ne
+     peut pas se permettre ce geste en trop. */
   .input {
-    @apply w-full rounded-lg border border-ink-200 bg-surface px-3 py-2 text-sm outline-none placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/50;
+    @apply w-full rounded-lg border border-ink-200 bg-surface px-3 py-2 text-base outline-none placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 sm:text-sm dark:focus:ring-brand-900/50;
   }
   .label {
     @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-500;

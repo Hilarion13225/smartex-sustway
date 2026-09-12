@@ -164,13 +164,15 @@ export default function Contact() {
     <div>
       {/* --------------------------------------------------------- Héros */}
       <section className="relative overflow-hidden">
-        {/* Photo de la moitié droite, fondue vers la zone de texte. Masquée
-            sous `lg`, où le héros passe sur une seule colonne. */}
+        {/* Photo de la moitié droite, fondue vers la zone de texte, et masquée
+            sous `lg` où le héros passe sur une seule colonne. Posée en
+            `background-image` et non en `<img>` : une balise image est
+            téléchargée même sous `display:none`, un fond CSS ne l'est que si
+            l'élément est rendu. */}
         <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[50%] lg:block" aria-hidden>
-          <img
-            src={photoConseillere}
-            alt=""
-            className="h-full w-full object-cover [mask-image:linear-gradient(to_right,transparent,black_32%)]"
+          <div
+            className="h-full w-full bg-cover bg-center [mask-image:linear-gradient(to_right,transparent,black_32%)]"
+            style={{ backgroundImage: `url(${photoConseillere})` }}
           />
           <span className="absolute inset-0 bg-gradient-to-r from-surface/90 via-surface/15 to-transparent" />
         </div>
