@@ -49,15 +49,22 @@ export default {
         surface: 'rgb(var(--surface) / <alpha-value>)',
       },
       fontFamily: {
+        // Deux familles suffisent quand l'une des deux tient le rôle
+        // d'affichage à elle seule.
+        //
+        // Inter garde le texte courant, les formulaires et les tableaux : elle
+        // reste lisible à 13 px là où une géométrique s'écrase.
         sans: ['Inter', 'system-ui', 'Segoe UI', 'sans-serif'],
-        // Titraille — chargée dans index.html (Google Fonts), utilisée via
-        // `font-display` dans index.css (h1-h4). Pas de nouvelle police à
-        // charger, juste la déclaration Tailwind qui manquait.
-        display: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
-        // Titraille éditoriale des pages vitrine (`font-titre`) — serif à
-        // graisse optique variable, pour un ton plus posé que la titraille
-        // sans-serif de l'espace connecté.
-        titre: ['Fraunces', 'Georgia', 'Cambria', 'serif'],
+        // Satoshi porte la titraille et les libellés marqués `font-display`.
+        // Elle a du caractère en grand sans devenir illisible en petit, ce qui
+        // lui permet de couvrir les deux rôles.
+        display: ['Satoshi', 'Inter', 'system-ui', 'sans-serif'],
+        // Annotations manuscrites : Satoshi en italique, une vraie italique
+        // dessinée et non une inclinaison synthétique.
+        titre: ['Satoshi', 'Inter', 'system-ui', 'sans-serif'],
+        // Les montants restent sur Inter, dont les chiffres tabulaires
+        // suffisent à aligner une colonne de prix.
+        chiffres: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         // Élévation douce (cartes vitrine/app) — teinte encre plutôt que noir pur.
