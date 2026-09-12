@@ -64,8 +64,19 @@ public class AutorisationService {
      * synchronisés, l'un pour l'affichage, l'autre pour l'autorisation réelle.
      */
     private static final Map<String, Set<String>> RESTRICTIONS_PAR_PLAN = Map.of(
+            // `evaluation:valider` est retirée de FREE par arbitrage produit :
+            // entériner un résultat d'audit est un geste de la formule payante.
+            //
+            // Conséquence assumée, à connaître avant d'y toucher : les deux
+            // autres capacités du cycle de vie d'une mission —
+            // `analyse:executer` et `audit:cloturer` — ne sont, elles, retirées
+            // par aucun plan. Une entreprise rétrogradée vers FREE peut donc
+            // encore lancer des analyses et clôturer, mais plus valider : ses
+            // missions en cours restent sans issue tant qu'elle ne reprend pas
+            // une formule payante. C'est le point de friction voulu ; il n'est
+            // pas le produit d'un oubli.
             "FREE", Set.of("entreprise:creer", "entreprise:modifier", "audit:creer", "audit:modifier",
-                    "preuve:deposer", "rapport:detaille", "bailleur:consulter"),
+                    "preuve:deposer", "rapport:detaille", "bailleur:consulter", "evaluation:valider"),
             "STANDARD", Set.of("rapport:detaille", "bailleur:consulter"),
             "AVANCEES", Set.of()
     );
@@ -141,11 +152,19 @@ public class AutorisationService {
                 .orElseThrow(() -> new ForbiddenException(
                         "Permission refusée : '%s' requise sur l'entreprise %s".formatted(codePermission, entrepriseId)));
 
+        // La normalisation doit précéder l'accès, pas s'y greffer :
+        // RESTRICTIONS_PAR_PLAN est un Map.of, qui refuse une clé nulle —
+        // getOrDefault(null, ...) lève NullPointerException avant même de
+        // pouvoir rendre sa valeur par défaut. Le repli sur FREE annoncé par
+        // la javadoc ne s'appliquait donc jamais, et une mission sans formule
+        // rendait 500 au lieu du refus attendu.
+        String formuleEffective = formuleCode == null ? "FREE" : formuleCode;
+
         String roleCode = rattachement.getRole().getCode();
         if (!ROLES_INTERNES_SMARTEX.contains(roleCode)
-                && RESTRICTIONS_PAR_PLAN.getOrDefault(formuleCode, RESTRICTIONS_PAR_PLAN.get("FREE")).contains(codePermission)) {
+                && RESTRICTIONS_PAR_PLAN.getOrDefault(formuleEffective, RESTRICTIONS_PAR_PLAN.get("FREE")).contains(codePermission)) {
             throw new ForbiddenException(
-                    "Permission '%s' non disponible avec la formule %s".formatted(codePermission, formuleCode));
+                    "Permission '%s' non disponible avec la formule %s".formatted(codePermission, formuleEffective));
         }
     }
 
@@ -157,16 +176,33 @@ public class AutorisationService {
      * jamais par un test ad hoc dans une ressource.
      */
     public void exigerRoleSurEntreprise(UUID utilisateurId, UUID entrepriseId, Set<String> codesRoles) {
-        if (estAccesGlobalActif(utilisateurId)) {
-            return;
-        }
-        boolean autorise = utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
-                .filter(r -> r.getEntreprise().getId().equals(entrepriseId))
-                .anyMatch(r -> codesRoles.contains(r.getRole().getCode()));
-        if (!autorise) {
+        if (!possedeRoleSurEntreprise(utilisateurId, entrepriseId, codesRoles)) {
             throw new ForbiddenException(
                     "Rôle insuffisant sur l'entreprise %s : %s requis".formatted(entrepriseId, codesRoles));
         }
+    }
+
+    /**
+     * Même contrôle que {@link #exigerRoleSurEntreprise}, mais en réponse
+     * plutôt qu'en exception.
+     *
+     * <p>Nécessaire lorsqu'un accès est accordé mais que son <em>contenu</em>
+     * dépend du rôle : une évaluation est lisible par tous les membres de
+     * l'entreprise, alors que les justifications internes de l'IA ne le sont
+     * pas. Refuser la requête entière serait faux ; la servir en entier le
+     * serait tout autant.
+     *
+     * <p>Les deux méthodes partagent la même implémentation, pour la raison
+     * donnée plus haut : ce contrôle ne doit jamais être réécrit dans une
+     * ressource.
+     */
+    public boolean possedeRoleSurEntreprise(UUID utilisateurId, UUID entrepriseId, Set<String> codesRoles) {
+        if (estAccesGlobalActif(utilisateurId)) {
+            return true;
+        }
+        return utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
+                .filter(r -> r.getEntreprise().getId().equals(entrepriseId))
+                .anyMatch(r -> codesRoles.contains(r.getRole().getCode()));
     }
 
     /**

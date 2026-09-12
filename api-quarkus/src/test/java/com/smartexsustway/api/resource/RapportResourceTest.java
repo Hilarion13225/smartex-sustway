@@ -199,10 +199,20 @@ class RapportResourceTest {
                 .extract().path("id");
     }
 
-    // --- DETAILLE (rapport:detaille — réservé au personnel interne Smartex, absent du rôle RESPONSABLE_ENTREPRISE) ---
+    // --- DETAILLE : ouvert à l'administration de la mission, mais dont le
+    //     CONTENU dépend de `rapport:detaille` (voir RapportEnrichiTest).
 
+    /**
+     * Le responsable d'entreprise obtient désormais un rapport détaillé.
+     *
+     * <p>Ce test affirmait l'inverse, et c'était la règle : `rapport:detaille`
+     * n'appartenant qu'au staff, celui qui pilote les plans ne pouvait pas
+     * produire le document qui les porte. La règle a changé — il y a droit,
+     * mais son exemplaire est écrit sans le raisonnement de l'IA, ce que
+     * `RapportEnrichiTest` vérifie sur les octets du fichier.
+     */
     @Test
-    void genererDetaille_responsableEntreprise_estRefuse() {
+    void genererDetaille_responsableEntreprise_reussitSansRaisonnementIa() {
         var ctx = creerContexte();
 
         given()
@@ -211,7 +221,7 @@ class RapportResourceTest {
                 .body(Map.of("type", "DETAILLE", "format", "CSV"))
                 .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/rapports")
                 .then()
-                .statusCode(403);
+                .statusCode(201);
     }
 
     @Test

@@ -21,6 +21,8 @@ from app.agents import (
     risk_agent,
 )
 from app.agents.evidence_compliance_agent import ReponseDeclaree
+from app.services.appel_gemini import classer_erreur
+from app.services.assainissement import assainir, message_public
 from app.services.authentification import exiger_appel_de_service
 from app.services.gemini_client import GeminiNonConfigure
 
@@ -221,5 +223,19 @@ async def evaluer_critere(
     except HTTPException:
         raise
     except Exception as exc:  # toute erreur Gemini (quota, reseau...) devient un 503 propre
-        logger.exception("Echec de l'evaluation IA pour le critere %s", payload.critere_code)
-        raise HTTPException(status_code=503, detail=f"Echec du pipeline d'agents IA : {exc}") from exc
+        # Le texte de l'exception ne sort pas du service. Une erreur de SDK
+        # réseau peut porter une URL authentifiée, un en-tête, ou un extrait
+        # de la requête — donc du contenu client. L'appelant reçoit le type,
+        # qui suffit à distinguer un quota d'un schéma invalide ; la cause
+        # détaillée reste dans le journal, assainie.
+        logger.error(
+            "Échec de l'évaluation IA pour le critère %s : %s",
+            payload.critere_code,
+            assainir(f"{type(exc).__name__}: {exc}"),
+        )
+        raise HTTPException(
+            status_code=503,
+            detail=message_public(
+                exc, "Échec du pipeline d'agents IA", classer_erreur(exc).value
+            ),
+        ) from exc

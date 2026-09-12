@@ -23,8 +23,13 @@ const PRIORITE_PAR_NIVEAU = {
  * critères ne dit pas où porter l'effort.
  *
  * Les suggestions ne sont pas inventées ici : elles proviennent des pistes
- * d'amélioration produites par le pipeline d'agents et recopiées dans la
+ * d'amélioration produites par le pipeline d'agents et reprises dans la
  * description de chaque non-conformité.
+ *
+ * Cette description ne porte que le constat opérationnel. Le raisonnement
+ * de l'IA — pourquoi le jugement a été rendu — en a été retiré côté serveur
+ * (D1) : selon le rôle de l'appelant, l'API peut donc rendre une description
+ * amputée, signalée par `descriptionFiltree`.
  */
 export default function VoletPlanAction({ entrepriseId, auditId, criteres, score, peutModifier }) {
   const [nonConformites, setNonConformites] = useState(null);
@@ -183,6 +188,10 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
                       />
                       <p className="text-sm leading-relaxed text-ink-600">{ecart.description}</p>
                     </div>
+                  ) : ecart.descriptionFiltree ? (
+                    <p className="mt-3 text-xs italic text-ink-500">
+                      Le raisonnement détaillé de l’IA est réservé à l’administration de l’audit.
+                    </p>
                   ) : null}
 
                   {peutModifier ? (

@@ -118,7 +118,13 @@ function NonConformeCard({ nc, entrepriseId, auditId, onChange }) {
         </div>
       </div>
 
-      {nc.description ? <p className="mt-3 whitespace-pre-line text-sm text-ink-700">{nc.description}</p> : null}
+      {nc.description ? (
+        <p className="mt-3 whitespace-pre-line text-sm text-ink-700">{nc.description}</p>
+      ) : nc.descriptionFiltree ? (
+        <p className="mt-3 text-xs italic text-ink-500">
+          Le raisonnement détaillé de l’IA est réservé à l’administration de l’audit.
+        </p>
+      ) : null}
 
       {erreur ? (
         <div className="mt-3">

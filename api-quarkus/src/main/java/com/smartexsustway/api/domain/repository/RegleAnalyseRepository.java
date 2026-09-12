@@ -61,4 +61,51 @@ public class RegleAnalyseRepository implements PanacheRepositoryBase<RegleAnalys
         return count("referentielVersion.id = ?1 and origineInitiale = ?2 and rejeteePar is not null",
                 referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
     }
+
+    /**
+     * Règles d'analyse transmissibles au contexte d'une analyse IA.
+     *
+     * « Transmissible » ne se réduit pas à « pas proposé par une machine ».
+     * Un élément entre dans le contexte si trois conditions tiennent
+     * ensemble : personne ne l'a écarté, ce n'est pas une proposition encore
+     * en attente, et sa chaîne de rattachement est elle-même transmissible.
+     * La dernière est celle qui manquait — une pièce attendue validée sous
+     * une exigence écartée partait aux agents en référençant une exigence
+     * absente du corps envoyé, et faisait chercher la démonstration d'une
+     * exigence qu'un relecteur avait justement jugée hors sujet.
+     *
+     * Deux conditions plutôt qu'une sur l'élément lui-même. `origine <>
+     * IMPORT_IA` suffirait tant que valider bascule l'origine et que rejeter
+     * la laisse ; écrire aussi `rejeteePar is null` fait dire à la requête ce
+     * que la règle dit, au lieu de le déduire d'un invariant posé ailleurs.
+     *
+     * À distinguer de {@link #parCritere}, qui rend tout le contenu : le
+     * back-office doit continuer de voir ce qui est en attente et ce qui a
+     * été écarté, sans quoi personne ne pourrait le trancher.
+     */
+    public List<RegleAnalyse> parCritereActives(UUID critereId) {
+        // Sa portée descend sur trois niveaux, et chacun peut avoir été
+        // écarté indépendamment :
+        //
+        //   portée critère  -> seul l'état de la règle compte
+        //   portée exigence -> l'exigence visée doit être transmissible
+        //   portée pièce    -> la pièce ET son exigence doivent l'être
+        //
+        // Les jointures sont externes et explicites. Écrire `exigence.origine`
+        // dans la clause `where` produirait une jointure interne, qui
+        // écarterait silencieusement toutes les règles portées par le critère
+        // seul — celles dont `exigence` est nul, c'est-à-dire les plus
+        // générales.
+        return find("select r from RegleAnalyse r "
+                        + "left join r.exigence e "
+                        + "left join r.preuveAttendue p "
+                        + "left join p.exigence pe "
+                        + "where r.critere.id = ?1 "
+                        + "and r.origine <> ?2 and r.rejeteePar is null "
+                        + "and (e is null or (e.origine <> ?2 and e.rejeteePar is null)) "
+                        + "and (p is null or (p.origine <> ?2 and p.rejeteePar is null "
+                        + "                   and pe.origine <> ?2 and pe.rejeteePar is null)) "
+                        + "order by r.ordre, r.code, r.id",
+                critereId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA).list();
+    }
 }

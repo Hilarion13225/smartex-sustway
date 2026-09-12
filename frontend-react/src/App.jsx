@@ -50,6 +50,9 @@ import Abonnement from './pages/Abonnement';
 import Utilisateurs from './pages/Utilisateurs';
 import Journal from './pages/Journal';
 import PlanActions from './pages/PlanActions';
+import PlansAmelioration from './pages/PlansAmelioration';
+import MesActions from './pages/MesActions';
+import PlanAmeliorationDetail from './pages/PlanAmeliorationDetail';
 import Profil from './pages/Profil';
 
 function RouteProtegee() {
@@ -95,7 +98,16 @@ export default function App() {
               <Route path=":entrepriseId/abonnement" element={<Abonnement />} />
               <Route path=":entrepriseId/utilisateurs" element={<Utilisateurs />} />
               <Route path=":entrepriseId/journal" element={<Journal />} />
+              {/* Actions correctives : issues des non-conformités. Distinctes
+                  des plans d'amélioration ci-dessous, construits à partir des
+                  axes validés. */}
               <Route path=":entrepriseId/plan-actions" element={<PlanActions />} />
+              <Route path=":entrepriseId/plans" element={<PlansAmelioration />} />
+              <Route path=":entrepriseId/mes-actions" element={<MesActions />} />
+              <Route
+                path=":entrepriseId/audits/:auditId/plans/:planId"
+                element={<PlanAmeliorationDetail />}
+              />
               <Route path=":entrepriseId/non-conformites" element={<NonConformitesEntreprise />} />
               <Route path=":entrepriseId/rapports" element={<RapportsEntreprise />} />
               <Route path=":entrepriseId/financements-verts" element={<FinancementsVerts />} />

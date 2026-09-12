@@ -49,11 +49,13 @@ public class NonConformeResource {
 
     @GET
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         trouverAuditDeLEntreprise(entrepriseId, auditId);
 
+        boolean avecRaisonnement = peutLireLeRaisonnementIa(utilisateurId, entrepriseId);
         var nonConformites = nonConformeRepository.parAudit(auditId).stream()
-                .map(nc -> NonConformeDto.depuis(nc, actionCorrectiveRepository.parNonConforme(nc.getId()).size()))
+                .map(nc -> dto(nc, avecRaisonnement))
                 .toList();
         return Response.ok(nonConformites).build();
     }
@@ -62,12 +64,12 @@ public class NonConformeResource {
     @Path("/{nonConformeId}")
     public Response detail(@PathParam("entrepriseId") UUID entrepriseId, @PathParam("auditId") UUID auditId,
                             @PathParam("nonConformeId") UUID nonConformeId) {
-        autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         trouverAuditDeLEntreprise(entrepriseId, auditId);
 
         NonConforme nonConforme = trouverNonConformeDeLaMission(auditId, nonConformeId);
-        int nombreActions = actionCorrectiveRepository.parNonConforme(nonConforme.getId()).size();
-        return Response.ok(NonConformeDto.depuis(nonConforme, nombreActions)).build();
+        return Response.ok(dto(nonConforme, peutLireLeRaisonnementIa(utilisateurId, entrepriseId))).build();
     }
 
     @PUT
@@ -93,8 +95,27 @@ public class NonConformeResource {
         nonConforme.setStatut(statut);
         auditLogService.journaliser(utilisateurId, entrepriseId, "NON_CONFORME_STATUT_CHANGE", "non_conforme", nonConforme.getId());
 
+        return Response.ok(dto(nonConforme, peutLireLeRaisonnementIa(utilisateurId, entrepriseId))).build();
+    }
+
+    /**
+     * D1 : le constat opérationnel est lisible par tout membre de
+     * l'entreprise ; le raisonnement interne de l'IA ne l'est pas.
+     *
+     * <p>Le contrôle passe par {@link AutorisationService}, avec le même
+     * jeu de rôles que {@code EvaluationResource} — la frontière D1 est
+     * posée à un seul endroit et réutilisée, jamais réécrite ici.
+     */
+    private boolean peutLireLeRaisonnementIa(UUID utilisateurId, UUID entrepriseId) {
+        return autorisationService.possedeRoleSurEntreprise(
+                utilisateurId, entrepriseId, AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE);
+    }
+
+    private NonConformeDto dto(NonConforme nonConforme, boolean avecRaisonnementIa) {
         int nombreActions = actionCorrectiveRepository.parNonConforme(nonConforme.getId()).size();
-        return Response.ok(NonConformeDto.depuis(nonConforme, nombreActions)).build();
+        return avecRaisonnementIa
+                ? NonConformeDto.depuis(nonConforme, nombreActions)
+                : NonConformeDto.sansRaisonnementIa(nonConforme, nombreActions);
     }
 
     private Audit trouverAuditDeLEntreprise(UUID entrepriseId, UUID auditId) {

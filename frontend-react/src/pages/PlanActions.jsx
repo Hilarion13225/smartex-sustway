@@ -157,7 +157,7 @@ export default function PlanActions() {
 
       <PageTitre
         icone={ListTodo}
-        titre="Plan d’actions correctives"
+        titre="Actions correctives"
         description={`${entreprise.raisonSociale} — suivi transverse des actions issues des non-conformités de toutes les missions.`}
         actions={
           <>

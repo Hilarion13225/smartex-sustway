@@ -70,6 +70,7 @@ public class AnalyseCritereService {
     @Inject EvaluationDocumentAnalyseRepository documentAnalyseRepository;
     @Inject NonConformiteService nonConformiteService;
     @Inject ScoreHistoriqueService scoreHistoriqueService;
+    @Inject CycleVieMissionService cycleVieMissionService;
     @Inject StorageService storageService;
 
     @Inject
@@ -135,18 +136,24 @@ public class AnalyseCritereService {
         // les règles qui disent comment confronter les deux. Ces listes sont
         // vides tant que le référentiel n'a pas été enrichi — le pipeline se
         // comporte alors exactement comme avant cette phase.
+        //
+        // `parCritereActives` et non `parCritere` : une proposition de l'IA
+        // qu'une personne a écartée, ou qu'elle n'a pas encore regardée, n'a
+        // rien à faire dans ce que l'on soumet aux agents. La soumettre
+        // reviendrait à faire juger l'organisation sur un contenu dont
+        // personne ne répond. Le back-office, lui, continue de tout voir.
         UUID critereId = auditCritere.getCritere().getId();
-        var exigences = exigenceRepository.parCritere(critereId);
+        var exigences = exigenceRepository.parCritereActives(critereId);
         var exigencesTransmises = exigences.stream()
                 .map(e -> new EvaluerCritereRequestDto.ExigenceDto(
                         e.getCode(), e.getIntitule(), e.getEnonce()))
                 .toList();
-        var preuvesAttendues = preuveAttendueRepository.parCritere(critereId).stream()
+        var preuvesAttendues = preuveAttendueRepository.parCritereActives(critereId).stream()
                 .map(p -> new EvaluerCritereRequestDto.PreuveAttendueDto(
                         p.getExigence().getCode(), p.getType().name(), p.getLibelle(),
                         p.getDescription(), p.isObligatoire()))
                 .toList();
-        var reglesAnalyse = regleAnalyseRepository.parCritere(critereId).stream()
+        var reglesAnalyse = regleAnalyseRepository.parCritereActives(critereId).stream()
                 .map(r -> new EvaluerCritereRequestDto.RegleAnalyseDto(
                         r.getCode(), r.getType().name(), r.getLibelle(), r.getSeverite().name(),
                         r.getExigence() == null ? null : r.getExigence().getCode(),
@@ -219,6 +226,11 @@ public class AnalyseCritereService {
         auditCritere.setStatut(STATUT_EVALUE);
         nonConformiteService.genererSiNecessaire(evaluation);
         scoreHistoriqueService.enregistrer(audit);
+        // La mission a commencé : elle porte désormais un critère instruit.
+        // Appel explicite, et non effet de bord de l'instantané de score —
+        // analyser n'a jamais eu à décider du cycle de vie, et ne peut en
+        // aucun cas mener à TERMINE, qui reste le geste de la clôture.
+        cycleVieMissionService.constaterDemarrage(audit);
 
         return new Resultat.Analyse(evaluation);
     }

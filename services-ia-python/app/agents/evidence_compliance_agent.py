@@ -16,8 +16,7 @@ de logique de notation, uniquement l'estimation probabiliste.
 
 from pydantic import BaseModel, Field
 
-from app.config import get_settings
-from app.services.gemini_client import get_client
+from app.services.appel_gemini import appeler_gemini
 
 
 class ReponseDeclaree(BaseModel):
@@ -171,8 +170,6 @@ async def evaluer(
     preuves_attendues=None,
     regles=None,
 ) -> ResultatEvidenceCompliance:
-    settings = get_settings()
-    client = get_client()
     prompt = _construire_prompt(
         code,
         libelle,
@@ -185,14 +182,15 @@ async def evaluer(
         regles,
     )
 
-    reponse = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+    appel = await appeler_gemini(
+        agent="EVIDENCE",
         contents=prompt,
         config={
             "response_mime_type": "application/json",
             "response_schema": ResultatEvidenceCompliance,
         },
     )
+    reponse = appel.reponse
 
     parsed = getattr(reponse, "parsed", None)
     if isinstance(parsed, ResultatEvidenceCompliance):

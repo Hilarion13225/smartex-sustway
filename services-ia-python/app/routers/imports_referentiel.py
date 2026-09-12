@@ -16,6 +16,8 @@ from pydantic import BaseModel, Field
 from app.agents import referentiel_import_agent
 from app.extraction.base import ExtractionImpossible
 from app.models.import_referentiel import BrouillonImporte
+from app.services.appel_gemini import classer_erreur
+from app.services.assainissement import assainir, message_public
 from app.services.authentification import exiger_appel_de_service
 from app.services.gemini_client import GeminiNonConfigure
 
@@ -71,13 +73,28 @@ async def extraire_referentiel(
         # La sortie du modèle ne respecte pas le contrat. Elle n'est pas
         # réparée : un contenu à demi conforme deviendrait un brouillon dont
         # personne ne saurait ce qu'il contient réellement.
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+        #
+        # Le motif est assaini avant de sortir : il enrobe une erreur de
+        # validation Pydantic, laquelle rapporte la valeur reçue — donc un
+        # fragment du document importé.
+        raise HTTPException(status_code=422, detail=assainir(str(exc))) from exc
     except GeminiNonConfigure as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:
-        logger.exception("Echec de l'extraction du referentiel %s", payload.import_id)
+        # Même anomalie qu'à `evaluations.py` : l'exception brute d'un SDK
+        # réseau ne doit pas franchir la frontière du service.
+        logger.error(
+            "Échec de l'extraction du référentiel %s : %s",
+            payload.import_id,
+            assainir(f"{type(exc).__name__}: {exc}"),
+        )
         raise HTTPException(
-            status_code=503, detail=f"Echec de l'extraction : {exc}"
+            status_code=503,
+            # La catégorie remplace le message brut : elle dit à l'API
+            # appelante si le quota est épuisé ou si le service est en
+            # panne — ce dont elle a besoin — sans lui livrer la prose du
+            # fournisseur.
+            detail=message_public(exc, "Échec de l'extraction", classer_erreur(exc).value),
         ) from exc
 
     return ExtraireReferentielResponse(

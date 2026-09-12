@@ -10,6 +10,7 @@ import {
   Gauge,
   Plus,
   Sparkles,
+  Target,
   TriangleAlert,
 } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -62,7 +63,17 @@ export default function TableauDeBord() {
   const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
   // Même permission que la page des missions : proposer une création à qui
   // ne peut pas créer donne un raccourci qui mène à une impasse.
-  const peutCreerMission = peut('audit:creer');
+  //
+  // La formule est celle de l'organisation vers laquelle le raccourci pointe
+  // — `entreprises[0]`, la même que `premiereEntreprise` plus bas, dont
+  // chaque usage de cette permission dépend. Cette page est multi-organisations,
+  // mais le lien, lui, en vise une seule : c'est sa formule qui décide, comme
+  // le fait déjà AuditsListe une fois la page ouverte.
+  //
+  // L'omettre reviendrait à replier sur FREE (voir permissions.js) et à
+  // masquer le raccourci pour tout le monde. Le backend reste l'autorité :
+  // ce contrôle n'évite qu'un aller-retour vers un bouton absent.
+  const peutCreerMission = peut('audit:creer', entreprises[0]?.formuleCode);
   // Miroir d'AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE, seule
   // famille de rôles à laquelle l'API ouvre le journal d'audit.
   const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
@@ -80,12 +91,15 @@ export default function TableauDeBord() {
         const audits = await api.get(`/api/v1/entreprises/${entreprise.id}/audits`).catch(() => []);
         return Promise.all(
           audits.map(async (audit) => {
-            const [score, nonConformites, points] = await Promise.all([
+            const [score, nonConformites, points, plans] = await Promise.all([
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score`).catch(() => null),
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/non-conformites`).catch(() => []),
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score-historique`).catch(() => []),
+              // Les plans d'amélioration : le tableau de bord ignorait
+              // jusqu'ici tout le travail de planification.
+              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/plans-action`).catch(() => []),
             ]);
-            return { entreprise, audit, score, nonConformites, points };
+            return { entreprise, audit, score, nonConformites, points, plans };
           })
         );
       })
@@ -118,6 +132,23 @@ export default function TableauDeBord() {
   useEffect(() => {
     charger();
   }, [charger]);
+
+  /**
+   * Synthèse des plans d'amélioration, toutes missions confondues.
+   *
+   * `progression` vient du serveur pour chaque plan : on n'en fait que la
+   * moyenne. Recalculer un avancement ici créerait une seconde vérité.
+   */
+  const syntheseePlans = useMemo(() => {
+    const plans = missions.flatMap((m) => m.plans ?? []);
+    if (plans.length === 0) return { total: 0, actifs: 0, avancement: 0 };
+    const somme = plans.reduce((t, p) => t + (p.progression ?? 0), 0);
+    return {
+      total: plans.length,
+      actifs: plans.filter((p) => p.statut === 'ACTIF').length,
+      avancement: Math.round(somme / plans.length),
+    };
+  }, [missions]);
 
   /** Missions ramenées à la forme attendue par le tableau. */
   const missionsVue = useMemo(
@@ -393,6 +424,17 @@ export default function TableauDeBord() {
             valeur={`${kpis.completion}%`}
             libelle="Taux de complétion"
             precision={`${kpis.totalEvalues} critères évalués`}
+          />
+          <CarteKpi
+            icone={Target}
+            ton="neutre"
+            valeur={syntheseePlans.total}
+            libelle="Plans d’amélioration"
+            precision={
+              syntheseePlans.total === 0
+                ? 'Aucun plan en cours'
+                : `${syntheseePlans.actifs} actif(s) · ${syntheseePlans.avancement}% d’avancement`
+            }
           />
         </div>
       </Revele>

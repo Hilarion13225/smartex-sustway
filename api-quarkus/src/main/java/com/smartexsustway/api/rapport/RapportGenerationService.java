@@ -1,7 +1,10 @@
 package com.smartexsustway.api.rapport;
 
 import com.smartexsustway.api.domain.entity.ActionCorrective;
+import com.smartexsustway.api.domain.entity.ActionPlan;
 import com.smartexsustway.api.domain.entity.Audit;
+import com.smartexsustway.api.domain.entity.AxeAmelioration;
+import com.smartexsustway.api.domain.entity.PlanAction;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Bailleur;
 import com.smartexsustway.api.domain.entity.Evaluation;
@@ -12,7 +15,11 @@ import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.FormatRapport;
 import com.smartexsustway.api.domain.repository.ActionCorrectiveRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
+import com.smartexsustway.api.planification.PlanActionService;
+import com.smartexsustway.api.domain.repository.ActionPlanRepository;
 import com.smartexsustway.api.domain.repository.AuditSiteRepository;
+import com.smartexsustway.api.domain.repository.AxeAmeliorationRepository;
+import com.smartexsustway.api.domain.repository.PlanActionRepository;
 import com.smartexsustway.api.domain.repository.CritereBailleurRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.NonConformeRepository;
@@ -84,6 +91,9 @@ public class RapportGenerationService {
     @Inject EvaluationRepository evaluationRepository;
     @Inject CritereBailleurRepository critereBailleurRepository;
     @Inject IndicePreparationService indicePreparationService;
+    @Inject AxeAmeliorationRepository axeAmeliorationRepository;
+    @Inject PlanActionRepository planActionRepository;
+    @Inject ActionPlanRepository actionPlanRepository;
     @Inject AuditSiteRepository auditSiteRepository;
     @Inject SiteRepository siteRepository;
 
@@ -99,13 +109,28 @@ public class RapportGenerationService {
     }
 
     /** Rapport de synthèse + détail de l'évaluation de chaque critère de l'audit (réservé au staff interne, permission rapport:detaille). */
-    public byte[] genererDetaille(Audit audit, FormatRapport format) {
+    /**
+     * Le rapport détaillé, dans la version que son destinataire a le droit de
+     * lire.
+     *
+     * <p>{@code avecRaisonnementIa} n'est pas un paramètre d'affichage : il
+     * décide de ce qui est <strong>écrit dans le fichier</strong>. Produire un
+     * document complet puis en masquer des parties à l'écran laisserait les
+     * justifications dans les octets déposés au stockage, donc dans tout
+     * fichier téléchargé ensuite — ce ne serait pas une restriction, mais son
+     * apparence.
+     *
+     * <p>Le responsable d'entreprise pilote les plans et doit pouvoir les
+     * remettre ; le raisonnement interne de l'IA reste réservé à
+     * {@code rapport:detaille}.
+     */
+    public byte[] genererDetaille(Audit audit, FormatRapport format, boolean avecRaisonnementIa) {
         AuditScoreDto score = auditScoreService.calculer(audit);
         List<AuditCritere> auditCriteres = auditCritereRepository.parAudit(audit.getId());
 
         return switch (format) {
-            case CSV -> genererDetailleCsv(audit, score, auditCriteres);
-            case PDF -> genererDetaillePdf(audit, score, auditCriteres);
+            case CSV -> genererDetailleCsv(audit, score, auditCriteres, avecRaisonnementIa);
+            case PDF -> genererDetaillePdf(audit, score, auditCriteres, avecRaisonnementIa);
             case EXCEL -> throw new IllegalArgumentException("Format EXCEL non encore supporté pour le rapport détaillé");
         };
     }
@@ -194,12 +219,16 @@ public class RapportGenerationService {
 
     // --- DETAILLE -------------------------------------------------------------
 
-    private byte[] genererDetailleCsv(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres) {
+    private byte[] genererDetailleCsv(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres,
+                                      boolean avecRaisonnementIa) {
         StringBuilder csv = new StringBuilder();
         enTeteCsv(csv, "Rapport détaillé", audit);
         sectionScoreCsv(csv, score);
 
-        csv.append("Domaine;Critère;Libellé;Criticité;Coefficient;Statut critère;Niveau /5;Probabilité conforme;Statut évaluation;Source;Justification\n");
+        // La colonne n'est pas écrite quand le raisonnement n'est pas dû :
+        // ce qui n'est pas dans le fichier ne peut pas en ressortir.
+        csv.append("Domaine;Critère;Libellé;Criticité;Coefficient;Statut critère;Niveau /5;Probabilité conforme;Statut évaluation;Source")
+                .append(avecRaisonnementIa ? ";Justification" : "").append('\n');
         for (AuditCritere ac : auditCriteres) {
             Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
             csv.append(echapper(ac.getCritere().getDomaine().getNom())).append(';')
@@ -211,21 +240,112 @@ public class RapportGenerationService {
                     .append(derniere != null ? derniere.getNote() : "—").append(';')
                     .append(derniere != null ? formaterScore(derniere.getProbabiliteConforme()) : "—").append(';')
                     .append(derniere != null ? derniere.getStatut() : "—").append(';')
-                    .append(derniere != null ? derniere.getSource() : "—").append(';')
-                    .append(derniere != null ? echapper(derniere.getJustification()) : "").append('\n');
+                    .append(derniere != null ? derniere.getSource() : "—");
+            if (avecRaisonnementIa) {
+                csv.append(';').append(derniere != null ? echapper(derniere.getJustification()) : "");
+            }
+            csv.append('\n');
         }
+
+        sectionAxesValidesCsv(csv, audit);
+        sectionPlansCsv(csv, audit);
 
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
-    private byte[] genererDetaillePdf(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres) {
+    /**
+     * Les axes retenus par l'audit.
+     *
+     * <p>Seuls les axes <strong>valides</strong> y figurent : un axe encore
+     * propose n'a ete accepte par personne, et le presenter dans le livrable
+     * remis au client donnerait a une suggestion de machine le statut d'une
+     * recommandation d'auditeur.
+     */
+    private void sectionAxesValidesCsv(StringBuilder csv, Audit audit) {
+        var axes = axeAmeliorationRepository.validesParAudit(audit.getId());
+        if (axes.isEmpty()) {
+            return;
+        }
+        csv.append("\nAxes d'amelioration valides (").append(axes.size()).append(")\n");
+        csv.append("Axe;Critere;Rattachement;Origine\n");
+        for (AxeAmelioration axe : axes) {
+            csv.append(echapper(axe.getLibelle())).append(';')
+                    .append(axe.getAuditCritere() == null ? "-"
+                            : axe.getAuditCritere().getCritere().getCode()).append(';')
+                    .append(referenceAxe(axe)).append(';')
+                    .append(axe.getOrigine()).append('\n');
+        }
+    }
+
+    /** Le code metier de la cible, plus parlant qu'un identifiant. */
+    private static String referenceAxe(AxeAmelioration axe) {
+        if (axe.getExigence() != null) return axe.getExigence().getCode();
+        if (axe.getPreuveAttendue() != null) return echapper(axe.getPreuveAttendue().getLibelle());
+        if (axe.getRegleAnalyse() != null) return axe.getRegleAnalyse().getCode();
+        return "-";
+    }
+
+    /**
+     * Les plans d'amelioration et leurs actions.
+     *
+     * <p>La progression n'est pas recalculee ici : elle vient de
+     * {@link PlanActionService#progression(List)}, la meme fonction que celle
+     * qui alimente l'ecran. Deux calculs separes finiraient par afficher deux
+     * avancements pour un meme plan.
+     */
+    private void sectionPlansCsv(StringBuilder csv, Audit audit) {
+        var plans = planActionRepository.parAudit(audit.getId());
+        if (plans.isEmpty()) {
+            return;
+        }
+        csv.append("\nPlans d'amelioration (").append(plans.size()).append(")\n");
+        for (PlanAction plan : plans) {
+            var actions = actionPlanRepository.parPlan(plan.getId());
+            csv.append("\nPlan;").append(echapper(plan.getTitre())).append('\n');
+            csv.append("Statut;").append(plan.getStatut()).append('\n');
+            csv.append("Avancement;").append(PlanActionService.progression(actions)).append("%\n");
+            if (plan.getDateEcheance() != null) {
+                csv.append("Echeance;").append(plan.getDateEcheance().format(FORMAT_DATE)).append('\n');
+            }
+            if (plan.getMotifCloture() != null && !plan.getMotifCloture().isBlank()) {
+                csv.append("Motif de cloture;").append(echapper(plan.getMotifCloture())).append('\n');
+            }
+            if (actions.isEmpty()) {
+                csv.append("(aucune action)\n");
+                continue;
+            }
+            csv.append("Action;Responsable;Echeance;Statut;Priorite;En retard\n");
+            for (ActionPlan action : actions) {
+                csv.append(echapper(action.getTitre())).append(';')
+                        .append(nomResponsable(action.getResponsable())).append(';')
+                        .append(action.getDateEcheance() == null ? "-"
+                                : action.getDateEcheance().format(FORMAT_DATE)).append(';')
+                        .append(action.getStatut()).append(';')
+                        .append(action.getPriorite()).append(';')
+                        .append(PlanActionService.enRetard(action.getDateEcheance(), action.getStatut())
+                                ? "oui" : "non").append('\n');
+            }
+        }
+    }
+
+    private static String nomResponsable(com.smartexsustway.api.domain.entity.Utilisateur u) {
+        return u == null ? "Non affectee" : echapper(u.getPrenom() + " " + u.getNom());
+    }
+
+    private byte[] genererDetaillePdf(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres,
+                                      boolean avecRaisonnementIa) {
         return construirePdf(audit, "Rapport détaillé", (document, polices) -> {
             sectionScorePdf(document, polices, score);
 
             document.add(titreSection("Détail par critère (" + auditCriteres.size() + ")", polices));
-            PdfPTable table = new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f, 3f});
+            PdfPTable table = avecRaisonnementIa
+                    ? new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f, 3f})
+                    : new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f});
             table.setWidthPercentage(100);
-            for (String entete : List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source", "Justification")) {
+            List<String> colonnes = avecRaisonnementIa
+                    ? List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source", "Justification")
+                    : List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source");
+            for (String entete : colonnes) {
                 table.addCell(celluleEntete(entete, polices.enTeteTableau()));
             }
             int index = 0;
@@ -239,10 +359,95 @@ public class RapportGenerationService {
                 table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal(), paire, Element.ALIGN_RIGHT));
                 table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(derniere != null ? derniere.getSource().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
-                table.addCell(cellule(derniere != null && derniere.getJustification() != null ? derniere.getJustification() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                if (avecRaisonnementIa) {
+                    table.addCell(cellule(derniere != null && derniere.getJustification() != null
+                            ? derniere.getJustification() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                }
             }
             document.add(table);
+
+            sectionAxesValidesPdf(document, polices, audit);
+            sectionPlansPdf(document, polices, audit);
         });
+    }
+
+    /** Les axes retenus — validés uniquement, voir {@link #sectionAxesValidesCsv}. */
+    private void sectionAxesValidesPdf(Document document, Polices polices, Audit audit)
+            throws DocumentException {
+        var axes = axeAmeliorationRepository.validesParAudit(audit.getId());
+        if (axes.isEmpty()) {
+            return;
+        }
+        document.add(titreSection("Axes d'amélioration validés (" + axes.size() + ")", polices));
+        PdfPTable table = new PdfPTable(new float[] {5f, 1.5f, 2.5f, 1.2f});
+        table.setWidthPercentage(100);
+        for (String entete : List.of("Axe", "Critère", "Rattachement", "Origine")) {
+            table.addCell(celluleEntete(entete, polices.enTeteTableau()));
+        }
+        int index = 0;
+        for (AxeAmelioration axe : axes) {
+            boolean paire = index++ % 2 == 1;
+            table.addCell(cellule(axe.getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(axe.getAuditCritere() == null ? "—"
+                    : axe.getAuditCritere().getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(referenceAxePdf(axe), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(axe.getOrigine().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+        }
+        document.add(table);
+    }
+
+    /** Sans échappement CSV : le PDF n'en a pas besoin. */
+    private static String referenceAxePdf(AxeAmelioration axe) {
+        if (axe.getExigence() != null) return axe.getExigence().getCode();
+        if (axe.getPreuveAttendue() != null) return axe.getPreuveAttendue().getLibelle();
+        if (axe.getRegleAnalyse() != null) return axe.getRegleAnalyse().getCode();
+        return "—";
+    }
+
+    /** Les plans et leurs actions — progression issue du service, voir {@link #sectionPlansCsv}. */
+    private void sectionPlansPdf(Document document, Polices polices, Audit audit)
+            throws DocumentException {
+        var plans = planActionRepository.parAudit(audit.getId());
+        if (plans.isEmpty()) {
+            return;
+        }
+        document.add(titreSection("Plans d'amélioration (" + plans.size() + ")", polices));
+        for (PlanAction plan : plans) {
+            var actions = actionPlanRepository.parPlan(plan.getId());
+            StringBuilder entete = new StringBuilder(plan.getTitre())
+                    .append(" — ").append(plan.getStatut())
+                    .append(" — ").append(PlanActionService.progression(actions)).append(" %");
+            if (plan.getDateEcheance() != null) {
+                entete.append(" — échéance ").append(plan.getDateEcheance().format(FORMAT_DATE));
+            }
+            document.add(titreSection(entete.toString(), polices));
+            if (plan.getMotifCloture() != null && !plan.getMotifCloture().isBlank()) {
+                document.add(titreSection("Motif de clôture : " + plan.getMotifCloture(), polices));
+            }
+            if (actions.isEmpty()) {
+                continue;
+            }
+            PdfPTable table = new PdfPTable(new float[] {4f, 2f, 1.5f, 1.5f, 1.2f, 1f});
+            table.setWidthPercentage(100);
+            for (String col : List.of("Action", "Responsable", "Échéance", "Statut", "Priorité", "Retard")) {
+                table.addCell(celluleEntete(col, polices.enTeteTableau()));
+            }
+            int index = 0;
+            for (ActionPlan action : actions) {
+                boolean paire = index++ % 2 == 1;
+                table.addCell(cellule(action.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getResponsable() == null ? "Non affectée"
+                                : action.getResponsable().getPrenom() + " " + action.getResponsable().getNom(),
+                        polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getDateEcheance() == null ? "—"
+                        : action.getDateEcheance().format(FORMAT_DATE), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getStatut().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getPriorite().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(PlanActionService.enRetard(action.getDateEcheance(), action.getStatut())
+                        ? "oui" : "non", polices.normal(), paire, Element.ALIGN_CENTER));
+            }
+            document.add(table);
+        }
     }
 
     // --- PLAN_ACTION ------------------------------------------------------
@@ -427,7 +632,13 @@ public class RapportGenerationService {
 
     private void enTeteCsv(StringBuilder csv, String titre, Audit audit) {
         csv.append(titre).append(" — ").append(audit.getNom()).append('\n');
-        csv.append("Référentiel;").append(audit.getReferentiel().getCode()).append('\n');
+        // Le code seul ne dit pas sous quel texte la mission a été conduite :
+        // un référentiel est versionné et immuable, et deux versions n'exigent
+        // pas les mêmes preuves. Le livrable doit nommer celle qui fait foi.
+        csv.append("Référentiel;").append(audit.getReferentiel().getCode())
+                .append(audit.getReferentielVersion() == null ? ""
+                        : " v" + audit.getReferentielVersion().getNumero())
+                .append('\n');
         csv.append("Entreprise;").append(audit.getEntreprise().getRaisonSociale()).append('\n');
         csv.append("Périmètre;").append(echapper(perimetre(audit))).append('\n');
         csv.append("Date de début;").append(audit.getDateDebut().format(FORMAT_DATE)).append('\n');

@@ -13,9 +13,11 @@ import {
   History,
   LayoutDashboard,
   Leaf,
+  ListChecks,
   ListTodo,
   Menu,
   Sparkles,
+  Target,
   Trophy,
   Users,
   UserCog,
@@ -112,7 +114,8 @@ const GROUPES_AUDIT = [
     liens: [
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
       { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo },
+      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
       { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
@@ -163,7 +166,8 @@ const GROUPES_ENTREPRISE = [
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
       { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Plans d’actions', icone: ListTodo },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo },
+      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
     ],
   },
   {
@@ -219,6 +223,15 @@ const GROUPES_COLLABORATEUR = [
       // pour atteindre sa propre tâche.
       { chemin: (id) => `/app/${id}/questionnaire`, libelle: 'Questionnaire', icone: ClipboardList },
       { chemin: (id) => `/app/${id}/documents`, libelle: 'Mes documents', icone: FolderOpen },
+      // D28 : le collaborateur lit le plan collectif et toutes ses actions —
+      // n'en montrer qu'une partie rendrait la progression incompréhensible —
+      // et n'agit que sur celles qui lui sont affectées. Sans cette entrée,
+      // l'accès que l'API lui accorde n'avait aucun chemin de navigation.
+      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
+      // Le collaborateur lit tout le plan (D28), mais son propre travail y
+      // était noyé : il fallait ouvrir chaque plan de chaque mission pour le
+      // retrouver. Cette entrée est la contrepartie de cette lecture large.
+      { chemin: (id) => `/app/${id}/mes-actions`, libelle: 'Mes actions', icone: ListChecks },
     ],
   },
   {

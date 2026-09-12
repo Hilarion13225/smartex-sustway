@@ -8,6 +8,7 @@ import OngletsMission from '../components/audit/OngletsMission';
 import VoletAnalysesIa from '../components/audit/VoletAnalysesIa';
 import VoletPreuves from '../components/audit/VoletPreuves';
 import VoletPlanAction from '../components/audit/VoletPlanAction';
+import VoletPlansMission from '../components/audit/VoletPlansMission';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -29,7 +30,11 @@ const ONGLETS = [
   { cle: 'criteres', libelle: 'Critères' },
   { cle: 'preuves', libelle: 'Preuves' },
   { cle: 'analyses', libelle: 'Analyses IA' },
-  { cle: 'plan', libelle: 'Plan d’action' },
+  // « Actions correctives » et non « Plan d'action » : ce volet traite les
+  // écarts constatés (non-conformités). Les plans d'amélioration, construits
+  // à partir des axes validés, vivent sous /app/:entreprise/plans.
+  { cle: 'plan', libelle: 'Actions correctives' },
+  { cle: 'plans', libelle: 'Plans d’amélioration' },
 ];
 
 /**
@@ -352,6 +357,10 @@ export default function AuditDetail() {
                 peutAnalyser={peutAnalyser}
                 surChangement={rafraichirSilencieux}
               />
+            ) : null}
+
+            {onglet === 'plans' ? (
+              <VoletPlansMission entrepriseId={entrepriseId} auditId={auditId} />
             ) : null}
 
             {onglet === 'preuves' ? (
