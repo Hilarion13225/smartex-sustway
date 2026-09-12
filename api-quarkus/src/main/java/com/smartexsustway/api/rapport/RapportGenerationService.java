@@ -13,6 +13,7 @@ import com.smartexsustway.api.domain.entity.NonConforme;
 import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.FormatRapport;
+import com.smartexsustway.api.domain.enums.StatutIndice;
 import com.smartexsustway.api.domain.repository.ActionCorrectiveRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.planification.PlanActionService;
@@ -532,8 +533,15 @@ public class RapportGenerationService {
         StringBuilder csv = new StringBuilder();
         enTeteCsv(csv, "Indice de préparation aux financements verts", audit);
         csv.append("Bailleur;").append(bailleur.getCode()).append(" — ").append(bailleur.getNom()).append('\n');
-        csv.append("Indice de préparation;").append(formaterScore(indice.getScore())).append("/5\n");
-        csv.append("Critères applicables à ce bailleur;").append(auditCriteres.size()).append('\n');
+        // Un indice sans score dit pourquoi il n'en a pas, plutôt que d'écrire
+        // « 0.00/5 » — que le lecteur prendrait pour un constat sur l'organisation.
+        csv.append("Indice de préparation;")
+                .append(indice.getStatut().porteUnScore()
+                        ? formaterScore(indice.getScore()) + "/5"
+                        : libelleIndiceSansScore(indice.getStatut()))
+                .append('\n');
+        csv.append("Critères applicables à ce bailleur;").append(indice.getNombreCriteresTagues()).append('\n');
+        csv.append("Critères retenus dans le calcul;").append(indice.getNombreCriteresRetenus()).append('\n');
         csv.append('\n');
 
         csv.append("Critère;Libellé;Domaine;Criticité;Coefficient;Niveau /5;Probabilité conforme;Statut évaluation\n");
@@ -587,14 +595,22 @@ public class RapportGenerationService {
 
     /** Même esprit que la carte "Score global" (gros chiffre coloré + méta) mais centrée sur le bailleur plutôt que le score par domaine. */
     private PdfPTable carteIndice(Bailleur bailleur, IndicePreparation indice, Polices polices) {
-        Color couleur = couleurNiveau(indice.getScore());
+        boolean avecScore = indice.getStatut().porteUnScore();
+        Color couleur = avecScore ? couleurNiveau(indice.getScore()) : ENCRE_ATTENUEE;
         PdfPTable carte = new PdfPTable(new float[] {1.3f, 2f});
         carte.setWidthPercentage(100);
 
         PdfPCell celluleChiffre = celluleCarte();
         Paragraph chiffre = new Paragraph();
-        chiffre.add(new Chunk(formaterScore(indice.getScore()), new Font(Font.HELVETICA, 32, Font.BOLD, couleur)));
-        chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        if (avecScore) {
+            chiffre.add(new Chunk(formaterScore(indice.getScore()), new Font(Font.HELVETICA, 32, Font.BOLD, couleur)));
+            chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        } else {
+            // Le gros chiffre est ce que l'œil retient d'une page : y mettre un
+            // zéro faute de données ferait dire au rapport l'inverse de la vérité.
+            chiffre.add(new Chunk(libelleIndiceSansScore(indice.getStatut()),
+                    new Font(Font.HELVETICA, 14, Font.BOLD, couleur)));
+        }
         celluleChiffre.addElement(chiffre);
         carte.addCell(celluleChiffre);
 
@@ -784,6 +800,21 @@ public class RapportGenerationService {
      */
     private static String formaterScore(BigDecimal score) {
         return score.setScale(2, RoundingMode.HALF_UP).toString();
+    }
+
+    /**
+     * Ce qu'un rapport écrit à la place du chiffre quand il n'y en a pas.
+     *
+     * <p>Le texte nomme la cause plutôt que de la taire : un lecteur qui voit
+     * une case vide suppose une panne, un lecteur qui voit un zéro suppose un
+     * échec. Ni l'un ni l'autre n'est vrai.
+     */
+    private static String libelleIndiceSansScore(StatutIndice statut) {
+        return switch (statut) {
+            case NON_CALCULABLE -> "Non calculable — aucun critère rattaché à ce bailleur";
+            case SANS_EVALUATION -> "En attente — aucun critère de cette mission n'est encore validé";
+            case CALCULE -> throw new IllegalArgumentException("CALCULE porte un score");
+        };
     }
 
     // --- Construction PDF partagée ------------------------------------------

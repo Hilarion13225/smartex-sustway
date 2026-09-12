@@ -6,6 +6,7 @@ import com.smartexsustway.api.domain.entity.Bailleur;
 import com.smartexsustway.api.domain.entity.Evaluation;
 import com.smartexsustway.api.domain.entity.IndicePreparation;
 import com.smartexsustway.api.domain.enums.StatutEvaluation;
+import com.smartexsustway.api.domain.enums.StatutIndice;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.CritereBailleurRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
@@ -61,12 +62,33 @@ public class IndicePreparationService {
             }
         }
 
-        BigDecimal score = ScoringEngine.scorePondere(evalues).setScale(2, java.math.RoundingMode.HALF_UP);
+        // Le moteur rend 0 pour un ensemble vide — c'est correct pour une
+        // moyenne pondérée, et faux comme réponse à « où en est cette
+        // organisation vis-à-vis de ce bailleur ? ». La distinction se fait
+        // donc ici, chez l'appelant, et non dans ScoringEngine : aucune des
+        // deux lectures d'un audit ne doit voir son moteur diverger.
+        StatutIndice statut;
+        BigDecimal score;
+        if (critereIdsApplicables.isEmpty()) {
+            // Personne n'a encore dit ce qui compte pour ce bailleur. Ce n'est
+            // pas un constat sur l'organisation auditée.
+            statut = StatutIndice.NON_CALCULABLE;
+            score = null;
+        } else if (evalues.isEmpty()) {
+            // Le périmètre existe, mais rien n'y est encore opposable : soit la
+            // mission n'a pas assez avancé, soit aucun critère tagué n'appartient
+            // à son référentiel. Les deux compteurs enregistrés permettent de
+            // trancher entre les deux à la lecture.
+            statut = StatutIndice.SANS_EVALUATION;
+            score = null;
+        } else {
+            statut = StatutIndice.CALCULE;
+            score = ScoringEngine.scorePondere(evalues).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
 
         IndicePreparation indice = indicePreparationRepository.parAuditEtBailleur(audit.getId(), bailleur.getId())
-                .orElseGet(() -> new IndicePreparation(audit, bailleur, score, OffsetDateTime.now()));
-        indice.setScore(score);
-        indice.setDateCalcul(OffsetDateTime.now());
+                .orElseGet(() -> new IndicePreparation(audit, bailleur, OffsetDateTime.now()));
+        indice.enregistrerResultat(statut, score, critereIdsApplicables.size(), evalues.size(), OffsetDateTime.now());
         if (indice.getId() == null) {
             indicePreparationRepository.persist(indice);
         }

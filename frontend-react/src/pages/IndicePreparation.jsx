@@ -6,6 +6,7 @@ import Revele from '../components/Revele';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { formaterDateHeure } from '../lib/export';
+import { explicationIndice, libelleIndice, libellePerimetre, porteUnScore } from '../lib/indiceBailleur';
 
 /** RG39/RG40/RG41/RG42/RG43 : indice de préparation bailleur (financements verts) — réservé à la formule Avancées. */
 export default function IndicePreparation() {
@@ -104,8 +105,22 @@ export default function IndicePreparation() {
                       <li key={i.id} className="rounded-xl border border-ink-100 bg-surface p-4">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-medium text-ink-900">{i.bailleurNom}</p>
-                          <p className="text-lg font-semibold text-ink-900">{Number(i.score).toFixed(2)} / 5</p>
+                          <p
+                            className={
+                              porteUnScore(i)
+                                ? 'text-lg font-semibold text-ink-900'
+                                : 'text-sm font-medium text-ink-500'
+                            }
+                          >
+                            {libelleIndice(i)}
+                          </p>
                         </div>
+                        {explicationIndice(i) ? (
+                          <p className="mt-1 text-xs text-ink-500">{explicationIndice(i)}</p>
+                        ) : null}
+                        {libellePerimetre(i) ? (
+                          <p className="mt-1 text-xs text-ink-500">{libellePerimetre(i)}</p>
+                        ) : null}
                         <p className="mt-1 text-xs text-ink-500">Calculé le {formaterDateHeure(i.dateCalcul)}</p>
                       </li>
                     ))}

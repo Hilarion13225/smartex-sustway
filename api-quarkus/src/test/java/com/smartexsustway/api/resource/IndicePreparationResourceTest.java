@@ -1,5 +1,6 @@
 package com.smartexsustway.api.resource;
 
+import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
 import com.smartexsustway.api.domain.repository.EntrepriseRepository;
 import com.smartexsustway.api.domain.repository.RoleRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurEntrepriseRepository;
@@ -9,6 +10,8 @@ import com.smartexsustway.api.security.JwtService;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -18,6 +21,9 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * RG39/RG40/RG41/RG42/RG43 — indice de préparation bailleur (financements
@@ -35,6 +41,7 @@ class IndicePreparationResourceTest {
     @Inject RoleRepository roleRepository;
     @Inject UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
     @Inject UtilisateurRepository utilisateurRepository;
+    @Inject EntityManager entityManager;
 
     private record Contexte(String token, String entrepriseId, String auditId) {}
 
@@ -76,6 +83,106 @@ class IndicePreparationResourceTest {
         return new Contexte(utilisateur.token, entrepriseId, auditId);
     }
 
+    // === Décor ==============================================================
+
+    private String jetonSuperAdmin() {
+        return UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
+                utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
+    }
+
+    /** Un compte porteur d'un rôle donné sur l'entreprise de la mission éprouvée. */
+    private String jetonAvecRoleSurEntreprise(String entrepriseId, String roleCode) {
+        var candidat = UtilisateurDeTest.creerEtConnecter(jwtService);
+        rattacher(UUID.fromString(candidat.id), UUID.fromString(entrepriseId), roleCode);
+        return given().contentType(ContentType.JSON)
+                .body(Map.of("email", candidat.email, "motDePasse", candidat.motDePasse))
+                .when().post("/api/v1/auth/connexion")
+                .then().statusCode(200).extract().path("token");
+    }
+
+    @Transactional
+    void rattacher(UUID utilisateurId, UUID entrepriseId, String roleCode) {
+        var role = roleRepository.parCode(roleCode).orElseThrow();
+        utilisateurEntrepriseRepository.persist(new UtilisateurEntreprise(
+                utilisateurRepository.findById(utilisateurId),
+                entrepriseRepository.findById(entrepriseId), null, role));
+    }
+
+    /**
+     * L'identifiant du critère de référentiel porté par le premier critère de
+     * la mission.
+     *
+     * <p>Lu en base et non par l'API : {@code AuditCritereDto} expose
+     * l'identifiant du critère <em>de mission</em> et le code du critère, mais
+     * pas l'identifiant du critère de référentiel — or c'est lui qu'attend
+     * {@code CritereBailleurResource}. Élargir ce DTO pour les besoins d'un
+     * test changerait un contrat consommé ailleurs.
+     */
+    @Transactional
+    String premierCritereDeLaMission(Contexte ctx) {
+        return entityManager.createNativeQuery(
+                        "SELECT ac.critere_id::text FROM audit_critere ac "
+                                + "WHERE ac.audit_id = CAST(?1 AS uuid) ORDER BY ac.id LIMIT 1")
+                .setParameter(1, ctx.auditId())
+                .getSingleResult().toString();
+    }
+
+    private void taguer(String jetonAdmin, String critereId, boolean applicable) {
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .contentType(ContentType.JSON)
+                .body(Map.of("bailleurCode", "IFC_SFI", "applicable", applicable))
+                .when().put("/api/v1/referentiels/criteres/" + critereId + "/bailleur")
+                .then().statusCode(200);
+    }
+
+    private void detaguer(String jetonAdmin, String critereId) {
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .when().delete("/api/v1/referentiels/criteres/" + critereId + "/bailleur/IFC_SFI")
+                .then().statusCode(204);
+    }
+
+    /**
+     * Pose une évaluation validée sur le critère de mission correspondant.
+     *
+     * <p>Écrite directement plutôt que produite par le pipeline : ce qui est
+     * éprouvé ici est le périmètre du calcul, pas la qualité d'une analyse —
+     * et le pipeline consommerait du quota chez le fournisseur.
+     */
+    @Transactional
+    void poserEvaluationValidee(UUID auditId, UUID critereId) {
+        entityManager.createNativeQuery(
+                        "UPDATE audit_critere SET criticite_id = "
+                                + "(SELECT id FROM criticite ORDER BY poids DESC LIMIT 1) "
+                                + "WHERE audit_id = ?1 AND critere_id = ?2 AND criticite_id IS NULL")
+                .setParameter(1, auditId).setParameter(2, critereId).executeUpdate();
+
+        // Le validateur est obligatoire : la contrainte
+        // `evaluation_v2_validee_porte_un_validateur` (phase 5.10) refuse une
+        // évaluation V2 validée que personne n'aurait entérinée. Le décor s'y
+        // plie plutôt que de la contourner — c'est elle qui a raison. Le
+        // validateur retenu est le créateur de la mission.
+        entityManager.createNativeQuery(
+                        "INSERT INTO evaluation (audit_critere_id, probabilite_conforme, note, source, "
+                                + "statut, contrat_version, justification, date_evaluation, validee_par, validee_le) "
+                                + "SELECT ac.id, 0.8000, 4, 'IA', 'VALIDEE', '2.0', "
+                                + "'Évaluation posée pour éprouver le périmètre de l''indice.', now(), "
+                                + "a.created_by, now() "
+                                + "FROM audit_critere ac JOIN audit a ON a.id = ac.audit_id "
+                                + "WHERE ac.audit_id = ?1 AND ac.critere_id = ?2")
+                .setParameter(1, auditId).setParameter(2, critereId).executeUpdate();
+    }
+
+    /** Ramène la formule de la mission, pour éprouver une rétrogradation. */
+    @Transactional
+    void poserFormuleMission(UUID auditId, String codeFormule) {
+        entityManager.createNativeQuery(
+                        "UPDATE audit SET formule_abonnement_id = "
+                                + "(SELECT id FROM formule_abonnement WHERE code = ?2) WHERE id = ?1")
+                .setParameter(1, auditId).setParameter(2, codeFormule).executeUpdate();
+    }
+
     @Test
     void listerBailleurs_contientIfcSfi() {
         var utilisateur = UtilisateurDeTest.creerEtConnecter(jwtService);
@@ -100,8 +207,18 @@ class IndicePreparationResourceTest {
                 .statusCode(403);
     }
 
+    /**
+     * Ce test attendait {@code score = 0.0} et nommait ce zéro « neutre ».
+     * C'était précisément le défaut : rien ne distinguait « aucun critère
+     * n'est rattaché à ce bailleur » de « cette organisation n'est pas
+     * préparée ». Les deux appellent des décisions opposées — du paramétrage
+     * d'un côté, de la mise en conformité de l'autre.
+     *
+     * <p>L'assertion est donc adaptée à la règle nouvelle, pas contournée :
+     * l'indice porte maintenant la raison de son absence de score.
+     */
     @Test
-    void calculer_formuleAvancees_sansCritereTague_donneUnScoreNeutre() {
+    void calculer_formuleAvancees_sansCritereTague_estNonCalculable() {
         var ctx = creerContexte("AVANCEES");
 
         given()
@@ -112,7 +229,10 @@ class IndicePreparationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("bailleurCode", equalTo("IFC_SFI"))
-                .body("score", equalTo(0.0f));
+                .body("statut", equalTo("NON_CALCULABLE"))
+                .body("score", nullValue())
+                .body("nombreCriteresTagues", equalTo(0))
+                .body("nombreCriteresRetenus", equalTo(0));
 
         given()
                 .header("Authorization", "Bearer " + ctx.token())
@@ -120,6 +240,169 @@ class IndicePreparationResourceTest {
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(1));
+    }
+
+    /**
+     * Un périmètre existe, mais rien n'y est encore opposable. Le score reste
+     * nul : un critère rattaché mais non évalué ne vaut pas zéro, il ne vaut
+     * rien du tout.
+     *
+     * <p>Le tag est retiré en {@code finally} : {@code critere_bailleur} est
+     * une table globale au référentiel, pas à la mission. Un tag laissé en
+     * place ferait basculer les autres tests de cette classe — et l'ordre
+     * d'exécution ne garantit pas lequel.
+     */
+    @Test
+    void calculer_avecTagMaisSansEvaluationValidee_estSansEvaluation() {
+        var ctx = creerContexte("AVANCEES");
+        String critereId = premierCritereDeLaMission(ctx);
+        String jetonAdmin = jetonSuperAdmin();
+
+        taguer(jetonAdmin, critereId, true);
+        try {
+            given()
+                    .header("Authorization", "Bearer " + ctx.token())
+                    .contentType(ContentType.JSON)
+                    .body(Map.of("bailleurCode", "IFC_SFI"))
+                    .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                    .then()
+                    .statusCode(200)
+                    .body("statut", equalTo("SANS_EVALUATION"))
+                    .body("score", nullValue())
+                    .body("nombreCriteresTagues", equalTo(1))
+                    .body("nombreCriteresRetenus", equalTo(0));
+        } finally {
+            detaguer(jetonAdmin, critereId);
+        }
+    }
+
+    /**
+     * Le seul cas où un chiffre est produit. Le périmètre retenu est celui
+     * du calcul, pas celui du bailleur : ici un unique critère tagué et
+     * validé, sur une mission qui en compte beaucoup d'autres.
+     */
+    @Test
+    void calculer_avecEvaluationValidee_estCalculeEtCompteSonPerimetre() {
+        var ctx = creerContexte("AVANCEES");
+        String critereId = premierCritereDeLaMission(ctx);
+        String jetonAdmin = jetonSuperAdmin();
+
+        taguer(jetonAdmin, critereId, true);
+        try {
+            poserEvaluationValidee(UUID.fromString(ctx.auditId()), UUID.fromString(critereId));
+
+            given()
+                    .header("Authorization", "Bearer " + ctx.token())
+                    .contentType(ContentType.JSON)
+                    .body(Map.of("bailleurCode", "IFC_SFI"))
+                    .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                    .then()
+                    .statusCode(200)
+                    .body("statut", equalTo("CALCULE"))
+                    .body("score", notNullValue())
+                    .body("nombreCriteresTagues", equalTo(1))
+                    .body("nombreCriteresRetenus", equalTo(1));
+        } finally {
+            detaguer(jetonAdmin, critereId);
+        }
+    }
+
+    /**
+     * La réponse ne porte que le chiffre et son périmètre. Aucune
+     * justification, aucune piste, aucun élément de raisonnement du modèle :
+     * un indice n'est pas une restitution d'analyse.
+     */
+    @Test
+    void laReponse_nExposeAucunRaisonnementIa() {
+        var ctx = creerContexte("AVANCEES");
+
+        var champs = given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("bailleurCode", "IFC_SFI"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(200)
+                .extract().jsonPath().getMap("$").keySet();
+
+        for (String interdit : new String[] {
+                "justification", "justificationRisque", "justificationCouverture",
+                "pistesAmelioration", "raisonnement", "prompt", "responseId", "servedModel"}) {
+            assertFalse(champs.contains(interdit), "Champ exposé à tort : " + interdit);
+        }
+    }
+
+    // === La garde de formule s'applique aussi en lecture =====================
+
+    @Test
+    void lister_formuleAvancees_estAutorise() {
+        var ctx = creerContexte("AVANCEES");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(200);
+    }
+
+    @Test
+    void lister_formuleStandard_estRefuse() {
+        var ctx = creerContexte("STANDARD");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(403);
+    }
+
+    /**
+     * Le cas qui a motivé la correction : l'indice a été calculé du temps où
+     * l'organisation payait Avancées, puis la formule de la mission est
+     * ramenée à Standard. La lecture doit se fermer — sans quoi la
+     * restriction ne tiendrait que le jour de l'écriture.
+     */
+    @Test
+    void lister_apresRetrogradation_estRefuse() {
+        var ctx = creerContexte("AVANCEES");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("bailleurCode", "IFC_SFI"))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(200);
+
+        poserFormuleMission(UUID.fromString(ctx.auditId()), "STANDARD");
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(403);
+    }
+
+    /**
+     * Le personnel Smartex n'échappe pas à la formule du client : décision
+     * déjà prise pour le calcul, reconduite ici pour la lecture.
+     */
+    @Test
+    void lister_superAdminEnFormuleStandard_estRefuse() {
+        var ctx = creerContexte("STANDARD");
+        String jeton = jetonAvecRoleSurEntreprise(ctx.entrepriseId(), "SUPER_ADMIN");
+
+        given()
+                .header("Authorization", "Bearer " + jeton)
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(403);
+    }
+
+    /** Le collaborateur ne porte pas bailleur:consulter : le refus vient du rôle, avant la formule. */
+    @Test
+    void lister_collaborateur_estRefuse() {
+        var ctx = creerContexte("AVANCEES");
+        String jeton = jetonAvecRoleSurEntreprise(ctx.entrepriseId(), "COLLABORATEUR");
+
+        given()
+                .header("Authorization", "Bearer " + jeton)
+                .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then().statusCode(403);
     }
 
     @Test

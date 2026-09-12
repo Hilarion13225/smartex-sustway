@@ -6,6 +6,7 @@ import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../compon
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
+import { explicationIndice, libelleIndice, libellePerimetre } from '../lib/indiceBailleur';
 
 /**
  * Vue transverse : l'indice de préparation bailleur (RG39-43) est calculé
@@ -84,8 +85,12 @@ export default function FinancementsVerts() {
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {indices.map((i) => (
-                          <span key={i.id} className="rounded-lg border border-ink-100 px-2 py-1 text-xs text-ink-700">
-                            {i.bailleurNom} — {Number(i.score).toFixed(2)} / 5
+                          <span
+                            key={i.id}
+                            className="rounded-lg border border-ink-100 px-2 py-1 text-xs text-ink-700"
+                            title={explicationIndice(i) ?? libellePerimetre(i) ?? undefined}
+                          >
+                            {i.bailleurNom} — {libelleIndice(i)}
                             <span className="ml-1 text-ink-400">({formaterDate(i.dateCalcul)})</span>
                           </span>
                         ))}
