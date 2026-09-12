@@ -171,6 +171,21 @@ function NouveauProjet({ referentiels, entreprises, onAnnuler, onCree }) {
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState(null);
 
+  /**
+   * Seuls les référentiels actifs peuvent porter un nouveau projet — l'API le
+   * refuse depuis e1f27fa, et proposer les autres ne menait qu'à un 400 après
+   * coup. Même filtre qu'AuditsListe et Questionnaire, appliqué ici et non à
+   * la liste reçue : celle-ci ne sert qu'à ce sélecteur, mais la restreindre
+   * en amont ferait perdre l'information si la page venait à l'afficher
+   * ailleurs. Les projets déjà créés montrent leur référentiel via
+   * `projet.referentielNom`, sans passer par cette liste : un projet ancien
+   * reste donc lisible même si son référentiel a été archivé depuis.
+   */
+  const referentielsActifs = useMemo(
+    () => (referentiels ?? []).filter((r) => r.statut === 'ACTIF'),
+    [referentiels]
+  );
+
   const filtrees = useMemo(() => {
     const terme = recherche.trim().toLowerCase();
     if (!terme) return entreprises;
@@ -260,7 +275,7 @@ function NouveauProjet({ referentiels, entreprises, onAnnuler, onCree }) {
             onChange={(e) => setFormulaire({ ...formulaire, referentielCode: e.target.value })}
           >
             <option value="">Choisir…</option>
-            {referentiels.map((r) => (
+            {referentielsActifs.map((r) => (
               <option key={r.code} value={r.code}>
                 {r.nom}
               </option>
