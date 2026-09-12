@@ -139,6 +139,140 @@ class AuditResourceTest {
                 .statusCode(400);
     }
 
+    // === Un référentiel retiré de l'offre ne porte plus de mission ==========
+
+    /**
+     * Crée un référentiel de test et rend son code.
+     *
+     * <p>Un référentiel dédié plutôt que SMARTEX_SUSTWAY : changer le statut
+     * du référentiel de production ferait tomber toutes les autres classes de
+     * cette suite, et l'ordre d'exécution ne dit pas laquelle en premier.
+     */
+    private String creerReferentielDeTest(String jetonAdmin) {
+        String code = "TEST_STATUT_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .contentType(ContentType.JSON)
+                .body(Map.of("code", code, "nom", "Référentiel éprouvant le statut", "type", "SMARTEX"))
+                .when().post("/api/v1/referentiels")
+                .then().statusCode(201);
+        return code;
+    }
+
+    private void poserStatutReferentiel(String jetonAdmin, String code, String statut) {
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .contentType(ContentType.JSON)
+                .body(Map.of("statut", statut))
+                .when().put("/api/v1/referentiels/" + code)
+                .then().statusCode(200);
+    }
+
+    private io.restassured.response.ValidatableResponse creerAuditSur(Contexte ctx, String referentielCode) {
+        return given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "referentielCode", referentielCode,
+                        "nom", "Mission éprouvant le statut",
+                        "dateDebut", LocalDate.now().toString()))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits")
+                .then();
+    }
+
+    /**
+     * Seul ACTIF ouvre la création. Les trois autres statuts la ferment —
+     * ils disent chacun à leur manière que le cadre n'est plus proposé, et
+     * aucun ne mérite d'exception.
+     *
+     * <p>Le sélecteur React filtrait déjà sur ACTIF, mais rien n'oblige à
+     * passer par lui : c'est l'appel direct qu'éprouve ce test.
+     *
+     * <p>Seul le code est vérifié, comme pour
+     * {@link #creerAudit_referentielInconnu_estRejete()} : cette ressource
+     * signale ses requêtes invalides par {@code BadRequestException}, qu'aucun
+     * mapper ne traduit — la réponse n'a donc pas de corps. Le message porté
+     * par l'exception reste lisible côté serveur ; l'homogénéiser avec le
+     * style de {@code ProjetResource} changerait aussi la réponse du
+     * référentiel inconnu, hors du périmètre de cette phase.
+     */
+    @Test
+    void creerAudit_referentielNonActif_estRejete() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String jetonAdmin = UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
+                utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
+        String code = creerReferentielDeTest(jetonAdmin);
+
+        for (String statut : new String[] {"INACTIF", "SUSPENDU", "ARCHIVE"}) {
+            poserStatutReferentiel(jetonAdmin, code, statut);
+            creerAuditSur(ctx, code).statusCode(400);
+        }
+    }
+
+    /**
+     * Le pendant du précédent : la garde refuse un statut, pas un référentiel.
+     * Sans ce contrôle, un refus généralisé passerait pour une correction
+     * réussie.
+     *
+     * <p>C'est ici, et non par un aller-retour de statut, que se vérifie la
+     * non-régression : les deux refus d'{@code AuditResource} ayant le même
+     * code et aucun corps, rien ne les distinguerait. La discrimination fine
+     * entre « plus proposé » et « aucune version publiée » est éprouvée côté
+     * projets, où les messages sont lisibles
+     * ({@code ProjetReferentielActifTest}).
+     */
+    @Test
+    void creerAudit_referentielActif_resteAutorise() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+
+        creerAuditSur(ctx, "SMARTEX_SUSTWAY").statusCode(201);
+    }
+
+    /**
+     * Archiver retire de l'offre ; cela ne réécrit pas l'histoire. Une mission
+     * née quand le référentiel était actif reste lisible après son archivage —
+     * sans quoi archiver reviendrait à effacer le travail déjà fait.
+     */
+    @Test
+    void missionHistorique_surReferentielArchive_resteConsultable() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+        String auditId = creerAudit(ctx, "Mission née avant l'archivage");
+
+        String jetonAdmin = UtilisateurDeTest.creerAvecRole(jwtService, "SUPER_ADMIN",
+                utilisateurRepository, entrepriseRepository, roleRepository, utilisateurEntrepriseRepository).token;
+        poserStatutReferentiel(jetonAdmin, "SMARTEX_SUSTWAY", "ARCHIVE");
+        try {
+            given()
+                    .header("Authorization", "Bearer " + ctx.token())
+                    .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId)
+                    .then().statusCode(200)
+                    .body("referentielCode", equalTo("SMARTEX_SUSTWAY"));
+
+            given()
+                    .header("Authorization", "Bearer " + ctx.token())
+                    .when().get("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + auditId + "/criteres")
+                    .then().statusCode(200)
+                    .body("$", hasSize(92));
+        } finally {
+            // SMARTEX_SUSTWAY porte toutes les autres missions de la suite :
+            // le laisser archivé ferait échouer les classes suivantes.
+            poserStatutReferentiel(jetonAdmin, "SMARTEX_SUSTWAY", "ACTIF");
+        }
+    }
+
+    /** Un compte client ne peut pas changer le statut d'un référentiel : RBAC inchangé. */
+    @Test
+    void changerLeStatutDunReferentiel_depuisUnCompteClient_estRefuse() {
+        var ctx = creerEntrepriseAvecAbonnementActif();
+
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("statut", "ARCHIVE"))
+                .when().put("/api/v1/referentiels/SMARTEX_SUSTWAY")
+                .then().statusCode(403);
+    }
+
     @Test
     void listerAudits_retourneLesMissionsDeLEntreprise() {
         var ctx = creerEntrepriseAvecAbonnementActif();

@@ -331,6 +331,17 @@ public class AuditResource {
         Referentiel referentiel = referentielRepository.parCode(requete.referentielCode())
                 .orElseThrow(() -> new BadRequestException("Référentiel inconnu : " + requete.referentielCode()));
 
+        // Un référentiel retiré de l'offre ne porte plus de nouvelle mission.
+        // Le sélecteur React filtre déjà sur ACTIF, mais rien n'oblige à
+        // passer par lui : sans cette garde, l'archivage ne serait qu'une
+        // convention d'affichage. Le cas n'est pas théorique — un référentiel
+        // vide peut avoir une version publiée, et la mission créée n'aurait
+        // alors aucun critère.
+        if (!referentiel.accepteDeNouveauxTravaux()) {
+            throw new BadRequestException("Le référentiel " + referentiel.getCode()
+                    + " n'est plus proposé : aucune nouvelle mission ne peut s'y appuyer");
+        }
+
         // Une mission audite une version précise, pas un référentiel « en
         // général » : c'est ce rattachement qui rend son résultat opposable
         // quand le catalogue évolue ensuite.

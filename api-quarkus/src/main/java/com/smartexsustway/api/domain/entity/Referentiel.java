@@ -112,6 +112,28 @@ public class Referentiel {
         this.statut = statut;
     }
 
+    /**
+     * Vrai lorsque ce référentiel peut porter un nouveau travail — une mission
+     * ou un projet.
+     *
+     * <p>Seul {@code ACTIF} l'autorise : {@code INACTIF}, {@code SUSPENDU} et
+     * {@code ARCHIVE} disent chacun à leur manière que le cadre n'est plus
+     * proposé. La règle est portée ici, et non recopiée dans chaque ressource,
+     * pour que {@code AuditResource} et {@code ProjetResource} ne puissent pas
+     * diverger — elles ont déjà chacune leur convention d'erreur.
+     *
+     * <p>Elle ne gouverne que la création. Une mission ou un projet déjà
+     * rattaché à un référentiel archivé reste consultable : archiver retire
+     * de l'offre, cela ne réécrit pas l'histoire.
+     *
+     * <p>Le filtre existait déjà côté React ({@code AuditsListe},
+     * {@code Questionnaire}), mais une interface qui masque une option
+     * n'empêche personne d'appeler l'API directement.
+     */
+    public boolean accepteDeNouveauxTravaux() {
+        return statut == StatutGenerique.ACTIF;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
