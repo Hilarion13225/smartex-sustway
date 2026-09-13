@@ -9,15 +9,32 @@
  * la même condition réécrite dans chacune.
  */
 
-/** Ce que l'écran affiche à la place du chiffre, en nommant la cause. */
+/**
+ * Ce que l'écran affiche à la place du chiffre, en nommant la cause.
+ *
+ * Les libellés restent volontairement génériques : le nom du bailleur est
+ * déjà affiché à côté, et écrire « IFC/SFI » en dur mentirait le jour où un
+ * second bailleur existera.
+ */
 const LIBELLES_SANS_SCORE = {
-  NON_CALCULABLE: 'Non calculable',
+  NON_CALCULABLE: 'Mapping non disponible',
   SANS_EVALUATION: 'En attente d’évaluations',
 };
 
-/** Explication complète, pour une infobulle ou une ligne secondaire. */
+/**
+ * Explication complète, pour une infobulle ou une ligne secondaire.
+ *
+ * `NON_CALCULABLE` dit ce qui manque et à quelle condition cela se comble :
+ * le rattachement des critères à un bailleur engage une décision de
+ * financement, il vient d'un document officiel et d'une relecture humaine,
+ * jamais d'une déduction. Tant qu'il n'existe pas, aucun financement n'est
+ * recommandé sur ce référentiel — et le dire vaut mieux que de laisser
+ * croire à un calcul qui n'a pas eu lieu.
+ */
 const EXPLICATIONS = {
-  NON_CALCULABLE: 'Aucun critère n’est rattaché à ce bailleur : le périmètre de mesure reste à définir.',
+  NON_CALCULABLE:
+    'Aucun critère n’est rattaché à ce bailleur. Ce rattachement exige une source officielle vérifiable : '
+    + 'aucun financement n’est recommandé sur ce référentiel pour le moment.',
   SANS_EVALUATION: 'Des critères sont rattachés à ce bailleur, mais aucun n’est encore validé dans cette mission.',
 };
 

@@ -811,7 +811,12 @@ public class RapportGenerationService {
      */
     private static String libelleIndiceSansScore(StatutIndice statut) {
         return switch (statut) {
-            case NON_CALCULABLE -> "Non calculable — aucun critère rattaché à ce bailleur";
+            // Un rapport peut être transmis à un tiers, un bailleur compris :
+            // il doit dire à quelle condition l'indice existera, et non
+            // laisser supposer un calcul défavorable. Le rattachement des
+            // critères vient d'une source officielle, jamais d'une déduction.
+            case NON_CALCULABLE -> "Mapping non disponible — aucun critère rattaché à ce bailleur, "
+                    + "source officielle requise ; aucun financement recommandé sur ce référentiel";
             case SANS_EVALUATION -> "En attente — aucun critère de cette mission n'est encore validé";
             case CALCULE -> throw new IllegalArgumentException("CALCULE porte un score");
         };
