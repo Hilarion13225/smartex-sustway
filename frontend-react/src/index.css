@@ -658,6 +658,21 @@
   opacity: 0.35;
 }
 
+/* --- Coche de confirmation d'envoi : se trace une fois ----------------- */
+.vitrine .coche-envoi path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vitrine .coche-envoi path {
+    stroke-dashoffset: 30;
+    animation: coche-trace 420ms 120ms var(--courbe-entree) forwards;
+  }
+}
+@keyframes coche-trace {
+  to { stroke-dashoffset: 0; }
+}
+
 /* --- Transition entre pages --------------------------------------------- */
 /* Un fondu court, déclenché par les liens qui portent `viewTransition`. La
    page d'entrée n'en émet aucun : son affichage reste celui d'origine. */

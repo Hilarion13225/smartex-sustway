@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Minus, Plus } from 'lucide-react';
 import { Alerte } from '../components/ui';
 import { SMARTEX } from '../config/smartex';
+import { api, ApiError } from '../lib/apiClient';
 
 const SUJETS = [
   'Demande de démonstration',
@@ -66,13 +67,14 @@ const RENVOIS = [
 ];
 
 /**
- * Page de contact 100 % côté navigateur : le formulaire n'appelle aucune API.
+ * Page de contact. Le formulaire envoie réellement le message : l'API le
+ * relaie par e-mail à SMARTEX Expertises et accuse réception au visiteur
+ * (voir api-quarkus, ContactResource).
  *
- * À la validation, un brouillon d'e-mail prérempli est ouvert dans la
- * messagerie du visiteur (mailto). Le bouton le dit — « Préparer mon e-mail »
- * et non « Envoyer » — et l'adresse reste copiable juste à côté : sur un
- * téléphone ou un poste sans messagerie configurée, le lien mailto n'ouvre
- * rien, et un message de succès laisserait croire qu'une demande est partie.
+ * « Envoyé » ne s'affiche que si l'API confirme l'envoi. En cas d'échec — API
+ * injoignable, service d'e-mail indisponible, trop d'envois — le visiteur ne
+ * perd pas ce qu'il a écrit : le formulaire reste rempli, et il reçoit
+ * l'adresse à copier et un brouillon prérempli dans sa messagerie.
  */
 const EMAIL_VALIDE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ORDRE_CHAMPS = ['nom', 'email', 'organisation', 'sujet', 'message'];
@@ -114,8 +116,19 @@ export default function Contact() {
   // lit « merci de renseigner… » en bas du formulaire doit sinon deviner
   // lequel corriger.
   const [erreurs, setErreurs] = useState({});
-  const [brouillonPrepare, definirBrouillonPrepare] = useState(false);
+  // repos → envoi → envoye | echec. `echec` garde le message de l'API.
+  const [envoi, definirEnvoi] = useState({ etat: 'repos', message: '' });
+  // Champ piège (voir ContactRequest côté API) : invisible pour un visiteur,
+  // rempli par les robots qui renseignent tous les champs d'un formulaire.
+  const [siteWeb, definirSiteWeb] = useState('');
   const [niveauZoom, setNiveauZoom] = useState(2);
+  const titreConfirmation = useRef(null);
+
+  // Après l'envoi, le focus va sur la confirmation : sans quoi un lecteur
+  // d'écran resterait sur un bouton qui vient de disparaître.
+  useEffect(() => {
+    if (envoi.etat === 'envoye') titreConfirmation.current?.focus();
+  }, [envoi.etat]);
 
   const majChamp = (nom) => (evenement) => {
     setChamps((precedent) => ({ ...precedent, [nom]: evenement.target.value }));
@@ -126,7 +139,24 @@ export default function Contact() {
       delete suivantes[nom];
       return suivantes;
     });
-    definirBrouillonPrepare(false);
+    if (envoi.etat === 'echec') definirEnvoi({ etat: 'repos', message: '' });
+  };
+
+  /** Brouillon prérempli dans la messagerie du visiteur : la solution de repli. */
+  const lienBrouillon = () => {
+    const corps = [
+      `Nom : ${champs.nom}`,
+      `E-mail : ${champs.email}`,
+      `Organisation : ${champs.organisation}`,
+      champs.telephone ? `Téléphone : +225 ${champs.telephone}` : null,
+      '',
+      champs.message,
+    ]
+      .filter((ligne) => ligne !== null)
+      .join('\n');
+    return `mailto:${SMARTEX.email}?subject=${encodeURIComponent(
+      `[${SMARTEX.produit}] ${champs.sujet}`
+    )}&body=${encodeURIComponent(corps)}`;
   };
 
   // L'adresse e-mail est vérifiée à la sortie du champ, pas à chaque frappe :
@@ -150,8 +180,9 @@ export default function Contact() {
       </p>
     ) : null;
 
-  const soumettre = (evenement) => {
+  const soumettre = async (evenement) => {
     evenement.preventDefault();
+    if (envoi.etat === 'envoi') return;
 
     const trouvees = {};
     if (!champs.nom.trim()) trouvees.nom = 'Indiquez votre nom.';
@@ -169,22 +200,38 @@ export default function Contact() {
       return;
     }
 
-    const corps = [
-      `Nom : ${champs.nom}`,
-      `E-mail : ${champs.email}`,
-      `Organisation : ${champs.organisation}`,
-      champs.telephone ? `Téléphone : +225 ${champs.telephone}` : null,
-      '',
-      champs.message,
-    ]
-      .filter(Boolean)
-      .join('\n');
+    definirEnvoi({ etat: 'envoi', message: '' });
+    try {
+      await api.post(
+        '/api/v1/contact',
+        {
+          nom: champs.nom.trim(),
+          email: champs.email.trim(),
+          organisation: champs.organisation.trim(),
+          telephone: champs.telephone.trim() ? `+225 ${champs.telephone.trim()}` : '',
+          sujet: champs.sujet,
+          message: champs.message.trim(),
+          siteWeb,
+        },
+        { avecAuth: false }
+      );
+      definirEnvoi({ etat: 'envoye', message: '' });
+    } catch (erreur) {
+      // 429 (trop d'envois) et 503 (service d'e-mail indisponible) portent un
+      // message rédigé pour le visiteur ; le reste reçoit un message générique,
+      // les détails techniques ne l'aident pas.
+      const message =
+        erreur instanceof ApiError && (erreur.statut === 429 || erreur.statut === 503)
+          ? erreur.message
+          : 'Votre message n’a pas pu être envoyé.';
+      definirEnvoi({ etat: 'echec', message });
+    }
+  };
 
-    window.location.href = `mailto:${SMARTEX.email}?subject=${encodeURIComponent(
-      `[${SMARTEX.produit}] ${champs.sujet}`
-    )}&body=${encodeURIComponent(corps)}`;
-
-    definirBrouillonPrepare(true);
+  const recommencer = () => {
+    setChamps(CHAMPS_VIDES);
+    setErreurs({});
+    definirEnvoi({ etat: 'repos', message: '' });
   };
 
   return (
@@ -298,9 +345,48 @@ export default function Contact() {
 
           {/* ---------- Formulaire ---------- */}
           {/* Premier sur téléphone : c'est ce que le visiteur est venu faire. */}
+          {envoi.etat === 'envoye' ? (
+            <div
+              role="status"
+              className="order-1 min-w-0 self-start rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8 lg:order-2"
+            >
+              {/* La coche se trace une fois : c'est le seul moment où la page
+                  confirme qu'une action a abouti. */}
+              <svg viewBox="0 0 48 48" className="coche-envoi h-12 w-12 text-feuille" aria-hidden>
+                <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.25" />
+                <path
+                  d="M14 25 L21 32 L34 17"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <h2
+                ref={titreConfirmation}
+                tabIndex={-1}
+                className="mt-5 font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 outline-none sm:text-[1.875rem]"
+              >
+                Message envoyé.
+              </h2>
+              <p className="mt-3 max-w-[48ch] text-base leading-relaxed text-ink-600">
+                Nous vous répondons sous 24 h ouvrées. Un accusé de réception vient de partir à{' '}
+                <span className="font-semibold text-ink-900">{champs.email.trim()}</span>.
+              </p>
+              <button
+                type="button"
+                onClick={recommencer}
+                className="btn-presse mt-8 inline-flex min-h-12 items-center justify-center rounded-[4px] border border-ink-300 px-6 text-base font-semibold text-ink-900 hover:border-ink-900"
+              >
+                Écrire un autre message
+              </button>
+            </div>
+          ) : (
           <form
             onSubmit={soumettre}
             noValidate
+            aria-busy={envoi.etat === 'envoi'}
             className="order-1 min-w-0 self-start rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8 lg:order-2"
           >
             <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]">
@@ -428,6 +514,21 @@ export default function Contact() {
                 />
                 {messageErreur('message')}
               </div>
+
+              {/* Champ piège : hors de l'écran, hors tabulation, ignoré des
+                  lecteurs d'écran et du remplissage automatique. */}
+              <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+                <label htmlFor="contact-site-web">Site web</label>
+                <input
+                  id="contact-site-web"
+                  name="site-web"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={siteWeb}
+                  onChange={(evenement) => definirSiteWeb(evenement.target.value)}
+                />
+              </div>
             </div>
 
             {Object.keys(erreurs).length ? (
@@ -440,30 +541,35 @@ export default function Contact() {
               </div>
             ) : null}
 
-            {/* Pas de vert ni de coche : rien n'est encore parti. Le message
-                dit ce qui s'est passé et que faire si la messagerie ne s'est
-                pas ouverte. */}
-            {brouillonPrepare ? (
-              <div role="status" className="mt-5 border-l-2 border-ink-900 bg-ink-50 px-4 py-3 text-[15px] leading-relaxed text-ink-700">
-                <p className="font-semibold text-ink-900">Votre message est prêt dans votre messagerie.</p>
+            {/* Échec : le formulaire reste rempli, et deux sorties sont
+                offertes pour que le message parte quand même. */}
+            {envoi.etat === 'echec' ? (
+              <div role="alert" className="mt-5 border-l-2 border-brand-600 bg-ink-50 px-4 py-3 text-[15px] leading-relaxed text-ink-700">
+                <p className="font-semibold text-ink-900">{envoi.message}</p>
                 <p className="mt-1">
-                  Il vous reste à l’envoyer. Si rien ne s’est ouvert, copiez notre adresse et collez votre message dans
-                  l’outil de votre choix.
+                  Votre texte est conservé ci-dessus. Vous pouvez réessayer, ou nous l’envoyer depuis votre messagerie.
                 </p>
-                <CopierAdresse className="mt-3" />
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <a href={lienBrouillon()} className="lien-trait text-[15px]">
+                    Ouvrir dans ma messagerie
+                  </a>
+                  <CopierAdresse />
+                </div>
               </div>
             ) : null}
 
             <button
               type="submit"
-              className="btn-presse mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[4px] bg-brand-600 px-6 text-base font-semibold text-white hover:bg-brand-700"
+              disabled={envoi.etat === 'envoi'}
+              className="btn-presse mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[4px] bg-brand-600 px-6 text-base font-semibold text-white hover:bg-brand-700 disabled:cursor-wait disabled:opacity-70"
             >
-              Préparer mon e-mail
+              {envoi.etat === 'envoi' ? 'Envoi en cours…' : envoi.etat === 'echec' ? 'Réessayer l’envoi' : 'Envoyer le message'}
             </button>
             <p className="mt-3 text-sm leading-relaxed text-ink-500">
-              Le bouton ouvre votre messagerie avec le message prérempli, adressé à {SMARTEX.email}.
+              Votre message est transmis à {SMARTEX.editeur}. Il sert uniquement à vous répondre.
             </p>
           </form>
+          )}
         </div>
       </section>
 

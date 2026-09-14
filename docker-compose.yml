@@ -182,6 +182,8 @@ services:
       # vide désactive l'envoi réel — voir EmailService, dégradation silencieuse.
       SMARTEX_MAIL_API_KEY: ${SMARTEX_MAIL_API_KEY:-}
       SMARTEX_MAIL_FROM: ${SMARTEX_MAIL_FROM:-no-reply@smartex-sustway.local}
+      # Boîte qui reçoit les messages du formulaire de contact de la vitrine.
+      SMARTEX_CONTACT_DESTINATAIRE: ${SMARTEX_CONTACT_DESTINATAIRE:-contact@smartex-expertises.com}
       # Stockage documentaire (S3/MinIO) et antivirus (§1.4)
       SMARTEX_S3_ENDPOINT: http://minio:9000
       SMARTEX_S3_ACCESS_KEY: smartex

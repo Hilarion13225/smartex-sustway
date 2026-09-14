@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,6 +51,10 @@ public class EmailService {
 
     @ConfigProperty(name = "smartex.mail.from")
     String expediteur;
+
+    /** Mode bac à sable de Brevo : requêtes validées, aucun email remis (voir envoyerVia). */
+    @ConfigProperty(name = "smartex.mail.brevo-bac-a-sable", defaultValue = "false")
+    boolean bacASable;
 
     /**
      * RG36 — code d'activation de compte. Le code remplace l'ancien lien signé :
@@ -291,32 +296,203 @@ public class EmailService {
     }
 
     private void envoyer(String destinataire, String sujet, String texte, String html, String contexteEchecNonBloquant) {
+        if (!envoyerVia(destinataire, null, sujet, texte, html)) {
+            String suffixe = contexteEchecNonBloquant != null ? " (" + contexteEchecNonBloquant + ")" : "";
+            LOG.warnf("Email non remis à %s%s", destinataire, suffixe);
+        }
+    }
+
+    /**
+     * Appel à l'API Brevo. Renvoie true seulement si Brevo a accepté l'envoi :
+     * contrairement aux notifications de compte, le formulaire de contact doit
+     * savoir si le message est parti, pour ne pas afficher « envoyé » à tort.
+     *
+     * `repondreA` (facultatif) devient l'en-tête Reply-To : répondre depuis la
+     * messagerie de SMARTEX Expertises écrit directement au visiteur, sans que
+     * son adresse ne serve d'expéditeur — ce qui ferait échouer les contrôles
+     * SPF/DKIM et classer le message en indésirable.
+     */
+    private boolean envoyerVia(String destinataire, String repondreA, String sujet, String texte, String html) {
         if (apiKey.isEmpty() || apiKey.get().isBlank()) {
             LOG.warnf("Clé API Brevo non configurée (SMARTEX_MAIL_API_KEY) : email non envoyé à %s", destinataire);
-            return;
+            return false;
         }
         try {
-            Map<String, Object> corps = Map.of(
-                    "sender", Map.of("email", expediteur, "name", "SMARTEX SustWay"),
-                    "to", List.of(Map.of("email", destinataire)),
-                    "subject", sujet,
-                    "htmlContent", html,
-                    "textContent", texte
-            );
-            HttpRequest requete = HttpRequest.newBuilder(BREVO_ENDPOINT)
+            Map<String, Object> corps = new LinkedHashMap<>();
+            corps.put("sender", Map.of("email", expediteur, "name", "SMARTEX SustWay"));
+            corps.put("to", List.of(Map.of("email", destinataire)));
+            if (repondreA != null) {
+                corps.put("replyTo", Map.of("email", repondreA));
+            }
+            corps.put("subject", sujet);
+            corps.put("htmlContent", html);
+            corps.put("textContent", texte);
+
+            HttpRequest.Builder constructeur = HttpRequest.newBuilder(BREVO_ENDPOINT)
                     .header("api-key", apiKey.get())
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .timeout(Duration.ofSeconds(15))
-                    .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(corps)))
-                    .build();
-            HttpResponse<String> reponse = HTTP.send(requete, HttpResponse.BodyHandlers.ofString());
+                    .POST(HttpRequest.BodyPublishers.ofString(JSON.writeValueAsString(corps)));
+            if (bacASable) {
+                // Brevo valide la requête et répond normalement, mais ne remet
+                // aucun email : de quoi tester le parcours réel sans écrire à
+                // personne.
+                constructeur.header("X-Sib-Sandbox", "drop");
+            }
+            HttpResponse<String> reponse = HTTP.send(constructeur.build(), HttpResponse.BodyHandlers.ofString());
             if (reponse.statusCode() >= 300) {
                 LOG.warnf("Échec de l'envoi via l'API Brevo (%d) à %s : %s", reponse.statusCode(), destinataire, reponse.body());
+                return false;
             }
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.warnf(e, "Envoi interrompu vers %s", destinataire);
+            return false;
         } catch (Exception e) {
-            String suffixe = contexteEchecNonBloquant != null ? " (" + contexteEchecNonBloquant + ")" : "";
-            LOG.warnf(e, "Échec de l'envoi de l'email à %s%s", destinataire, suffixe);
+            LOG.warnf(e, "Échec de l'envoi de l'email à %s", destinataire);
+            return false;
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Formulaire de contact de la vitrine
+    // ------------------------------------------------------------------
+
+    /**
+     * Relaie un message du formulaire de contact vers la boîte de SMARTEX
+     * Expertises. Renvoie false si le message n'a pas pu partir : la vitrine
+     * propose alors l'adresse à copier plutôt qu'un faux succès.
+     *
+     * Tout le texte saisi par le visiteur est échappé avant d'entrer dans le
+     * HTML : un message contenant du balisage ne doit pas s'afficher comme tel
+     * dans la messagerie de l'équipe.
+     */
+    public boolean envoyerMessageContact(MessageContact message, String destinataire) {
+        String sujet = "[Contact vitrine] " + message.sujet() + " — " + message.organisation();
+        String telephone = message.telephone() == null || message.telephone().isBlank() ? "—" : message.telephone();
+
+        String texte = """
+                Nouveau message reçu depuis le formulaire de contact de SMARTEX SustWay.
+
+                Sujet : %s
+                Nom : %s
+                Organisation : %s
+                E-mail : %s
+                Téléphone : %s
+
+                %s
+
+                —
+                Répondre à cet e-mail écrit directement à %s.
+                """.formatted(message.sujet(), message.nom(), message.organisation(), message.email(),
+                telephone, message.message(), message.email());
+
+        String html = """
+                <!doctype html>
+                <html lang="fr">
+                  <body style="margin:0;padding:24px 16px;background-color:#f4f5f1;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#14234b;">
+                    <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background-color:#ffffff;border:1px solid #d5d9d2;border-radius:12px;">
+                      <tr>
+                        <td style="padding:24px 28px;border-bottom:1px solid #d5d9d2;">
+                          <p style="margin:0;color:#60697a;font-size:13px;">Formulaire de contact — SMARTEX SustWay</p>
+                          <p style="margin:6px 0 0;font-size:20px;font-weight:700;">%s</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:20px 28px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" style="font-size:15px;line-height:1.5;">
+                            <tr><td style="padding:4px 16px 4px 0;color:#60697a;">Nom</td><td style="padding:4px 0;">%s</td></tr>
+                            <tr><td style="padding:4px 16px 4px 0;color:#60697a;">Organisation</td><td style="padding:4px 0;">%s</td></tr>
+                            <tr><td style="padding:4px 16px 4px 0;color:#60697a;">E-mail</td><td style="padding:4px 0;">%s</td></tr>
+                            <tr><td style="padding:4px 16px 4px 0;color:#60697a;">Téléphone</td><td style="padding:4px 0;">%s</td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 28px 24px;">
+                          <p style="margin:0;padding:16px;background-color:#f4f5f1;border-radius:8px;font-size:15px;line-height:1.6;white-space:pre-wrap;">%s</p>
+                          <p style="margin:16px 0 0;color:#60697a;font-size:13px;">Répondre à cet e-mail écrit directement à %s.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """.formatted(echapper(message.sujet()), echapper(message.nom()), echapper(message.organisation()),
+                echapper(message.email()), echapper(telephone), echapper(message.message()), echapper(message.email()));
+
+        return envoyerVia(destinataire, message.email(), sujet, texte, html);
+    }
+
+    /**
+     * Accusé de réception envoyé au visiteur. Il ne recopie ni le message ni
+     * le nom saisi : n'importe qui peut taper n'importe quelle adresse dans le
+     * formulaire, et renvoyer du texte libre ferait de la plateforme un relais
+     * pour écrire à un tiers. L'accusé ne contient donc que du texte fixe.
+     */
+    public void envoyerAccuseReceptionContact(String destinataire) {
+        String sujet = "Nous avons bien reçu votre message — SMARTEX SustWay";
+
+        String texte = """
+                Bonjour,
+
+                Votre message adressé à SMARTEX Expertises depuis le site SMARTEX SustWay nous est parvenu.
+                Notre équipe vous répond sous 24 heures ouvrées.
+
+                Si vous n'êtes pas à l'origine de ce message, vous pouvez ignorer cet e-mail.
+
+                — L'équipe SMARTEX Expertises
+                Cet email a été envoyé automatiquement, merci de ne pas y répondre.
+                """;
+
+        String html = """
+                <!doctype html>
+                <html lang="fr">
+                  <body style="margin:0;padding:24px 16px;background-color:#f4f5f1;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#14234b;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background-color:#ffffff;border:1px solid #d5d9d2;border-radius:12px;">
+                      <tr>
+                        <td style="padding:28px;">
+                          <p style="margin:0;color:#60697a;font-size:13px;">SMARTEX SustWay</p>
+                          <p style="margin:8px 0 16px;font-size:20px;font-weight:700;">Nous avons bien reçu votre message.</p>
+                          <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">
+                            Votre message adressé à SMARTEX Expertises depuis le site SMARTEX SustWay nous est parvenu.
+                            Notre équipe vous répond sous 24 heures ouvrées.
+                          </p>
+                          <p style="margin:0;color:#60697a;font-size:13px;line-height:1.6;">
+                            Si vous n'êtes pas à l'origine de ce message, vous pouvez ignorer cet e-mail.
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:16px 28px;border-top:1px solid #d5d9d2;color:#60697a;font-size:12px;">
+                          — L'équipe SMARTEX Expertises · Email automatique, merci de ne pas y répondre.
+                        </td>
+                      </tr>
+                    </table>
+                  </body>
+                </html>
+                """;
+
+        envoyer(destinataire, sujet, texte, html, "le message de contact est déjà transmis");
+    }
+
+    /** Échappement HTML des cinq caractères significatifs. */
+    static String echapper(String valeur) {
+        if (valeur == null) {
+            return "";
+        }
+        StringBuilder sortie = new StringBuilder(valeur.length());
+        for (char c : valeur.toCharArray()) {
+            switch (c) {
+                case '&' -> sortie.append("&amp;");
+                case '<' -> sortie.append("&lt;");
+                case '>' -> sortie.append("&gt;");
+                case '"' -> sortie.append("&quot;");
+                case '\'' -> sortie.append("&#39;");
+                default -> sortie.append(c);
+            }
+        }
+        return sortie.toString();
     }
 }
