@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, KeyRound, Lock, Mail, ShieldCheck, Smartphone } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ShieldCheck, Smartphone } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import CadreAuth from '../components/CadreAuth';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -92,7 +92,7 @@ export default function ConnexionReelle() {
 
           <div>
             <label className="label" htmlFor="email-connexion">
-              Email
+              Adresse e-mail
             </label>
             <div className="relative">
               <input
@@ -114,7 +114,7 @@ export default function ConnexionReelle() {
               <label className="label mb-0" htmlFor="mdp-connexion">
                 Mot de passe
               </label>
-              <Link to="/mot-de-passe-oublie" className="text-xs font-medium text-brand-700 hover:underline">
+              <Link to="/mot-de-passe-oublie" className="text-sm font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 hover:decoration-ink-900">
                 Mot de passe oublié ?
               </Link>
             </div>
@@ -132,7 +132,7 @@ export default function ConnexionReelle() {
               <Lock className="icone-champ" aria-hidden />
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-[4px] text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
                 onClick={() => setMotDePasseVisible((v) => !v)}
                 aria-label={motDePasseVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
               >
@@ -144,12 +144,11 @@ export default function ConnexionReelle() {
           <button type="submit" className="btn-vitrine w-full" disabled={chargement}>
             {chargement ? <SustwayLoader taille="sm" /> : null}
             Se connecter
-            <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
 
-          <p className="text-center text-sm text-ink-500">
+          <p className="text-center text-[15px] text-ink-600">
             Pas encore de compte ?{' '}
-            <Link to="/inscription" className="font-medium text-brand-700 hover:underline">
+            <Link to="/inscription" className="font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 hover:decoration-ink-900">
               Créer un compte
             </Link>
           </p>
@@ -165,7 +164,10 @@ export default function ConnexionReelle() {
             ) : (
               <>
                 <Smartphone className="mr-1 inline h-4 w-4" aria-hidden />
-                Un code a été envoyé par SMS (mode dev : consultez les logs de <code>mvn quarkus:dev</code>).
+                Un code vient de vous être envoyé par SMS.
+                {import.meta.env.DEV ? (
+                  <> (En développement : le code figure dans les journaux de <code>mvn quarkus:dev</code>.)</>
+                ) : null}
               </>
             )}
           </Alerte>
@@ -191,7 +193,7 @@ export default function ConnexionReelle() {
                 <span
                   key={index}
                   className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${
-                    index < code2fa.length ? 'bg-brand-500' : 'bg-ink-200'
+                    index < code2fa.length ? 'bg-ink-900' : 'bg-ink-200'
                   }`}
                 />
               ))}
@@ -199,7 +201,7 @@ export default function ConnexionReelle() {
           </div>
 
           <button type="submit" className="btn-vitrine w-full" disabled={chargement || code2fa.length < 6}>
-            {chargement ? <SustwayLoader taille="sm" /> : <KeyRound className="h-4 w-4" aria-hidden />}
+            {chargement ? <SustwayLoader taille="sm" /> : null}
             Valider
           </button>
           <button

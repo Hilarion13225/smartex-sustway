@@ -718,3 +718,71 @@
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Parcours d'authentification sous l'enveloppe vitrine (CadreAuth)
+   --------------------------------------------------------------------------
+   Connexion, inscription et mot de passe portent `.vitrine` depuis la
+   refonte. Leurs classes de composant (champ-auth, option-carte, btn-*)
+   embarquent l'ancien langage — halo, rayon de 12 px, soulèvement au
+   survol : ces règles les ramènent à celui des pages publiques sans toucher
+   à l'espace connecté, qui les utilise aussi.
+   ========================================================================== */
+.vitrine h1.titre-auth {
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* Champs : 48 px de haut, texte à 16 px (iOS ne zoome plus), bordure encre
+   à la mise au point au lieu du halo bordeaux. */
+.vitrine .champ-auth,
+.vitrine .input {
+  min-height: 48px;
+  border-radius: 4px;
+  border-color: rgb(var(--ink-300));
+  font-size: 1rem;
+  box-shadow: none;
+}
+.vitrine .champ-auth:focus,
+.vitrine .input:focus {
+  border-color: rgb(var(--ink-900));
+  box-shadow: 0 0 0 1px rgb(var(--ink-900));
+}
+.vitrine .icone-champ {
+  color: rgb(var(--ink-500));
+}
+.vitrine .peer:focus ~ .icone-champ {
+  color: rgb(var(--ink-900));
+}
+
+/* Options à choisir (formule, moyen de paiement) : cadre encre pour l'option
+   retenue, comme la formule mise en avant sur la page Formules. */
+.vitrine .option-carte {
+  border-radius: 12px;
+  transform: none;
+}
+.vitrine .option-carte-active {
+  border-color: rgb(var(--ink-900));
+  background-color: rgb(var(--surface));
+  box-shadow: 0 0 0 1px rgb(var(--ink-900));
+}
+.vitrine .option-carte-inactive:hover {
+  border-color: rgb(var(--ink-400));
+  background-color: rgb(var(--surface));
+}
+
+/* Boutons de l'ancien jeu encore appelés par ces pages. */
+.vitrine .btn-primary,
+.vitrine .btn-secondary {
+  min-height: 48px;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.vitrine .btn-vitrine,
+.vitrine .btn-vitrine-clair {
+  font-size: 1rem;
+  font-weight: 600;
+}

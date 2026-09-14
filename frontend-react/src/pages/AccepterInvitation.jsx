@@ -91,7 +91,7 @@ export default function AccepterInvitation() {
       {statut === 'valide' && invitation ? (
         <form className="space-y-5" onSubmit={soumettre}>
           <div className="flex items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3">
-            <Mail className="h-5 w-5 shrink-0 text-brand-600" aria-hidden />
+            <Mail className="h-5 w-5 shrink-0 text-ink-900" aria-hidden />
             <p className="text-sm text-brand-800">
               <strong>{invitation.entrepriseNom}</strong> vous invite en tant que{' '}
               <Badge ton="vert">{ROLE_LIBELLE[invitation.roleCode] ?? invitation.roleNom}</Badge>

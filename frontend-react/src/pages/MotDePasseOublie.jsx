@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, KeyRound, Mail } from 'lucide-react';
+import { KeyRound, Mail } from 'lucide-react';
 import CadreAuth from '../components/CadreAuth';
 import SustwayLoader from '../components/SustwayLoader';
 import { Alerte } from '../components/ui';
@@ -67,7 +67,7 @@ export default function MotDePasseOublie() {
 
           <div>
             <label className="label" htmlFor="email-oublie">
-              Email
+              Adresse e-mail
             </label>
             <div className="relative">
               <input
@@ -87,11 +87,10 @@ export default function MotDePasseOublie() {
           <button type="submit" className="btn-vitrine w-full" disabled={chargement}>
             {chargement ? <SustwayLoader taille="sm" /> : null}
             Envoyer le lien
-            <ArrowRight className="h-4 w-4" aria-hidden />
           </button>
 
           <p className="text-center text-sm text-ink-500">
-            <Link to="/connexion" className="font-medium text-brand-700 hover:underline">
+            <Link to="/connexion" className="font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 hover:decoration-ink-900">
               Retour à la connexion
             </Link>
           </p>

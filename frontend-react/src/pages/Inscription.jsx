@@ -1,19 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  ArrowLeft,
-  ArrowRight,
   Building2,
   CheckCircle2,
   CreditCard,
   Mail,
   Smartphone,
-  Sparkles,
   UserPlus,
   Wallet,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { formaterMontant } from '../lib/export';
+import { ACCROCHES, SOUS_TITRES } from '../lib/formules';
 import { Alerte, Badge } from '../components/ui';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ApiError } from '../lib/apiClient';
@@ -39,7 +37,7 @@ function evaluerMotDePasse(valeur) {
 }
 
 const LIBELLES_FORCE = ['Trop court', 'Faible', 'Correct', 'Bon', 'Excellent'];
-const COULEURS_FORCE = ['bg-rose-400', 'bg-amber-400', 'bg-amber-500', 'bg-brand-500', 'bg-brand-600'];
+const COULEURS_FORCE = ['bg-brand-600', 'bg-brand-600', 'bg-amber-500', 'bg-feuille', 'bg-feuille'];
 
 /**
  * Inscription RÉELLE — parle effectivement à l'API Quarkus à chaque étape
@@ -304,8 +302,8 @@ export default function Inscription() {
 
       {etape === 'formule' ? (
         <div>
-          <h2 className="text-lg font-semibold text-ink-900">Choix de la formule</h2>
-          <p className="mt-1 text-sm text-ink-500">
+          <h2 className="font-display text-xl font-bold text-ink-900">Choix de la formule</h2>
+          <p className="mt-1 text-[15px] text-ink-600">
             La formule est choisie avant la création du compte et détermine immédiatement les fonctionnalités
             actives.
           </p>
@@ -330,17 +328,16 @@ export default function Inscription() {
                     <span className="flex items-center gap-2 font-semibold text-ink-900">
                       {option.nom}
                       {option.code === 'AVANCEES' ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-medium text-white">
-                          <Sparkles className="h-3 w-3" aria-hidden />
+                        <span className="rounded-[4px] bg-ink-900 px-2 py-0.5 text-xs font-semibold text-ink-50">
                           Recommandée
                         </span>
                       ) : null}
                     </span>
-                    <span className="text-sm font-medium text-brand-700">
+                    <span className="font-display text-lg font-bold tabular-nums text-ink-900">
                       {Number(option.prix) === 0 ? 'Gratuit' : formaterMontant(option.prix)}
                     </span>
                   </span>
-                  <span className="mt-1 block text-sm text-ink-500">{option.description}</span>
+                  <span className="mt-1 block text-[15px] leading-snug text-ink-600">{ACCROCHES[option.code] ?? SOUS_TITRES[option.code] ?? option.description}</span>
                 </span>
               </label>
             ))}
@@ -362,7 +359,6 @@ export default function Inscription() {
           <div className="mt-7 flex justify-end">
             <button type="button" className="btn-vitrine" onClick={() => setEtape('infos')} disabled={!plan}>
               Continuer
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </div>
@@ -370,10 +366,10 @@ export default function Inscription() {
 
       {etape === 'infos' ? (
         <form onSubmit={soumettreInfos}>
-          <h2 className="text-lg font-semibold text-ink-900">
+          <h2 className="font-display text-xl font-bold text-ink-900">
             {estFree ? 'Informations du compte' : 'Informations du compte et de l’entreprise'}
           </h2>
-          <p className="mt-1 text-sm text-ink-500">Ces informations créent réellement votre compte sur l’API.</p>
+          <p className="mt-1 text-[15px] text-ink-600">Ces informations servent à créer votre compte.</p>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div>
@@ -493,7 +489,7 @@ export default function Inscription() {
 
               <div className="mt-6 rounded-2xl border border-ink-100 bg-ink-50/60 p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-                  <CreditCard className="h-4 w-4 text-brand-600" aria-hidden />
+                  <CreditCard className="h-4 w-4 text-ink-900" aria-hidden />
                   Montant à régler après vérification de l’email
                 </p>
                 <p className="mt-3 text-sm text-ink-600">
@@ -505,13 +501,11 @@ export default function Inscription() {
 
           <div className="mt-7 flex items-center justify-between gap-3">
             <button type="button" className="btn-vitrine-clair" onClick={() => setEtape('formule')}>
-              <ArrowLeft className="h-4 w-4" aria-hidden />
               Précédent
             </button>
             <button type="submit" className="btn-vitrine" disabled={chargement}>
               {chargement ? <SustwayLoader taille="sm" /> : null}
               Créer le compte
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </form>
@@ -519,8 +513,8 @@ export default function Inscription() {
 
       {etape === 'verification' ? (
         <div>
-          <h2 className="text-lg font-semibold text-ink-900">Activation du compte</h2>
-          <p className="mt-1 text-sm text-ink-500">
+          <h2 className="font-display text-xl font-bold text-ink-900">Activation du compte</h2>
+          <p className="mt-1 text-[15px] text-ink-600">
             Un code à six chiffres vient d’être envoyé à <strong>{formulaire.email}</strong>.
           </p>
 
@@ -575,8 +569,8 @@ export default function Inscription() {
 
       {etape === 'paiement' ? (
         <form onSubmit={soumettrePaiement}>
-          <h2 className="text-lg font-semibold text-ink-900">Paiement de l’abonnement</h2>
-          <p className="mt-1 text-sm text-ink-500">Formule {formuleChoisie?.nom}.</p>
+          <h2 className="font-display text-xl font-bold text-ink-900">Paiement de l’abonnement</h2>
+          <p className="mt-1 text-[15px] text-ink-600">Formule {formuleChoisie?.nom}.</p>
           <div className="mt-4">
             <Alerte ton="ambre">
               Intégration PI-SPI/Wave non finalisée (le CDC indique que ces modalités restent à cadrer avec Smartex
@@ -593,11 +587,12 @@ export default function Inscription() {
                 <button
                   key={moyen.code}
                   type="button"
+                  aria-pressed={paiementFournisseur === moyen.code}
                   className={clsx(
-                    'flex flex-col items-center gap-2 rounded-2xl border p-4 text-sm font-medium transition duration-300 motion-safe:hover:-translate-y-0.5',
+                    'flex min-h-12 flex-col items-center gap-2 rounded-[8px] border bg-surface p-4 text-base font-semibold transition-colors',
                     paiementFournisseur === moyen.code
-                      ? 'border-brand-500 bg-brand-50/60 text-brand-700 shadow-glow'
-                      : 'border-ink-200 bg-surface text-ink-600 hover:border-brand-200'
+                      ? 'border-ink-900 text-ink-900 ring-1 ring-ink-900'
+                      : 'border-ink-300 text-ink-600 hover:border-ink-500'
                   )}
                   onClick={() => setPaiementFournisseur(moyen.code)}
                 >
@@ -618,41 +613,37 @@ export default function Inscription() {
             <button type="submit" className="btn-vitrine" disabled={chargement}>
               {chargement ? <SustwayLoader taille="sm" /> : null}
               Payer et activer l’abonnement
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </form>
       ) : null}
 
       {etape === 'confirmation' ? (
-        <div className="motion-safe:animate-apparition-bas">
+        <div>
           <div className="flex items-center gap-4">
-            <span className="relative inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-100">
-              <span className="absolute inset-0 rounded-full bg-brand-200/60 motion-safe:animate-onde" aria-hidden />
-              <CheckCircle2 className="relative h-7 w-7" aria-hidden />
-            </span>
+            <CheckCircle2 className="h-10 w-10 shrink-0 text-feuille" strokeWidth={2} aria-hidden />
             <div>
-              <h2 className="text-lg font-semibold text-ink-900">Compte créé</h2>
-              <p className="text-sm text-ink-500">Toutes les étapes ci-dessus ont été réalisées sur l’API réelle.</p>
+              <h2 className="font-display text-xl font-bold text-ink-900">Compte créé</h2>
+              <p className="text-[15px] text-ink-600">Votre espace SMARTEX SustWay est prêt.</p>
             </div>
           </div>
 
           <div className="mt-6 space-y-3">
             <div className="rounded-2xl border border-ink-100 bg-surface p-4">
               <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-                <Mail className="h-4 w-4 text-brand-600" aria-hidden />
+                <Mail className="h-4 w-4 text-ink-900" aria-hidden />
                 Compte {formulaire.email}
               </p>
-              <p className="mt-1 text-sm text-ink-500">Email vérifié, compte actif, vous êtes connecté.</p>
+              <p className="mt-1 text-[15px] text-ink-600">Email vérifié, compte actif, vous êtes connecté.</p>
             </div>
 
             {!estFree && entrepriseCreee ? (
               <div className="rounded-2xl border border-ink-100 bg-surface p-4">
                 <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-                  <Building2 className="h-4 w-4 text-brand-600" aria-hidden />
+                  <Building2 className="h-4 w-4 text-ink-900" aria-hidden />
                   {entrepriseCreee.raisonSociale}
                 </p>
-                <p className="mt-1 text-sm text-ink-500">
+                <p className="mt-1 text-[15px] text-ink-600">
                   Formule {formuleChoisie?.nom}, abonnement{' '}
                   {paiementResultat?.statut === 'REUSSI' ? 'actif' : abonnementCree?.statut?.toLowerCase()}, paiement
                   via {paiementResultat?.fournisseur === 'PI_SPI' ? 'PI-SPI' : paiementResultat?.fournisseur}.
@@ -676,12 +667,10 @@ export default function Inscription() {
 
           <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
             <Link to="/" className="btn-vitrine-clair">
-              <ArrowLeft className="h-4 w-4" aria-hidden />
               Retour au site
             </Link>
             <button type="button" className="btn-vitrine" onClick={() => navigate('/app')}>
               Aller à mon espace
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           </div>
         </div>

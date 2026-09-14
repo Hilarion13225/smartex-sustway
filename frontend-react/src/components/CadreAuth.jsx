@@ -1,82 +1,76 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
-import Revele from './Revele';
 
 /**
- * Habillage commun des parcours de connexion et d'inscription : panneau de
- * marque à gauche, contenu du formulaire à droite. Purement visuel — aucun
- * appel réseau, aucune logique d'authentification ici.
+ * Habillage commun des parcours de connexion, d'inscription et de mot de
+ * passe : panneau de marque à gauche, formulaire à droite. Purement visuel —
+ * aucun appel réseau, aucune logique d'authentification ici.
+ *
+ * Refonte « Registre de preuves » : ces pages portent désormais l'enveloppe
+ * `.vitrine` (palette, typographie, contour de focus, cibles de 48 px), comme
+ * les pages publiques qui y mènent. Les taches de couleur floues, la grille
+ * décorative et les apparitions au chargement disparaissent : c'est ici que
+ * le visiteur crée son compte et paie, l'écran doit être calme.
+ *
+ * `badge` reste accepté et s'affiche comme un libellé en casse de phrase ;
+ * son icône éventuelle est ignorée par la charte, qui ne met pas d'icône
+ * décorative devant un intitulé.
  */
 export default function CadreAuth({ titre, description, badge, atouts = [], large = false, children }) {
   return (
-    <div className="relative min-h-full overflow-hidden bg-ink-50 py-8 lg:py-12">
-      <div
-        className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl motion-safe:animate-respiration"
-        aria-hidden
-      />
-      <div
-        className="pointer-events-none absolute -bottom-32 -right-16 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl motion-safe:animate-respiration"
-        aria-hidden
-      />
-      <div className="pointer-events-none absolute inset-0 bg-grille-ink bg-grille opacity-[0.35]" aria-hidden />
+    <div className="vitrine min-h-full bg-ink-50 text-ink-600">
+      <div className={clsx('mx-auto px-5 pb-12 pt-6 sm:pt-8', large ? 'max-w-[75rem]' : 'max-w-[64rem]')}>
+        <div className="flex items-center justify-between gap-4">
+          <Link to="/" className="shrink-0" aria-label="SMARTEX SustWay, retour au site">
+            <Logo taille="sm" />
+          </Link>
+          <Link to="/services" className="lien-trait text-[15px]">
+            Retour au site
+          </Link>
+        </div>
 
-      <div className={clsx('relative mx-auto px-5', large ? 'max-w-6xl' : 'max-w-5xl')}>
-        <Link to="/" className="btn-ghost -ml-2 mb-5">
-          <ArrowLeft className="h-4 w-4" aria-hidden />
-          Retour à l’accueil
-        </Link>
-
-        <div className={clsx('grid items-stretch gap-6', large ? 'lg:grid-cols-[22rem,1fr]' : 'lg:grid-cols-2')}>
-          <Revele className="panneau-marque">
-            <div
-              className="pointer-events-none absolute -right-16 top-10 h-56 w-56 rounded-full bg-brand-500/25 blur-3xl motion-safe:animate-respiration"
-              aria-hidden
-            />
-            <div className="relative">
-              <Logo taille="sm" variante="clair" />
-              <p className="mt-1 text-xs text-white/60">Par {SMARTEX.editeur}</p>
-            </div>
-
-            <div className="relative mt-10">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/80 ring-1 ring-white/15">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden />
-                {SMARTEX.accroche}
-              </span>
-              <p className="mt-4 text-2xl font-semibold leading-snug">
-                Objectivez votre performance durable en quelques minutes.
-              </p>
-              <p className="mt-3 text-sm text-white/70">{SMARTEX.baseline}</p>
-            </div>
+        <div
+          className={clsx(
+            'mt-8 grid items-stretch gap-6',
+            large ? 'lg:grid-cols-[22rem_1fr]' : 'lg:grid-cols-[0.9fr_1.1fr]'
+          )}
+        >
+          {/* Panneau de marque : plage encre pleine, couleur écrite en dur
+              comme le bandeau d'appel des pages publiques — il reste sombre
+              dans les deux thèmes. Masqué sous `lg`, où le formulaire passe
+              seul en premier écran. */}
+          <aside className="relative hidden flex-col rounded-[12px] bg-[#14234B] p-8 text-white dark:bg-[#1B2A55] lg:flex">
+            <p className="text-sm text-white/70">Par {SMARTEX.editeur}</p>
+            <p className="mt-6 font-display text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-white [text-wrap:balance]">
+              Votre démarche RSE, notée sur vos preuves.
+            </p>
+            <p className="mt-3 text-[15px] leading-relaxed text-white/75">{SMARTEX.baseline}</p>
 
             {atouts.length ? (
-              <ul className="relative mt-8 space-y-3 text-sm text-white/80">
+              <ul className="mt-8 space-y-3 border-t border-white/15 pt-6 text-[15px] leading-snug text-white/85">
                 {atouts.map((atout) => (
-                  <li key={atout} className="flex items-start gap-2.5">
-                    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" aria-hidden />
+                  <li key={atout} className="flex items-start gap-3">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#3FB488]" strokeWidth={2.5} aria-hidden />
                     <span>{atout}</span>
                   </li>
                 ))}
               </ul>
             ) : null}
 
-            <p className="relative mt-auto pt-8 text-xs text-white/50">
-              Chiffrement au repos et en transit · isolation multi-tenant · conformité RGPD
+            <p className="mt-auto pt-8 text-sm text-white/60">
+              Chiffrement au repos et en transit · isolation par entreprise · conformité RGPD
             </p>
-          </Revele>
+          </aside>
 
-          <Revele delai={120} className="carte-auth p-6 sm:p-8">
-            {badge ? (
-              <span className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-100 dark:bg-brand-500/15 dark:text-brand-400 dark:ring-brand-500/30">
-                {badge}
-              </span>
-            ) : null}
-            <h1 className="mt-3 text-2xl font-semibold tracking-tight text-ink-900">{titre}</h1>
-            {description ? <p className="mt-2 text-sm text-ink-500">{description}</p> : null}
-            <div className="mt-6">{children}</div>
-          </Revele>
+          <main className="min-w-0 rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-10">
+            {badge ? <p className="sur-titre [&_svg]:hidden">{badge}</p> : null}
+            <h1 className={clsx('titre-auth text-ink-900', badge ? 'mt-3' : null)}>{titre}</h1>
+            {description ? <p className="mt-3 max-w-[56ch] text-base leading-relaxed text-ink-600">{description}</p> : null}
+            <div className="mt-8">{children}</div>
+          </main>
         </div>
       </div>
     </div>

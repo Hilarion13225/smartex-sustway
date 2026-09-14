@@ -94,7 +94,7 @@ export default function ReinitialiserMotDePasse() {
         </div>
 
         <button type="submit" className="btn-vitrine w-full" disabled={chargement}>
-          {chargement ? <SustwayLoader taille="sm" /> : <KeyRound className="h-4 w-4" aria-hidden />}
+          {chargement ? <SustwayLoader taille="sm" /> : null}
           Réinitialiser et me connecter
         </button>
       </form>
