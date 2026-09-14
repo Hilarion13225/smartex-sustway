@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { Menu, Play, Search, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import BasculeTheme from './BasculeTheme';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
+import IconeMenu from './vitrine/IconeMenu';
 import { useTheme } from '../theme/ThemeContext';
+
+const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea';
 
 /*
  * Navigation principale : les pages de l'offre, plus Se former, que SMARTEX
@@ -47,6 +50,70 @@ export default function EnTetePublic() {
   // qui le précède resterait seul.
   const { sombreForce } = useTheme();
   const fermer = () => setOuvert(false);
+  const { pathname } = useLocation();
+  const boutonMenu = useRef(null);
+  const panneauMenu = useRef(null);
+
+  // Un changement de page ferme le menu, y compris par le bouton Précédent du
+  // navigateur, qui ne passe par aucun lien du menu.
+  useEffect(() => {
+    setOuvert(false);
+  }, [pathname]);
+
+  /*
+   * Menu mobile ouvert. Repris du composant « Header 3 » de 21st.dev pour le
+   * panneau plein écran et le blocage du défilement ; complété de ce qu'il
+   * n'avait pas : fermeture par Échap, focus gardé dans le menu, et focus
+   * rendu au bouton à la fermeture — sans quoi un utilisateur au clavier
+   * tabulait dans la page cachée derrière le panneau.
+   */
+  useEffect(() => {
+    if (!ouvert) return undefined;
+
+    const bouton = boutonMenu.current;
+    const debordementInitial = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    panneauMenu.current?.querySelector(SELECTEUR_FOCALISABLE)?.focus();
+
+    const auClavier = (evenement) => {
+      if (evenement.key === 'Escape') {
+        setOuvert(false);
+        return;
+      }
+      if (evenement.key !== 'Tab') return;
+      // Boucle de tabulation : le bouton de menu, puis les éléments du panneau.
+      const cibles = [bouton, ...(panneauMenu.current?.querySelectorAll(SELECTEUR_FOCALISABLE) ?? [])].filter(Boolean);
+      const premier = cibles[0];
+      const dernier = cibles[cibles.length - 1];
+      if (evenement.shiftKey && document.activeElement === premier) {
+        evenement.preventDefault();
+        dernier.focus();
+      } else if (!evenement.shiftKey && document.activeElement === dernier) {
+        evenement.preventDefault();
+        premier.focus();
+      }
+    };
+
+    // Passage en largeur bureau (rotation d'une tablette) : le menu n'a plus
+    // lieu d'être et bloquerait le défilement d'une page qui ne le montre pas.
+    const largeurBureau = window.matchMedia('(min-width: 1200px)');
+    const surLargeur = (requete) => {
+      if (requete.matches) setOuvert(false);
+    };
+
+    document.addEventListener('keydown', auClavier);
+    largeurBureau.addEventListener('change', surLargeur);
+    return () => {
+      document.body.style.overflow = debordementInitial;
+      document.removeEventListener('keydown', auClavier);
+      largeurBureau.removeEventListener('change', surLargeur);
+      // Le focus revient au bouton, sauf si l'utilisateur est déjà ailleurs
+      // (un lien suivi l'a emmené sur une autre page).
+      if (!document.activeElement || document.activeElement === document.body || panneauMenu.current?.contains(document.activeElement)) {
+        bouton?.focus();
+      }
+    };
+  }, [ouvert]);
 
   return (
     // Fond plein, sans flou ni ombre : l'en-tête est une bande du registre,
@@ -113,24 +180,30 @@ export default function EnTetePublic() {
             {ACTION.libelle}
           </Link>
           <button
+            ref={boutonMenu}
             type="button"
             className="-mr-2 flex h-12 w-12 items-center justify-center rounded-[4px] text-ink-900 transition-colors hover:bg-ink-100"
             onClick={() => setOuvert((valeur) => !valeur)}
             aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={ouvert}
+            aria-controls="menu-mobile"
           >
-            {ouvert ? <X className="h-6 w-6" aria-hidden /> : <Menu className="h-6 w-6" aria-hidden />}
+            <IconeMenu ouvert={ouvert} className="h-6 w-6" />
           </button>
         </div>
       </div>
 
-      <div
-        className={clsx(
-          'overflow-hidden border-ink-200 bg-ink-50 transition-[max-height] duration-300 min-[1200px]:hidden',
-          ouvert ? 'max-h-[44rem] border-t' : 'max-h-0'
-        )}
-      >
-        <nav className="mx-auto flex max-w-[75rem] flex-col px-5 pb-6 pt-2" aria-label="Navigation principale">
+      {/* Panneau plein écran sous l'en-tête. Rendu dans l'en-tête et non dans
+          un portail : il reste ainsi sous l'enveloppe `.vitrine`, dont il
+          reprend la palette et les règles de focus. `fixed` se cale sur la
+          fenêtre, l'en-tête collant n'ayant aucune transformation. */}
+      {ouvert ? (
+        <div
+          id="menu-mobile"
+          ref={panneauMenu}
+          className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto overscroll-contain border-t border-ink-200 bg-ink-50 motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1200px]:hidden"
+        >
+        <nav className="mx-auto flex max-w-[75rem] flex-col px-5 pb-10 pt-2" aria-label="Navigation principale">
           {LIENS.map((lien) => (
             <NavLink
               key={lien.vers}
@@ -194,7 +267,8 @@ export default function EnTetePublic() {
             </div>
           )}
         </nav>
-      </div>
+        </div>
+      ) : null}
 
       {rechercheOuverte ? <RechercheVitrine surFermeture={() => definirRechercheOuverte(false)} /> : null}
 
