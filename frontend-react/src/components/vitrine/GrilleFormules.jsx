@@ -13,8 +13,7 @@ import {
   SOUS_TITRES,
   pointsDescription,
 } from '../../lib/formules';
-import { Alerte, Loader } from '../ui';
-import Revele from '../Revele';
+import { Alerte } from '../ui';
 
 /**
  * La grille des formules, telle qu'elle s'affiche sur la page Formules.
@@ -25,6 +24,11 @@ import Revele from '../Revele';
  *
  * `niveauTitre` règle la balise du nom de formule : `h2` quand la grille est
  * le contenu principal de la page, `h3` sous une section déjà titrée.
+ *
+ * Refonte « Registre de preuves » : les cartes restent des cartes — ce sont
+ * des objets que l'on compare côte à côte — mais sans halo ni fond teinté.
+ * La formule mise en avant se distingue par un cadre encre, et les coches
+ * sont toutes vertes : elles disent « inclus », jamais « action requise ».
  */
 export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
   const navigate = useNavigate();
@@ -80,159 +84,160 @@ export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
 
   return (
     <>
-    {chargement ? (
-      <Loader message="Chargement des formules…" />
-    ) : (
-      <>
-        {/* Le message du client d'API vise le développeur (« lancez
-            quarkus:dev ») : le visiteur reçoit ici une phrase qui lui dit
-            quoi faire, et l'offre sur devis reste affichée puisqu'elle ne
-            dépend pas du serveur. */}
-        {catalogueIndisponible ? (
-          <div className="mb-6">
-            <Alerte ton="rouge">
-              Nos formules Standard et Avancées ne peuvent pas être affichées pour le moment.{' '}
-              <Link to="/contact" className="font-semibold underline">
-                Contactez-nous
-              </Link>{' '}
-              et nous vous transmettons la grille tarifaire.
-            </Alerte>
-          </div>
-        ) : null}
+      {chargement ? (
+        // Trois cartes vides à la place d'un indicateur de chargement : la
+        // grille occupe déjà sa place, et la page ne saute pas quand les prix
+        // arrivent.
+        <div className="grid gap-6 lg:grid-cols-3" aria-busy="true">
+          <p className="sr-only" role="status">
+            Chargement des formules…
+          </p>
+          {[0, 1, 2].map((rang) => (
+            <div key={rang} className="h-[34rem] rounded-[12px] border border-ink-200 bg-surface p-7" aria-hidden>
+              <div className="h-5 w-28 rounded-[4px] bg-ink-100" />
+              <div className="mt-3 h-4 w-48 rounded-[4px] bg-ink-100" />
+              <div className="mt-8 h-9 w-36 rounded-[4px] bg-ink-100" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          {/* Le message du client d'API vise le développeur (« lancez
+              quarkus:dev ») : le visiteur reçoit ici une phrase qui lui dit
+              quoi faire, et l'offre sur devis reste affichée puisqu'elle ne
+              dépend pas du serveur. */}
+          {catalogueIndisponible ? (
+            <div className="mb-6">
+              <Alerte ton="rouge">
+                Nos formules Standard et Avancées ne peuvent pas être affichées pour le moment.{' '}
+                <Link to="/contact" className="font-semibold underline">
+                  Contactez-nous
+                </Link>{' '}
+                et nous vous transmettons la grille tarifaire.
+              </Alerte>
+            </div>
+          ) : null}
 
-        <div className={clsx('grid gap-6', colonnes)}>
-        {cartes.map((carte, index) => {
-          const misEnAvant = carte.code === 'AVANCEES';
-          const surDevis = carte.code === 'ENTREPRISE';
-          const gratuit = !surDevis && Number(carte.prix) === 0;
+          <div className={clsx('grid gap-6', colonnes)}>
+            {cartes.map((carte) => {
+              const misEnAvant = carte.code === 'AVANCEES';
+              const surDevis = carte.code === 'ENTREPRISE';
+              const gratuit = !surDevis && Number(carte.prix) === 0;
 
-          return (
-            <Revele key={carte.code} delai={index * 100}>
-              <article
-                className={clsx(
-                  'relative flex h-full flex-col rounded-2xl border bg-surface p-6',
-                  misEnAvant
-                    ? 'border-brand-400 bg-brand-50/40 shadow-soft ring-1 ring-brand-300 dark:bg-brand-500/[0.07]'
-                    : 'border-ink-200'
-                )}
-              >
-                {misEnAvant ? (
-                  <span className="absolute -top-3 left-6 whitespace-nowrap rounded-[4px] bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white">
-                    Le plus populaire
-                  </span>
-                ) : null}
-
-                <Titre className="font-display text-lg font-extrabold text-marine">{carte.nom}</Titre>
-                <p className="mt-1 text-[13px] text-ink-500">{carte.sousTitre}</p>
-
-                <p className="mt-6 flex items-baseline gap-2">
-                  {surDevis ? (
-                    <span className="font-display text-[1.9rem] font-extrabold leading-none text-marine">
-                      {carte.mentionPrix}
-                    </span>
-                  ) : (
-                    <>
-                      {/* Chiffres tabulaires : les trois prix s'alignent
-                          verticalement d'une carte à l'autre. */}
-                      <span className="font-chiffres text-[1.9rem] font-extrabold leading-none text-marine [font-variant-numeric:tabular-nums]">
-                        {gratuit ? 'Gratuit' : formaterMontant(carte.prix)}
-                      </span>
-                      {gratuit ? null : <span className="text-xs font-medium text-ink-500">/ an</span>}
-                    </>
-                  )}
-                </p>
-                <p className="mt-1.5 text-[13px] leading-snug text-ink-500">
-                  {surDevis
-                    ? 'Périmètre et accompagnement définis avec vous'
-                    : gratuit
-                      ? 'Consultation en mode démonstration uniquement'
-                      : 'Licence annuelle, renouvelable'}
-                </p>
-
-                {ACCROCHES[carte.code] ? (
-                  <p className="mt-5 text-[13px] font-medium leading-snug text-marine">{ACCROCHES[carte.code]}</p>
-                ) : null}
-
-                {HERITAGE[carte.code] ? (
-                  <p className="mt-5 border-t border-ink-100 pt-5 text-[13px] font-semibold text-ink-500">
-                    {HERITAGE[carte.code]}
-                  </p>
-                ) : null}
-
-                <ul
+              return (
+                <article
+                  key={carte.code}
                   className={clsx(
-                    'space-y-3',
-                    HERITAGE[carte.code] ? 'mt-4' : 'mt-5 border-t border-ink-100 pt-5'
+                    'relative flex h-full flex-col rounded-[12px] border bg-surface p-6 sm:p-7',
+                    misEnAvant ? 'border-ink-900 ring-1 ring-ink-900' : 'border-ink-200'
                   )}
                 >
-                  {carte.points.map((point) => (
-                    <li key={point} className="flex gap-2.5 text-sm leading-snug text-ink-600">
-                      <Check
-                        className={clsx(
-                          'mt-0.5 h-4 w-4 shrink-0',
-                          misEnAvant ? 'text-brand-600 dark:text-brand-400' : 'text-feuille'
-                        )}
-                        aria-hidden
-                      />
-                      <span>{point}</span>
-                    </li>
-                  ))}
-                </ul>
+                  {/* « Recommandée » et non « Le plus populaire » : un
+                      conseil se défend, un classement de ventes demanderait
+                      des chiffres qu'on n'affiche pas. */}
+                  {misEnAvant ? (
+                    <span className="absolute -top-3 left-6 whitespace-nowrap rounded-[4px] bg-ink-900 px-2.5 py-1 text-xs font-semibold text-ink-50">
+                      Recommandée
+                    </span>
+                  ) : null}
 
-                {carte.demarche.length ? (
-                  <ul className="mt-3 space-y-3 border-t border-ink-100 pt-4">
-                    {carte.demarche.map((point) => (
-                      <li key={point} className="flex gap-2.5 text-sm leading-snug text-ink-600">
-                        <Check
-                          className={clsx(
-                            'mt-0.5 h-4 w-4 shrink-0',
-                            misEnAvant
-                              ? 'text-brand-600 dark:text-brand-400'
-                              : 'text-feuille'
-                          )}
-                          aria-hidden
-                        />
+                  <Titre className="font-display text-xl font-bold leading-snug text-ink-900">{carte.nom}</Titre>
+                  <p className="mt-1 text-[15px] leading-snug text-ink-600">{carte.sousTitre}</p>
+
+                  <p className="mt-6 flex items-baseline gap-2">
+                    {surDevis ? (
+                      <span className="font-display text-[2.25rem] font-bold leading-none tracking-[-0.02em] text-ink-900">
+                        {carte.mentionPrix}
+                      </span>
+                    ) : (
+                      <>
+                        {/* Chiffres tabulaires : les prix s'alignent d'une
+                            carte à l'autre. */}
+                        <span className="font-display text-[2.25rem] font-bold leading-none tracking-[-0.02em] text-ink-900 tabular-nums">
+                          {gratuit ? 'Gratuit' : formaterMontant(carte.prix)}
+                        </span>
+                        {gratuit ? null : <span className="text-sm font-medium text-ink-500">par an</span>}
+                      </>
+                    )}
+                  </p>
+                  <p className="mt-2 text-sm leading-snug text-ink-500">
+                    {surDevis
+                      ? 'Périmètre et accompagnement définis avec vous'
+                      : gratuit
+                        ? 'Consultation en mode démonstration uniquement'
+                        : 'Licence annuelle, renouvelable'}
+                  </p>
+
+                  {ACCROCHES[carte.code] ? (
+                    <p className="mt-5 text-base font-semibold leading-snug text-ink-900">{ACCROCHES[carte.code]}</p>
+                  ) : null}
+
+                  {HERITAGE[carte.code] ? (
+                    <p className="mt-5 border-t border-ink-200 pt-5 text-sm font-semibold text-ink-600">
+                      {HERITAGE[carte.code]}
+                    </p>
+                  ) : null}
+
+                  <ul
+                    className={clsx(
+                      'space-y-3',
+                      HERITAGE[carte.code] ? 'mt-4' : 'mt-5 border-t border-ink-200 pt-5'
+                    )}
+                  >
+                    {carte.points.map((point) => (
+                      <li key={point} className="flex gap-3 text-[15px] leading-snug text-ink-700">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-feuille" strokeWidth={2.5} aria-hidden />
                         <span>{point}</span>
                       </li>
                     ))}
                   </ul>
-                ) : null}
 
-                <div className="flex-1" />
+                  {carte.demarche.length ? (
+                    <ul className="mt-4 space-y-3 border-t border-ink-200 pt-4">
+                      {carte.demarche.map((point) => (
+                        <li key={point} className="flex gap-3 text-[15px] leading-snug text-ink-700">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-feuille" strokeWidth={2.5} aria-hidden />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
 
-                {surDevis ? (
-                  <Link
-                    to="/contact"
-                    className="mt-7 inline-flex w-full items-center justify-center gap-2.5 rounded-lg border border-ink-300 px-5 py-3 text-sm font-semibold text-ink-900 transition duration-300 hover:border-ink-900"
-                  >
-                    Nous contacter
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/inscription?formule=${carte.code}`)}
-                    className={clsx(
-                      'group mt-7 inline-flex w-full items-center justify-center gap-2.5 rounded-lg px-5 py-3 text-sm font-semibold transition duration-300',
-                      misEnAvant
-                        ? 'bg-brand-600 text-white hover:bg-brand-700'
-                        : 'border border-ink-300 text-ink-900 hover:border-ink-900'
-                    )}
-                  >
-                    Choisir cette formule
-                  </button>
-                )}
-              </article>
-            </Revele>
-          );
-        })}
-        </div>
-      </>
-    )}
+                  <div className="flex-1" />
 
-    <p className="mt-8 flex items-center gap-2 text-sm text-ink-500">
-      <Lock className="h-3.5 w-3.5" aria-hidden />
-      Paiement des formules Standard et Avancées via PI-SPI et Wave.
-    </p>
+                  {surDevis ? (
+                    <Link
+                      to="/contact"
+                      viewTransition
+                      className="btn-presse mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[4px] border border-ink-300 px-5 text-base font-semibold text-ink-900 hover:border-ink-900"
+                    >
+                      Demander un devis
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/inscription?formule=${carte.code}`)}
+                      className={clsx(
+                        'btn-presse mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[4px] px-5 text-base font-semibold',
+                        misEnAvant
+                          ? 'bg-brand-600 text-white hover:bg-brand-700'
+                          : 'border border-ink-300 text-ink-900 hover:border-ink-900'
+                      )}
+                    >
+                      Choisir {carte.nom}
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <p className="mt-8 flex items-center gap-2 text-[15px] text-ink-600">
+        <Lock className="h-4 w-4 shrink-0" aria-hidden />
+        Paiement des formules Standard et Avancées via PI-SPI et Wave.
+      </p>
     </>
   );
 }

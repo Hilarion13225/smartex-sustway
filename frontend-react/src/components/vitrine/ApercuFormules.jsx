@@ -29,7 +29,7 @@ export default function ApercuFormules() {
       </div>
 
       {/* Même enveloppe que sur la page Formules, pour une grille identique. */}
-      <div className="mx-auto max-w-[80rem] px-5 pb-16 pt-12 sm:pb-20">
+      <div className="mx-auto max-w-[75rem] px-5 pb-16 pt-12 sm:pb-20">
         <GrilleFormules niveauTitre="h3" />
       </div>
     </section>
