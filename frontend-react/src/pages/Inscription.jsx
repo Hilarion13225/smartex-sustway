@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -19,6 +19,7 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { ApiError } from '../lib/apiClient';
 import SustwayLoader from '../components/SustwayLoader';
 import CadreAuth from '../components/CadreAuth';
+import EtapesParcours from '../components/EtapesParcours';
 import SaisieCodeOtp, { LONGUEUR_CODE } from '../components/SaisieCodeOtp';
 
 const ATOUTS = [
@@ -140,7 +141,18 @@ export default function Inscription() {
         ['confirmation', 'Confirmation'],
       ];
   const indexCourant = etapes.findIndex(([cle]) => cle === etape);
-  const progression = Math.round((indexCourant / (etapes.length - 1)) * 100);
+
+  // Le focus suit l'étape, mais pas au premier affichage : la page vient de
+  // s'ouvrir, le visiteur n'a encore rien actionné.
+  const zoneEtape = useRef(null);
+  const premierAffichage = useRef(true);
+  useEffect(() => {
+    if (premierAffichage.current) {
+      premierAffichage.current = false;
+      return;
+    }
+    zoneEtape.current?.focus();
+  }, [etape]);
   const forceMotDePasse = evaluerMotDePasse(formulaire.motDePasse);
 
   function majFormulaire(champ) {
@@ -268,35 +280,21 @@ export default function Inscription() {
       description="Cinq étapes guidées : formule, compte, vérification, paiement puis accès immédiat à la plateforme."
       atouts={ATOUTS}
     >
-      <div className="mb-7">
-        <ol className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          {etapes.map(([cle, libelle], index) => {
-            const passee = index < indexCourant;
-            const active = index === indexCourant;
-            return (
-              <li key={cle} className="flex items-center gap-2">
-                <span
-                  className={clsx(
-                    'flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition duration-300',
-                    passee && 'bg-brand-100 text-brand-700',
-                    active && 'bg-brand-600 text-white shadow-glow motion-safe:animate-apparition-douce',
-                    !passee && !active && 'bg-ink-100 text-ink-400'
-                  )}
-                >
-                  {passee ? <CheckCircle2 className="h-4 w-4" aria-hidden /> : index + 1}
-                </span>
-                <span className={active ? 'font-semibold text-ink-900' : 'text-ink-500'}>{libelle}</span>
-              </li>
-            );
-          })}
-        </ol>
-        <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 transition-all duration-700"
-            style={{ width: `${Math.max(6, progression)}%` }}
-          />
-        </div>
-      </div>
+      {/* Seul retour possible : de « Compte » vers « Formule », avant que le
+          compte n'existe. Au-delà, revenir en arrière recréerait un compte ou
+          une entreprise déjà enregistrés. */}
+      <EtapesParcours
+        className="mb-7"
+        etapes={etapes}
+        indexCourant={indexCourant}
+        estNavigable={(index) => etape === 'infos' && etapes[index][0] === 'formule'}
+        surRetour={(cle) => setEtape(cle)}
+      />
+
+      {/* Zone qui reçoit le focus à chaque changement d'étape : le bouton
+          qui vient d'être actionné disparaît avec l'étape, et le focus
+          retombait sinon en haut de la page. */}
+      <div ref={zoneEtape} tabIndex={-1} className="outline-none" aria-label={`Étape ${indexCourant + 1} sur ${etapes.length}`}>
 
       {erreur ? (
         <div className="mb-5">
@@ -688,6 +686,7 @@ export default function Inscription() {
           </div>
         </div>
       ) : null}
+      </div>
     </CadreAuth>
   );
 }
