@@ -198,7 +198,7 @@ export default function Methodologie() {
           <ol className="mt-12 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-7">
             {CHAINE.map((maillon, index) => (
               <li key={maillon.libelle} className="border-t-2 border-ink-900 pt-4">
-                <p className="text-sm font-medium tabular-nums text-ink-400">{index + 1}</p>
+                <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
                 <h3 className="mt-1 font-display text-lg font-bold leading-snug text-ink-900">{maillon.libelle}</h3>
                 <p className="mt-1.5 text-[15px] leading-snug text-ink-600">{maillon.detail}</p>
               </li>

@@ -255,7 +255,7 @@ function Fiche({ temps, actif, surSurvol }) {
       onMouseLeave={() => surSurvol(null)}
     >
       <p className="flex items-baseline gap-3">
-        <span className="text-sm font-medium tabular-nums text-ink-400">{temps.numero}</span>
+        <span className="text-sm font-medium tabular-nums text-ink-500">{temps.numero}</span>
         <span className="font-display text-xl font-bold text-ink-900">{temps.code}</span>
         <span className="text-[15px] text-ink-500">{temps.libelle.join(' ')}</span>
       </p>

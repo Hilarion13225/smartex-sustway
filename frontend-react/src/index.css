@@ -511,6 +511,19 @@
   outline: 2px solid rgb(var(--brand-600));
   outline-offset: 2px;
 }
+/* En sombre, le bordeaux 600 tombe sous 3:1 sur le fond marine : le contour
+   de focus et la bordure d'erreur prennent le cran plus clair. */
+.dark .vitrine a:focus-visible,
+.dark .vitrine button:focus-visible,
+.dark .vitrine input:focus-visible,
+.dark .vitrine select:focus-visible,
+.dark .vitrine textarea:focus-visible,
+.dark .vitrine iframe:focus-visible {
+  outline-color: rgb(var(--brand-400));
+}
+.dark .vitrine .input[aria-invalid='true'] {
+  border-color: rgb(var(--brand-400));
+}
 
 /* --- Une seule largeur de page --------------------------------------- */
 /* Les pages anciennes posaient leurs sections à 1440 px, les récentes à

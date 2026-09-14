@@ -148,7 +148,7 @@ export default function Formation() {
           <ul className="mt-12 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
             {FORMATS.map((format, index) => (
               <li key={format.titre} className="grid grid-cols-[2rem_1fr] border-t border-ink-300 py-5">
-                <span className="pt-0.5 text-sm font-medium tabular-nums text-ink-400">
+                <span className="pt-0.5 text-sm font-medium tabular-nums text-ink-500">
                   {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="min-w-0">
@@ -227,7 +227,7 @@ export default function Formation() {
           <ol className="min-w-0 border-t border-ink-300">
             {CERTIFICATS.map((certificat, index) => (
               <li key={certificat.titre} className="grid grid-cols-[2rem_1fr] border-b border-ink-200 py-5">
-                <span className="pt-0.5 text-sm font-medium tabular-nums text-ink-400">{index + 1}</span>
+                <span className="pt-0.5 text-sm font-medium tabular-nums text-ink-500">{index + 1}</span>
                 <span className="min-w-0">
                   <span className="block font-display text-lg font-bold leading-snug text-ink-900">{certificat.titre}</span>
                   <span className="mt-1.5 block text-[15px] leading-relaxed text-ink-600">{certificat.texte}</span>
