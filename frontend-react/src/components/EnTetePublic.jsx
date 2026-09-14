@@ -9,15 +9,16 @@ import ModaleVideo from './ModaleVideo';
 import { useTheme } from '../theme/ThemeContext';
 
 /*
- * Navigation principale : uniquement les pages qui mènent à l'achat de la
- * solution. Se former, À propos, Déploiement, Bénéfices et la FAQ restent
- * atteignables par le pied de page et par la recherche : ils parlent de
- * SMARTEX Expertises ou répondent à des questions plus tardives.
+ * Navigation principale : les pages de l'offre, plus Se former, que SMARTEX
+ * Expertises veut rendre visible dès l'en-tête. La FAQ reste atteignable par
+ * le pied de page et par la recherche : elle répond à des questions plus
+ * tardives.
  */
 const LIENS = [
   { vers: '/services', libelle: 'Solution' },
   { vers: '/methodologie', libelle: 'Méthodologie' },
   { vers: '/formules', libelle: 'Formules' },
+  { vers: '/formation', libelle: 'Se former' },
   { vers: '/contact', libelle: 'Contact' },
 ];
 
@@ -31,8 +32,8 @@ const ACTION = { vers: '/formules#grille-formules', libelle: 'Choisir une formul
  */
 function classeLien({ isActive }) {
   return clsx(
-    'relative flex h-16 items-center px-2.5 text-[15px] font-medium transition-colors',
-    'after:absolute after:inset-x-2.5 after:-bottom-px after:h-0.5 after:bg-brand-600',
+    'relative flex h-16 items-center px-2 text-[15px] font-medium transition-colors',
+    'after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:bg-brand-600',
     isActive ? 'text-ink-900 after:opacity-100' : 'text-ink-600 after:opacity-0 hover:text-ink-900'
   );
 }
@@ -51,7 +52,10 @@ export default function EnTetePublic() {
     // Fond plein, sans flou ni ombre : l'en-tête est une bande du registre,
     // pas une vitre posée au-dessus de la page.
     <header className="sticky top-0 z-40 border-b border-ink-200 bg-ink-50">
-      <div className="mx-auto flex h-16 max-w-[75rem] items-center gap-5 px-5">
+      {/* Espacements serrés au plus juste : avec cinq liens, la barre complète
+          tient dans les 1200 px de la vitrine avec une vingtaine de pixels de
+          marge. Ajouter un lien demande de revérifier à 1200 px. */}
+      <div className="mx-auto flex h-16 max-w-[75rem] items-center gap-4 px-5">
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" />
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
@@ -65,7 +69,7 @@ export default function EnTetePublic() {
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2 whitespace-nowrap min-[1200px]:flex">
+        <div className="ml-auto hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
