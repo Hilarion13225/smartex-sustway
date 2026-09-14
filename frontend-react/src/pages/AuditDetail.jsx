@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -11,7 +11,7 @@ import VoletPlanAction from '../components/audit/VoletPlanAction';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { estAnalyse, estRenseigne } from '../components/audit/statutsCritere';
+import { estRenseigne } from '../components/audit/statutsCritere';
 import ClotureMission from '../components/audit/ClotureMission';
 
 

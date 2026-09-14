@@ -9,7 +9,6 @@ import {
   FolderOpen,
   Gauge,
   Plus,
-  Sparkles,
   TriangleAlert,
 } from 'lucide-react';
 import Revele from '../components/Revele';

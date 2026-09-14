@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, ListTodo, Plus, Sparkles, TriangleAlert } from 'lucide-react';
+import { Check, Plus, Sparkles, TriangleAlert } from 'lucide-react';
 import clsx from 'clsx';
 import { Alerte, Badge, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
