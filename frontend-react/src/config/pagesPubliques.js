@@ -9,16 +9,10 @@
  */
 export const PAGES_PUBLIQUES = [
   {
-    chemin: '/accueil',
-    titre: 'Accueil',
-    description: 'La plateforme d’évaluation RSE et ESG, de la preuve au rapport.',
-    motsCles: ['accueil', 'presentation', 'plateforme', 'rse', 'esg', 'intelligence artificielle', 'ia'],
-  },
-  {
     chemin: '/services',
     titre: 'Solution',
-    description: 'Ce que la plateforme couvre : diagnostic, preuves, analyse, plan d’action.',
-    motsCles: ['solution', 'services', 'fonctionnalites', 'diagnostic', 'audit', 'perimetre'],
+    description: 'La plateforme d’évaluation RSE et ESG : comment elle marche, pour qui, à quel prix.',
+    motsCles: ['solution', 'accueil', 'presentation', 'plateforme', 'services', 'fonctionnalites', 'diagnostic', 'audit', 'perimetre', 'rse', 'esg', 'intelligence artificielle', 'ia'],
   },
   {
     chemin: '/methodologie',
@@ -43,30 +37,6 @@ export const PAGES_PUBLIQUES = [
     titre: 'Se former',
     description: 'Montée en compétence des équipes sur la RSE, l’ESG et l’ISR.',
     motsCles: ['formation', 'se former', 'apprendre', 'competences', 'isr', 'sensibilisation', 'academy'],
-  },
-  {
-    chemin: '/avantages',
-    titre: 'Bénéfices de la solution',
-    description: 'Ce que l’évaluation change concrètement pour votre organisation.',
-    motsCles: ['avantages', 'benefices', 'gains', 'valeur', 'pourquoi'],
-  },
-  {
-    chemin: '/engagement',
-    titre: 'Engageons-nous ensemble',
-    description: 'La démarche d’accompagnement proposée par Smartex Expertises.',
-    motsCles: ['engagement', 'accompagnement', 'partenariat', 'ensemble'],
-  },
-  {
-    chemin: '/deploiement',
-    titre: 'Déploiement de la solution',
-    description: 'Les étapes de mise en place et la conduite du changement.',
-    motsCles: ['deploiement', 'mise en place', 'installation', 'integration', 'demarrage', 'onboarding'],
-  },
-  {
-    chemin: '/a-propos',
-    titre: 'À propos',
-    description: 'Smartex Expertises, éditeur de la plateforme.',
-    motsCles: ['a propos', 'qui sommes-nous', 'editeur', 'entreprise', 'equipe', 'smartex expertises'],
   },
   {
     chemin: '/faq',

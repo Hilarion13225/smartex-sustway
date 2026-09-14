@@ -27,6 +27,18 @@
     --ink-900: 31 37 51;
     --marine: 26 42 99;
     --surface: 255 255 255;
+    /* Bordeaux historique, identique à l'ancien hexadécimal du thème. */
+    --brand-50: 253 242 241;
+    --brand-100: 249 220 218;
+    --brand-200: 240 184 179;
+    --brand-300: 226 141 132;
+    --brand-400: 207 92 80;
+    --brand-500: 179 39 30;
+    --brand-600: 146 31 24;
+    --brand-700: 119 26 21;
+    --brand-800: 92 19 16;
+    --brand-900: 67 14 12;
+    --feuille: 5 150 105;
   }
   .dark {
     --ink-50: 16 20 28;
@@ -41,6 +53,71 @@
     --ink-900: 240 243 247;
     --marine: 199 214 247;
     --surface: 23 28 38;
+  }
+
+  /*
+   * Palette de la vitrine — « Registre de preuves » (voir DESIGN-VITRINE.md).
+   *
+   * Posée sur l'enveloppe de LayoutPublic : les variables redéfinies ici ne
+   * valent que pour les pages publiques, leur en-tête et leur pied. L'espace
+   * connecté, hors de cette enveloppe, garde les valeurs de :root.
+   *
+   * Encre #14234B, Bordeaux #8F1D17, Feuille #067A55, Papier #F4F5F1,
+   * Craie #FFFFFF, Ardoise #4A5366.
+   */
+  .vitrine {
+    --ink-50: 244 245 241;
+    --ink-100: 232 234 229;
+    --ink-200: 213 217 210;
+    --ink-300: 176 183 180;
+    --ink-400: 127 135 148;
+    --ink-500: 96 105 122;
+    --ink-600: 74 83 102;
+    --ink-700: 52 61 82;
+    --ink-800: 34 44 68;
+    --ink-900: 20 35 75;
+    --marine: 20 35 75;
+    --surface: 255 255 255;
+    --brand-50: 249 237 236;
+    --brand-100: 241 214 212;
+    --brand-200: 226 172 168;
+    --brand-300: 203 121 115;
+    --brand-400: 176 70 62;
+    --brand-500: 158 42 34;
+    --brand-600: 143 29 23;
+    --brand-700: 118 22 17;
+    --brand-800: 90 16 12;
+    --brand-900: 62 11 8;
+    --feuille: 6 122 85;
+  }
+  .dark .vitrine {
+    --ink-50: 12 21 48;
+    --ink-100: 21 32 66;
+    --ink-200: 36 49 86;
+    --ink-300: 58 72 110;
+    --ink-400: 116 128 158;
+    --ink-500: 152 163 188;
+    --ink-600: 183 191 208;
+    --ink-700: 208 214 227;
+    --ink-800: 228 232 241;
+    --ink-900: 242 244 250;
+    --marine: 242 244 250;
+    --surface: 21 32 66;
+    /* En sombre, le bordeaux sert de fond de bouton sous du texte blanc ET de
+       texte sur le fond de page : une seule valeur ne tient pas les deux
+       contrastes. 600 porte les fonds (blanc à 5,2:1), 400 les textes
+       (5,9:1 sur le fond). */
+    --brand-50: 44 22 30;
+    --brand-100: 64 28 34;
+    --brand-200: 100 40 42;
+    --brand-300: 235 160 152;
+    --brand-400: 224 122 110;
+    --brand-500: 194 75 64;
+    --brand-600: 184 67 58;
+    --brand-700: 158 55 47;
+    --brand-800: 238 150 140;
+    --brand-900: 246 196 190;
+    --feuille: 63 180 136;
   }
 
   html,
@@ -299,5 +376,317 @@
   }
   .masque-lateral {
     mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+}
+
+/* ==========================================================================
+   Vitrine — « Registre de preuves » (voir DESIGN-VITRINE.md)
+   --------------------------------------------------------------------------
+   Toutes ces règles sont bornées par `.vitrine`, posée sur l'enveloppe de
+   LayoutPublic : l'espace connecté n'en voit aucune.
+
+   Elles sont volontairement préfixées plutôt que placées dans une couche
+   Tailwind : `.vitrine h1` pèse (0,1,1) et l'emporte sur les utilitaires
+   écrits en ligne dans les pages (`text-[1.95rem]`, 0,1,0). C'est ce qui
+   impose la nouvelle échelle à treize pages sans réécrire chaque titre.
+   ========================================================================== */
+
+/* --- Échelle typographique --------------------------------------------- */
+.vitrine h1 {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.5rem, 1.55rem + 3.6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.vitrine .titre-editorial {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* --- Libellé de section : casse de phrase, sans filet ----------------- */
+/* Remplace le sur-titre en petites capitales espacées, le tic de page
+   générée le plus répandu. Le libellé ne subsiste que là où il informe. */
+.vitrine .sur-titre {
+  gap: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgb(var(--ink-500));
+}
+.vitrine .filet {
+  display: none;
+}
+
+/* --- Un seul mouvement ------------------------------------------------- */
+/* Plus d'apparition au défilement section par section : le seul mouvement
+   de la vitrine est celui du spécimen, au chargement. `Revele` reste intact
+   pour l'espace connecté, qui l'utilise sur vingt-six pages. */
+.vitrine .revele {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* --- Hiérarchie des rayons --------------------------------------------- */
+/* 4 px pour les contrôles, 8 pour les petits blocs, 12 pour les panneaux :
+   une hiérarchie, au lieu d'un même arrondi de 16 px posé sur tout. */
+.vitrine .rounded-lg,
+.vitrine .rounded-md {
+  border-radius: 4px;
+}
+.vitrine .rounded-xl {
+  border-radius: 8px;
+}
+.vitrine .rounded-2xl,
+.vitrine .rounded-3xl {
+  border-radius: 12px;
+}
+
+/* --- Moins d'ombres ---------------------------------------------------- */
+/* L'ombre douce sous chaque carte et le halo rouge sous chaque bouton
+   étaient la signature du kit de cartes SaaS. L'élévation passe par le
+   filet et la plage de couleur. */
+.vitrine .shadow-glow,
+.vitrine .shadow-soft,
+.vitrine .shadow-sm,
+.vitrine .shadow-lg {
+  box-shadow: none;
+}
+.vitrine .carte-vitrine {
+  border-radius: 12px;
+  border-color: rgb(var(--ink-200));
+  box-shadow: none;
+}
+.vitrine .carte-vitrine:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: rgb(var(--ink-300));
+}
+
+/* --- Pastille d'icône : une seule teinte encre -------------------------- */
+.vitrine .puce-icone {
+  border-radius: 8px;
+  background: rgb(var(--ink-100));
+  color: rgb(var(--ink-900));
+  box-shadow: none;
+}
+.vitrine .group:hover .puce-icone {
+  background: rgb(var(--ink-100));
+  color: rgb(var(--ink-900));
+}
+
+/* --- Boutons ----------------------------------------------------------- */
+/* 48 px de haut : la cible tactile recommandée, sur une vitrine consultée
+   d'abord au téléphone. */
+.vitrine .btn-vitrine,
+.vitrine .btn-vitrine-clair {
+  min-height: 48px;
+  border-radius: 4px;
+  box-shadow: none;
+}
+.vitrine .btn-vitrine:hover,
+.vitrine .btn-vitrine-clair:hover,
+.vitrine .btn-vitrine-fantome:hover {
+  transform: none;
+}
+
+/* --- Liens d'action : sans décalage au survol -------------------------- */
+.vitrine a:hover,
+.vitrine button:hover {
+  --tw-translate-y: 0;
+  --tw-translate-x: 0;
+}
+
+/* --- Mise au point clavier visible ------------------------------------- */
+.vitrine a:focus-visible,
+.vitrine button:focus-visible,
+.vitrine input:focus-visible,
+.vitrine select:focus-visible,
+.vitrine textarea:focus-visible {
+  outline: 2px solid rgb(var(--brand-600));
+  outline-offset: 2px;
+}
+
+/* --- Une seule largeur de page --------------------------------------- */
+/* Les pages anciennes posaient leurs sections à 1440 px, les récentes à
+   1280, le héros à 1200 : trois bords gauches différents sur une même
+   page. Tout s'aligne sur 1200. */
+.vitrine .max-w-\[90rem\],
+.vitrine .max-w-\[80rem\] {
+  max-width: 75rem;
+}
+
+/* --- Plus de capitales espacées --------------------------------------- */
+/* Les sigles (RSE, ESG, OIT) sont écrits en capitales dans le texte même :
+   annuler la transformation ne les touche pas. */
+.vitrine .uppercase {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* --- Titre des pages intérieures -------------------------------------- */
+/* Un cran sous le titre d'accueil : les intitulés des pages secondaires sont
+   plus longs, et à 64 px ils cassaient en quatre lignes. */
+.vitrine h1.titre-page {
+  font-size: clamp(2.25rem, 1.45rem + 2.7vw, 3.5rem);
+  line-height: 1.04;
+}
+
+/* --- Le spécimen du héros : le seul mouvement de la vitrine ------------- */
+/* État de repos = état final : sans animation (ou sous « réduire les
+   animations »), le passage est surligné, le lien tracé, le verdict et la
+   jauge visibles. Le mouvement ne fait que rejouer ce chemin une fois. */
+.vitrine .specimen-passage {
+  background-image: linear-gradient(rgba(6, 122, 85, 0.2), rgba(6, 122, 85, 0.2));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vitrine .specimen-passage {
+    background-size: 0% 100%;
+    animation: specimen-surligne 0.9s 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  .vitrine .specimen-lien {
+    transform: scaleY(0);
+    transform-origin: top;
+    animation: specimen-trace 0.35s 1.2s ease-out forwards;
+  }
+  .vitrine .specimen-verdict {
+    opacity: 0;
+    animation: specimen-apparait 0.35s 1.5s ease-out forwards;
+  }
+  .vitrine .specimen-jauge {
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: specimen-jauge 0.9s 1.55s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+}
+@keyframes specimen-surligne {
+  to { background-size: 100% 100%; }
+}
+@keyframes specimen-trace {
+  to { transform: scaleY(1); }
+}
+@keyframes specimen-apparait {
+  to { opacity: 1; }
+}
+@keyframes specimen-jauge {
+  to { transform: scaleX(1); }
+}
+
+/* Champ en erreur : bordure bordeaux, en plus du message écrit sous le champ
+   (la couleur seule ne suffit jamais à signaler une erreur). */
+.vitrine .input[aria-invalid='true'] {
+  border-color: rgb(var(--brand-600));
+}
+
+/* La carte OpenStreetMap intégrée reçoit le focus clavier : elle doit le
+   montrer comme les autres contrôles. */
+.vitrine iframe:focus-visible {
+  outline: 2px solid rgb(var(--brand-600));
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Mouvement de la vitrine — jetons communs
+   --------------------------------------------------------------------------
+   Toutes les transitions de la vitrine partagent ces durées et ces courbes :
+   un retour d'interaction (survol, pression) est bref, un changement d'état
+   (une réponse qui s'ouvre, un quartier de la roue qui s'éclaire) un peu
+   plus long. La sortie est plus rapide que l'entrée. Seuls `transform` et
+   `opacity` sont animés : rien ne décale la mise en page.
+   ========================================================================== */
+.vitrine {
+  --duree-retour: 150ms;
+  --duree-etat: 240ms;
+  --courbe-entree: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --courbe-sortie: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* --- Lien souligné : le trait glisse de gauche à droite au survol ------ */
+.vitrine .lien-trait {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  align-self: flex-start;
+  font-weight: 600;
+  color: rgb(var(--ink-900));
+  background-image: linear-gradient(currentColor, currentColor), linear-gradient(rgb(var(--ink-300)), rgb(var(--ink-300)));
+  background-position: 0 calc(50% + 0.8em), 0 calc(50% + 0.8em);
+  background-repeat: no-repeat;
+  background-size: 0% 1px, 100% 1px;
+  transition: background-size var(--duree-etat) var(--courbe-entree);
+}
+.vitrine .lien-trait:hover,
+.vitrine .lien-trait:focus-visible {
+  background-size: 100% 1px, 100% 1px;
+}
+
+/* --- Pression des boutons ---------------------------------------------- */
+/* Un léger enfoncement confirme la prise en compte du clic, sans attendre
+   le chargement de la page suivante. */
+.vitrine .btn-presse {
+  transition:
+    background-color var(--duree-retour) ease-out,
+    border-color var(--duree-retour) ease-out,
+    transform var(--duree-retour) var(--courbe-sortie);
+}
+.vitrine .btn-presse:active {
+  transform: scale(0.98);
+}
+
+/* --- Icône qui pivote : « + » devient « × » ------------------------------ */
+.vitrine .icone-bascule {
+  transition: transform var(--duree-etat) var(--courbe-entree);
+}
+.vitrine [aria-expanded='true'] .icone-bascule {
+  transform: rotate(45deg);
+}
+
+/* --- Roue de Deming : un temps éclairé, les autres en retrait ------------ */
+.vitrine .roue-temps,
+.vitrine .fiche-temps {
+  transition: opacity var(--duree-etat) var(--courbe-entree);
+}
+.vitrine [data-temps-actif] .roue-temps:not([data-actif]),
+.vitrine [data-temps-actif] .fiche-temps:not([data-actif]) {
+  opacity: 0.35;
+}
+
+/* --- Transition entre pages --------------------------------------------- */
+/* Un fondu court, déclenché par les liens qui portent `viewTransition`. La
+   page d'entrée n'en émet aucun : son affichage reste celui d'origine. */
+::view-transition-old(root) {
+  animation: 120ms var(--courbe-sortie, ease-in) both fondu-sortie;
+}
+::view-transition-new(root) {
+  animation: 180ms cubic-bezier(0.2, 0.7, 0.2, 1) both fondu-entree;
+}
+@keyframes fondu-sortie {
+  to { opacity: 0; }
+}
+@keyframes fondu-entree {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vitrine .lien-trait,
+  .vitrine .btn-presse,
+  .vitrine .icone-bascule,
+  .vitrine .roue-temps,
+  .vitrine .fiche-temps {
+    transition: none;
+  }
+  .vitrine .btn-presse:active {
+    transform: none;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }

@@ -9,18 +9,24 @@ export default {
         // utilisé pour les erreurs et la criticité CRITIQUE) : plus profond et
         // moins vif, pour qu'un bouton principal ne se confonde jamais avec un
         // message d'erreur malgré la même famille de teinte.
+        // Variables CSS plutôt qu'hexadécimal : la vitrine redéfinit le
+        // bordeaux sous `.vitrine` (voir index.css) sans toucher à l'espace
+        // connecté, qui garde les valeurs de :root.
         brand: {
-          50: '#fdf2f1',
-          100: '#f9dcda',
-          200: '#f0b8b3',
-          300: '#e28d84',
-          400: '#cf5c50',
-          500: '#b3271e',
-          600: '#921f18',
-          700: '#771a15',
-          800: '#5c1310',
-          900: '#430e0c',
+          50: 'rgb(var(--brand-50) / <alpha-value>)',
+          100: 'rgb(var(--brand-100) / <alpha-value>)',
+          200: 'rgb(var(--brand-200) / <alpha-value>)',
+          300: 'rgb(var(--brand-300) / <alpha-value>)',
+          400: 'rgb(var(--brand-400) / <alpha-value>)',
+          500: 'rgb(var(--brand-500) / <alpha-value>)',
+          600: 'rgb(var(--brand-600) / <alpha-value>)',
+          700: 'rgb(var(--brand-700) / <alpha-value>)',
+          800: 'rgb(var(--brand-800) / <alpha-value>)',
+          900: 'rgb(var(--brand-900) / <alpha-value>)',
         },
+        // Vert de la vitrine : « conforme », progression, pilier
+        // Environnement. Réservé à ce sens, jamais décoratif.
+        feuille: 'rgb(var(--feuille) / <alpha-value>)',
         // Défini via des variables CSS (voir index.css, :root et .dark) plutôt
         // qu'en hexadécimal fixe : la même classe `bg-ink-50`/`text-ink-900`
         // change alors de sens selon le thème actif, sans qu'aucune des ~40

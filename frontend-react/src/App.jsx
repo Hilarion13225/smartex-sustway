@@ -6,14 +6,9 @@ import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
 import Landing from './pages/Landing';
-import Accueil from './pages/Accueil';
 import Services from './pages/Services';
 import Formules from './pages/Formules';
-import APropos from './pages/APropos';
 import Methodologie from './pages/Methodologie';
-import Avantages from './pages/Avantages';
-import Engagement from './pages/Engagement';
-import Deploiement from './pages/Deploiement';
 import Formation from './pages/Formation';
 import Contact from './pages/Contact';
 import Faq from './pages/Faq';
@@ -67,14 +62,16 @@ export default function App() {
         <Routes>
           <Route element={<LayoutPublic />}>
             <Route path="/" element={<Landing />} />
-            <Route path="/accueil" element={<Accueil />} />
+            {/* Pages retirées de la vitrine recentrée sur la solution : leurs
+                adresses redirigent, pour qu'aucun lien déjà partagé ne casse. */}
+            <Route path="/accueil" element={<Navigate to="/services" replace />} />
             <Route path="/services" element={<Services />} />
             <Route path="/formules" element={<Formules />} />
-            <Route path="/a-propos" element={<APropos />} />
+            <Route path="/a-propos" element={<Navigate to="/services#smartex" replace />} />
             <Route path="/methodologie" element={<Methodologie />} />
-            <Route path="/avantages" element={<Avantages />} />
-            <Route path="/engagement" element={<Engagement />} />
-            <Route path="/deploiement" element={<Deploiement />} />
+            <Route path="/avantages" element={<Navigate to="/services" replace />} />
+            <Route path="/engagement" element={<Navigate to="/formules" replace />} />
+            <Route path="/deploiement" element={<Navigate to="/methodologie" replace />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<Faq />} />

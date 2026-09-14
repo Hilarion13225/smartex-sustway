@@ -87,7 +87,7 @@ export const POINTS_CLAIRS = {
 /** La démarche qui accompagne la plateforme, dite tout aussi simplement. */
 export const METHODOLOGIE_INCLUSE = {
   STANDARD: [
-    'La méthode Smartex SustWay au complet',
+    'La méthode SMARTEX SustWay au complet',
     'Vous évaluez votre entreprise vous-même',
     'Un plan d’action à appliquer',
     'Une équipe qui répond par e-mail',
@@ -156,6 +156,11 @@ export const COMPARATIF = [
  * page de prix ne doit pas promettre ce que le reste du site ne dit pas.
  */
 export const QUESTIONS = [
+  {
+    question: 'Comment se passe le paiement ?',
+    reponse:
+      'En ligne, par PI-SPI ou Wave, à la fin de l’inscription. L’accès à la plateforme s’ouvre dès que le paiement est validé.',
+  },
   {
     question: 'Puis-je changer de formule plus tard ?',
     reponse:

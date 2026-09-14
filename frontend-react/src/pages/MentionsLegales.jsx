@@ -1,7 +1,6 @@
-import { Scale } from 'lucide-react';
 import EnTeteVitrine from '../components/EnTeteVitrine';
-import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
+import { typoFr } from '../lib/typographie';
 
 // `ancre` : cible des liens « Confidentialité », « Cookies » et « Propriété
 // intellectuelle » du pied de page. Identifiants posés explicitement plutôt
@@ -61,37 +60,58 @@ export default function MentionsLegales() {
     <div>
       <EnTeteVitrine
         etiquette="Informations légales"
-        icone={Scale}
         titre="Mentions légales"
         description={`Conditions d’édition, propriété intellectuelle et traitement des données de la plateforme ${SMARTEX.produit}.`}
       />
 
-      <section className="mx-auto max-w-3xl px-5 py-20">
-        <div className="space-y-8">
-          {SECTIONS.map((section, index) => (
-            <Revele key={section.titre} delai={index * 70}>
-              <article
-                id={section.ancre}
-                className="scroll-mt-28 rounded-2xl border border-ink-100 bg-surface p-6 shadow-soft"
-              >
-                <h2 className="text-lg font-semibold text-ink-900">{section.titre}</h2>
-                <div className="mt-3 space-y-3 text-sm leading-relaxed text-ink-600">
-                  {section.contenu.map((paragraphe) => (
-                    <p key={paragraphe}>{paragraphe}</p>
-                  ))}
-                </div>
-              </article>
-            </Revele>
-          ))}
-        </div>
+      {/* Un texte juridique se lit comme un document, pas comme une grille de
+          cartes : des filets entre les sections, un sommaire collant pour
+          aller droit à la clause cherchée, la ligne tenue sous 70 caractères. */}
+      <section className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
+        <nav aria-label="Sommaire des mentions légales" className="hidden lg:block">
+          <ul className="sticky top-28 space-y-1 border-l border-ink-200">
+            {SECTIONS.map((section) => (
+              <li key={section.ancre}>
+                <a
+                  href={`#${section.ancre}`}
+                  className="-ml-px flex min-h-10 items-center border-l-2 border-transparent pl-4 text-[15px] leading-snug text-ink-600 transition-colors hover:border-ink-900 hover:text-ink-900"
+                >
+                  {section.titre}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-        <p className="mt-10 text-xs text-ink-500">
-          Les informations d’immatriculation et l’identité de l’hébergeur sont communiquées sur demande à{' '}
-          <a className="font-medium text-brand-700 underline" href={`mailto:${SMARTEX.email}`}>
-            {SMARTEX.email}
-          </a>
-          .
-        </p>
+        <div className="min-w-0 max-w-3xl">
+          {SECTIONS.map((section) => (
+            <article
+              key={section.ancre}
+              id={section.ancre}
+              className="scroll-mt-28 border-t border-ink-200 py-8 first:border-t-0 first:pt-0"
+            >
+              <h2 className="font-display text-xl font-bold leading-snug tracking-[-0.01em] text-ink-900 sm:text-[1.375rem]">
+                {section.titre}
+              </h2>
+              <div className="mt-3 max-w-[65ch] space-y-3 text-base leading-[1.65] text-ink-600">
+                {section.contenu.map((paragraphe) => (
+                  <p key={paragraphe}>{typoFr(paragraphe)}</p>
+                ))}
+              </div>
+            </article>
+          ))}
+
+          <p className="mt-2 border-t border-ink-200 pt-8 text-[15px] leading-relaxed text-ink-500">
+            Les informations d’immatriculation et l’identité de l’hébergeur sont communiquées sur demande à{' '}
+            <a
+              className="font-medium text-ink-900 underline decoration-ink-300 underline-offset-4 transition-colors hover:decoration-ink-900"
+              href={`mailto:${SMARTEX.email}`}
+            >
+              {SMARTEX.email}
+            </a>
+            .
+          </p>
+        </div>
       </section>
     </div>
   );

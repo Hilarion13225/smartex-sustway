@@ -1,10 +1,10 @@
 /**
- * Coordonnées et éléments d'identité de Smartex Expertises, éditeur de
+ * Coordonnées et éléments d'identité de SMARTEX Expertises, éditeur de
  * Smartex Sustway. Centralisés ici pour être modifiables sans toucher aux
  * pages : aucun appel réseau, aucune dépendance au backend.
  */
 export const SMARTEX = {
-  editeur: 'Smartex Expertises',
+  editeur: 'SMARTEX Expertises',
   produit: 'SMARTEX SustWay',
   accroche: 'Évaluation RSE intelligente',
   signature: 'Évaluer. Analyser. Progresser.',
@@ -37,7 +37,7 @@ export const RESEAUX_SOCIAUX = [
   { code: 'x', libelle: 'X', url: SMARTEX.x },
 ].filter((reseau) => reseau.url);
 
-/** Domaines d'intervention de Smartex Expertises autour de la plateforme. */
+/** Domaines d'intervention de SMARTEX Expertises autour de la plateforme. */
 export const METIERS = [
   {
     code: 'diagnostic',
@@ -88,7 +88,7 @@ export const FONDEMENTS = [
   // texte qui figurait ici était la copie mot pour mot de celui de « Pratiques
   // professionnelles ». Plutôt que d'inventer une définition métier ou
   // d'afficher trois fois la même phrase, le champ reste vide et la page
-  // n'affiche que l'intitulé. À renseigner par Smartex Expertises.
+  // n'affiche que l'intitulé. À renseigner par SMARTEX Expertises.
   { titre: 'Robustesse', texte: null },
   { titre: 'Indépendance', texte: null },
 ];

@@ -1,98 +1,120 @@
-import { useState } from 'react';
-import { ChevronDown, CircleHelp } from 'lucide-react';
-import clsx from 'clsx';
 import EnTeteVitrine from '../components/EnTeteVitrine';
-import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
+import ListeQuestions from '../components/vitrine/ListeQuestions';
+import { QUESTIONS as QUESTIONS_FORMULES } from '../lib/formules';
 import { SMARTEX } from '../config/smartex';
 
-const QUESTIONS = [
+/*
+ * Les questions sont rangées par thème, dans l'ordre où un acheteur se les
+ * pose : ce que fait la plateforme, comment elle note, ce que cela coûte.
+ *
+ * Le dernier thème reprend telles quelles les questions de la page Formules,
+ * au lieu d'en tenir une seconde version ici : les deux listes disaient la
+ * même chose sur le paiement et la confidentialité, en des termes différents,
+ * et l'une finirait par contredire l'autre.
+ */
+const THEMES = [
   {
-    question: 'À qui s’adresse la plateforme ?',
-    reponse:
-      'Aux entreprises qui doivent structurer leur démarche RSE : première évaluation, préparation d’un audit externe ou constitution d’un dossier auprès d’un bailleur. Le questionnaire s’adapte au secteur et à la taille déclarés.',
+    ancre: 'demarche',
+    titre: 'La démarche',
+    questions: [
+      {
+        question: 'À qui s’adresse la plateforme ?',
+        reponse:
+          'Aux entreprises qui doivent structurer leur démarche RSE : première évaluation, préparation d’un audit externe ou constitution d’un dossier auprès d’un bailleur. Le questionnaire s’adapte au secteur et à la taille déclarés.',
+      },
+      {
+        // Réponse alignée sur le comparatif des formules (« Revue experte » en
+        // Avancées et Entreprise) et sur la règle RG38 de l'API : une
+        // évaluation dont la confiance IA est sous 0,80 part en revue experte.
+        question: 'Un expert relit-il les résultats ?',
+        reponse:
+          'En formule Standard, l’évaluation est réalisée par le pipeline d’agents IA, et chaque critère affiche un indice de confiance. En formules Avancées et Entreprise, un critère dont l’indice de confiance est jugé insuffisant est relu par un expert avant d’être validé.',
+      },
+    ],
   },
   {
-    question: 'Comment la note est-elle calculée ?',
-    reponse:
-      'Le pipeline IA estime une probabilité de conformité par critère, convertie en niveau d’engagement de 1 à 5. La note obtenue est le produit du niveau et du coefficient du critère ; le score est la somme des notes obtenues divisée par la somme des coefficients, sur les seuls critères actifs.',
+    ancre: 'notation',
+    titre: 'La notation',
+    questions: [
+      {
+        question: 'Comment la note est-elle calculée ?',
+        reponse:
+          'Le pipeline IA estime une probabilité de conformité par critère, convertie en niveau d’engagement de 1 à 5. La note obtenue est le produit du niveau et du coefficient du critère ; le score est la somme des notes obtenues divisée par la somme des coefficients, sur les seuls critères actifs.',
+      },
+      {
+        question: 'La criticité influence-t-elle le score ?',
+        reponse:
+          'Non. La criticité sert uniquement à calculer le risque attendu et donc l’ordre de priorité des actions correctives. Elle n’entre jamais dans le calcul du score.',
+      },
+      {
+        question: 'Que signifie l’indice de préparation aux financements verts ?',
+        reponse:
+          'C’est une mesure d’alignement aux 8 Performance Standards du bailleur pilote, restreinte aux critères concernés. Il indique le niveau de préparation du dossier : ce n’est pas une garantie d’éligibilité ni une décision de financement.',
+      },
+    ],
   },
   {
-    question: 'La criticité influence-t-elle le score ?',
-    reponse:
-      'Non. La criticité sert uniquement à calculer le risque attendu et donc l’ordre de priorité des actions correctives. Elle n’entre jamais dans le calcul du score.',
-  },
-  {
-    question: 'Un expert relit-il les résultats ?',
-    reponse:
-      'L’évaluation est intégralement réalisée par le pipeline d’agents IA. Chaque critère reste accompagné d’un indice de confiance explicite, pour que votre équipe sache où porter son attention si elle souhaite challenger un résultat.',
-  },
-  {
-    question: 'Que signifie l’indice de préparation aux financements verts ?',
-    reponse:
-      'C’est une mesure d’alignement aux 8 Performance Standards du bailleur pilote, restreinte aux critères concernés. Il indique le niveau de préparation du dossier : ce n’est pas une garantie d’éligibilité ni une décision de financement.',
-  },
-  {
-    question: 'Quels moyens de paiement sont acceptés ?',
-    reponse:
-      'Les formules Standard et Avancées se règlent via PI-SPI et Wave, à prix fixe pour une licence annuelle.',
-  },
-  {
-    question: 'Mes documents sont-ils confidentiels ?',
-    reponse:
-      'Oui. Les données sont chiffrées au repos et en transit, et chaque entreprise est isolée des autres locataires de la plateforme, conformément au RGPD.',
+    ancre: 'formules-et-donnees',
+    titre: 'Formules, paiement et données',
+    questions: QUESTIONS_FORMULES,
   },
 ];
 
 export default function Faq() {
-  const [ouvert, setOuvert] = useState(0);
-
   return (
     <div>
       <EnTeteVitrine
         etiquette="Questions fréquentes"
-        icone={CircleHelp}
         titre="Tout ce qu’il faut savoir avant de commencer"
         description={`Méthodologie, formules, confidentialité : les réponses aux questions les plus posées à l’équipe ${SMARTEX.editeur}.`}
       />
 
-      <section className="mx-auto max-w-3xl px-5 py-20">
-        <ul className="space-y-3">
-          {QUESTIONS.map((element, index) => {
-            const actif = ouvert === index;
-            return (
-              <Revele key={element.question} delai={index * 60}>
-                <li className="overflow-hidden rounded-2xl border border-ink-100 bg-surface shadow-soft transition-colors duration-300 hover:border-brand-200">
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                    onClick={() => setOuvert(actif ? -1 : index)}
-                    aria-expanded={actif}
-                  >
-                    <span className="text-sm font-semibold text-ink-900">{element.question}</span>
-                    <ChevronDown
-                      className={clsx('h-4 w-4 shrink-0 text-brand-600 transition-transform duration-300', actif && 'rotate-180')}
-                      aria-hidden
-                    />
-                  </button>
-                  <div
-                    className={clsx(
-                      'grid transition-all duration-300 ease-out',
-                      actif ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                    )}
-                  >
-                    <p className="overflow-hidden px-5 pb-5 text-sm leading-relaxed text-ink-600">{element.reponse}</p>
-                  </div>
-                </li>
-              </Revele>
-            );
-          })}
-        </ul>
+      <section className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
+        {/* Sommaire collant sur grand écran. Sur téléphone il est omis : les
+            trois thèmes se suivent de près, et un sommaire en tête ne ferait
+            que repousser la première question sous le pli. */}
+        <nav aria-label="Thèmes des questions" className="hidden lg:block">
+          <ul className="sticky top-28 space-y-1 border-l border-ink-200">
+            {THEMES.map((theme) => (
+              <li key={theme.ancre}>
+                <a
+                  href={`#${theme.ancre}`}
+                  className="-ml-px flex min-h-10 items-center border-l-2 border-transparent pl-4 text-[15px] text-ink-600 transition-colors hover:border-ink-900 hover:text-ink-900"
+                >
+                  {theme.titre}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="min-w-0 max-w-3xl space-y-14 sm:space-y-16">
+          {THEMES.map((theme, indexTheme) => (
+            <section key={theme.ancre} id={theme.ancre} aria-labelledby={`titre-${theme.ancre}`} className="scroll-mt-28">
+              <h2
+                id={`titre-${theme.ancre}`}
+                className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]"
+              >
+                {theme.titre}
+              </h2>
+              {/* La toute première réponse est ouverte : le visiteur voit d'emblée
+                  qu'une question se déplie, et à quoi ressemble une réponse. */}
+              <ListeQuestions
+                questions={theme.questions}
+                ouverteParDefaut={indexTheme === 0 ? 0 : null}
+                className="mt-6"
+              />
+            </section>
+          ))}
+        </div>
       </section>
 
       <AppelAction
         titre="Votre question n’est pas dans la liste ?"
         texte="Écrivez-nous : nous répondons sous un jour ouvré aux demandes reçues via le formulaire de contact."
+        action={{ libelle: 'Poser ma question', vers: '/contact' }}
+        secondaire={{ libelle: 'Voir les formules', vers: '/formules#grille-formules' }}
       />
     </div>
   );

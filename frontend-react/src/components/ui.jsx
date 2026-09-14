@@ -103,7 +103,7 @@ export function Vide({
     </div>;
 }
 
-/** Loader personnalisé Smartex Sustway, affiché pendant les traitements longs (CDC §9). */
+/** Loader personnalisé SMARTEX SustWay, affiché pendant les traitements longs (CDC §9). */
 export function Loader({
   message
 }) {

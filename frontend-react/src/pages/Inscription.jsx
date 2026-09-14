@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
@@ -80,7 +80,11 @@ export default function Inscription() {
   const [renvoiEnCours, setRenvoiEnCours] = useState(false);
   const [formules, setFormules] = useState([]);
   const [secteurs, setSecteurs] = useState([]);
-  const [plan, setPlan] = useState('STANDARD');
+  // La formule choisie sur la page Formules arrive dans l'URL
+  // (/inscription?formule=AVANCEES) : sans cette lecture, le visiteur qui a
+  // cliqué sur Avancées retrouvait Standard présélectionnée au moment de payer.
+  const [parametres] = useSearchParams();
+  const [plan, setPlan] = useState(() => parametres.get('formule')?.toUpperCase() || 'STANDARD');
   const [paiementFournisseur, setPaiementFournisseur] = useState('PI_SPI');
 
   const [formulaire, setFormulaire] = useState({

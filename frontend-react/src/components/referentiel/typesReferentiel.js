@@ -7,7 +7,7 @@
  * ne porte pas de colonne organisme — ils sont donc dérivés du type.
  */
 export const TYPES_REFERENTIEL = [
-  { code: 'SMARTEX', libelle: 'RSE Smartex', organisme: 'Smartex Expertises', couleur: '#921f18', famille: 'interne' },
+  { code: 'SMARTEX', libelle: 'RSE Smartex', organisme: 'SMARTEX Expertises', couleur: '#921f18', famille: 'interne' },
   { code: 'IFC_SFI', libelle: 'IFC / SFI', organisme: 'International Finance Corporation', couleur: '#2563eb', famille: 'international' },
   { code: 'ITIE', libelle: 'ITIE', organisme: 'Initiative pour la transparence', couleur: '#d97706', famille: 'extractif' },
   { code: 'GRESB', libelle: 'GRESB', organisme: 'GRESB', couleur: '#7c3aed', famille: 'immobilier' },

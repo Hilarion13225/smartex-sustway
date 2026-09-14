@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 /*
  * Roue de Deming (PDCA), dessinée en SVG plutôt qu'importée en image.
  *
@@ -40,8 +42,6 @@ const TEMPS = [
     debut: 186,
     fin: 264,
     couleur: '#921f18',
-    pastille: 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400',
-    titre: 'text-brand-600 dark:text-brand-400',
     texte: 'Cadrer le périmètre, les critères applicables et les objectifs de la mission.',
     // Feuille de route : un document.
     icone: 'M -9 -12 H 3 L 9 -6 V 12 H -9 Z M -4 -3 H 4 M -4 2 H 4 M -4 7 H 1',
@@ -53,8 +53,6 @@ const TEMPS = [
     debut: 276,
     fin: 354,
     couleur: '#1a2a63',
-    pastille: 'bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
-    titre: 'text-[#1a2a63] dark:text-blue-300',
     texte: 'Collecter les preuves documentaires et lancer l’évaluation.',
     // Mise en œuvre : un engrenage.
     icone:
@@ -67,8 +65,6 @@ const TEMPS = [
     debut: 6,
     fin: 84,
     couleur: '#047857',
-    pastille: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
-    titre: 'text-emerald-700 dark:text-emerald-400',
     texte: 'Mesurer les écarts, les non-conformités et le degré de maturité atteint.',
     // Mesure : un histogramme.
     icone: 'M -11 12 V 2 H -5 V 12 Z M -3 12 V -6 H 3 V 12 Z M 5 12 V -12 H 11 V 12 Z',
@@ -80,8 +76,6 @@ const TEMPS = [
     debut: 96,
     fin: 174,
     couleur: '#c2410c',
-    pastille: 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-    titre: 'text-amber-700 dark:text-amber-400',
     texte: 'Corriger, capitaliser les bonnes pratiques, puis repartir sur un cycle mieux informé.',
     // Reprise du cycle : deux flèches en boucle.
     icone:
@@ -117,8 +111,13 @@ function cheminFleche(fin) {
   return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${RAYON_FLECHE} ${RAYON_FLECHE} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
 }
 
-/** La roue seule, sans les fiches. */
-export function Roue({ className }) {
+/**
+ * La roue seule, sans les fiches.
+ *
+ * `actif` éclaire un temps et met les autres en retrait ; `surSurvol` remonte
+ * le temps pointé à la composition, pour qu'elle éclaire la fiche jumelle.
+ */
+export function Roue({ className, actif = null, surSurvol }) {
   return (
     <svg viewBox="0 0 400 400" role="img" aria-labelledby="roue-deming-titre" className={className}>
       <title id="roue-deming-titre">
@@ -134,7 +133,13 @@ export function Roue({ className }) {
         const [xPointe, yPointe] = point(temps.fin + 24, RAYON_FLECHE);
 
         return (
-          <g key={temps.code}>
+          <g
+            key={temps.code}
+            className="roue-temps"
+            data-actif={actif === temps.code ? '' : undefined}
+            onMouseEnter={surSurvol ? () => surSurvol(temps.code) : undefined}
+            onMouseLeave={surSurvol ? () => surSurvol(null) : undefined}
+          >
             {/* Contour de même couleur, joint arrondi : c'est ce qui adoucit
                 les angles du secteur, un `rx` n'existant pas sur un chemin. */}
             <path
@@ -236,22 +241,25 @@ export function Roue({ className }) {
 }
 
 /*
- * Une fiche d'étape. Les quatre sont identiques, y compris celles de gauche :
- * les refléter mettait le numéro après l'intitulé et alignait le texte à
- * droite, ce qui casse la lecture pour un gain purement décoratif.
+ * Une fiche d'étape. Plus de carte ni de pastille colorée : un filet de la
+ * couleur du quartier, qui sert de légende à la roue, puis le numéro, le nom
+ * et le texte. Les quatre fiches sont identiques, y compris celles de gauche.
  */
-function Fiche({ temps }) {
+function Fiche({ temps, actif, surSurvol }) {
   return (
-    <div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-      <p className="flex items-center gap-2.5">
-        <span
-          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-[13px] font-extrabold ${temps.pastille}`}
-        >
-          {temps.numero}
-        </span>
-        <span className={`font-display text-[15px] font-extrabold ${temps.titre}`}>{temps.code}</span>
+    <div
+      className="fiche-temps border-t-2 pt-4"
+      style={{ borderTopColor: temps.couleur }}
+      data-actif={actif ? '' : undefined}
+      onMouseEnter={() => surSurvol(temps.code)}
+      onMouseLeave={() => surSurvol(null)}
+    >
+      <p className="flex items-baseline gap-3">
+        <span className="text-sm font-medium tabular-nums text-ink-400">{temps.numero}</span>
+        <span className="font-display text-xl font-bold text-ink-900">{temps.code}</span>
+        <span className="text-[15px] text-ink-500">{temps.libelle.join(' ')}</span>
       </p>
-      <p className="mt-2.5 text-[13px] leading-relaxed text-ink-500">{temps.texte}</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{temps.texte}</p>
     </div>
   );
 }
@@ -263,29 +271,40 @@ function Fiche({ temps }) {
  * la grille : sur téléphone elles se lisent donc dans l'ordre du cycle, alors
  * qu'une colonne de gauche suivie d'une colonne de droite aurait donné
  * 01, 04, 02, 03.
+ *
+ * Pointer une fiche éclaire son quartier, pointer un quartier éclaire sa
+ * fiche : le lien entre le texte et le dessin se voit au lieu de se deviner.
+ * Toute l'information reste lisible sans ce survol, d'où l'absence d'équivalent
+ * clavier — il n'y a rien à atteindre qui ne soit déjà affiché.
  */
 export default function RoueDeming({ className }) {
   const [plan, faire, verifier, agir] = TEMPS;
+  const [actif, definirActif] = useState(null);
 
   return (
     <div
-      className={`grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:grid-rows-2 lg:gap-x-8 lg:gap-y-6 ${
+      data-temps-actif={actif ?? undefined}
+      className={`grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:grid-rows-2 lg:gap-x-8 lg:gap-y-6 ${
         className ?? ''
       }`}
     >
-      <Roue className="mx-auto h-auto w-full max-w-[23rem] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:w-[23rem]" />
+      <Roue
+        actif={actif}
+        surSurvol={definirActif}
+        className="mx-auto h-auto w-full max-w-[23rem] lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:w-[23rem]"
+      />
 
       <div className="lg:col-start-1 lg:row-start-1">
-        <Fiche temps={plan} />
+        <Fiche temps={plan} actif={actif === plan.code} surSurvol={definirActif} />
       </div>
       <div className="lg:col-start-3 lg:row-start-1">
-        <Fiche temps={faire} />
+        <Fiche temps={faire} actif={actif === faire.code} surSurvol={definirActif} />
       </div>
       <div className="lg:col-start-3 lg:row-start-2">
-        <Fiche temps={verifier} />
+        <Fiche temps={verifier} actif={actif === verifier.code} surSurvol={definirActif} />
       </div>
       <div className="lg:col-start-1 lg:row-start-2">
-        <Fiche temps={agir} />
+        <Fiche temps={agir} actif={actif === agir.code} surSurvol={definirActif} />
       </div>
     </div>
   );
