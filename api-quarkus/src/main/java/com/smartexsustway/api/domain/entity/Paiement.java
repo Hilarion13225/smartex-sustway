@@ -27,7 +27,7 @@ import java.util.UUID;
  * webhooks, vérification de signature) n'est PAS encore implémenté — voir
  * PaiementService, qui documente ce point explicitement (CDC §5.3 : "les
  * modalités précises d'intégration technique avec PI-SPI et Wave... restent
- * à cadrer avec Smartex Expertises").
+ * à cadrer avec SMARTEX Expertises").
  */
 @Entity
 @Table(name = "paiement")

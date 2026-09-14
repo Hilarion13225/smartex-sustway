@@ -30,7 +30,7 @@ import java.util.UUID;
  * remplacé par un vrai appel API sans changer son contrat — le reste de
  * l'application (AbonnementResource) n'a pas à changer quand ce sera fait.
  *
- * TODO intégration réelle (bloqué sur cadrage Smartex Expertises) :
+ * TODO intégration réelle (bloqué sur cadrage SMARTEX Expertises) :
  *   - PI-SPI : identifiants marchand, format de requête, callback de confirmation
  *   - Wave : identifiants marchand, format de requête, callback de confirmation
  *   - Vérification de signature des callbacks (sécurité : ne jamais activer

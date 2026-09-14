@@ -71,7 +71,7 @@ public class EmailService {
                 Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email sans risque :
                 ce code seul ne permet d'activer aucun compte.
 
-                — L'équipe technique Smartex Expertises
+                — L'équipe technique SMARTEX Expertises
                 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
                 """.formatted(prenom, code, minutesValidite);
 
@@ -86,7 +86,7 @@ public class EmailService {
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
                                 <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
-                                <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
+                                <span style="color:#d6f5e3;font-size:12px;">Par SMARTEX Expertises</span>
                               </td>
                             </tr>
                             <tr>
@@ -116,7 +116,7 @@ public class EmailService {
                             </tr>
                             <tr>
                               <td style="background-color:#f6f7f9;padding:20px 32px;text-align:center;">
-                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique Smartex Expertises</p>
+                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique SMARTEX Expertises</p>
                                 <p style="margin:4px 0 0;color:#aeb7c8;font-size:11px;">Email automatique, merci de ne pas y répondre.</p>
                               </td>
                             </tr>
@@ -145,7 +145,7 @@ public class EmailService {
 
                 Si vous ne connaissez pas cette entreprise, vous pouvez ignorer cet email sans risque.
 
-                — L'équipe technique Smartex Expertises
+                — L'équipe technique SMARTEX Expertises
                 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
                 """.formatted(entrepriseNom, roleNom, lienAcceptation);
 
@@ -160,7 +160,7 @@ public class EmailService {
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
                                 <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
-                                <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
+                                <span style="color:#d6f5e3;font-size:12px;">Par SMARTEX Expertises</span>
                               </td>
                             </tr>
                             <tr>
@@ -195,7 +195,7 @@ public class EmailService {
                             </tr>
                             <tr>
                               <td style="background-color:#f6f7f9;padding:20px 32px;text-align:center;">
-                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique Smartex Expertises</p>
+                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique SMARTEX Expertises</p>
                                 <p style="margin:4px 0 0;color:#aeb7c8;font-size:11px;">Email automatique, merci de ne pas y répondre.</p>
                               </td>
                             </tr>
@@ -225,7 +225,7 @@ public class EmailService {
                 Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email sans risque :
                 votre mot de passe actuel reste inchangé.
 
-                — L'équipe technique Smartex Expertises
+                — L'équipe technique SMARTEX Expertises
                 Cet email a été envoyé automatiquement, merci de ne pas y répondre.
                 """.formatted(prenom, lienReinitialisation);
 
@@ -240,7 +240,7 @@ public class EmailService {
                             <tr>
                               <td style="background-color:#128257;padding:24px 32px;">
                                 <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.01em;">SMARTEX SustWay</span><br/>
-                                <span style="color:#d6f5e3;font-size:12px;">Par Smartex Expertises</span>
+                                <span style="color:#d6f5e3;font-size:12px;">Par SMARTEX Expertises</span>
                               </td>
                             </tr>
                             <tr>
@@ -275,7 +275,7 @@ public class EmailService {
                             </tr>
                             <tr>
                               <td style="background-color:#f6f7f9;padding:20px 32px;text-align:center;">
-                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique Smartex Expertises</p>
+                                <p style="margin:0;color:#63728e;font-size:12px;">— L'équipe technique SMARTEX Expertises</p>
                                 <p style="margin:4px 0 0;color:#aeb7c8;font-size:11px;">Email automatique, merci de ne pas y répondre.</p>
                               </td>
                             </tr>

@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     # gratuit, les prompts peuvent être utilisés par Google pour améliorer
     # ses produits (contrairement au palier payant, qui exclut cet usage).
     # Décision actée pour la phase de développement — à requalifier avec
-    # Smartex Expertises avant tout traitement de données clients réelles
+    # SMARTEX Expertises avant tout traitement de données clients réelles
     # (voir README, section "Agents IA").
     gemini_api_key: str = ""
     # TEMPORAIRE — bascule sur Flash-Lite pour contourner le quota gratuit

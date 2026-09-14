@@ -4,7 +4,7 @@ Document de passation généré à la fin d'une session de travail avec Claude C
 
 ## 1. Le produit
 
-Smartex Sustway est une plateforme d'évaluation RSE (édité par Smartex Expertises) : un visiteur découvre le produit, s'inscrit, choisit une formule (Free/Standard/Avancées), crée une ou plusieurs entreprises avec abonnement, lance des missions d'audit sur le référentiel Smartex Sustway (87 critères), dépose des preuves documentaires, déclenche une évaluation IA (pipeline d'agents Gemini : Document → Evidence/Compliance → [Risk/Recommendation en formule Avancées]), et consulte les résultats (score, non-conformités, rapports, indice de préparation aux financements verts IFC/SFI en formule Avancées).
+Smartex Sustway est une plateforme d'évaluation RSE (édité par SMARTEX Expertises) : un visiteur découvre le produit, s'inscrit, choisit une formule (Free/Standard/Avancées), crée une ou plusieurs entreprises avec abonnement, lance des missions d'audit sur le référentiel Smartex Sustway (87 critères), dépose des preuves documentaires, déclenche une évaluation IA (pipeline d'agents Gemini : Document → Evidence/Compliance → [Risk/Recommendation en formule Avancées]), et consulte les résultats (score, non-conformités, rapports, indice de préparation aux financements verts IFC/SFI en formule Avancées).
 
 Stack : **Quarkus** (api-quarkus, Java 21) + **Python/FastAPI** (services-ia-python, pipeline d'agents IA) + **React** (frontend-react, JSX + Tailwind, PAS TypeScript) + **PostgreSQL** + **MinIO** (stockage documents) + **ClamAV** (antivirus) + **Redis**.
 

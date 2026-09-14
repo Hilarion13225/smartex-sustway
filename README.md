@@ -215,7 +215,7 @@ Studio peuvent être utilisés par Google pour améliorer ses produits.
 Chaque preuve RSE traitée (politiques internes, données de conformité,
 parfois sensibles) transite donc vers un service dont les conditions
 d'utilisation autorisent cet usage. **Décision actée pour la phase de
-développement — à requalifier avec Smartex Expertises avant tout
+développement — à requalifier avec SMARTEX Expertises avant tout
 traitement de données clients réelles.**
 
 **Obtenir une clé (gratuite) :**
@@ -325,7 +325,7 @@ aucun fournisseur SMS n'offre de véritable envoi gratuit en production
 ⚠️ **`PaiementService` est un stub.** Le CDC (§5.3, "point ouvert restant")
 indique explicitement que "les modalités précises d'intégration technique
 avec PI-SPI et Wave (API, frais, couverture des opérateurs) restent à
-cadrer avec Smartex Expertises". En l'absence de ce cadrage, tout paiement
+cadrer avec SMARTEX Expertises". En l'absence de ce cadrage, tout paiement
 initié via `POST /abonnement/paiements` est **automatiquement marqué
 réussi et active l'abonnement**, sans appel à un vrai fournisseur. Ne pas
 utiliser en production tel quel — voir le commentaire de `PaiementService`
