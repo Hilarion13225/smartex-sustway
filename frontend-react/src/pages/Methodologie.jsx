@@ -116,7 +116,7 @@ export default function Methodologie() {
               <br />
               plus responsables,
               <br />
-              <span className="text-brand-600">avec une méthode claire.</span>
+              <span className="text-brand-600">avec une méthodologie claire.</span>
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-[1.55] text-ink-600">
