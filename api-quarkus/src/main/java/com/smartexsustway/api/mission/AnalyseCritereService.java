@@ -26,6 +26,8 @@ import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.stockage.StorageService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -72,6 +74,7 @@ public class AnalyseCritereService {
     @Inject ScoreHistoriqueService scoreHistoriqueService;
     @Inject CycleVieMissionService cycleVieMissionService;
     @Inject StorageService storageService;
+    @Inject EntityManager entityManager;
 
     @Inject
     @RestClient
@@ -91,6 +94,15 @@ public class AnalyseCritereService {
 
         /** Le pipeline ou le stockage a échoué ; le message est destiné à l'appelant. */
         record Echec(String message) implements Resultat {}
+
+        /** RG35 : le critère est non applicable ou retiré du périmètre ; rien n'a été soumis ni écrit. */
+        record HorsPerimetre(String message) implements Resultat {}
+    }
+
+    /** RG35 : message commun aux refus d'analyse, de validation et de saisie sur un critère exclu. */
+    public static String messageHorsPerimetre(AuditCritere auditCritere) {
+        return "Ce critère est « " + (auditCritere.isActif() ? "Non applicable" : "Retiré du périmètre")
+                + " » pour cette mission : il n'est ni saisissable ni évaluable";
     }
 
     /**
@@ -101,6 +113,14 @@ public class AnalyseCritereService {
      * l'analyse n'est refusée que si le critère ne porte aucun élément.
      */
     public Resultat analyser(Audit audit, AuditCritere auditCritere) {
+        // RG35 : un critère exclu n'est jamais soumis aux agents. La garde est
+        // ici, et pas seulement dans les appelants, pour que l'analyse
+        // unitaire comme la passe de mission s'y heurtent — même si la passe
+        // filtre déjà sa liste, un critère peut être exclu entre-temps.
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return new Resultat.HorsPerimetre(messageHorsPerimetre(auditCritere));
+        }
+
         UUID auditCritereId = auditCritere.getId();
 
         List<Preuve> preuves = preuveRepository.parAuditCritere(auditCritereId);
@@ -184,6 +204,19 @@ public class AnalyseCritereService {
             LOG.warnf(e, "Échec du pipeline d'agents IA pour le critère %s",
                     auditCritere.getCritere().getCode());
             return new Resultat.Echec("Échec du pipeline d'agents IA — réessayez plus tard");
+        }
+
+        // RG35-HARDENING : le critère a pu être exclu pendant l'appel aux agents.
+        // L'état lu au début de l'analyse est périmé, et l'écrire tel quel
+        // (Hibernate émet l'UPDATE complet de la ligne) rétablirait les
+        // drapeaux d'exclusion. On relit donc la ligne sous verrou, juste avant
+        // toute écriture — jamais pendant l'appel IA, qui peut durer plusieurs
+        // minutes : une exclusion concurrente n'attend au plus que la fin de
+        // cette écriture. Rien n'a encore été modifié sur le critère : le
+        // rafraîchissement ne perd aucune donnée.
+        entityManager.refresh(auditCritere, LockModeType.PESSIMISTIC_WRITE);
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return new Resultat.HorsPerimetre(messageHorsPerimetre(auditCritere));
         }
 
         BigDecimal probabilite = BigDecimal.valueOf(reponse.probabiliteConformite())

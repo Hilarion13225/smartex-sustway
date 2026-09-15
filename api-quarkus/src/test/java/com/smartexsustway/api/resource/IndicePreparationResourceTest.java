@@ -284,27 +284,73 @@ class IndicePreparationResourceTest {
     @Test
     void calculer_avecEvaluationValidee_estCalculeEtCompteSonPerimetre() {
         var ctx = creerContexte("AVANCEES");
-        String critereId = premierCritereDeLaMission(ctx);
         String jetonAdmin = jetonSuperAdmin();
 
-        taguer(jetonAdmin, critereId, true);
-        try {
-            poserEvaluationValidee(UUID.fromString(ctx.auditId()), UUID.fromString(critereId));
+        // V74-B : un mapping ne compte que si sa correspondance est justifiée
+        // et validée. La justification rend le mapping définitivement non
+        // supprimable (RESTRICT) : le décor emploie donc un bailleur fictif
+        // propre à ce test, jamais IFC_SFI, que les autres cas de cette classe
+        // supposent sans tag. Pour la même raison, le critère est choisi en fin
+        // de catalogue (troisième en partant de la fin, D6-91 aujourd'hui) et
+        // non au hasard : un mapping persistant sur le premier critère du
+        // catalogue ferait échouer critereBailleur_definirListerSupprimer.
+        String critereId = io.quarkus.narayana.jta.QuarkusTransaction.requiringNew().call(() -> entityManager.createNativeQuery(
+                        "SELECT c.id::text FROM audit_critere ac "
+                                + "JOIN critere c ON c.id = ac.critere_id JOIN domaine d ON d.id = c.domaine_id "
+                                + "WHERE ac.audit_id = CAST(?1 AS uuid) AND ac.actif AND ac.applicable "
+                                + "ORDER BY d.ordre DESC, c.code DESC OFFSET 2 LIMIT 1")
+                .setParameter(1, ctx.auditId())
+                .getSingleResult().toString());
+        String bailleurCode = "ZZTEST_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        io.quarkus.narayana.jta.QuarkusTransaction.requiringNew().run(() -> entityManager.createNativeQuery(
+                        "INSERT INTO bailleur (code, nom, description) VALUES (?1, ?2, ?3)")
+                .setParameter(1, bailleurCode)
+                .setParameter(2, "Bailleur fictif de test")
+                .setParameter(3, "Décor de test V74-B, sans valeur réglementaire.")
+                .executeUpdate());
 
-            given()
-                    .header("Authorization", "Bearer " + ctx.token())
-                    .contentType(ContentType.JSON)
-                    .body(Map.of("bailleurCode", "IFC_SFI"))
-                    .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
-                    .then()
-                    .statusCode(200)
-                    .body("statut", equalTo("CALCULE"))
-                    .body("score", notNullValue())
-                    .body("nombreCriteresTagues", equalTo(1))
-                    .body("nombreCriteresRetenus", equalTo(1));
-        } finally {
-            detaguer(jetonAdmin, critereId);
-        }
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .contentType(ContentType.JSON)
+                .body(Map.of("bailleurCode", bailleurCode, "applicable", true))
+                .when().put("/api/v1/referentiels/criteres/" + critereId + "/bailleur")
+                .then().statusCode(200);
+
+        String urlJustification = "/api/v1/referentiels/criteres/" + critereId + "/bailleur/" + bailleurCode + "/justification";
+        String justificationId = given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .contentType(ContentType.JSON)
+                .body(Map.of(
+                        "documentNom", "Document fictif de test",
+                        "documentEdition", "Édition de test",
+                        "documentOrganisme", "Organisme fictif",
+                        "referenceOfficielle", "REF-TEST-1",
+                        "texteSource", "Passage fictif rédigé pour le test.",
+                        "correspondance", "EXACTE",
+                        "justification", "Justification fictive de test."))
+                .when().post(urlJustification)
+                .then().statusCode(201)
+                .extract().path("id");
+        given()
+                .header("Authorization", "Bearer " + jetonAdmin)
+                .when().post(urlJustification + "/" + justificationId + "/validation")
+                .then().statusCode(200);
+
+        poserEvaluationValidee(UUID.fromString(ctx.auditId()), UUID.fromString(critereId));
+
+        // Un seul critère retenu, probabilité 0,80 -> niveau 4 : le score vaut
+        // 4 x coefficient / coefficient, soit 4,00, quel que soit le coefficient.
+        given()
+                .header("Authorization", "Bearer " + ctx.token())
+                .contentType(ContentType.JSON)
+                .body(Map.of("bailleurCode", bailleurCode))
+                .when().post("/api/v1/entreprises/" + ctx.entrepriseId() + "/audits/" + ctx.auditId() + "/indice-preparation")
+                .then()
+                .statusCode(200)
+                .body("statut", equalTo("CALCULE"))
+                .body("score", equalTo(4.0f))
+                .body("nombreCriteresTagues", equalTo(1))
+                .body("nombreCriteresRetenus", equalTo(1));
     }
 
     /**

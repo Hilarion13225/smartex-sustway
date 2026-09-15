@@ -1,5 +1,7 @@
 package com.smartexsustway.api.resource;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.Abonnement;
 import com.smartexsustway.api.domain.entity.Audit;
@@ -40,6 +42,7 @@ import io.smallrye.mutiny.infrastructure.Infrastructure;
 import com.smartexsustway.api.resource.dto.AuditDto;
 import com.smartexsustway.api.resource.dto.AuditSitesRequest;
 import com.smartexsustway.api.resource.dto.ErreurDto;
+import com.smartexsustway.api.resource.dto.PerimetreCritereRequest;
 import com.smartexsustway.api.resource.dto.ScoreHistoriqueDto;
 import com.smartexsustway.api.resource.dto.SiteDto;
 import com.smartexsustway.api.scoring.AuditScoreService;
@@ -62,7 +65,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -109,6 +114,8 @@ public class AuditResource {
      * (EvaluationResource) ou mission entière (ci-dessous).
      */
     private static final String PERMISSION_ANALYSE = "analyse:executer";
+
+    private static final ObjectMapper JSON = new ObjectMapper();
 
     @Inject CreationMissionService creationMissionService;
     @Inject AnalyseMissionService analyseMissionService;
@@ -226,7 +233,7 @@ public class AuditResource {
         clotureMissionService.cloturer(auditId);
         auditLogService.journaliser(utilisateurId, entrepriseId, "MISSION_CLOTUREE", "audit", auditId);
 
-        return Response.ok(AuditDto.depuis(audit, auditCritereRepository.parAudit(auditId).size())).build();
+        return Response.ok(AuditDto.depuis(audit, nombreCriteresDuPerimetre(auditId))).build();
     }
 
     /**
@@ -253,7 +260,7 @@ public class AuditResource {
         autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
 
         var audits = auditRepository.parEntreprise(entrepriseId).stream()
-                .map(a -> AuditDto.depuis(a, auditCritereRepository.parAudit(a.getId()).size()))
+                .map(a -> AuditDto.depuis(a, nombreCriteresDuPerimetre(a.getId())))
                 .toList();
         return Response.ok(audits).build();
     }
@@ -264,7 +271,7 @@ public class AuditResource {
         autorisationService.exigerAccesEntreprise(tenantContext.utilisateurCourantId(), entrepriseId);
 
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
-        int nombreCriteres = auditCritereRepository.parAudit(audit.getId()).size();
+        int nombreCriteres = nombreCriteresDuPerimetre(audit.getId());
         return Response.ok(AuditDto.depuis(audit, nombreCriteres)).build();
     }
 
@@ -276,6 +283,119 @@ public class AuditResource {
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
         var criteres = auditCritereRepository.parAudit(audit.getId()).stream().map(AuditCritereDto::depuis).toList();
         return Response.ok(criteres).build();
+    }
+
+    /**
+     * RG35 : décider qu'un critère de la mission ne s'applique pas
+     * ({@code applicable=false}) ou qu'il est retiré du périmètre
+     * ({@code actif=false}).
+     *
+     * Le critère sort alors du score et du total, n'est plus saisissable et
+     * n'est plus soumis à l'IA — ce que les lecteurs de ces deux drapeaux
+     * appliquent déjà (AuditScoreService, IndicePreparationService, passe
+     * d'analyse) et ce que les gardes des analyses et de la saisie imposent.
+     * Rien n'est effacé : évaluations, réponses, non-conformités, axes et
+     * plans restent tels quels. Une exclusion est une décision nouvelle, pas
+     * une réécriture de l'historique.
+     *
+     * D1 : décision réservée au personnel interne Smartex
+     * (ROLES_INTERNES_SMARTEX), comme l'affectation des auditeurs — le client
+     * est la partie auditée, il ne réduit pas lui-même le périmètre de son
+     * audit. Cette route est la seule à écrire ces deux drapeaux.
+     *
+     * D2 : une mission TERMINE a un résultat figé ; ANNULE, qu'aucun chemin
+     * n'atteint aujourd'hui, n'est pas davantage modifiable — seules BROUILLON
+     * et EN_COURS le sont, comme pour la validation d'une évaluation.
+     *
+     * Une décision porte une seule exclusion, sur un critère encore dans le
+     * périmètre : {@code actif=true, applicable=true} n'exclut rien, et
+     * {@code actif=false, applicable=false} confondrait deux motifs distincts —
+     * les deux sont refusés. La réintégration d'un critère exclu n'est pas
+     * couverte par RG35.
+     *
+     * D3 : le changement et son entrée de journal (ancien et nouvel état,
+     * critère, motif) sont écrits dans la même transaction.
+     */
+    @PUT
+    @Path("/{auditId}/criteres/{auditCritereId}/perimetre")
+    @Transactional
+    public Response definirPerimetreCritere(@PathParam("entrepriseId") UUID entrepriseId,
+                                            @PathParam("auditId") UUID auditId,
+                                            @PathParam("auditCritereId") UUID auditCritereId,
+                                            @Valid PerimetreCritereRequest requete) {
+        UUID utilisateurId = tenantContext.utilisateurCourantId();
+        autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
+        Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
+        autorisationService.exigerRoleSurEntreprise(utilisateurId, entrepriseId, AutorisationService.ROLES_INTERNES_SMARTEX);
+
+        // Verrou sur la ligne jusqu'au commit : deux décisions simultanées
+        // liraient sinon toutes deux « encore dans le périmètre ».
+        AuditCritere auditCritere = auditCritereRepository.verrouiller(auditCritereId)
+                .filter(ac -> ac.getAudit().getId().equals(audit.getId()))
+                .orElseThrow(() -> new NotFoundException("Critère introuvable pour cette mission"));
+
+        if (audit.getStatut() == StatutAudit.TERMINE) {
+            return erreur(409, "Cette mission est clôturée : son résultat est figé");
+        }
+        if (audit.getStatut() != StatutAudit.BROUILLON && audit.getStatut() != StatutAudit.EN_COURS) {
+            return erreur(409, "Cette mission n'est pas en cours : son périmètre ne peut plus être modifié");
+        }
+
+        if (requete == null) {
+            return erreur(400, "Corps de requête manquant");
+        }
+        boolean nouvelActif = requete.actif();
+        boolean nouvelApplicable = requete.applicable();
+        if (nouvelActif && nouvelApplicable) {
+            return erreur(400, "actif=true et applicable=true ne constituent pas une exclusion");
+        }
+        if (!nouvelActif && !nouvelApplicable) {
+            return erreur(400, "Une exclusion est soit « Non applicable » (applicable=false), "
+                    + "soit « Retiré du périmètre » (actif=false), jamais les deux à la fois");
+        }
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return erreur(409, "Ce critère est déjà exclu du périmètre de la mission");
+        }
+
+        String motif = requete.motif().trim();
+        auditCritere.setActif(nouvelActif);
+        auditCritere.setApplicable(nouvelApplicable);
+
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("auditId", audit.getId().toString());
+        details.put("critereId", auditCritere.getCritere().getId().toString());
+        details.put("critereCode", auditCritere.getCritere().getCode());
+        details.put("ancienActif", true);
+        details.put("ancienApplicable", true);
+        details.put("nouveauActif", nouvelActif);
+        details.put("nouveauApplicable", nouvelApplicable);
+        details.put("motif", motif);
+        auditLogService.journaliserAvecDetails(utilisateurId, entrepriseId,
+                nouvelApplicable ? "CRITERE_RETIRE_PERIMETRE" : "CRITERE_NON_APPLICABLE",
+                "audit_critere", auditCritere.getId(), enJson(details));
+
+        return Response.ok(AuditCritereDto.depuis(auditCritere)).build();
+    }
+
+    /**
+     * RG35 : critères du périmètre de la mission, ceux que le score compte
+     * (actifs et applicables) — même définition que
+     * AuditScoreDto.nombreCriteresTotal, pour qu'aucun écran ne compte un
+     * critère exclu dans un total.
+     */
+    private int nombreCriteresDuPerimetre(UUID auditId) {
+        return (int) auditCritereRepository.parAudit(auditId).stream()
+                .filter(ac -> ac.isActif() && ac.isApplicable())
+                .count();
+    }
+
+    /** Le contexte du journal, sérialisé par Jackson : un motif libre peut porter guillemets et retours à la ligne. */
+    private static String enJson(Map<String, Object> details) {
+        try {
+            return JSON.writeValueAsString(details);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Sérialisation du journal impossible", e);
+        }
     }
 
     /**

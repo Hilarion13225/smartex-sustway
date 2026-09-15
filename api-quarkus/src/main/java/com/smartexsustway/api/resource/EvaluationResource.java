@@ -141,6 +141,11 @@ public class EvaluationResource {
         AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         var resultat = analyseCritereService.analyser(audit, auditCritere);
+        if (resultat instanceof AnalyseCritereService.Resultat.HorsPerimetre horsPerimetre) {
+            // RG35 : conflit d'état, comme une mission clôturée — le critère
+            // existe mais n'appartient plus au périmètre évaluable.
+            return erreur(409, horsPerimetre.message());
+        }
         if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser) {
             return erreur(400, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
                     + "— impossible de lancer l'analyse IA");
@@ -229,7 +234,12 @@ public class EvaluationResource {
         Audit audit = trouverAudit(entrepriseId, auditId);
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_ANALYSE);
-        trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+        AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+        // RG35 : refusé avant tout appel, pour qu'un critère exclu ne
+        // réserve aucune passe ni ne sollicite le service d'agents.
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return erreur(409, AnalyseCritereService.messageHorsPerimetre(auditCritere));
+        }
 
         // Le service gère lui-même son découpage transactionnel : la
         // ressource n'est donc pas @Transactional — sans quoi l'appel au
@@ -248,6 +258,11 @@ public class EvaluationResource {
             auditLogService.journaliser(utilisateurId, entrepriseId,
                     "ANALYSE_IA_REFUSEE_CONCURRENCE", "audit_critere", auditCritereId);
             return erreur(409, "Une analyse est déjà en cours pour ce critère.");
+        }
+        if (resultat instanceof AnalyseCritereV2Service.Resultat.HorsPerimetre horsPerimetre) {
+            // RG35-HARDENING : exclu pendant l'appel aux agents — même réponse
+            // que la garde d'entrée ci-dessus.
+            return erreur(409, horsPerimetre.message());
         }
         if (resultat instanceof AnalyseCritereV2Service.Resultat.Echec echec) {
             return erreur(503, echec.message());
@@ -290,9 +305,16 @@ public class EvaluationResource {
         Audit audit = trouverAudit(entrepriseId, auditId);
         String formuleCode = audit.getFormuleAbonnement() == null ? null : audit.getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, PERMISSION_VALIDATION);
-        trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+        AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
 
         Evaluation evaluation = trouverEvaluationDuCritere(auditCritereId, evaluationId);
+
+        // RG35 : valider ferait entrer l'évaluation dans le score officiel et
+        // pourrait faire naître une non-conformité sur un critère exclu. Elle
+        // reste dans l'historique, telle quelle.
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return erreur(409, AnalyseCritereService.messageHorsPerimetre(auditCritere));
+        }
 
         var resultat = validationEvaluationService.valider(evaluation, utilisateurRepository.findById(utilisateurId));
         if (resultat instanceof ValidationEvaluationService.Resultat.EtatIncompatible refus) {

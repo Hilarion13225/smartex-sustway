@@ -116,6 +116,9 @@ public class AnalyseCritereV2Service {
 
         /** Le message est destiné à l'appelant : jamais d'exception brute. */
         record Echec(String message) implements Resultat {}
+
+        /** RG35 : critère exclu pendant l'analyse ; passe close en erreur, rien d'écrit. L'appelant en fait un 409. */
+        record HorsPerimetre(String message) implements Resultat {}
     }
 
     public Resultat analyser(UUID auditId, UUID auditCritereId, UUID declencheParId) {
@@ -264,8 +267,20 @@ public class AnalyseCritereV2Service {
     }
 
     private Resultat persister(ContexteEtPasse prepare, EnveloppeV2Dto enveloppe) {
+        // RG35-HARDENING : verrou pris en premier, avant tout chargement qui
+        // placerait le critère dans le contexte de persistance — l'état relu
+        // est donc celui de la base, exclusion concurrente comprise.
+        AuditCritere auditCritere = auditCritereRepository.verrouiller(prepare.auditCritereId())
+                .orElseThrow(() -> new IllegalStateException("Critère introuvable"));
         AnalyseIa passe = analyseIaRepository.findById(prepare.analyseIaId());
-        AuditCritere auditCritere = auditCritereRepository.findById(prepare.auditCritereId());
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            // Exclu pendant l'appel aux agents : rien n'est écrit, ni évaluation
+            // en revue ni axe. La passe est close par le mécanisme d'échec
+            // existant, dans la même transaction, pour qu'aucune passe EN_COURS
+            // ne reste derrière elle.
+            passe.echouer("INTERNE", "Critère exclu du périmètre pendant l'analyse");
+            return new Resultat.HorsPerimetre(AnalyseCritereService.messageHorsPerimetre(auditCritere));
+        }
         Audit audit = auditRepository.findById(prepare.auditId());
 
         Evaluation evaluation = persistance.persister(

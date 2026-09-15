@@ -5,6 +5,7 @@ import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.AuditQuestion;
 import com.smartexsustway.api.domain.entity.ReponseQuestion;
+import com.smartexsustway.api.domain.enums.ValeurReponse;
 import com.smartexsustway.api.mission.AnalyseCritereService;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditQuestionRepository;
@@ -12,6 +13,7 @@ import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.resource.dto.EnregistrerReponsesRequestDto;
+import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.QuestionMissionDto;
 import com.smartexsustway.api.resource.dto.SaisieCritereDto;
 import com.smartexsustway.api.security.AutorisationService;
@@ -85,15 +87,36 @@ public class ReponseQuestionResource {
                                  EnregistrerReponsesRequestDto requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
-        AuditCritere auditCritere = trouverAuditCritereDeLaMission(entrepriseId, auditId, auditCritereId);
+        AuditCritere auditCritere = trouverAuditCritereVerrouille(entrepriseId, auditId, auditCritereId);
         // RG09 : renseigner le questionnaire déclaratif est une forme de
         // dépôt de preuve (complète les documents) — même permission.
         String formuleCode = auditCritere.getAudit().getFormuleAbonnement() == null
                 ? null : auditCritere.getAudit().getFormuleAbonnement().getCode();
         autorisationService.exigerPermission(utilisateurId, entrepriseId, formuleCode, "preuve:deposer");
 
+        // RG35 : un critère exclu n'est plus saisissable. Ses réponses
+        // antérieures restent lisibles (GET) et ne sont pas effacées.
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return Response.status(409)
+                    .entity(new ErreurDto(AnalyseCritereService.messageHorsPerimetre(auditCritere)))
+                    .build();
+        }
+
         if (requete == null) {
             throw new BadRequestException("Corps de requête manquant");
+        }
+
+        // RG35 : NON_APPLICABLE ne rend pas le critère non applicable — il en
+        // ferait un critère déclaré, donc soumis à l'IA et noté. Cette décision
+        // passe par l'exclusion (AuditResource.definirPerimetreCritere),
+        // réservée au personnel interne Smartex. La valeur reste dans
+        // l'énumération et en base pour les réponses historiques ; elle
+        // n'est simplement plus acceptée à la saisie. Contrôlé avant toute
+        // écriture : la requête est refusée en entier.
+        if (requete.reponses() != null && requete.reponses().stream()
+                .anyMatch(saisie -> saisie != null && saisie.valeur() == ValeurReponse.NON_APPLICABLE)) {
+            throw new BadRequestException("La réponse NON_APPLICABLE n'est plus acceptée à la saisie : "
+                    + "l'exclusion d'un critère est une décision du personnel interne Smartex");
         }
 
         auditCritere.setScenario(normaliser(requete.scenario()));
@@ -159,6 +182,26 @@ public class ReponseQuestionResource {
         }
         String nettoye = valeur.trim();
         return nettoye.isEmpty() ? null : nettoye;
+    }
+
+    /**
+     * RG35-HARDENING : le critère d'une saisie, lu sous verrou.
+     *
+     * <p>La saisie réécrit la ligne AUDIT_CRITERE (scénario, statut), et
+     * Hibernate émet l'UPDATE complet : une copie lue avant une exclusion
+     * concurrente rétablirait ses drapeaux. Verrouillée dès la lecture, la
+     * ligne est celle de la base — la saisie attend la fin d'une exclusion en
+     * cours, puis la voit et est refusée. La transaction reste courte : aucun
+     * appel externe n'y a lieu.
+     */
+    private AuditCritere trouverAuditCritereVerrouille(UUID entrepriseId, UUID auditId, UUID auditCritereId) {
+        Audit audit = auditRepository.findById(auditId);
+        if (audit == null || !audit.getEntreprise().getId().equals(entrepriseId)) {
+            throw new NotFoundException("Audit introuvable pour cette entreprise");
+        }
+        return auditCritereRepository.verrouiller(auditCritereId)
+                .filter(ac -> ac.getAudit().getId().equals(auditId))
+                .orElseThrow(() -> new NotFoundException("Critère introuvable pour cette mission"));
     }
 
     private AuditCritere trouverAuditCritereDeLaMission(UUID entrepriseId, UUID auditId, UUID auditCritereId) {
