@@ -56,6 +56,15 @@ public class IndicePreparationResource {
         autorisationService.exigerPermission(utilisateurId, entrepriseId, "bailleur:consulter");
         Audit audit = trouverAuditDeLEntreprise(entrepriseId, auditId);
 
+        // La même garde qu'au calcul, et pour la même raison. Elle manquait
+        // ici : une organisation retombée en Standard continuait de lire les
+        // indices calculés du temps où elle payait Avancées. Un livrable
+        // premium ne survit pas à la formule qui l'autorisait — sinon la
+        // restriction ne tient que le jour de l'écriture.
+        if (!estFormuleAvancees(audit)) {
+            return erreur(403, "L'indice de préparation bailleur est réservé à la formule Avancées");
+        }
+
         var indices = indicePreparationRepository.parAudit(audit.getId()).stream()
                 .map(IndicePreparationDto::depuis)
                 .toList();

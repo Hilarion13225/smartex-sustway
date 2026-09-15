@@ -14,8 +14,7 @@ Agent, pas à modifier le score ni la probabilité de conformité.
 
 from pydantic import BaseModel, Field
 
-from app.config import get_settings
-from app.services.gemini_client import get_client
+from app.services.appel_gemini import appeler_gemini
 
 CATEGORIES_VALIDES = (
     "INCOHERENCE",
@@ -92,20 +91,19 @@ async def evaluer(
     confiance: float,
     justification_conformite: str,
 ) -> ResultatRisque:
-    settings = get_settings()
-    client = get_client()
     prompt = _construire_prompt(
         code, libelle, description, resumes, probabilite_conformite, confiance, justification_conformite
     )
 
-    reponse = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+    appel = await appeler_gemini(
+        agent="RISK",
         contents=prompt,
         config={
             "response_mime_type": "application/json",
             "response_schema": ResultatRisque,
         },
     )
+    reponse = appel.reponse
 
     parsed = getattr(reponse, "parsed", None)
     if isinstance(parsed, ResultatRisque):

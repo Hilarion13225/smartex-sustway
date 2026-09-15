@@ -8,8 +8,7 @@ sans étape d'OCR/extraction séparée.
 
 from google.genai import types
 
-from app.config import get_settings
-from app.services.gemini_client import get_client
+from app.services.appel_gemini import appeler_gemini
 
 PROMPT = (
     "Tu es un assistant d'audit RSE pour la plateforme Smartex Sustway. "
@@ -24,16 +23,16 @@ PROMPT = (
 
 
 async def extraire(contenu: bytes, type_mime: str, nom: str) -> str:
-    settings = get_settings()
-    client = get_client()
-
-    reponse = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+    # Le nom du fichier n'est pas transmis comme référence de trace : c'est
+    # une donnée du client, et la trace est journalisée. Cet agent V1 n'a pas
+    # de référence stable à lui substituer — le V2, si.
+    appel = await appeler_gemini(
+        agent="DOCUMENT",
         contents=[
             types.Part.from_bytes(data=contenu, mime_type=type_mime),
             PROMPT,
         ],
     )
 
-    texte = (reponse.text or "").strip()
+    texte = (appel.reponse.text or "").strip()
     return texte if texte else f"[{nom}] Aucun contenu exploitable extrait par le Document Agent."

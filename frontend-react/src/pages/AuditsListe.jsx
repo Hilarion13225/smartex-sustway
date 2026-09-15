@@ -113,11 +113,12 @@ export default function AuditsListe() {
           progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
           // Le score est celui de la grille, noté sur 5 ; la conformité en est
           // la traduction en pourcentage pour la lecture rapide.
-          score: score?.scoreGlobal ?? null,
+          // V74-C3-B11 : sans critère évalué, le 0 du serveur est une absence.
+          score: evalues > 0 ? score.scoreGlobal : null,
           noteTotale: score?.noteTotale ?? null,
           coefficientTotal: score?.coefficientTotal ?? null,
           conformite:
-            score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
+            evalues > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null,
           risque,
           statut: audit.statut,
           echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,

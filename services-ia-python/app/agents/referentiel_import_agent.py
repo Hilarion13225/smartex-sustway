@@ -24,7 +24,7 @@ from app.models.import_referentiel import (
     DomaineExtrait,
     ReferentielExtrait,
 )
-from app.services.gemini_client import get_client
+from app.services.appel_gemini import appeler_gemini
 from app.services.schema_gemini import schema_pour_gemini
 from app.services.validation_regles import DefinitionInvalide, verifier_definition
 
@@ -207,9 +207,6 @@ def _fusionner(brouillons: list[BrouillonImporte]) -> tuple[BrouillonImporte, li
 
 async def _analyser_lot(lot: list[Section], index: int, total: int) -> BrouillonImporte | None:
     """Soumet un lot au modèle et valide sa réponse. Un lot vide de sens rend None."""
-    settings = get_settings()
-    client = get_client()
-
     prompt = (
         f"{PROMPT}\n\n"
         f"Passage {index} sur {total} du document.\n\n"
@@ -221,14 +218,15 @@ async def _analyser_lot(lot: list[Section], index: int, total: int) -> Brouillon
     # et ne déréférence pas les `$ref` des modèles imbriqués. Voir
     # `schema_gemini`. Le contrat reste celui du modèle — c'est lui qui valide
     # la réponse ci-dessous.
-    reponse = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+    appel = await appeler_gemini(
+        agent="IMPORT_REFERENTIEL",
         contents=prompt,
         config={
             "response_mime_type": "application/json",
             "response_schema": schema_pour_gemini(BrouillonImporte),
         },
     )
+    reponse = appel.reponse
 
     # Le SDK ne peuple `.parsed` que lorsqu'on lui passe une classe ; avec un
     # schéma explicite, la réponse est validée ici par le modèle strict. Elle

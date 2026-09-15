@@ -13,6 +13,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut, Line, Radar } from 'react-chartjs-2';
 import { useTheme } from '../theme/ThemeContext';
+import { formaterScore } from '../lib/scoreAffiche';
 
 ChartJS.register(
   ArcElement,
@@ -38,6 +39,24 @@ export const COULEURS = {
   violet: '#7c3aed',
   gris: '#94a3b8',
 };
+
+/**
+ * Infobulle d'une série déclarée `format: 'score'` (V74-C3-B5) : le score sur 5
+ * s'y lit comme partout ailleurs — deux décimales, HALF_UP, point décimal —
+ * et non avec le formatage par défaut de Chart.js (locale du navigateur, trois
+ * décimales). Seul le texte change : le graphique garde la valeur brute.
+ *
+ * Toute autre série (effectifs, pourcentages) reçoit `undefined`, ce qui laisse
+ * Chart.js produire son libellé habituel. Le format se déclare série par série
+ * parce qu'un même composant porte des unités différentes selon l'écran.
+ */
+function libelleInfobulle(contexte) {
+  if (contexte.dataset.formatInfobulle !== 'score') return undefined;
+  const valeur = formaterScore(contexte.raw);
+  return contexte.dataset.label ? `${contexte.dataset.label}: ${valeur}` : valeur;
+}
+
+const INFOBULLE = { callbacks: { label: libelleInfobulle } };
 
 /**
  * Chart.js dessine sur un <canvas> : les couleurs sont des valeurs passées à
@@ -76,10 +95,12 @@ export function GraphiqueBarres({ labels, series, horizontal = false, max }) {
           backgroundColor: serie.couleur,
           borderRadius: 6,
           maxBarThickness: 34,
+          formatInfobulle: serie.format,
         })),
       }}
       options={{
         ...communes,
+        plugins: { ...communes.plugins, tooltip: INFOBULLE },
         indexAxis: horizontal ? 'y' : 'x',
         scales: {
           x: {
@@ -112,10 +133,12 @@ export function GraphiqueRadar({ labels, series }) {
           backgroundColor: serie.fond,
           pointBackgroundColor: serie.couleur,
           borderWidth: 2,
+          formatInfobulle: serie.format,
         })),
       }}
       options={{
         ...communes,
+        plugins: { ...communes.plugins, tooltip: INFOBULLE },
         scales: {
           r: {
             suggestedMin: 0,
@@ -153,10 +176,12 @@ export function GraphiqueLigne({ labels, series }) {
           pointRadius: 3,
           spanGaps: true,
           tension: 0.25,
+          formatInfobulle: serie.format,
         })),
       }}
       options={{
         ...communes,
+        plugins: { ...communes.plugins, tooltip: INFOBULLE },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 11 }, color: texte } },
           y: {

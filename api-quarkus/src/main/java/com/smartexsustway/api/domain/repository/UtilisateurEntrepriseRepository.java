@@ -36,6 +36,24 @@ public class UtilisateurEntrepriseRepository implements PanacheRepositoryBase<Ut
         return list("entreprise.id", entrepriseId);
     }
 
+    /**
+     * Rattachements <strong>actifs</strong> d'une entreprise.
+     *
+     * <p>Distincte de {@link #parEntreprise} : celle-ci sert l'écran de
+     * gestion des accès, qui doit montrer les accès révoqués avec leur
+     * statut. Celle-là sert à désigner quelqu'un — et un accès révoqué ne
+     * désigne plus personne.
+     *
+     * <p>Le filtre est exactement celui de
+     * {@link #utilisateurRattacheAEntreprise}, qui garde l'affectation côté
+     * écriture. Les faire diverger proposerait des personnes que
+     * l'affectation refuserait ensuite.
+     */
+    public List<UtilisateurEntreprise> actifsParEntreprise(UUID entrepriseId) {
+        return list("entreprise.id = ?1 and statut = ?2 order by utilisateur.nom, utilisateur.prenom",
+                entrepriseId, StatutGenerique.ACTIF);
+    }
+
     /** Rattachement actif d'un utilisateur donné sur une entreprise, avec ou sans site. */
     public List<UtilisateurEntreprise> actifsParUtilisateurEtEntreprise(UUID utilisateurId, UUID entrepriseId) {
         return list("utilisateur.id = ?1 and entreprise.id = ?2 and statut = ?3",

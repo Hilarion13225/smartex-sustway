@@ -5,6 +5,7 @@ import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
 import { api } from '../lib/apiClient';
+import { formaterScore, valeurScoreAffichee } from '../lib/scoreAffiche';
 import { useApiAuth } from '../auth/useApiAuth';
 
 const NIVEAUX_ENGAGEMENT = {
@@ -18,8 +19,10 @@ const NIVEAUX_ENGAGEMENT = {
 const NIVEAUX_NC = ['CRITIQUE', 'MAJEURE', 'MODEREE', 'MINEURE'];
 const COULEURS_NC = [COULEURS.rouge, COULEURS.ambre, '#eab308', COULEURS.gris];
 
+// Couleurs de présentation : les seuils portent sur le score affiché (deux
+// décimales, HALF_UP), comme dans les rapports — un « 4.00 » n'est jamais bleu.
 function tonScore(score) {
-  const valeur = Number(score);
+  const valeur = valeurScoreAffichee(score);
   if (valeur >= 4) return 'vert';
   if (valeur >= 3) return 'bleu';
   if (valeur >= 2) return 'ambre';
@@ -27,7 +30,7 @@ function tonScore(score) {
 }
 
 function tonBarre(score) {
-  const valeur = Number(score);
+  const valeur = valeurScoreAffichee(score);
   if (valeur >= 3) return 'brand';
   if (valeur >= 2) return 'ambre';
   return 'rouge';
@@ -103,10 +106,10 @@ export default function AuditScore() {
             <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <StatCard
                 libelle="Score global"
-                valeur={`${Number(score.scoreGlobal).toFixed(2)} / 5`}
+                valeur={score.nombreCriteresEvalues > 0 ? `${formaterScore(score.scoreGlobal)} / 5` : '—'}
                 detail="Somme des notes / somme des coefficients"
                 icone={Gauge}
-                ton={tonScore(score.scoreGlobal)}
+                ton={score.nombreCriteresEvalues > 0 ? tonScore(score.scoreGlobal) : 'neutre'}
               />
               <StatCard
                 libelle="Critères évalués"
@@ -136,7 +139,9 @@ export default function AuditScore() {
                       series={[
                         {
                           label: 'Score du domaine',
-                          data: score.domaines.map((d) => Number(d.score)),
+                          // V74-C3-B11 : un domaine non évalué n'est pas un sommet à zéro.
+                          data: score.domaines.map((d) => (d.nombreCriteresEvalues > 0 ? Number(d.score) : null)),
+                          format: 'score',
                           couleur: COULEURS.brand,
                           fond: COULEURS.brandClair,
                         },
@@ -202,9 +207,14 @@ export default function AuditScore() {
                             {d.domaineCode} — {d.nombreCriteresEvalues} / {d.nombreCriteresTotal} critères évalués
                           </p>
                         </div>
-                        <Badge ton={tonScore(d.score)}>{Number(d.score).toFixed(2)} / 5</Badge>
+                        <Badge ton={d.nombreCriteresEvalues > 0 ? tonScore(d.score) : 'neutre'}>
+                          {d.nombreCriteresEvalues > 0 ? `${formaterScore(d.score)} / 5` : '—'}
+                        </Badge>
                       </div>
-                      <Barre valeur={(Number(d.score) / 5) * 100} ton={tonBarre(d.score)} />
+                      <Barre
+                        valeur={d.nombreCriteresEvalues > 0 ? (Number(d.score) / 5) * 100 : 0}
+                        ton={d.nombreCriteresEvalues > 0 ? tonBarre(d.score) : undefined}
+                      />
                     </div>
                   ))}
                 </div>

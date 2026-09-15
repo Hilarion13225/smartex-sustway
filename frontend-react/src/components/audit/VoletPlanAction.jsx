@@ -3,6 +3,7 @@ import { Check, Plus, Sparkles, TriangleAlert } from 'lucide-react';
 import clsx from 'clsx';
 import { Alerte, Badge, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
+import { formaterScore, valeurScoreAffichee } from '../../lib/scoreAffiche';
 
 const TONS_NIVEAU = { CRITIQUE: 'rouge', MAJEURE: 'ambre', MODEREE: 'bleu', MINEURE: 'neutre' };
 const RANG_NIVEAU = { CRITIQUE: 0, MAJEURE: 1, MODEREE: 2, MINEURE: 3 };
@@ -23,8 +24,13 @@ const PRIORITE_PAR_NIVEAU = {
  * critères ne dit pas où porter l'effort.
  *
  * Les suggestions ne sont pas inventées ici : elles proviennent des pistes
- * d'amélioration produites par le pipeline d'agents et recopiées dans la
+ * d'amélioration produites par le pipeline d'agents et reprises dans la
  * description de chaque non-conformité.
+ *
+ * Cette description ne porte que le constat opérationnel. Le raisonnement
+ * de l'IA — pourquoi le jugement a été rendu — en a été retiré côté serveur
+ * (D1) : selon le rôle de l'appelant, l'API peut donc rendre une description
+ * amputée, signalée par `descriptionFiltree`.
  */
 export default function VoletPlanAction({ entrepriseId, auditId, criteres, score, peutModifier }) {
   const [nonConformites, setNonConformites] = useState(null);
@@ -69,7 +75,8 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
           groupes.set(code, {
             code,
             nom: infos?.domaineNom ?? code,
-            score: infos?.score == null ? null : Number(infos.score),
+            // V74-C3-B11 : sans critère évalué, le domaine est « Non noté », et non noté 0.
+            score: infos?.nombreCriteresEvalues > 0 ? Number(infos.score) : null,
             ecarts: [],
           });
         }
@@ -151,12 +158,12 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
                 'shrink-0 rounded-full px-3 py-1 text-xs font-semibold',
                 domaine.score == null
                   ? 'bg-ink-100 text-ink-600'
-                  : domaine.score < 2.5
+                  : valeurScoreAffichee(domaine.score) < 2.5
                     ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
                     : 'bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
               )}
             >
-              {domaine.score == null ? 'Non noté' : `${domaine.score.toFixed(2)} / 5`}
+              {domaine.score == null ? 'Non noté' : `${formaterScore(domaine.score)} / 5`}
             </span>
           </div>
 
@@ -183,6 +190,10 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
                       />
                       <p className="text-sm leading-relaxed text-ink-600">{ecart.description}</p>
                     </div>
+                  ) : ecart.descriptionFiltree ? (
+                    <p className="mt-3 text-xs italic text-ink-500">
+                      Le raisonnement détaillé de l’IA est réservé à l’administration de l’audit.
+                    </p>
                   ) : null}
 
                   {peutModifier ? (

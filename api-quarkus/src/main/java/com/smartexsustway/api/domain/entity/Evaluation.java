@@ -121,6 +121,70 @@ public class Evaluation {
     @Column(name = "pistes_amelioration", columnDefinition = "text")
     private String pistesAmelioration;
 
+    // === Contrat IA V2 ===================================================
+
+    /**
+     * Version du référentiel épinglée au moment de l'évaluation.
+     *
+     * <p>L'information est déjà dérivable — {@code audit.referentielVersion}
+     * est obligatoire et immuable, l'entité {@link Audit} ne l'expose qu'en
+     * lecture. Ce champ n'est donc pas une correction mais une assurance :
+     * il rend l'évaluation auto-descriptive, et si une évolution permettait
+     * un jour de faire migrer une mission d'une version à l'autre, les
+     * évaluations passées resteraient rattachées à la version sous laquelle
+     * elles ont réellement été rendues.
+     *
+     * <p>Nul sur les évaluations antérieures à V2 : la valeur n'est pas
+     * reconstituable avec certitude, et une valeur dérivée aurait une
+     * autorité qu'elle n'a pas.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "referentiel_version_id")
+    private ReferentielVersion referentielVersion;
+
+    /**
+     * L'exécution du pipeline qui a produit ce résultat. Nulle si la trace
+     * technique a été purgée — le résultat métier lui survit.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "analyse_ia_id")
+    private AnalyseIa analyseIa;
+
+    /**
+     * Version du contrat IA. {@code null} sur les évaluations antérieures
+     * au contrat V2 — c'est ce qui les distingue sans qu'aucune ligne
+     * n'ait eu besoin d'être réécrite.
+     */
+    @Column(name = "contrat_version", length = 10)
+    private String contratVersion;
+
+    /**
+     * Confiance du Risk Agent, distincte de {@link #confianceIa} qui porte
+     * celle de l'agent de conformité : les deux se prononcent sur des
+     * choses différentes et n'ont aucune raison d'être aussi sûrs.
+     */
+    @Column(name = "confiance_risque", precision = 5, scale = 4)
+    private BigDecimal confianceRisque;
+
+    /** Pourquoi les preuves sont jugées suffisantes ou non. */
+    @Column(name = "justification_couverture", columnDefinition = "text")
+    private String justificationCouverture;
+
+    /**
+     * Qui a fait passer l'évaluation de {@code EN_REVUE} à {@code VALIDEE}.
+     *
+     * <p>Nul sur les 44 évaluations historiques, que le code validait
+     * lui-même au titre de RG16. La base n'exige un validateur que sur les
+     * évaluations portant un {@code contratVersion} — la règle nouvelle ne
+     * s'applique pas rétroactivement à des faits anciens.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "validee_par")
+    private Utilisateur valideePar;
+
+    @Column(name = "validee_le")
+    private OffsetDateTime valideeLe;
+
     protected Evaluation() {
         // JPA
     }
@@ -253,6 +317,75 @@ public class Evaluation {
 
     public void setPistesAmelioration(String pistesAmelioration) {
         this.pistesAmelioration = pistesAmelioration;
+    }
+
+    // === Contrat IA V2 ===================================================
+
+    public ReferentielVersion getReferentielVersion() {
+        return referentielVersion;
+    }
+
+    public void setReferentielVersion(ReferentielVersion referentielVersion) {
+        this.referentielVersion = referentielVersion;
+    }
+
+    public AnalyseIa getAnalyseIa() {
+        return analyseIa;
+    }
+
+    public void setAnalyseIa(AnalyseIa analyseIa) {
+        this.analyseIa = analyseIa;
+    }
+
+    public String getContratVersion() {
+        return contratVersion;
+    }
+
+    public void setContratVersion(String contratVersion) {
+        this.contratVersion = contratVersion;
+    }
+
+    public BigDecimal getConfianceRisque() {
+        return confianceRisque;
+    }
+
+    public void setConfianceRisque(BigDecimal confianceRisque) {
+        this.confianceRisque = confianceRisque;
+    }
+
+    public String getJustificationCouverture() {
+        return justificationCouverture;
+    }
+
+    public void setJustificationCouverture(String justificationCouverture) {
+        this.justificationCouverture = justificationCouverture;
+    }
+
+    public Utilisateur getValideePar() {
+        return valideePar;
+    }
+
+    public OffsetDateTime getValideeLe() {
+        return valideeLe;
+    }
+
+    /**
+     * Fait passer l'évaluation à {@code VALIDEE} par décision humaine.
+     *
+     * <p>Statut et validateur sont posés ensemble, jamais séparément : la
+     * base refuse une évaluation V2 validée sans validateur, c'est-à-dire
+     * une validation dont personne ne répondrait. Le score officiel
+     * n'intègre que les évaluations dans cet état.
+     */
+    public void validerPar(Utilisateur validateur) {
+        this.statut = StatutEvaluation.VALIDEE;
+        this.valideePar = validateur;
+        this.valideeLe = OffsetDateTime.now();
+    }
+
+    /** Vrai si l'évaluation provient du pipeline V2, faux pour l'historique. */
+    public boolean issueDuContratV2() {
+        return contratVersion != null;
     }
 
     @Override

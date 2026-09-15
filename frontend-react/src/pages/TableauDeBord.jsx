@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Gauge,
   Plus,
+  Target,
   TriangleAlert,
 } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -24,6 +25,7 @@ import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
 import { exporterCsv, formaterDate } from '../lib/export';
+import { formaterScore } from '../lib/scoreAffiche';
 
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
@@ -40,6 +42,29 @@ const LIBELLES_ACTION = {
   EMAIL_VERIFIE: 'Compte activé',
   CODE_VERIFICATION_REFUSE: 'Code d’activation refusé',
 };
+
+/**
+ * Quotient de deux sommes exprimées en centièmes entiers, arrondi à quatre
+ * décimales HALF_UP — la règle de ScoringEngine.ponderation — et rendu en
+ * écriture décimale, pour qu'aucune division flottante ne s'interpose avant
+ * formaterScore. Les produits restent des entiers exacts aux ordres de
+ * grandeur d'un portefeuille ; le reste corrige un éventuel écart d'une unité
+ * de la division flottante qui sert d'estimation.
+ */
+function quotientQuatreDecimales(numerateur, denominateur) {
+  const echelle = numerateur * 10000;
+  let quotient = Math.floor(echelle / denominateur);
+  let reste = echelle - quotient * denominateur;
+  if (reste < 0) {
+    quotient -= 1;
+    reste += denominateur;
+  } else if (reste >= denominateur) {
+    quotient += 1;
+    reste -= denominateur;
+  }
+  if (reste * 2 >= denominateur) quotient += 1;
+  return `${Math.floor(quotient / 10000)}.${String(quotient % 10000).padStart(4, '0')}`;
+}
 
 /** Point coloré du fil d'activité, selon la nature de l'action. */
 function couleurAction(action) {
@@ -61,7 +86,17 @@ export default function TableauDeBord() {
   const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
   // Même permission que la page des missions : proposer une création à qui
   // ne peut pas créer donne un raccourci qui mène à une impasse.
-  const peutCreerMission = peut('audit:creer');
+  //
+  // La formule est celle de l'organisation vers laquelle le raccourci pointe
+  // — `entreprises[0]`, la même que `premiereEntreprise` plus bas, dont
+  // chaque usage de cette permission dépend. Cette page est multi-organisations,
+  // mais le lien, lui, en vise une seule : c'est sa formule qui décide, comme
+  // le fait déjà AuditsListe une fois la page ouverte.
+  //
+  // L'omettre reviendrait à replier sur FREE (voir permissions.js) et à
+  // masquer le raccourci pour tout le monde. Le backend reste l'autorité :
+  // ce contrôle n'évite qu'un aller-retour vers un bouton absent.
+  const peutCreerMission = peut('audit:creer', entreprises[0]?.formuleCode);
   // Miroir d'AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE, seule
   // famille de rôles à laquelle l'API ouvre le journal d'audit.
   const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
@@ -79,12 +114,15 @@ export default function TableauDeBord() {
         const audits = await api.get(`/api/v1/entreprises/${entreprise.id}/audits`).catch(() => []);
         return Promise.all(
           audits.map(async (audit) => {
-            const [score, nonConformites, points] = await Promise.all([
+            const [score, nonConformites, points, plans] = await Promise.all([
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score`).catch(() => null),
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/non-conformites`).catch(() => []),
               api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score-historique`).catch(() => []),
+              // Les plans d'amélioration : le tableau de bord ignorait
+              // jusqu'ici tout le travail de planification.
+              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/plans-action`).catch(() => []),
             ]);
-            return { entreprise, audit, score, nonConformites, points };
+            return { entreprise, audit, score, nonConformites, points, plans };
           })
         );
       })
@@ -118,6 +156,23 @@ export default function TableauDeBord() {
     charger();
   }, [charger]);
 
+  /**
+   * Synthèse des plans d'amélioration, toutes missions confondues.
+   *
+   * `progression` vient du serveur pour chaque plan : on n'en fait que la
+   * moyenne. Recalculer un avancement ici créerait une seconde vérité.
+   */
+  const syntheseePlans = useMemo(() => {
+    const plans = missions.flatMap((m) => m.plans ?? []);
+    if (plans.length === 0) return { total: 0, actifs: 0, avancement: 0 };
+    const somme = plans.reduce((t, p) => t + (p.progression ?? 0), 0);
+    return {
+      total: plans.length,
+      actifs: plans.filter((p) => p.statut === 'ACTIF').length,
+      avancement: Math.round(somme / plans.length),
+    };
+  }, [missions]);
+
   /** Missions ramenées à la forme attendue par le tableau. */
   const missionsVue = useMemo(
     () =>
@@ -146,11 +201,12 @@ export default function TableauDeBord() {
           // pour tenir dans une colonne aux côtés de la progression.
           // Le score est celui de la grille, noté sur 5 ; la conformité en est
           // la traduction en pourcentage pour la lecture rapide.
-          score: score?.scoreGlobal ?? null,
+          // V74-C3-B11 : sans critère évalué, le 0 du serveur est une absence.
+          score: evalues > 0 ? score.scoreGlobal : null,
           noteTotale: score?.noteTotale ?? null,
           coefficientTotal: score?.coefficientTotal ?? null,
           conformite:
-            score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
+            evalues > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null,
           risque,
           statut: audit.statut,
           echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
@@ -191,11 +247,16 @@ export default function TableauDeBord() {
     const notees = missionsVue.filter((m) => m.noteTotale != null && Number(m.coefficientTotal) > 0);
     const note = notees.reduce((somme, m) => somme + Number(m.noteTotale), 0);
     const coefficient = notees.reduce((somme, m) => somme + Number(m.coefficientTotal), 0);
+    // V74-C3-B6 : le score se calcule sur les sommes en centièmes entiers. Le
+    // quotient flottant des sommes affichait parfois un centième de moins que
+    // le moteur (601 / 200 : « 3.00 » au lieu de 3.01).
+    const noteCentiemes = notees.reduce((somme, m) => somme + Math.round(Number(m.noteTotale) * 100), 0);
+    const coefficientCentiemes = notees.reduce((somme, m) => somme + Math.round(Number(m.coefficientTotal) * 100), 0);
     return {
       missions: notees.length,
       note,
       coefficient,
-      score: coefficient > 0 ? note / coefficient : null,
+      score: coefficientCentiemes > 0 ? quotientQuatreDecimales(noteCentiemes, coefficientCentiemes) : null,
     };
   }, [missionsVue]);
 
@@ -393,6 +454,17 @@ export default function TableauDeBord() {
             libelle="Taux de complétion"
             precision={`${kpis.totalEvalues} critères évalués`}
           />
+          <CarteKpi
+            icone={Target}
+            ton="neutre"
+            valeur={syntheseePlans.total}
+            libelle="Plans d’amélioration"
+            precision={
+              syntheseePlans.total === 0
+                ? 'Aucun plan en cours'
+                : `${syntheseePlans.actifs} actif(s) · ${syntheseePlans.avancement}% d’avancement`
+            }
+          />
         </div>
       </Revele>
 
@@ -422,7 +494,7 @@ export default function TableauDeBord() {
               </div>
               <div className="rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-500/20 dark:bg-brand-500/10">
                 <dd className="text-2xl font-bold tabular-nums text-brand-700 dark:text-brand-300">
-                  {consolide.score == null ? '—' : consolide.score.toFixed(2)}
+                  {consolide.score == null ? '—' : formaterScore(consolide.score)}
                 </dd>
                 <dt className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">Score / 5</dt>
               </div>

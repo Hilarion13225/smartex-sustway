@@ -61,7 +61,13 @@ export default function Entreprises() {
   // bloquerait la création de la toute première entreprise). Au-delà,
   // un utilisateur déjà rattaché sans cette permission (VISITEUR) ne doit
   // plus voir un bouton qui échouerait au clic.
-  const peutCreer = entreprises.length === 0 || peut('entreprise:creer');
+  // La formule évaluée est celle que le formulaire s'apprête à demander, et
+  // non celle d'une organisation déjà créée : `entreprise:creer` porte sur
+  // l'entreprise à naître. C'est aussi ce que fait l'API, qui lit la formule
+  // de la requête (EntrepriseResource.creer, refus RG25 si Free). Le
+  // sélecteur n'offre que Standard et Avancées, donc aucune formule fictive
+  // n'est inventée ici — on passe celle qui sera réellement envoyée.
+  const peutCreer = entreprises.length === 0 || peut('entreprise:creer', formulaire.formuleCode);
 
   const entreprisesFiltrees = useMemo(() => {
     const requete = recherche.trim().toLowerCase();

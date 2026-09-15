@@ -8,10 +8,12 @@ import OngletsMission from '../components/audit/OngletsMission';
 import VoletAnalysesIa from '../components/audit/VoletAnalysesIa';
 import VoletPreuves from '../components/audit/VoletPreuves';
 import VoletPlanAction from '../components/audit/VoletPlanAction';
+import VoletPlansMission from '../components/audit/VoletPlansMission';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
+import { formaterScore } from '../lib/scoreAffiche';
 import { useApiAuth } from '../auth/useApiAuth';
-import { estRenseigne } from '../components/audit/statutsCritere';
+import { estDansPerimetre, estRenseigne } from '../components/audit/statutsCritere';
 import ClotureMission from '../components/audit/ClotureMission';
 
 
@@ -29,7 +31,11 @@ const ONGLETS = [
   { cle: 'criteres', libelle: 'Critères' },
   { cle: 'preuves', libelle: 'Preuves' },
   { cle: 'analyses', libelle: 'Analyses IA' },
-  { cle: 'plan', libelle: 'Plan d’action' },
+  // « Actions correctives » et non « Plan d'action » : ce volet traite les
+  // écarts constatés (non-conformités). Les plans d'amélioration, construits
+  // à partir des axes validés, vivent sous /app/:entreprise/plans.
+  { cle: 'plan', libelle: 'Actions correctives' },
+  { cle: 'plans', libelle: 'Plans d’amélioration' },
 ];
 
 /**
@@ -40,7 +46,9 @@ const ONGLETS = [
  */
 function VoletDomaines({ score, criteres }) {
   const parDomaine = new Map();
-  criteres.forEach((critere) => {
+  // RG35 : un critère non applicable ou retiré du périmètre ne compte pas dans
+  // le total du domaine, comme dans le score.
+  criteres.filter(estDansPerimetre).forEach((critere) => {
     const actuel = parDomaine.get(critere.domaineCode) ?? { total: 0, evalues: 0 };
     actuel.total += 1;
     // Ce compteur suit la collecte : un critère déclaré est renseigné, même
@@ -53,7 +61,8 @@ function VoletDomaines({ score, criteres }) {
   const lignes = [...parDomaine.entries()].map(([code, compteurs]) => ({
     code,
     nom: scores.get(code)?.domaineNom ?? code,
-    score: scores.get(code)?.score ?? null,
+    // V74-C3-B11 : un domaine sans critère évalué n'a pas de score, et non un score nul.
+    score: scores.get(code)?.nombreCriteresEvalues > 0 ? scores.get(code).score : null,
     ...compteurs,
   }));
 
@@ -82,7 +91,7 @@ function VoletDomaines({ score, criteres }) {
                 <p className="mt-0.5 font-mono text-xs text-ink-400">{ligne.code}</p>
               </div>
               <span className="shrink-0 text-sm font-semibold tabular-nums text-ink-900">
-                {ligne.score == null ? '—' : `${Number(ligne.score).toFixed(1)} / 5`}
+                {ligne.score == null ? '—' : `${formaterScore(ligne.score)} / 5`}
               </span>
             </div>
             <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-ink-100">
@@ -282,8 +291,8 @@ export default function AuditDetail() {
                       entrepriseId={entrepriseId}
                       auditId={auditId}
                       statut={audit.statut}
-                      renseignes={(criteres ?? []).filter(estRenseigne).length}
-                      total={(criteres ?? []).length}
+                      renseignes={(criteres ?? []).filter(estDansPerimetre).filter(estRenseigne).length}
+                      total={(criteres ?? []).filter(estDansPerimetre).length}
                       peutAnalyser={peutAnalyser}
                       peutCloturer={peutCloturer}
                       surTermine={rafraichirSilencieux}
@@ -352,6 +361,10 @@ export default function AuditDetail() {
                 peutAnalyser={peutAnalyser}
                 surChangement={rafraichirSilencieux}
               />
+            ) : null}
+
+            {onglet === 'plans' ? (
+              <VoletPlansMission entrepriseId={entrepriseId} auditId={auditId} />
             ) : null}
 
             {onglet === 'preuves' ? (

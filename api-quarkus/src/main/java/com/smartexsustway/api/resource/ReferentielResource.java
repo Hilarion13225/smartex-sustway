@@ -3,6 +3,7 @@ package com.smartexsustway.api.resource;
 import com.smartexsustway.api.audit.AuditLogService;
 import com.smartexsustway.api.domain.entity.Referentiel;
 import com.smartexsustway.api.domain.enums.StatutGenerique;
+import com.smartexsustway.api.security.AutorisationService;
 import com.smartexsustway.api.domain.enums.TypeReferentiel;
 import com.smartexsustway.api.domain.repository.CritereRepository;
 import java.util.UUID;
@@ -69,6 +70,7 @@ public class ReferentielResource {
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
+    @Inject AutorisationService autorisationService;
 
     @GET
     public Response lister() {
@@ -76,10 +78,41 @@ public class ReferentielResource {
         return Response.ok(referentiels).build();
     }
 
+    /**
+     * Contenu de la version de travail d'un référentiel.
+     *
+     * <p>Un référentiel {@code ARCHIVE} n'est plus au catalogue : son contenu
+     * cesse d'être servi à l'utilisateur ordinaire, et reste ouvert au
+     * personnel interne — qui doit pouvoir l'inspecter, le corriger ou le
+     * republier. Archiver retire de l'offre sans rendre aveugle celui qui
+     * administre.
+     *
+     * <p>Ce que cette garde protège concrètement : les référentiels archivés
+     * du catalogue portent des critères et des exigences dont aucune source
+     * documentaire ni validation humaine n'est enregistrée
+     * ({@code texte_source}, {@code localisation} et {@code validee_par} sont
+     * tous nuls). Les servir au fil du catalogue revenait à présenter comme
+     * établi un contenu que personne n'a confronté à un document officiel.
+     *
+     * <p>Les autres statuts sont inchangés — {@code INACTIF} et
+     * {@code SUSPENDU} n'emportent aujourd'hui aucune restriction de lecture,
+     * et leur en donner une dépasserait la décision prise.
+     */
     @GET
     @Path("/{code}/criteres")
     public Response criteres(@PathParam("code") String code) {
         Referentiel referentiel = trouverParCode(code);
+
+        // estAccesGlobalActif couvre SUPER_ADMIN et ADMIN_AUDIT — ce dernier
+        // étant INACTIF et non attribuable (V44), cela revient aujourd'hui à
+        // SUPER_ADMIN seul. Passer par le service d'autorisation plutôt que
+        // par un test de rôle écrit ici garde la décision au même endroit que
+        // toutes les autres.
+        if (referentiel.getStatut() == StatutGenerique.ARCHIVE
+                && !autorisationService.estAccesGlobalActif(tenantContext.utilisateurCourantId())) {
+            return erreur(403, "Le référentiel " + referentiel.getCode()
+                    + " est archivé : son contenu n'est plus proposé au catalogue");
+        }
 
         // Contenu de la version de travail : brouillon s'il y en a un, sinon
         // version publiée. Interroger par référentiel renverrait les critères

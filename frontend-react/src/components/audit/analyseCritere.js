@@ -11,16 +11,22 @@ import { api } from '../../lib/apiClient';
  */
 
 /**
- * Traduit une probabilité de conformité en appréciation lisible. Les seuils
- * reprennent les paliers de la grille de Likert du ScoringEngine côté serveur
- * (0,75 et 0,50), pour qu'une même évaluation ne soit pas qualifiée « élevée »
- * ici et de niveau 3 ailleurs.
+ * Traduit le niveau d'engagement retenu par le serveur (ScoringEngine, grille
+ * de Likert 1 à 5) en appréciation lisible, pour qu'une même évaluation ne
+ * soit pas qualifiée « élevée » ici et de niveau 3 ailleurs.
+ *
+ * V74-C3 : le libellé suit ce niveau, jamais le pourcentage affiché. Arrondie à
+ * l'entier, une probabilité de 0,7450 s'affiche « 75 % » alors que le serveur
+ * retient le niveau 3 (seuil 0,75) ; en déduire un palier ici la dirait
+ * « élevée ».
  */
-export function libelleNiveau(score) {
-  if (score >= 75) return 'Élevée';
-  if (score >= 50) return 'Moyenne';
-  if (score >= 25) return 'Faible';
-  return 'Très faible';
+export function libelleNiveau(niveau) {
+  const n = Number(niveau);
+  if (n >= 4) return 'Élevée';
+  if (n === 3) return 'Moyenne';
+  if (n === 2) return 'Faible';
+  if (n === 1) return 'Très faible';
+  return null;
 }
 
 /**
@@ -35,7 +41,7 @@ export function analyseDepuisEvaluation(evaluation) {
   const score = Math.round(Number(evaluation.probabiliteConforme ?? 0) * 100);
   return {
     score,
-    niveau: libelleNiveau(score),
+    niveau: libelleNiveau(evaluation.niveauEngagement),
     confiance:
       evaluation.confianceIa == null ? null : Math.round(Number(evaluation.confianceIa) * 100),
     justification: evaluation.justification ?? null,

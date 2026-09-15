@@ -48,6 +48,11 @@ export const PERMISSIONS_PAR_ROLE = {
     'audit:modifier',
     'audit:cloturer',
     'analyse:executer',
+    // Entériner une évaluation produite par l'IA (V66, ouverte au responsable
+    // par V72). Son absence de cette liste rendait le bouton de validation
+    // invisible pour tout le monde, alors que l'API l'accordait : le modèle
+    // d'affichage doit refléter l'état réel des rôles en base.
+    'evaluation:valider',
     'preuve:deposer',
     'referentiel:administrer',
     'rapport:consulter',
@@ -63,6 +68,10 @@ export const PERMISSIONS_PAR_ROLE = {
     // capacités distinctes, l'isolation par entreprise bornant le périmètre.
     'audit:cloturer',
     'analyse:executer',
+    // V72 : il valide les évaluations de sa propre entreprise. Retirée en
+    // formule FREE (voir RESTRICTIONS_PAR_PLAN), contrairement aux deux
+    // capacités ci-dessus.
+    'evaluation:valider',
     'preuve:deposer',
     'rapport:consulter',
     'bailleur:consulter',
@@ -75,10 +84,35 @@ export const PERMISSIONS_PAR_ROLE = {
 
 /** Permissions retirées selon la formule souscrite — rôles côté client uniquement (RG21/RG24/RG25/RG41). */
 const RESTRICTIONS_PAR_PLAN = {
-  FREE: ['entreprise:creer', 'entreprise:modifier', 'audit:creer', 'audit:modifier', 'preuve:deposer', 'rapport:detaille', 'bailleur:consulter'],
+  // 'evaluation:valider' est retirée de FREE (miroir de AutorisationService,
+  // qui y expose la conséquence : analyse:executer et audit:cloturer restent,
+  // elles, accordées en FREE).
+  FREE: ['entreprise:creer', 'entreprise:modifier', 'audit:creer', 'audit:modifier', 'preuve:deposer', 'rapport:detaille', 'bailleur:consulter', 'evaluation:valider'],
   STANDARD: ['rapport:detaille', 'bailleur:consulter'],
   AVANCEES: [],
 };
+
+/**
+ * Ramène un code de formule à une clé connue de RESTRICTIONS_PAR_PLAN.
+ *
+ * <p>Miroir exact d'AutorisationService : le backend normalise `null` en
+ * `"FREE"` puis lit la table avec un `getOrDefault(..., get("FREE"))`, de
+ * sorte qu'une formule absente <em>comme</em> une formule inconnue retombent
+ * toutes deux sur le plan le plus restrictif.
+ *
+ * <p>Le frontend, lui, indexait la table directement. Une clé absente rend
+ * `undefined`, dont la négation vaut `true` : une formule `undefined`, `null`
+ * ou mal orthographiée était donc traitée comme « aucune restriction », soit
+ * l'inverse exact de l'intention. Le défaut restait invisible parce que
+ * l'API refuse ensuite en 403 — mais l'interface proposait des actions
+ * vouées à échouer.
+ *
+ * <p>FREE n'est plus commercialisée (migration V22, `active = false`) ; elle
+ * survit précisément pour ce rôle de repli sûr, des deux côtés.
+ */
+function formuleEffective(plan) {
+  return typeof plan === 'string' && plan in RESTRICTIONS_PAR_PLAN ? plan : 'FREE';
+}
 
 // Personnel interne Smartex. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN
 // (V43) puis désactivé (V44) : il n'y figure plus.
@@ -117,9 +151,15 @@ export const ROLE_LIBELLE = {
  * omis quand la permission n'est jamais soumise à restriction de formule
  * pour ce rôle (ex. referentiel:administrer, qui ne figure dans aucune
  * restriction par formule).
+ *
+ * <p>Attention : l'omettre pour une permission qui, elle, <em>est</em>
+ * restreinte revient désormais à demander « cette permission survit-elle au
+ * plan le plus restrictif ? » — voir {@link formuleEffective}. C'est le
+ * comportement du backend ; s'y aligner ferme un écart où l'interface
+ * proposait des actions que l'API refusait.
  */
 export function possedePermission(role, plan, permission) {
   if (!role || !PERMISSIONS_PAR_ROLE[role]?.includes(permission)) return false;
   if (ROLES_INTERNES_SMARTEX.has(role)) return true;
-  return !RESTRICTIONS_PAR_PLAN[plan]?.includes(permission);
+  return !RESTRICTIONS_PAR_PLAN[formuleEffective(plan)].includes(permission);
 }

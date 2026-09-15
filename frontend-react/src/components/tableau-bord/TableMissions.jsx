@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { ArrowRight } from 'lucide-react';
 import { Badge } from '../ui';
+import { formaterScore } from '../../lib/scoreAffiche';
 
 const TONS_STATUT = {
   BROUILLON: 'neutre',
@@ -102,7 +103,7 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
                   {mission.score == null ? (
                     <span className="font-normal text-ink-400">—</span>
                   ) : (
-                    `${Number(mission.score).toFixed(2)} / 5`
+                    `${formaterScore(mission.score)} / 5`
                   )}
                 </td>
                 <td className={clsx(cellule, 'whitespace-nowrap tabular-nums')}>
@@ -167,7 +168,7 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500">
                 <span>
-                  Score : {mission.score == null ? '—' : `${Number(mission.score).toFixed(2)} / 5`}
+                  Score : {mission.score == null ? '—' : `${formaterScore(mission.score)} / 5`}
                 </span>
                 <span>
                   Conformité : {mission.conformite == null ? '—' : `${mission.conformite}%`}

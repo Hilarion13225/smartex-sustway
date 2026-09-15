@@ -88,6 +88,14 @@ public class ProjetResource {
             return erreur(400, "Référentiel inconnu : " + requete.referentielCode());
         }
 
+        // Même règle qu'à la création d'une mission, et portée par la même
+        // méthode : un projet crée des missions en lot, il ne peut donc pas
+        // être plus permissif que la création unitaire.
+        if (!referentiel.accepteDeNouveauxTravaux()) {
+            return erreur(400, "Le référentiel " + referentiel.getCode()
+                    + " n'est plus proposé : aucune nouvelle mission ne peut s'y appuyer");
+        }
+
         // Toutes les missions du projet auditent la même version : résolue une
         // seule fois, avant la boucle, pour qu'une publication survenant
         // pendant la création ne coupe pas le projet en deux.

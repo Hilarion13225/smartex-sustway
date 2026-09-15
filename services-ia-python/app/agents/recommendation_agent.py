@@ -22,8 +22,7 @@ l'applicabilité "bailleur" (RG39) alimentée en base.
 
 from pydantic import BaseModel, Field
 
-from app.config import get_settings
-from app.services.gemini_client import get_client
+from app.services.appel_gemini import appeler_gemini
 
 
 class ResultatRecommandation(BaseModel):
@@ -85,20 +84,19 @@ async def evaluer(
     couverture_preuve: bool,
     justification_conformite: str,
 ) -> ResultatRecommandation:
-    settings = get_settings()
-    client = get_client()
     prompt = _construire_prompt(
         code, libelle, description, resumes, probabilite_conformite, couverture_preuve, justification_conformite
     )
 
-    reponse = await client.aio.models.generate_content(
-        model=settings.gemini_model,
+    appel = await appeler_gemini(
+        agent="RECOMMENDATION",
         contents=prompt,
         config={
             "response_mime_type": "application/json",
             "response_schema": ResultatRecommandation,
         },
     )
+    reponse = appel.reponse
 
     parsed = getattr(reponse, "parsed", None)
     if isinstance(parsed, ResultatRecommandation):

@@ -11,6 +11,7 @@ import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.DocumentRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
+import com.smartexsustway.api.mission.AnalyseCritereService;
 import com.smartexsustway.api.resource.dto.ErreurDto;
 import com.smartexsustway.api.resource.dto.PreuveCreateRequest;
 import com.smartexsustway.api.resource.dto.PreuveDto;
@@ -103,6 +104,12 @@ public class PreuveResource {
             if (auditCritere == null || !auditCritere.getAudit().getId().equals(auditId)) {
                 return erreur(400,
                         "Le critère " + auditCritereId + " n'appartient pas à cette mission");
+            }
+            // RG35 : un critère exclu n'accepte plus de nouvelle preuve. Un seul
+            // critère exclu refuse la requête entière, et avant tout persist :
+            // rien n'est écrit. Les preuves déjà rattachées restent lisibles.
+            if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+                return erreur(409, AnalyseCritereService.messageHorsPerimetre(auditCritere));
             }
             preuve.getAuditCriteres().add(auditCritere);
         }

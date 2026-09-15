@@ -26,6 +26,8 @@ import com.smartexsustway.api.scoring.ScoreHistoriqueService;
 import com.smartexsustway.api.stockage.StorageService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -70,7 +72,9 @@ public class AnalyseCritereService {
     @Inject EvaluationDocumentAnalyseRepository documentAnalyseRepository;
     @Inject NonConformiteService nonConformiteService;
     @Inject ScoreHistoriqueService scoreHistoriqueService;
+    @Inject CycleVieMissionService cycleVieMissionService;
     @Inject StorageService storageService;
+    @Inject EntityManager entityManager;
 
     @Inject
     @RestClient
@@ -90,6 +94,15 @@ public class AnalyseCritereService {
 
         /** Le pipeline ou le stockage a échoué ; le message est destiné à l'appelant. */
         record Echec(String message) implements Resultat {}
+
+        /** RG35 : le critère est non applicable ou retiré du périmètre ; rien n'a été soumis ni écrit. */
+        record HorsPerimetre(String message) implements Resultat {}
+    }
+
+    /** RG35 : message commun aux refus d'analyse, de validation et de saisie sur un critère exclu. */
+    public static String messageHorsPerimetre(AuditCritere auditCritere) {
+        return "Ce critère est « " + (auditCritere.isActif() ? "Non applicable" : "Retiré du périmètre")
+                + " » pour cette mission : il n'est ni saisissable ni évaluable";
     }
 
     /**
@@ -100,6 +113,14 @@ public class AnalyseCritereService {
      * l'analyse n'est refusée que si le critère ne porte aucun élément.
      */
     public Resultat analyser(Audit audit, AuditCritere auditCritere) {
+        // RG35 : un critère exclu n'est jamais soumis aux agents. La garde est
+        // ici, et pas seulement dans les appelants, pour que l'analyse
+        // unitaire comme la passe de mission s'y heurtent — même si la passe
+        // filtre déjà sa liste, un critère peut être exclu entre-temps.
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return new Resultat.HorsPerimetre(messageHorsPerimetre(auditCritere));
+        }
+
         UUID auditCritereId = auditCritere.getId();
 
         List<Preuve> preuves = preuveRepository.parAuditCritere(auditCritereId);
@@ -135,18 +156,24 @@ public class AnalyseCritereService {
         // les règles qui disent comment confronter les deux. Ces listes sont
         // vides tant que le référentiel n'a pas été enrichi — le pipeline se
         // comporte alors exactement comme avant cette phase.
+        //
+        // `parCritereActives` et non `parCritere` : une proposition de l'IA
+        // qu'une personne a écartée, ou qu'elle n'a pas encore regardée, n'a
+        // rien à faire dans ce que l'on soumet aux agents. La soumettre
+        // reviendrait à faire juger l'organisation sur un contenu dont
+        // personne ne répond. Le back-office, lui, continue de tout voir.
         UUID critereId = auditCritere.getCritere().getId();
-        var exigences = exigenceRepository.parCritere(critereId);
+        var exigences = exigenceRepository.parCritereActives(critereId);
         var exigencesTransmises = exigences.stream()
                 .map(e -> new EvaluerCritereRequestDto.ExigenceDto(
                         e.getCode(), e.getIntitule(), e.getEnonce()))
                 .toList();
-        var preuvesAttendues = preuveAttendueRepository.parCritere(critereId).stream()
+        var preuvesAttendues = preuveAttendueRepository.parCritereActives(critereId).stream()
                 .map(p -> new EvaluerCritereRequestDto.PreuveAttendueDto(
                         p.getExigence().getCode(), p.getType().name(), p.getLibelle(),
                         p.getDescription(), p.isObligatoire()))
                 .toList();
-        var reglesAnalyse = regleAnalyseRepository.parCritere(critereId).stream()
+        var reglesAnalyse = regleAnalyseRepository.parCritereActives(critereId).stream()
                 .map(r -> new EvaluerCritereRequestDto.RegleAnalyseDto(
                         r.getCode(), r.getType().name(), r.getLibelle(), r.getSeverite().name(),
                         r.getExigence() == null ? null : r.getExigence().getCode(),
@@ -177,6 +204,19 @@ public class AnalyseCritereService {
             LOG.warnf(e, "Échec du pipeline d'agents IA pour le critère %s",
                     auditCritere.getCritere().getCode());
             return new Resultat.Echec("Échec du pipeline d'agents IA — réessayez plus tard");
+        }
+
+        // RG35-HARDENING : le critère a pu être exclu pendant l'appel aux agents.
+        // L'état lu au début de l'analyse est périmé, et l'écrire tel quel
+        // (Hibernate émet l'UPDATE complet de la ligne) rétablirait les
+        // drapeaux d'exclusion. On relit donc la ligne sous verrou, juste avant
+        // toute écriture — jamais pendant l'appel IA, qui peut durer plusieurs
+        // minutes : une exclusion concurrente n'attend au plus que la fin de
+        // cette écriture. Rien n'a encore été modifié sur le critère : le
+        // rafraîchissement ne perd aucune donnée.
+        entityManager.refresh(auditCritere, LockModeType.PESSIMISTIC_WRITE);
+        if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
+            return new Resultat.HorsPerimetre(messageHorsPerimetre(auditCritere));
         }
 
         BigDecimal probabilite = BigDecimal.valueOf(reponse.probabiliteConformite())
@@ -219,6 +259,11 @@ public class AnalyseCritereService {
         auditCritere.setStatut(STATUT_EVALUE);
         nonConformiteService.genererSiNecessaire(evaluation);
         scoreHistoriqueService.enregistrer(audit);
+        // La mission a commencé : elle porte désormais un critère instruit.
+        // Appel explicite, et non effet de bord de l'instantané de score —
+        // analyser n'a jamais eu à décider du cycle de vie, et ne peut en
+        // aucun cas mener à TERMINE, qui reste le geste de la clôture.
+        cycleVieMissionService.constaterDemarrage(audit);
 
         return new Resultat.Analyse(evaluation);
     }

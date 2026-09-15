@@ -509,7 +509,13 @@ def test_un_quota_epuise_est_rapporte_sans_brouillon(mock_lot):
     )
 
     assert reponse.status_code == 503
-    assert "429" in reponse.json()["detail"]
+    # L'appelant doit pouvoir distinguer un quota épuisé d'une panne, mais
+    # par une catégorie stable et non par le texte brut du fournisseur :
+    # celui-ci peut embarquer une URL authentifiée ou un fragment de requête,
+    # et il ne franchit plus la frontière du service (phase 5.6).
+    detail = reponse.json()["detail"]
+    assert "QUOTA" in detail
+    assert "RESOURCE_EXHAUSTED" not in detail
 
 
 def test_les_deux_pipelines_restent_distincts():

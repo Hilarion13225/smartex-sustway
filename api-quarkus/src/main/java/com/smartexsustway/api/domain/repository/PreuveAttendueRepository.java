@@ -56,4 +56,40 @@ public class PreuveAttendueRepository implements PanacheRepositoryBase<PreuveAtt
         return count("referentielVersion.id = ?1 and origineInitiale = ?2 and rejeteePar is not null",
                 referentielVersionId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
     }
+
+    /**
+     * Preuves attendues transmissibles au contexte d'une analyse IA.
+     *
+     * « Transmissible » ne se réduit pas à « pas proposé par une machine ».
+     * Un élément entre dans le contexte si trois conditions tiennent
+     * ensemble : personne ne l'a écarté, ce n'est pas une proposition encore
+     * en attente, et sa chaîne de rattachement est elle-même transmissible.
+     * La dernière est celle qui manquait — une pièce attendue validée sous
+     * une exigence écartée partait aux agents en référençant une exigence
+     * absente du corps envoyé, et faisait chercher la démonstration d'une
+     * exigence qu'un relecteur avait justement jugée hors sujet.
+     *
+     * Deux conditions plutôt qu'une sur l'élément lui-même. `origine <>
+     * IMPORT_IA` suffirait tant que valider bascule l'origine et que rejeter
+     * la laisse ; écrire aussi `rejeteePar is null` fait dire à la requête ce
+     * que la règle dit, au lieu de le déduire d'un invariant posé ailleurs.
+     *
+     * À distinguer de {@link #parCritere}, qui rend tout le contenu : le
+     * back-office doit continuer de voir ce qui est en attente et ce qui a
+     * été écarté, sans quoi personne ne pourrait le trancher.
+     */
+    public List<PreuveAttendue> parCritereActives(UUID critereId) {
+        // `exigence` est obligatoire côté modèle (optional = false) : la
+        // jointure implicite ne peut écarter aucune ligne à tort.
+        return list("exigence.critere.id = ?1 "
+                        + "and origine <> ?2 and rejeteePar is null "
+                        + "and exigence.origine <> ?2 and exigence.rejeteePar is null "
+                        // `id` en dernier départage : rien n'impose l'unicité de
+                        // (exigence, ordre) en base — c'est vrai aujourd'hui, ce
+                        // n'est pas garanti. Sans tri total, la numérotation des
+                        // références locales du contrat IA cesserait d'être
+                        // reproductible d'une analyse à l'autre.
+                        + "order by exigence.ordre, exigence.id, ordre, id",
+                critereId, com.smartexsustway.api.domain.enums.OrigineContenu.IMPORT_IA);
+    }
 }

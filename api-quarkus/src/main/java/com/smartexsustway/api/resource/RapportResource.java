@@ -118,7 +118,8 @@ public class RapportResource {
 
         byte[] contenu = switch (type) {
             case SYNTHESE -> rapportGenerationService.genererSynthese(audit, format);
-            case DETAILLE -> rapportGenerationService.genererDetaille(audit, format);
+            case DETAILLE -> rapportGenerationService.genererDetaille(
+                    audit, format, peutLireLeRaisonnementIa(utilisateurId, entrepriseId));
             case PLAN_ACTION -> rapportGenerationService.genererPlanAction(audit, format);
             case INDICE_FINANCEMENTS_VERTS -> rapportGenerationService.genererIndiceFinancementsVerts(audit, bailleur, format);
         };
@@ -154,6 +155,23 @@ public class RapportResource {
             return erreurPermission;
         }
 
+        // Un fichier déjà produit a un contenu figé : celui des droits de
+        // celui qui l'a demandé. Un rapport détaillé généré par le staff
+        // contient le raisonnement de l'IA, et le rendre à quelqu'un qui n'y
+        // a pas droit le lui livrerait — le contrôle du type ne suffit donc
+        // pas ici.
+        //
+        // Sans droit au raisonnement, on ne rend que les rapports détaillés
+        // que l'appelant a lui-même demandés : ceux-là ont été écrits filtrés.
+        if (rapport.getType() == TypeRapport.DETAILLE
+                && !peutLireLeRaisonnementIa(utilisateurId, entrepriseId)
+                && (rapport.getGenerePar() == null
+                        || !rapport.getGenerePar().getId().equals(utilisateurId))) {
+            return erreur(403,
+                    "Ce rapport détaillé a été produit pour un autre destinataire. "
+                            + "Générez le vôtre depuis cette mission.");
+        }
+
         byte[] contenu = storageService.telecharger(rapport.getCheminStockage());
         String extension = rapport.getFormat() == FormatRapport.PDF ? ".pdf" : ".csv";
         String typeMime = rapport.getFormat() == FormatRapport.PDF ? "application/pdf" : "text/csv";
@@ -178,8 +196,21 @@ public class RapportResource {
         switch (type) {
             case SYNTHESE, PLAN_ACTION ->
                     autorisationService.exigerPermission(utilisateurId, entrepriseId, formule, "rapport:consulter");
-            case DETAILLE ->
-                    autorisationService.exigerPermission(utilisateurId, entrepriseId, formule, "rapport:detaille");
+            case DETAILLE -> {
+                // Le responsable d'entreprise pilote les plans d'amélioration
+                // et doit pouvoir remettre le document qui les porte. Il n'y
+                // gagne pas le raisonnement de l'IA : celui-ci reste lié à
+                // `rapport:detaille`, et c'est le contenu du fichier qui en
+                // dépend (voir RapportGenerationService.genererDetaille).
+                //
+                // Le collaborateur reste exclu : il ne porte aucun des rôles
+                // d'administration de la mission.
+                if (!autorisationService.possedePermission(utilisateurId, entrepriseId, "rapport:detaille")
+                        && !autorisationService.possedeRoleSurEntreprise(utilisateurId, entrepriseId,
+                                AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE)) {
+                    return erreur(403, "Le rapport détaillé est réservé à l'administration de la mission");
+                }
+            }
             case INDICE_FINANCEMENTS_VERTS -> {
                 autorisationService.exigerPermission(utilisateurId, entrepriseId, "bailleur:consulter");
                 if (!estFormuleAvancees(audit)) {
@@ -188,6 +219,17 @@ public class RapportResource {
             }
         }
         return null;
+    }
+
+    /**
+     * Vrai si l'appelant a le droit de lire le raisonnement de l'IA.
+     *
+     * <p>Décide du <strong>contenu écrit dans le fichier</strong>, pas d'un
+     * affichage : un document complet déposé au stockage resterait complet
+     * pour quiconque le téléchargerait ensuite.
+     */
+    private boolean peutLireLeRaisonnementIa(UUID utilisateurId, UUID entrepriseId) {
+        return autorisationService.possedePermission(utilisateurId, entrepriseId, "rapport:detaille");
     }
 
     /** RG21/RG41 : même garde que IndicePreparationResource — dépend de la formule souscrite au moment de l'audit, sans dérogation staff. */

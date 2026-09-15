@@ -11,6 +11,7 @@ import com.smartexsustway.api.domain.repository.ActionCorrectiveRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.NonConformeRepository;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
+import com.smartexsustway.api.planification.PlanActionService;
 import com.smartexsustway.api.resource.dto.ActionCorrectiveCreateRequest;
 import com.smartexsustway.api.resource.dto.ActionCorrectiveDto;
 import com.smartexsustway.api.resource.dto.ActionCorrectiveStatutRequestDto;
@@ -21,6 +22,7 @@ import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotFoundException;
@@ -45,6 +47,7 @@ public class ActionCorrectiveResource {
     @Inject NonConformeRepository nonConformeRepository;
     @Inject ActionCorrectiveRepository actionCorrectiveRepository;
     @Inject UtilisateurRepository utilisateurRepository;
+    @Inject PlanActionService planActionService;
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
@@ -79,12 +82,17 @@ public class ActionCorrectiveResource {
             }
         }
 
-        Utilisateur responsable = null;
-        if (requete.responsableId() != null) {
-            responsable = utilisateurRepository.findById(requete.responsableId());
-            if (responsable == null) {
-                return erreur(400, "Responsable introuvable : " + requete.responsableId());
-            }
+        // Le responsable doit être rattaché à l'entreprise de la mission.
+        // Sans ce contrôle, une action pouvait être affectée à un utilisateur
+        // d'une autre entreprise, dont l'identité était ensuite restituée dans
+        // `responsableNom` — et qui n'aurait de toute façon pas pu la traiter.
+        // Même garde que pour les plans (PlanActionService), appliquée ici
+        // sans refondre ce module.
+        Utilisateur responsable;
+        try {
+            responsable = planActionService.responsableDeLEntreprise(requete.responsableId(), entrepriseId);
+        } catch (BadRequestException e) {
+            return erreur(400, e.getMessage());
         }
 
         ActionCorrective action = new ActionCorrective(nonConforme, requete.titre());

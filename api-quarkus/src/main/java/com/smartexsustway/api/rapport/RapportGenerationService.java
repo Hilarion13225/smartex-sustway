@@ -1,7 +1,10 @@
 package com.smartexsustway.api.rapport;
 
 import com.smartexsustway.api.domain.entity.ActionCorrective;
+import com.smartexsustway.api.domain.entity.ActionPlan;
 import com.smartexsustway.api.domain.entity.Audit;
+import com.smartexsustway.api.domain.entity.AxeAmelioration;
+import com.smartexsustway.api.domain.entity.PlanAction;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.entity.Bailleur;
 import com.smartexsustway.api.domain.entity.Evaluation;
@@ -10,10 +13,14 @@ import com.smartexsustway.api.domain.entity.NonConforme;
 import com.smartexsustway.api.domain.entity.Site;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.FormatRapport;
+import com.smartexsustway.api.domain.enums.StatutIndice;
 import com.smartexsustway.api.domain.repository.ActionCorrectiveRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
+import com.smartexsustway.api.planification.PlanActionService;
+import com.smartexsustway.api.domain.repository.ActionPlanRepository;
 import com.smartexsustway.api.domain.repository.AuditSiteRepository;
-import com.smartexsustway.api.domain.repository.CritereBailleurRepository;
+import com.smartexsustway.api.domain.repository.AxeAmeliorationRepository;
+import com.smartexsustway.api.domain.repository.PlanActionRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.NonConformeRepository;
 import com.smartexsustway.api.domain.repository.SiteRepository;
@@ -81,9 +88,18 @@ public class RapportGenerationService {
     @Inject NonConformeRepository nonConformeRepository;
     @Inject ActionCorrectiveRepository actionCorrectiveRepository;
     @Inject AuditCritereRepository auditCritereRepository;
+    /**
+     * V38 / V74-C1 : toute évaluation restituée par ces rapports est lue par
+     * laPlusRecenteIaParAuditCritere — seule l'analyse IA fait la note, comme
+     * dans AuditScoreService. Une évaluation EXPERT reste en base (RG14) mais
+     * ne fournit ni niveau, ni probabilité, ni statut, ni source, ni
+     * justification ; sans analyse IA, les colonnes d'évaluation valent « — ».
+     */
     @Inject EvaluationRepository evaluationRepository;
-    @Inject CritereBailleurRepository critereBailleurRepository;
     @Inject IndicePreparationService indicePreparationService;
+    @Inject AxeAmeliorationRepository axeAmeliorationRepository;
+    @Inject PlanActionRepository planActionRepository;
+    @Inject ActionPlanRepository actionPlanRepository;
     @Inject AuditSiteRepository auditSiteRepository;
     @Inject SiteRepository siteRepository;
 
@@ -99,13 +115,28 @@ public class RapportGenerationService {
     }
 
     /** Rapport de synthèse + détail de l'évaluation de chaque critère de l'audit (réservé au staff interne, permission rapport:detaille). */
-    public byte[] genererDetaille(Audit audit, FormatRapport format) {
+    /**
+     * Le rapport détaillé, dans la version que son destinataire a le droit de
+     * lire.
+     *
+     * <p>{@code avecRaisonnementIa} n'est pas un paramètre d'affichage : il
+     * décide de ce qui est <strong>écrit dans le fichier</strong>. Produire un
+     * document complet puis en masquer des parties à l'écran laisserait les
+     * justifications dans les octets déposés au stockage, donc dans tout
+     * fichier téléchargé ensuite — ce ne serait pas une restriction, mais son
+     * apparence.
+     *
+     * <p>Le responsable d'entreprise pilote les plans et doit pouvoir les
+     * remettre ; le raisonnement interne de l'IA reste réservé à
+     * {@code rapport:detaille}.
+     */
+    public byte[] genererDetaille(Audit audit, FormatRapport format, boolean avecRaisonnementIa) {
         AuditScoreDto score = auditScoreService.calculer(audit);
         List<AuditCritere> auditCriteres = auditCritereRepository.parAudit(audit.getId());
 
         return switch (format) {
-            case CSV -> genererDetailleCsv(audit, score, auditCriteres);
-            case PDF -> genererDetaillePdf(audit, score, auditCriteres);
+            case CSV -> genererDetailleCsv(audit, score, auditCriteres, avecRaisonnementIa);
+            case PDF -> genererDetaillePdf(audit, score, auditCriteres, avecRaisonnementIa);
             case EXCEL -> throw new IllegalArgumentException("Format EXCEL non encore supporté pour le rapport détaillé");
         };
     }
@@ -125,13 +156,24 @@ public class RapportGenerationService {
      * RG39-RG43 : indice de préparation aux exigences du bailleur, recalculé
      * à la génération (comme SYNTHESE avec AuditScoreService) plutôt que lu
      * depuis une valeur potentiellement obsolète, plus le détail des
-     * critères tagués applicables à ce bailleur.
+     * critères de la mission dont la correspondance avec ce bailleur est
+     * justifiée.
+     *
+     * V74-B : les critères listés sont ceux du périmètre que le calcul
+     * considère, fourni par IndicePreparationService — mapping applicable et
+     * correspondance justifiée. Le rapport n'en tient pas sa propre
+     * définition : un critère affiché qui ne compte pas dans le score, ou
+     * l'inverse, rendrait le document indéfendable.
      */
     public byte[] genererIndiceFinancementsVerts(Audit audit, Bailleur bailleur, FormatRapport format) {
         IndicePreparation indice = indicePreparationService.calculerEtEnregistrer(audit, bailleur);
-        Set<UUID> critereIdsApplicables = Set.copyOf(critereBailleurRepository.critereIdsApplicables(bailleur.getId()));
+        Set<UUID> perimetre = indicePreparationService.perimetreCompte(bailleur);
+        // RG35 : un critère exclu de la mission n'entre pas dans le calcul
+        // (IndicePreparationService) ; il ne figure donc pas non plus dans
+        // la liste des critères de l'indice.
         List<AuditCritere> auditCriteres = auditCritereRepository.parAudit(audit.getId()).stream()
-                .filter(ac -> critereIdsApplicables.contains(ac.getCritere().getId()))
+                .filter(ac -> perimetre.contains(ac.getCritere().getId()))
+                .filter(ac -> ac.isActif() && ac.isApplicable())
                 .toList();
 
         return switch (format) {
@@ -194,14 +236,36 @@ public class RapportGenerationService {
 
     // --- DETAILLE -------------------------------------------------------------
 
-    private byte[] genererDetailleCsv(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres) {
+    private byte[] genererDetailleCsv(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres,
+                                      boolean avecRaisonnementIa) {
         StringBuilder csv = new StringBuilder();
         enTeteCsv(csv, "Rapport détaillé", audit);
         sectionScoreCsv(csv, score);
 
-        csv.append("Domaine;Critère;Libellé;Criticité;Coefficient;Statut critère;Niveau /5;Probabilité conforme;Statut évaluation;Source;Justification\n");
+        // La colonne n'est pas écrite quand le raisonnement n'est pas dû :
+        // ce qui n'est pas dans le fichier ne peut pas en ressortir.
+        csv.append("Domaine;Critère;Libellé;Criticité;Coefficient;Statut critère;Niveau /5;Probabilité conforme;Statut évaluation;Source")
+                .append(avecRaisonnementIa ? ";Justification" : "").append('\n');
         for (AuditCritere ac : auditCriteres) {
-            Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
+            String exclusion = libelleExclusion(ac);
+            if (exclusion != null) {
+                // RG35 : l'état d'exclusion tient lieu de statut et de niveau.
+                // Ni « — » (réservé à l'absence de score), ni 0, ni l'ancienne
+                // évaluation, qui ferait passer le critère pour évalué.
+                csv.append(echapper(ac.getCritere().getDomaine().getNom())).append(';')
+                        .append(ac.getCritere().getCode()).append(';')
+                        .append(echapper(ac.getCritere().getLibelle())).append(';')
+                        .append(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—").append(';')
+                        .append(ac.getCoefficientPonderation()).append(';')
+                        .append(exclusion).append(';')
+                        .append(exclusion).append(";;;");
+                if (avecRaisonnementIa) {
+                    csv.append(';');
+                }
+                csv.append('\n');
+                continue;
+            }
+            Evaluation derniere = evaluationRepository.laPlusRecenteIaParAuditCritere(ac.getId()).orElse(null);
             csv.append(echapper(ac.getCritere().getDomaine().getNom())).append(';')
                     .append(ac.getCritere().getCode()).append(';')
                     .append(echapper(ac.getCritere().getLibelle())).append(';')
@@ -211,38 +275,239 @@ public class RapportGenerationService {
                     .append(derniere != null ? derniere.getNote() : "—").append(';')
                     .append(derniere != null ? formaterScore(derniere.getProbabiliteConforme()) : "—").append(';')
                     .append(derniere != null ? derniere.getStatut() : "—").append(';')
-                    .append(derniere != null ? derniere.getSource() : "—").append(';')
-                    .append(derniere != null ? echapper(derniere.getJustification()) : "").append('\n');
+                    .append(derniere != null ? derniere.getSource() : "—");
+            if (avecRaisonnementIa) {
+                csv.append(';').append(derniere != null ? echapper(derniere.getJustification()) : "");
+            }
+            csv.append('\n');
         }
+
+        sectionAxesValidesCsv(csv, audit);
+        sectionPlansCsv(csv, audit);
 
         return csv.toString().getBytes(StandardCharsets.UTF_8);
     }
 
-    private byte[] genererDetaillePdf(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres) {
+    /**
+     * Les axes retenus par l'audit.
+     *
+     * <p>Seuls les axes <strong>valides</strong> y figurent : un axe encore
+     * propose n'a ete accepte par personne, et le presenter dans le livrable
+     * remis au client donnerait a une suggestion de machine le statut d'une
+     * recommandation d'auditeur.
+     */
+    private void sectionAxesValidesCsv(StringBuilder csv, Audit audit) {
+        var axes = axeAmeliorationRepository.validesParAudit(audit.getId());
+        if (axes.isEmpty()) {
+            return;
+        }
+        csv.append("\nAxes d'amelioration valides (").append(axes.size()).append(")\n");
+        csv.append("Axe;Critere;Rattachement;Origine\n");
+        for (AxeAmelioration axe : axes) {
+            csv.append(echapper(axe.getLibelle())).append(';')
+                    .append(axe.getAuditCritere() == null ? "-"
+                            : axe.getAuditCritere().getCritere().getCode()).append(';')
+                    .append(referenceAxe(axe)).append(';')
+                    .append(axe.getOrigine()).append('\n');
+        }
+    }
+
+    /** Le code metier de la cible, plus parlant qu'un identifiant. */
+    private static String referenceAxe(AxeAmelioration axe) {
+        if (axe.getExigence() != null) return axe.getExigence().getCode();
+        if (axe.getPreuveAttendue() != null) return echapper(axe.getPreuveAttendue().getLibelle());
+        if (axe.getRegleAnalyse() != null) return axe.getRegleAnalyse().getCode();
+        return "-";
+    }
+
+    /**
+     * Les plans d'amelioration et leurs actions.
+     *
+     * <p>La progression n'est pas recalculee ici : elle vient de
+     * {@link PlanActionService#progression(List)}, la meme fonction que celle
+     * qui alimente l'ecran. Deux calculs separes finiraient par afficher deux
+     * avancements pour un meme plan.
+     */
+    private void sectionPlansCsv(StringBuilder csv, Audit audit) {
+        var plans = planActionRepository.parAudit(audit.getId());
+        if (plans.isEmpty()) {
+            return;
+        }
+        csv.append("\nPlans d'amelioration (").append(plans.size()).append(")\n");
+        for (PlanAction plan : plans) {
+            var actions = actionPlanRepository.parPlan(plan.getId());
+            csv.append("\nPlan;").append(echapper(plan.getTitre())).append('\n');
+            csv.append("Statut;").append(plan.getStatut()).append('\n');
+            csv.append("Avancement;").append(PlanActionService.progression(actions)).append("%\n");
+            if (plan.getDateEcheance() != null) {
+                csv.append("Echeance;").append(plan.getDateEcheance().format(FORMAT_DATE)).append('\n');
+            }
+            if (plan.getMotifCloture() != null && !plan.getMotifCloture().isBlank()) {
+                csv.append("Motif de cloture;").append(echapper(plan.getMotifCloture())).append('\n');
+            }
+            if (actions.isEmpty()) {
+                csv.append("(aucune action)\n");
+                continue;
+            }
+            csv.append("Action;Responsable;Echeance;Statut;Priorite;En retard\n");
+            for (ActionPlan action : actions) {
+                csv.append(echapper(action.getTitre())).append(';')
+                        .append(nomResponsable(action.getResponsable())).append(';')
+                        .append(action.getDateEcheance() == null ? "-"
+                                : action.getDateEcheance().format(FORMAT_DATE)).append(';')
+                        .append(action.getStatut()).append(';')
+                        .append(action.getPriorite()).append(';')
+                        .append(PlanActionService.enRetard(action.getDateEcheance(), action.getStatut())
+                                ? "oui" : "non").append('\n');
+            }
+        }
+    }
+
+    /**
+     * RG35 : état d'exclusion d'un critère de la mission, en toutes lettres,
+     * ou {@code null} s'il est dans le périmètre. {@code actif=false} l'emporte :
+     * un critère retiré du périmètre n'a plus à être qualifié d'applicable ou non.
+     */
+    static String libelleExclusion(AuditCritere ac) {
+        if (!ac.isActif()) {
+            return "Retiré du périmètre";
+        }
+        return ac.isApplicable() ? null : "Non applicable";
+    }
+
+    private static String nomResponsable(com.smartexsustway.api.domain.entity.Utilisateur u) {
+        return u == null ? "Non affectee" : echapper(u.getPrenom() + " " + u.getNom());
+    }
+
+    private byte[] genererDetaillePdf(Audit audit, AuditScoreDto score, List<AuditCritere> auditCriteres,
+                                      boolean avecRaisonnementIa) {
         return construirePdf(audit, "Rapport détaillé", (document, polices) -> {
             sectionScorePdf(document, polices, score);
 
             document.add(titreSection("Détail par critère (" + auditCriteres.size() + ")", polices));
-            PdfPTable table = new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f, 3f});
+            PdfPTable table = avecRaisonnementIa
+                    ? new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f, 3f})
+                    : new PdfPTable(new float[] {2.5f, 1.2f, 3f, 1.2f, 1f, 1.5f, 1.5f});
             table.setWidthPercentage(100);
-            for (String entete : List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source", "Justification")) {
+            List<String> colonnes = avecRaisonnementIa
+                    ? List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source", "Justification")
+                    : List.of("Domaine", "Critère", "Libellé", "Criticité", "Niveau /5", "Statut évaluation", "Source");
+            for (String entete : colonnes) {
                 table.addCell(celluleEntete(entete, polices.enTeteTableau()));
             }
             int index = 0;
             for (AuditCritere ac : auditCriteres) {
-                Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
+                String exclusion = libelleExclusion(ac);
+                Evaluation derniere = exclusion != null ? null
+                        : evaluationRepository.laPlusRecenteIaParAuditCritere(ac.getId()).orElse(null);
                 boolean paire = index++ % 2 == 1;
                 table.addCell(cellule(ac.getCritere().getDomaine().getNom(), polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(ac.getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(ac.getCriticite() != null ? ac.getCriticite().getLibelle() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                if (exclusion != null) {
+                    // RG35 : même règle que le CSV — l'exclusion est écrite en
+                    // toutes lettres, jamais « — » ni 0.
+                    table.addCell(cellule(exclusion, polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule(exclusion, polices.normal(), paire, Element.ALIGN_LEFT));
+                    table.addCell(cellule("", polices.normal(), paire, Element.ALIGN_LEFT));
+                    if (avecRaisonnementIa) {
+                        table.addCell(cellule("", polices.normal(), paire, Element.ALIGN_LEFT));
+                    }
+                    continue;
+                }
                 table.addCell(cellule(derniere != null ? String.valueOf(derniere.getNote()) : "—", polices.normal(), paire, Element.ALIGN_RIGHT));
                 table.addCell(cellule(derniere != null ? derniere.getStatut().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(derniere != null ? derniere.getSource().name() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
-                table.addCell(cellule(derniere != null && derniere.getJustification() != null ? derniere.getJustification() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                if (avecRaisonnementIa) {
+                    table.addCell(cellule(derniere != null && derniere.getJustification() != null
+                            ? derniere.getJustification() : "—", polices.normal(), paire, Element.ALIGN_LEFT));
+                }
             }
             document.add(table);
+
+            sectionAxesValidesPdf(document, polices, audit);
+            sectionPlansPdf(document, polices, audit);
         });
+    }
+
+    /** Les axes retenus — validés uniquement, voir {@link #sectionAxesValidesCsv}. */
+    private void sectionAxesValidesPdf(Document document, Polices polices, Audit audit)
+            throws DocumentException {
+        var axes = axeAmeliorationRepository.validesParAudit(audit.getId());
+        if (axes.isEmpty()) {
+            return;
+        }
+        document.add(titreSection("Axes d'amélioration validés (" + axes.size() + ")", polices));
+        PdfPTable table = new PdfPTable(new float[] {5f, 1.5f, 2.5f, 1.2f});
+        table.setWidthPercentage(100);
+        for (String entete : List.of("Axe", "Critère", "Rattachement", "Origine")) {
+            table.addCell(celluleEntete(entete, polices.enTeteTableau()));
+        }
+        int index = 0;
+        for (AxeAmelioration axe : axes) {
+            boolean paire = index++ % 2 == 1;
+            table.addCell(cellule(axe.getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(axe.getAuditCritere() == null ? "—"
+                    : axe.getAuditCritere().getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(referenceAxePdf(axe), polices.normal(), paire, Element.ALIGN_LEFT));
+            table.addCell(cellule(axe.getOrigine().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+        }
+        document.add(table);
+    }
+
+    /** Sans échappement CSV : le PDF n'en a pas besoin. */
+    private static String referenceAxePdf(AxeAmelioration axe) {
+        if (axe.getExigence() != null) return axe.getExigence().getCode();
+        if (axe.getPreuveAttendue() != null) return axe.getPreuveAttendue().getLibelle();
+        if (axe.getRegleAnalyse() != null) return axe.getRegleAnalyse().getCode();
+        return "—";
+    }
+
+    /** Les plans et leurs actions — progression issue du service, voir {@link #sectionPlansCsv}. */
+    private void sectionPlansPdf(Document document, Polices polices, Audit audit)
+            throws DocumentException {
+        var plans = planActionRepository.parAudit(audit.getId());
+        if (plans.isEmpty()) {
+            return;
+        }
+        document.add(titreSection("Plans d'amélioration (" + plans.size() + ")", polices));
+        for (PlanAction plan : plans) {
+            var actions = actionPlanRepository.parPlan(plan.getId());
+            StringBuilder entete = new StringBuilder(plan.getTitre())
+                    .append(" — ").append(plan.getStatut())
+                    .append(" — ").append(PlanActionService.progression(actions)).append(" %");
+            if (plan.getDateEcheance() != null) {
+                entete.append(" — échéance ").append(plan.getDateEcheance().format(FORMAT_DATE));
+            }
+            document.add(titreSection(entete.toString(), polices));
+            if (plan.getMotifCloture() != null && !plan.getMotifCloture().isBlank()) {
+                document.add(titreSection("Motif de clôture : " + plan.getMotifCloture(), polices));
+            }
+            if (actions.isEmpty()) {
+                continue;
+            }
+            PdfPTable table = new PdfPTable(new float[] {4f, 2f, 1.5f, 1.5f, 1.2f, 1f});
+            table.setWidthPercentage(100);
+            for (String col : List.of("Action", "Responsable", "Échéance", "Statut", "Priorité", "Retard")) {
+                table.addCell(celluleEntete(col, polices.enTeteTableau()));
+            }
+            int index = 0;
+            for (ActionPlan action : actions) {
+                boolean paire = index++ % 2 == 1;
+                table.addCell(cellule(action.getTitre(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getResponsable() == null ? "Non affectée"
+                                : action.getResponsable().getPrenom() + " " + action.getResponsable().getNom(),
+                        polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getDateEcheance() == null ? "—"
+                        : action.getDateEcheance().format(FORMAT_DATE), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getStatut().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(action.getPriorite().name(), polices.normal(), paire, Element.ALIGN_LEFT));
+                table.addCell(cellule(PlanActionService.enRetard(action.getDateEcheance(), action.getStatut())
+                        ? "oui" : "non", polices.normal(), paire, Element.ALIGN_CENTER));
+            }
+            document.add(table);
+        }
     }
 
     // --- PLAN_ACTION ------------------------------------------------------
@@ -327,13 +592,23 @@ public class RapportGenerationService {
         StringBuilder csv = new StringBuilder();
         enTeteCsv(csv, "Indice de préparation aux financements verts", audit);
         csv.append("Bailleur;").append(bailleur.getCode()).append(" — ").append(bailleur.getNom()).append('\n');
-        csv.append("Indice de préparation;").append(formaterScore(indice.getScore())).append("/5\n");
-        csv.append("Critères applicables à ce bailleur;").append(auditCriteres.size()).append('\n');
+        // Un indice sans score dit pourquoi il n'en a pas, plutôt que d'écrire
+        // « 0.00/5 » — que le lecteur prendrait pour un constat sur l'organisation.
+        csv.append("Indice de préparation;")
+                .append(indice.getStatut().porteUnScore()
+                        ? formaterScore(indice.getScore()) + "/5"
+                        : libelleIndiceSansScore(indice.getStatut(), auditCriteres.isEmpty()))
+                .append('\n');
+        // V74-C2 : trois périmètres emboîtés, chacun nommé pour ce qu'il compte.
+        // Le deuxième est la liste ci-dessous, et le nombre du titre du PDF.
+        csv.append("Critères rattachés à ce bailleur (mapping applicable, tous référentiels);").append(indice.getNombreCriteresTagues()).append('\n');
+        csv.append("Critères de cette mission à correspondance justifiée;").append(auditCriteres.size()).append('\n');
+        csv.append("Critères pris en compte dans le score (correspondance justifiée, dernière analyse IA validée);").append(indice.getNombreCriteresRetenus()).append('\n');
         csv.append('\n');
 
         csv.append("Critère;Libellé;Domaine;Criticité;Coefficient;Niveau /5;Probabilité conforme;Statut évaluation\n");
         for (AuditCritere ac : auditCriteres) {
-            Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
+            Evaluation derniere = evaluationRepository.laPlusRecenteIaParAuditCritere(ac.getId()).orElse(null);
             csv.append(ac.getCritere().getCode()).append(';')
                     .append(echapper(ac.getCritere().getLibelle())).append(';')
                     .append(echapper(ac.getCritere().getDomaine().getNom())).append(';')
@@ -349,15 +624,21 @@ public class RapportGenerationService {
 
     private byte[] genererIndicePdf(Audit audit, Bailleur bailleur, IndicePreparation indice, List<AuditCritere> auditCriteres) {
         return construirePdf(audit, "Indice de préparation aux financements verts", (document, polices) -> {
-            document.add(carteIndice(bailleur, indice, polices));
+            document.add(carteIndice(bailleur, indice, auditCriteres.isEmpty(), polices));
             document.add(new Paragraph(
-                    "Cet indice mesure un alignement avec les critères tagués pour ce bailleur, pas une garantie d'éligibilité au financement.",
+                    "Cet indice mesure un alignement avec les critères dont la correspondance avec ce bailleur est justifiée et validée, pas une garantie d'éligibilité au financement.",
                     polices.avertissement()));
             document.add(Chunk.NEWLINE);
 
-            document.add(titreSection("Critères applicables (" + auditCriteres.size() + ")", polices));
+            document.add(titreSection("Critères de cette mission à correspondance justifiée (" + auditCriteres.size() + ")", polices));
             if (auditCriteres.isEmpty()) {
-                document.add(carteVide("Aucun critère n'est encore tagué comme applicable à ce bailleur.", polices));
+                // Une liste vide ne dit pas qu'aucun critère n'est rattaché : hors
+                // NON_CALCULABLE, des mappings existent sans correspondance justifiée
+                // pour cette mission.
+                document.add(carteVide(indice.getStatut() == StatutIndice.NON_CALCULABLE
+                        ? "Aucun critère n'est encore tagué comme applicable à ce bailleur."
+                        : "Des critères sont rattachés à ce bailleur, mais aucun critère de cette mission n'a de correspondance justifiée et validée.",
+                        polices));
                 return;
             }
             PdfPTable table = new PdfPTable(new float[] {1.3f, 3f, 2f, 1.3f, 1.3f, 1.5f});
@@ -367,7 +648,7 @@ public class RapportGenerationService {
             }
             int index = 0;
             for (AuditCritere ac : auditCriteres) {
-                Evaluation derniere = evaluationRepository.laPlusRecenteParAuditCritere(ac.getId()).orElse(null);
+                Evaluation derniere = evaluationRepository.laPlusRecenteIaParAuditCritere(ac.getId()).orElse(null);
                 boolean paire = index++ % 2 == 1;
                 table.addCell(cellule(ac.getCritere().getCode(), polices.normal(), paire, Element.ALIGN_LEFT));
                 table.addCell(cellule(ac.getCritere().getLibelle(), polices.normal(), paire, Element.ALIGN_LEFT));
@@ -381,15 +662,23 @@ public class RapportGenerationService {
     }
 
     /** Même esprit que la carte "Score global" (gros chiffre coloré + méta) mais centrée sur le bailleur plutôt que le score par domaine. */
-    private PdfPTable carteIndice(Bailleur bailleur, IndicePreparation indice, Polices polices) {
-        Color couleur = couleurNiveau(indice.getScore());
+    private PdfPTable carteIndice(Bailleur bailleur, IndicePreparation indice, boolean aucunCritereJustifie, Polices polices) {
+        boolean avecScore = indice.getStatut().porteUnScore();
+        Color couleur = avecScore ? couleurNiveau(indice.getScore()) : ENCRE_ATTENUEE;
         PdfPTable carte = new PdfPTable(new float[] {1.3f, 2f});
         carte.setWidthPercentage(100);
 
         PdfPCell celluleChiffre = celluleCarte();
         Paragraph chiffre = new Paragraph();
-        chiffre.add(new Chunk(formaterScore(indice.getScore()), new Font(Font.HELVETICA, 32, Font.BOLD, couleur)));
-        chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        if (avecScore) {
+            chiffre.add(new Chunk(formaterScore(indice.getScore()), new Font(Font.HELVETICA, 32, Font.BOLD, couleur)));
+            chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        } else {
+            // Le gros chiffre est ce que l'œil retient d'une page : y mettre un
+            // zéro faute de données ferait dire au rapport l'inverse de la vérité.
+            chiffre.add(new Chunk(libelleIndiceSansScore(indice.getStatut(), aucunCritereJustifie),
+                    new Font(Font.HELVETICA, 14, Font.BOLD, couleur)));
+        }
         celluleChiffre.addElement(chiffre);
         carte.addCell(celluleChiffre);
 
@@ -427,7 +716,13 @@ public class RapportGenerationService {
 
     private void enTeteCsv(StringBuilder csv, String titre, Audit audit) {
         csv.append(titre).append(" — ").append(audit.getNom()).append('\n');
-        csv.append("Référentiel;").append(audit.getReferentiel().getCode()).append('\n');
+        // Le code seul ne dit pas sous quel texte la mission a été conduite :
+        // un référentiel est versionné et immuable, et deux versions n'exigent
+        // pas les mêmes preuves. Le livrable doit nommer celle qui fait foi.
+        csv.append("Référentiel;").append(audit.getReferentiel().getCode())
+                .append(audit.getReferentielVersion() == null ? ""
+                        : " v" + audit.getReferentielVersion().getNumero())
+                .append('\n');
         csv.append("Entreprise;").append(audit.getEntreprise().getRaisonSociale()).append('\n');
         csv.append("Périmètre;").append(echapper(perimetre(audit))).append('\n');
         csv.append("Date de début;").append(audit.getDateDebut().format(FORMAT_DATE)).append('\n');
@@ -436,7 +731,10 @@ public class RapportGenerationService {
     }
 
     private void sectionScoreCsv(StringBuilder csv, AuditScoreDto score) {
-        csv.append("Score global;").append(formaterScore(score.scoreGlobal())).append("/5\n");
+        // V74-C3-B11 : sans critère évalué, le 0 du moteur est une absence de score, jamais un score nul.
+        csv.append("Score global;")
+                .append(score.nombreCriteresEvalues() > 0 ? formaterScore(score.scoreGlobal()) + "/5" : "—")
+                .append('\n');
         csv.append("Critères évalués;").append(score.nombreCriteresEvalues()).append('/').append(score.nombreCriteresTotal()).append('\n');
         csv.append("En revue experte;").append(score.nombreCriteresEnRevue()).append('\n');
         csv.append("Non évalués;").append(score.nombreCriteresNonEvalues()).append('\n');
@@ -446,7 +744,7 @@ public class RapportGenerationService {
         for (AuditScoreDto.DomaineScoreDto d : score.domaines()) {
             csv.append(echapper(d.domaineNom())).append(';')
                     .append(d.domaineCode()).append(';')
-                    .append(formaterScore(d.score())).append(';')
+                    .append(d.nombreCriteresEvalues() > 0 ? formaterScore(d.score()) : "—").append(';')
                     .append(d.nombreCriteresEvalues()).append(';')
                     .append(d.nombreCriteresTotal()).append('\n');
         }
@@ -468,7 +766,9 @@ public class RapportGenerationService {
         for (AuditScoreDto.DomaineScoreDto d : score.domaines()) {
             boolean paire = index++ % 2 == 1;
             table.addCell(cellule(d.domaineNom() + " (" + d.domaineCode() + ")", polices.normal(), paire, Element.ALIGN_LEFT));
-            table.addCell(celluleScoreColore(formaterScore(d.score()), couleurNiveau(d.score()), paire));
+            table.addCell(d.nombreCriteresEvalues() > 0
+                    ? celluleScoreColore(formaterScore(d.score()), couleurNiveau(d.score()), paire)
+                    : celluleScoreColore("—", ENCRE_ATTENUEE, paire));
             table.addCell(cellule(String.valueOf(d.nombreCriteresEvalues()), polices.normal(), paire, Element.ALIGN_RIGHT));
             table.addCell(cellule(String.valueOf(d.nombreCriteresTotal()), polices.normal(), paire, Element.ALIGN_RIGHT));
         }
@@ -478,14 +778,19 @@ public class RapportGenerationService {
 
     /** Gros chiffre coloré selon le niveau (même code couleur que tonScore() côté frontend) + les 3 compteurs d'avancement en regard. */
     private PdfPTable carteScoreGlobal(AuditScoreDto score, Polices polices) {
-        Color couleur = couleurNiveau(score.scoreGlobal());
+        // V74-C3-B11 : sans critère évalué, la carte n'annonce pas un score nul en rouge ;
+        // elle écrit « — » en encre atténuée, comme la carte d'un indice sans score.
+        boolean evalue = score.nombreCriteresEvalues() > 0;
+        Color couleur = evalue ? couleurNiveau(score.scoreGlobal()) : ENCRE_ATTENUEE;
         PdfPTable carte = new PdfPTable(new float[] {1.3f, 2f});
         carte.setWidthPercentage(100);
 
         PdfPCell celluleChiffre = celluleCarte();
         Paragraph chiffre = new Paragraph();
-        chiffre.add(new Chunk(formaterScore(score.scoreGlobal()), new Font(Font.HELVETICA, 34, Font.BOLD, couleur)));
-        chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        chiffre.add(new Chunk(evalue ? formaterScore(score.scoreGlobal()) : "—", new Font(Font.HELVETICA, 34, Font.BOLD, couleur)));
+        if (evalue) {
+            chiffre.add(new Chunk(" / 5", polices.scoreUnite()));
+        }
         celluleChiffre.addElement(chiffre);
         carte.addCell(celluleChiffre);
 
@@ -507,7 +812,7 @@ public class RapportGenerationService {
         return cellule;
     }
 
-    /** Encadré discret pour un état "vide" (aucune non-conformité, aucun critère tagué…) — même ton que le composant Vide du frontend. */
+    /** Encadré discret pour un état "vide" (aucune non-conformité, aucun critère à correspondance justifiée…) — même ton que le composant Vide du frontend. */
     private static PdfPTable carteVide(String message, Polices polices) {
         PdfPCell cellule = celluleCarte();
         cellule.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -526,12 +831,18 @@ public class RapportGenerationService {
     }
 
     /**
-     * Même seuils que tonScore() dans TableauDeBord.jsx/EntrepriseDetail.jsx
-     * (frontend) : vert ≥4, bleu ≥3, ambre ≥2, rouge sinon — un rapport ne
-     * doit jamais raconter une histoire de couleur différente de l'écran.
+     * Même seuils que tonScore() dans AuditScore.jsx (frontend) : vert ≥4,
+     * bleu ≥3, ambre ≥2, rouge sinon — un rapport ne doit jamais raconter une
+     * histoire de couleur différente de l'écran.
+     *
+     * <p>V74-C3 : les seuils s'appliquent au score tel qu'il est imprimé, arrondi
+     * comme dans {@link #formaterScore}. Comparer la valeur brute colorait en
+     * bleu un « 4.00 » valant 3,9950, et donnait deux couleurs au même nombre
+     * selon qu'il venait du score global (quatre décimales) ou de l'indice
+     * (déjà arrondi à deux).
      */
     private static Color couleurNiveau(BigDecimal score) {
-        double valeur = score.doubleValue();
+        double valeur = score.setScale(2, RoundingMode.HALF_UP).doubleValue();
         if (valeur >= 4) return BRAND;
         if (valeur >= 3) return BLEU;
         if (valeur >= 2) return AMBRE;
@@ -573,6 +884,34 @@ public class RapportGenerationService {
      */
     private static String formaterScore(BigDecimal score) {
         return score.setScale(2, RoundingMode.HALF_UP).toString();
+    }
+
+    /**
+     * Ce qu'un rapport écrit à la place du chiffre quand il n'y en a pas.
+     *
+     * <p>Le texte nomme la cause plutôt que de la taire : un lecteur qui voit
+     * une case vide suppose une panne, un lecteur qui voit un zéro suppose un
+     * échec. Ni l'un ni l'autre n'est vrai.
+     *
+     * @param aucunCritereJustifie vrai quand aucun critère de la mission n'a de
+     *                             correspondance justifiée avec ce bailleur
+     */
+    private static String libelleIndiceSansScore(StatutIndice statut, boolean aucunCritereJustifie) {
+        return switch (statut) {
+            // Un rapport peut être transmis à un tiers, un bailleur compris :
+            // il doit dire à quelle condition l'indice existera, et non
+            // laisser supposer un calcul défavorable. Le rattachement des
+            // critères vient d'une source officielle, jamais d'une déduction.
+            case NON_CALCULABLE -> "Mapping non disponible — aucun critère rattaché à ce bailleur, "
+                    + "source officielle requise ; aucun financement recommandé sur ce référentiel";
+            // V74-C2 : SANS_EVALUATION recouvre une correspondance à justifier
+            // (paramétrage) ou une analyse à valider (mission). La liste du
+            // rapport suffit à les distinguer, sans nouveau statut.
+            case SANS_EVALUATION -> aucunCritereJustifie
+                    ? "En attente — aucun critère de cette mission n'a de correspondance justifiée et validée avec ce bailleur"
+                    : "En attente — aucun critère justifié de cette mission n'a encore de dernière analyse IA validée";
+            case CALCULE -> throw new IllegalArgumentException("CALCULE porte un score");
+        };
     }
 
     // --- Construction PDF partagée ------------------------------------------
