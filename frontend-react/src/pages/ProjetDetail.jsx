@@ -5,6 +5,7 @@ import Revele from '../components/Revele';
 import { Alerte, Badge, Loader, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { exporterCsv } from '../lib/export';
+import { formaterScore } from '../lib/scoreAffiche';
 
 const STATUTS = {
   BROUILLON: { ton: 'neutre', libelle: 'Brouillon' },
@@ -135,7 +136,7 @@ export default function ProjetDetail() {
         l.auditStatut ? STATUTS_MISSION[l.auditStatut] ?? l.auditStatut : 'Mission non créée',
         l.note,
         l.coefficient,
-        l.valeur == null ? '' : l.valeur.toFixed(2),
+        l.valeur == null ? '' : formaterScore(l.valeur),
         `${l.evalues}/${l.total}`,
       ])
     );
@@ -263,7 +264,7 @@ export default function ProjetDetail() {
                     <td className="td text-right tabular-nums">{l.note}</td>
                     <td className="td text-right tabular-nums">{l.coefficient}</td>
                     <td className="td text-right font-semibold tabular-nums text-ink-900">
-                      {l.valeur == null ? '—' : `${l.valeur.toFixed(2)} / 5`}
+                      {l.valeur == null ? '—' : `${formaterScore(l.valeur)} / 5`}
                     </td>
                     <td className="td text-right tabular-nums text-ink-500">
                       {l.evalues}/{l.total}
@@ -303,7 +304,7 @@ export default function ProjetDetail() {
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold tabular-nums text-ink-900">
-                    {l.valeur == null ? '—' : `${l.valeur.toFixed(2)} / 5`}
+                    {l.valeur == null ? '—' : `${formaterScore(l.valeur)} / 5`}
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-ink-500">

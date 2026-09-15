@@ -7,6 +7,7 @@ import { Alerte, Loader, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
+import { formaterScore } from '../lib/scoreAffiche';
 
 /** Teinte de la médaille des trois premiers rangs. */
 const MEDAILLES = ['text-amber-500', 'text-ink-400', 'text-amber-700'];
@@ -116,7 +117,7 @@ export default function Classement() {
         index + 1,
         l.entreprise.raisonSociale,
         l.mission?.nom ?? '',
-        l.valeur.toFixed(2),
+        formaterScore(l.valeur),
         l.note,
         l.coefficient,
         `${l.evalues}/${l.total}`,
@@ -205,7 +206,7 @@ export default function Classement() {
                       <td className="td text-right tabular-nums">{l.note}</td>
                       <td className="td text-right tabular-nums">{l.coefficient}</td>
                       <td className="td text-right font-semibold tabular-nums text-ink-900">
-                        {l.valeur.toFixed(2)} / 5
+                        {formaterScore(l.valeur)} / 5
                       </td>
                       <td className="td text-right tabular-nums text-ink-500">
                         {l.evalues}/{l.total}
@@ -251,7 +252,7 @@ export default function Classement() {
                         </span>
                       </div>
                       <span className="shrink-0 text-sm font-bold tabular-nums text-ink-900">
-                        {l.valeur.toFixed(2)} / 5
+                        {formaterScore(l.valeur)} / 5
                       </span>
                     </div>
                     <p className="mt-2 text-xs text-ink-500">

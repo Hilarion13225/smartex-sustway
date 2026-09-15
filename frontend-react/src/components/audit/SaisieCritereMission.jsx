@@ -7,7 +7,7 @@ import CarteCritere from './CarteCritere';
 import PanneauAnalyseIa from './PanneauAnalyseIa';
 import { analyseDepuisEvaluation, analyserCritere } from './analyseCritere';
 import { memeTexte } from './libelles';
-import { estRenseigne } from './statutsCritere';
+import { estDansPerimetre, estRenseigne, libelleExclusion } from './statutsCritere';
 import { Alerte, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
 
@@ -79,6 +79,10 @@ export default function SaisieCritereMission({
   const critereId = critere?.id ?? null;
   const codeCritere = critere?.critereCode ?? null;
   const domaineCode = critere?.domaineCode ?? null;
+  // RG35 : un critère non applicable ou retiré du périmètre reste consultable
+  // (son historique est conservé) mais n'est plus ni saisissable ni analysable.
+  const exclusion = libelleExclusion(critere);
+  const saisissable = peutSaisir && !exclusion;
 
   useEffect(() => () => clearTimeout(minuteur.current), []);
 
@@ -154,12 +158,18 @@ export default function SaisieCritereMission({
   // L'avancement de la collecte se mesure sur ce que l'organisation a
   // renseigné, pas sur ce que l'IA a déjà analysé : l'analyse a lieu à la
   // clôture, un compteur fondé sur elle resterait à zéro jusqu'au bout.
-  const completes = useMemo(() => criteres.filter(estRenseigne).length, [criteres]);
+  // RG35 : l'avancement se mesure sur le périmètre de la mission — un critère
+  // exclu n'augmente pas le dénominateur.
+  const criteresDuPerimetre = useMemo(() => criteres.filter(estDansPerimetre), [criteres]);
+  const completes = useMemo(
+    () => criteresDuPerimetre.filter(estRenseigne).length,
+    [criteresDuPerimetre]
+  );
 
   /** Critères du domaine affiché, pour la carte de progression du panneau. */
   const criteresDuDomaine = useMemo(
-    () => criteres.filter((c) => c.domaineCode === domaineCode),
-    [criteres, domaineCode]
+    () => criteresDuPerimetre.filter((c) => c.domaineCode === domaineCode),
+    [criteresDuPerimetre, domaineCode]
   );
   const completesDuDomaine = useMemo(
     () => criteresDuDomaine.filter(estRenseigne).length,
@@ -247,7 +257,7 @@ export default function SaisieCritereMission({
   /** Amène au premier critère non encore évalué du domaine affiché. */
   function allerAuProchainDuDomaine() {
     const cible = criteres.findIndex(
-      (c) => c.domaineCode === domaineCode && !estRenseigne(c)
+      (c) => c.domaineCode === domaineCode && estDansPerimetre(c) && !estRenseigne(c)
     );
     if (cible >= 0) allerA(cible);
   }
@@ -294,7 +304,7 @@ export default function SaisieCritereMission({
             : 'Déclarations de l’organisation et preuves déposées, telles que l’IA les analyse.'
         }
         completes={completes}
-        total={criteres.length}
+        total={criteresDuPerimetre.length}
         listeOuverte={listeOuverte}
         surVoirTousLesCriteres={() => setListeOuverte((ouvert) => !ouvert)}
       />
@@ -324,6 +334,13 @@ export default function SaisieCritereMission({
             surSuivant={() => allerA(indice + 1)}
           />
 
+          {exclusion ? (
+            <Alerte ton="neutre">
+              {exclusion} — ce critère est exclu du périmètre de la mission : il ne compte pas
+              dans le score, n’est plus saisissable et n’est plus soumis à l’analyse IA.
+            </Alerte>
+          ) : null}
+
           {chargement ? (
             <Loader message="Chargement du critère…" />
           ) : (
@@ -340,13 +357,13 @@ export default function SaisieCritereMission({
                   : null
               }
               binaire={questionBinaire != null}
-              peutSaisir={peutSaisir}
+              peutSaisir={saisissable}
               niveauSelectionne={niveau}
-              surSelectionNiveau={peutSaisir ? setNiveau : () => {}}
+              surSelectionNiveau={saisissable ? setNiveau : () => {}}
               reponseBinaire={reponseBinaire}
-              surSelectionBinaire={peutSaisir ? setReponseBinaire : () => {}}
+              surSelectionBinaire={saisissable ? setReponseBinaire : () => {}}
               scenario={scenario}
-              surChangementScenario={peutSaisir ? setScenario : () => {}}
+              surChangementScenario={saisissable ? setScenario : () => {}}
               fichiers={preuves.map((preuve) => ({
                 id: preuve.id,
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',
@@ -367,7 +384,7 @@ export default function SaisieCritereMission({
           analyseEnCours={analyseEnCours}
           analyseDesynchronisee={desynchronisee}
           erreurAnalyse={erreurAnalyse}
-          peutAnalyser={peutAnalyser}
+          peutAnalyser={peutAnalyser && !exclusion}
           surAnalyser={lancerAnalyse}
           domaine={domaineCode ?? '—'}
           domaineCompletes={completesDuDomaine}

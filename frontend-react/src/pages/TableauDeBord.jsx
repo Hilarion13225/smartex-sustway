@@ -26,6 +26,7 @@ import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
 import { exporterCsv, formaterDate } from '../lib/export';
+import { formaterScore } from '../lib/scoreAffiche';
 
 const MOIS_COURTS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 
@@ -42,6 +43,29 @@ const LIBELLES_ACTION = {
   EMAIL_VERIFIE: 'Compte activé',
   CODE_VERIFICATION_REFUSE: 'Code d’activation refusé',
 };
+
+/**
+ * Quotient de deux sommes exprimées en centièmes entiers, arrondi à quatre
+ * décimales HALF_UP — la règle de ScoringEngine.ponderation — et rendu en
+ * écriture décimale, pour qu'aucune division flottante ne s'interpose avant
+ * formaterScore. Les produits restent des entiers exacts aux ordres de
+ * grandeur d'un portefeuille ; le reste corrige un éventuel écart d'une unité
+ * de la division flottante qui sert d'estimation.
+ */
+function quotientQuatreDecimales(numerateur, denominateur) {
+  const echelle = numerateur * 10000;
+  let quotient = Math.floor(echelle / denominateur);
+  let reste = echelle - quotient * denominateur;
+  if (reste < 0) {
+    quotient -= 1;
+    reste += denominateur;
+  } else if (reste >= denominateur) {
+    quotient += 1;
+    reste -= denominateur;
+  }
+  if (reste * 2 >= denominateur) quotient += 1;
+  return `${Math.floor(quotient / 10000)}.${String(quotient % 10000).padStart(4, '0')}`;
+}
 
 /** Point coloré du fil d'activité, selon la nature de l'action. */
 function couleurAction(action) {
@@ -178,11 +202,12 @@ export default function TableauDeBord() {
           // pour tenir dans une colonne aux côtés de la progression.
           // Le score est celui de la grille, noté sur 5 ; la conformité en est
           // la traduction en pourcentage pour la lecture rapide.
-          score: score?.scoreGlobal ?? null,
+          // V74-C3-B11 : sans critère évalué, le 0 du serveur est une absence.
+          score: evalues > 0 ? score.scoreGlobal : null,
           noteTotale: score?.noteTotale ?? null,
           coefficientTotal: score?.coefficientTotal ?? null,
           conformite:
-            score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100),
+            evalues > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null,
           risque,
           statut: audit.statut,
           echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
@@ -223,11 +248,16 @@ export default function TableauDeBord() {
     const notees = missionsVue.filter((m) => m.noteTotale != null && Number(m.coefficientTotal) > 0);
     const note = notees.reduce((somme, m) => somme + Number(m.noteTotale), 0);
     const coefficient = notees.reduce((somme, m) => somme + Number(m.coefficientTotal), 0);
+    // V74-C3-B6 : le score se calcule sur les sommes en centièmes entiers. Le
+    // quotient flottant des sommes affichait parfois un centième de moins que
+    // le moteur (601 / 200 : « 3.00 » au lieu de 3.01).
+    const noteCentiemes = notees.reduce((somme, m) => somme + Math.round(Number(m.noteTotale) * 100), 0);
+    const coefficientCentiemes = notees.reduce((somme, m) => somme + Math.round(Number(m.coefficientTotal) * 100), 0);
     return {
       missions: notees.length,
       note,
       coefficient,
-      score: coefficient > 0 ? note / coefficient : null,
+      score: coefficientCentiemes > 0 ? quotientQuatreDecimales(noteCentiemes, coefficientCentiemes) : null,
     };
   }, [missionsVue]);
 
@@ -465,7 +495,7 @@ export default function TableauDeBord() {
               </div>
               <div className="rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-500/20 dark:bg-brand-500/10">
                 <dd className="text-2xl font-bold tabular-nums text-brand-700 dark:text-brand-300">
-                  {consolide.score == null ? '—' : consolide.score.toFixed(2)}
+                  {consolide.score == null ? '—' : formaterScore(consolide.score)}
                 </dd>
                 <dt className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">Score / 5</dt>
               </div>

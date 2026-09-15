@@ -234,6 +234,7 @@ function EvolutionScoreSection({ entrepriseId, secteurCode }) {
   const series = missions.map((m, index) => ({
     label: m.audit.nom,
     couleur: palette[index % palette.length],
+    format: 'score',
     data: dates.map((date) => {
       const point = m.historique.find((h) => h.date === date);
       return point ? Number(point.scoreGlobal) : null;
@@ -245,6 +246,7 @@ function EvolutionScoreSection({ entrepriseId, secteurCode }) {
       label: `Moyenne du secteur (${benchmark.nombreEntreprises} entreprises)`,
       couleur: COULEURS.gris,
       pointille: true,
+      format: 'score',
       data: dates.map(() => Number(benchmark.scoreMoyen)),
     });
   }

@@ -23,7 +23,7 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
 import { memeTexte } from '../components/audit/libelles';
-import { libelleStatut, tonStatut } from '../components/audit/statutsCritere';
+import { libelleExclusion, libelleStatut, tonStatut } from '../components/audit/statutsCritere';
 import AxesAmelioration from '../components/audit/AxesAmelioration';
 
 /**
@@ -52,8 +52,12 @@ export default function CritereEvaluation() {
   const [audit, setAudit] = useState(null);
   const [chargement, setChargement] = useState(!state?.critere);
 
+  // RG35 : un critère non applicable ou retiré du périmètre reste consultable,
+  // mais n'est plus saisissable ni évaluable.
+  const exclusion = libelleExclusion(critere);
+
   const peutDeclarer =
-    peut('preuve:deposer', audit?.formuleCode) && !ROLES_INTERNES_SMARTEX.has(roleCourant);
+    peut('preuve:deposer', audit?.formuleCode) && !ROLES_INTERNES_SMARTEX.has(roleCourant) && !exclusion;
 
   const rafraichir = useCallback(() => {
     const promesses = [
@@ -120,7 +124,11 @@ export default function CritereEvaluation() {
                 {critere.criticite ? (
                   <Badge ton={TONS_CRITICITE[critere.criticite] ?? 'neutre'}>Criticité {critere.criticite}</Badge>
                 ) : null}
-                <Badge ton={tonStatut(critere.statut)}>{libelleStatut(critere.statut)}</Badge>
+                {exclusion ? (
+                  <Badge ton="neutre">{exclusion}</Badge>
+                ) : (
+                  <Badge ton={tonStatut(critere.statut)}>{libelleStatut(critere.statut)}</Badge>
+                )}
               </>
             }
           />
@@ -157,7 +165,7 @@ export default function CritereEvaluation() {
                   auditCritereId={auditCritereId}
                   preuves={preuvesDuCritere}
                   onChange={rafraichir}
-                  peutDeposer={peut('preuve:deposer', audit?.formuleCode)}
+                  peutDeposer={peut('preuve:deposer', audit?.formuleCode) && !exclusion}
                 />
               </Card>
             </Revele>
@@ -170,6 +178,7 @@ export default function CritereEvaluation() {
                   auditId={auditId}
                   auditCritereId={auditCritereId}
                   peutEvaluer={preuvesDuCritere.length > 0 || declaratifRenseigne}
+                  exclusion={exclusion}
                   formuleCode={audit?.formuleCode}
                   missionTerminee={audit?.statut === 'TERMINE'}
                   derniereEvaluation={derniereEvaluation}
@@ -349,6 +358,7 @@ function EvaluationSection({
   auditId,
   auditCritereId,
   peutEvaluer,
+  exclusion,
   formuleCode,
   missionTerminee,
   derniereEvaluation,
@@ -391,22 +401,31 @@ function EvaluationSection({
     <div className="space-y-4">
       {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
 
-      <button type="button" className="btn-primary w-full" disabled={!peutEvaluer || chargement} onClick={lancerEvaluation}>
-        {chargement ? <SustwayLoader taille="sm" /> : <Sparkles className="h-4 w-4" aria-hidden />}
-        {chargement ? 'Analyse en cours (Document → Evidence → Compliance)…' : 'Lancer l’évaluation IA'}
-      </button>
-      {!peutEvaluer ? (
-        <p className="text-xs text-ink-500">
-          Déposez une preuve ou renseignez le questionnaire avant de pouvoir lancer l’évaluation.
-        </p>
-      ) : null}
+      {exclusion ? (
+        <Alerte ton="neutre">
+          {exclusion} — ce critère est exclu du périmètre de la mission : aucune nouvelle évaluation
+          ne peut y être lancée ni validée. Son historique reste consultable.
+        </Alerte>
+      ) : (
+        <>
+          <button type="button" className="btn-primary w-full" disabled={!peutEvaluer || chargement} onClick={lancerEvaluation}>
+            {chargement ? <SustwayLoader taille="sm" /> : <Sparkles className="h-4 w-4" aria-hidden />}
+            {chargement ? 'Analyse en cours (Document → Evidence → Compliance)…' : 'Lancer l’évaluation IA'}
+          </button>
+          {!peutEvaluer ? (
+            <p className="text-xs text-ink-500">
+              Déposez une preuve ou renseignez le questionnaire avant de pouvoir lancer l’évaluation.
+            </p>
+          ) : null}
+        </>
+      )}
 
       {derniereEvaluation ? <ResultatEvaluation evaluation={derniereEvaluation} /> : <Vide message="Aucune évaluation pour l’instant." />}
 
       {/* Le geste qui transforme un résultat de machine en verdict. Il
           n'existait dans aucun écran : la route était là depuis 5.7-C, sans
           bouton pour l'appeler. */}
-      {derniereEvaluation ? (
+      {derniereEvaluation && !exclusion ? (
         <ValidationEvaluation
           entrepriseId={entrepriseId}
           auditId={auditId}

@@ -6,6 +6,7 @@ import { COULEURS, GraphiqueBarres, GraphiqueRadar } from '../components/charts'
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
+import { formaterScore } from '../lib/scoreAffiche';
 
 const MAX_ENTREPRISES = 4;
 const PALETTE = [COULEURS.brand, COULEURS.bleu, COULEURS.violet, COULEURS.ambre];
@@ -69,10 +70,10 @@ export default function ComparaisonEntreprises() {
       (resultats ?? []).map((r) => [
         r.entreprise.raisonSociale,
         r.audit?.nom ?? '—',
-        r.score ? Number(r.score.scoreGlobal).toFixed(2) : '—',
+        r.score?.nombreCriteresEvalues > 0 ? formaterScore(r.score.scoreGlobal) : '—',
         ...domaines.map((code) => {
           const d = r.score?.domaines.find((dom) => dom.domaineCode === code);
-          return d ? Number(d.score).toFixed(2) : '—';
+          return d?.nombreCriteresEvalues > 0 ? formaterScore(d.score) : '—';
         }),
       ])
     );
@@ -144,8 +145,10 @@ export default function ComparaisonEntreprises() {
                     series={[
                       {
                         label: 'Score global',
-                        data: resultats.map((r) => (r.score ? Number(r.score.scoreGlobal) : 0)),
+                        // V74-C3-B11 : une absence de score n'est pas tracée comme une barre à zéro.
+                        data: resultats.map((r) => (r.score?.nombreCriteresEvalues > 0 ? Number(r.score.scoreGlobal) : null)),
                         couleur: COULEURS.brand,
+                        format: 'score',
                       },
                     ]}
                     max={5}
@@ -168,10 +171,11 @@ export default function ComparaisonEntreprises() {
                         label: r.entreprise.raisonSociale,
                         data: domaines.map((code) => {
                           const d = r.score.domaines.find((dom) => dom.domaineCode === code);
-                          return d ? Number(d.score) : 0;
+                          return d?.nombreCriteresEvalues > 0 ? Number(d.score) : null;
                         }),
                         couleur: PALETTE[index % PALETTE.length],
                         fond: 'transparent',
+                        format: 'score',
                       }))}
                   />
                 ) : (

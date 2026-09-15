@@ -1,4 +1,5 @@
 import { GraphiqueAnneau } from '../charts';
+import { formaterScore } from '../../lib/scoreAffiche';
 
 /** Palette de la jauge : rempli en émeraude, reste en gris neutre. */
 const COULEURS_JAUGE = ['#059669', '#e2e8f0'];
@@ -46,8 +47,9 @@ function Jauge({ pourcentage, legende, couleurs }) {
 export default function SyntheseMission({ score, risque, criteresTotal, criteresEvalues }) {
   const progression =
     criteresTotal > 0 ? Math.round((criteresEvalues / criteresTotal) * 100) : 0;
+  // V74-C3-B11 : sans critère évalué, le score 0 du serveur n'est pas une conformité nulle.
   const conformite =
-    score?.scoreGlobal == null ? null : Math.round((Number(score.scoreGlobal) / 5) * 100);
+    (score?.nombreCriteresEvalues ?? 0) > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null;
   const domaines = score?.domaines ?? [];
   const noteTotale = score?.noteTotale ?? null;
   const coefficientTotal = score?.coefficientTotal ?? null;
@@ -102,7 +104,7 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
                       {nombre(domaine.coefficientTotal)}
                     </td>
                     <td className="td text-right font-semibold tabular-nums text-ink-900">
-                      {domaine.score == null ? '—' : Number(domaine.score).toFixed(2)}
+                      {domaine.score == null || domaine.nombreCriteresEvalues === 0 ? '—' : formaterScore(domaine.score)}
                     </td>
                   </tr>
                 ))}
@@ -116,7 +118,7 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
                       {nombre(coefficientTotal)}
                     </td>
                     <td className="td text-right font-bold tabular-nums text-ink-900">
-                      {score?.scoreGlobal == null ? '—' : Number(score.scoreGlobal).toFixed(2)}
+                      {score?.scoreGlobal == null || score.nombreCriteresEvalues === 0 ? '—' : formaterScore(score.scoreGlobal)}
                     </td>
                   </tr>
                 </tfoot>
