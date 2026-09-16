@@ -237,7 +237,12 @@ export default function Contact() {
   return (
     <div>
       {/* ------------------------------------------------ Héros typographique */}
-      <section className="border-b border-ink-200">
+      <section className="bande-riche relative isolate overflow-hidden border-b border-ink-200">
+        <div className="motif-quadrillage pointer-events-none absolute inset-0 -z-10" aria-hidden />
+        <div
+          className="halo-brand pointer-events-none absolute -right-24 -top-28 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <div className="mx-auto max-w-[75rem] px-5 py-14 sm:py-20">
           <p className="sur-titre">Contact</p>
           <h1 className="titre-page mt-4 max-w-[20ch] text-ink-900">Parlons de votre projet.</h1>
@@ -249,7 +254,10 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
-      <section id="formulaire" className="bande-brand scroll-mt-20 border-b border-ink-200">
+      <section
+        id="formulaire"
+        className="bande-riche-brand relative isolate scroll-mt-20 overflow-hidden border-b border-ink-200"
+      >
         <div className="mx-auto grid max-w-[75rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">
@@ -348,7 +356,7 @@ export default function Contact() {
           {envoi.etat === 'envoye' ? (
             <div
               role="status"
-              className="order-1 min-w-0 self-start rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8 lg:order-2"
+              className="carte-riche order-1 min-w-0 self-start p-6 sm:p-8 lg:order-2"
             >
               {/* La coche se trace une fois : c'est le seul moment où la page
                   confirme qu'une action a abouti. */}
@@ -387,7 +395,7 @@ export default function Contact() {
             onSubmit={soumettre}
             noValidate
             aria-busy={envoi.etat === 'envoi'}
-            className="order-1 min-w-0 self-start rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8 lg:order-2"
+            className="carte-riche order-1 min-w-0 self-start p-6 sm:p-8 lg:order-2"
           >
             <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]">
               Écrivez-nous

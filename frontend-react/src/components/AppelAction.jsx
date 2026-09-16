@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
 import { typoFr } from '../lib/typographie';
+import Revele from './Revele';
 
 /**
- * Bandeau d'appel final des pages vitrine : une plage encre pleine largeur,
+ * Bandeau d'appel final des pages vitrine : une plage claire pleine largeur,
  * un titre, une phrase, deux actions.
- *
- * La plage est toujours sombre, par choix : sa couleur est donc écrite en dur
- * plutôt que prise au jeton `ink-900`, qui s'éclaircit en thème sombre.
  *
  * L'action par défaut est la même partout — choisir une formule — : c'est
  * l'étape qui mène à l'achat. La démonstration reste offerte en second, pour
@@ -16,24 +14,32 @@ import { typoFr } from '../lib/typographie';
 export default function AppelAction({
   titre = 'Prêt à évaluer votre démarche RSE ?',
   texte = 'Choisissez votre formule et commencez aujourd’hui. Accès à la plateforme dès le paiement validé.',
-  action = { libelle: 'Choisir une formule', vers: '/formules#grille-formules' },
+  action = {
+    libelle: 'Choisir une formule',
+    vers: '/formules#grille-formules',
+  },
   secondaire = { libelle: 'Demander une démonstration', vers: '/contact' },
 }) {
   return (
-    <section className="bg-[#14234B] text-white">
-      <div className="mx-auto grid max-w-[75rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
+    <section className="bande-riche-brand relative isolate overflow-hidden border-t border-ink-200">
+      <div className="motif-quadrillage pointer-events-none absolute inset-0 -z-10" aria-hidden />
+      <div
+        className="halo-brand pointer-events-none absolute -right-24 -top-24 -z-10 h-72 w-72 motion-safe:animate-respiration"
+        aria-hidden
+      />
+      <Revele className="mx-auto grid max-w-[75rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
         <div className="max-w-2xl">
-          <h2 className="font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-white [text-wrap:balance] sm:text-[2.5rem]">
+          <h2 className="font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-ink-900 [text-wrap:balance] sm:text-[2.5rem]">
             {typoFr(titre)}
           </h2>
-          {texte ? <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-white/75">{typoFr(texte)}</p> : null}
+          {texte ? <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">{typoFr(texte)}</p> : null}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             to={action.vers}
             viewTransition
-            className="inline-flex min-h-12 items-center justify-center btn-presse rounded-[4px] bg-white px-6 text-base font-semibold text-[#14234B] transition-colors hover:bg-[#E8EAF2]"
+            className="btn-presse inline-flex min-h-12 items-center justify-center rounded-[4px] bg-brand-600 px-6 text-base font-semibold text-white transition-colors hover:bg-brand-700"
           >
             {action.libelle}
           </Link>
@@ -41,13 +47,13 @@ export default function AppelAction({
             <Link
               to={secondaire.vers}
               viewTransition
-              className="inline-flex min-h-12 items-center justify-center btn-presse rounded-[4px] border border-white/35 px-6 text-base font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
+              className="btn-presse inline-flex min-h-12 items-center justify-center rounded-[4px] border border-ink-300 px-6 text-base font-semibold text-ink-900 transition-colors hover:border-ink-900"
             >
               {secondaire.libelle}
             </Link>
           ) : null}
         </div>
-      </div>
+      </Revele>
     </section>
   );
 }

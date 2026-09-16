@@ -10,7 +10,7 @@ import GrilleFormules from './GrilleFormules';
  */
 export default function ApercuFormules() {
   return (
-    <section className="border-b border-ink-200 bg-surface">
+    <section className="bande-riche-feuille relative isolate overflow-hidden border-b border-ink-200">
       <div className="mx-auto max-w-[75rem] px-5 pt-16 sm:pt-20">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">

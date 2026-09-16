@@ -896,3 +896,128 @@ input.border-none:focus-visible {
   font-size: 1rem;
   font-weight: 600;
 }
+
+/* --- Vitrine en verre : fonds colores et panneaux translucides --------- */
+/* Les regles ci-dessus aplatissent volontairement ombres et rayons. Ce jeu de
+   classes, pose explicitement, donne aux pages de la solution un rendu de
+   verre depoli : des fonds colores en nappes, et des panneaux translucides
+   qui laissent voir la couleur au travers. Le reste de la vitrine n'est pas
+   touche. */
+.vitrine .bande-riche {
+  background:
+    radial-gradient(52rem 30rem at 84% -14%, rgb(var(--brand-300) / 0.42), transparent 64%),
+    radial-gradient(44rem 28rem at 4% 108%, rgb(var(--feuille) / 0.26), transparent 62%),
+    radial-gradient(38rem 26rem at 42% 40%, rgb(var(--brand-100) / 0.5), transparent 66%),
+    linear-gradient(180deg, rgb(var(--surface)) 0%, rgb(var(--ink-50)) 100%);
+}
+.vitrine .bande-riche-brand {
+  background:
+    radial-gradient(42rem 26rem at 90% 6%, rgb(var(--brand-300) / 0.45), transparent 62%),
+    radial-gradient(36rem 24rem at 10% 96%, rgb(var(--brand-400) / 0.22), transparent 62%),
+    linear-gradient(180deg, rgb(var(--brand-50)) 0%, rgb(var(--surface)) 100%);
+}
+.vitrine .bande-riche-feuille {
+  background:
+    radial-gradient(38rem 24rem at 8% 0%, rgb(var(--feuille) / 0.3), transparent 60%),
+    radial-gradient(34rem 22rem at 88% 92%, rgb(var(--brand-200) / 0.3), transparent 62%),
+    linear-gradient(180deg, rgb(var(--feuille-50)) 0%, rgb(var(--surface)) 100%);
+}
+/* Quadrillage de fond, a la maille du papier millimetre : il donne une texture
+   au fond sans ajouter d'element a lire. Toujours pose en decor, aria-hidden. */
+.vitrine .motif-quadrillage {
+  background-image:
+    linear-gradient(to right, rgb(var(--ink-900) / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--ink-900) / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, transparent 78%);
+}
+/* Halos : ce sont eux qui donnent la couleur que le verre laisse deviner, donc
+   ils sont plus soutenus que de simples lueurs decoratives. */
+.vitrine .halo-brand,
+.vitrine .halo-feuille {
+  border-radius: 999px;
+  filter: blur(60px);
+}
+.vitrine .halo-brand {
+  background: rgb(var(--brand-400) / 0.38);
+}
+.vitrine .halo-feuille {
+  background: rgb(var(--feuille) / 0.32);
+}
+/* Panneau de verre : fond translucide, flou du decor au travers, filet clair
+   en bordure et lueur interieure en tete pour le reflet. */
+.vitrine .carte-riche {
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgb(255 255 255 / 0.65);
+  background: linear-gradient(150deg, rgb(255 255 255 / 0.62) 0%, rgb(255 255 255 / 0.34) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.75),
+    0 1px 2px rgb(var(--marine) / 0.04),
+    0 22px 44px -26px rgb(var(--marine) / 0.32);
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background-color 0.35s ease;
+}
+.vitrine .carte-riche:hover {
+  border-color: rgb(255 255 255 / 0.9);
+  background-color: rgb(255 255 255 / 0.14);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.9),
+    0 2px 4px rgb(var(--marine) / 0.05),
+    0 30px 56px -28px rgb(var(--marine) / 0.36);
+}
+/* Sans flou disponible, le panneau redevient opaque : un fond translucide non
+   floute laisserait le texte se confondre avec le decor. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .vitrine .carte-riche {
+    background: rgb(var(--surface) / 0.96);
+    border-color: rgb(var(--ink-200));
+  }
+}
+.vitrine .carte-riche-liseret::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg, rgb(var(--brand-500)), rgb(var(--feuille)));
+}
+/* Pastille d'icone en degrade : la teinte encre unique de `.puce-icone` est
+   volontairement contournee ici, ces sections en ont besoin comme accroche.
+   Le filet clair et le reflet interieur la rattachent au vocabulaire verre. */
+.vitrine .puce-riche {
+  border-radius: 14px;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: linear-gradient(150deg, rgb(var(--brand-500)), rgb(var(--brand-700)));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 12px 24px -12px rgb(var(--brand-700) / 0.7);
+}
+.vitrine .puce-riche-feuille {
+  background: linear-gradient(150deg, rgb(var(--feuille)), rgb(var(--marine) / 0.9));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 12px 24px -12px rgb(var(--feuille) / 0.7);
+}
+/* Chiffre fantome place derriere le titre d'une carte : il ordonne la lecture
+   sans ajouter de texte, et reste hors du flux d'accessibilite. */
+.vitrine .chiffre-fantome {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-size: 5.5rem;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: rgb(var(--brand-500) / 0.12);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine .carte-riche {
+    transition: none;
+  }
+}
