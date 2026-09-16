@@ -896,3 +896,101 @@ input.border-none:focus-visible {
   font-size: 1rem;
   font-weight: 600;
 }
+
+/* --- Vitrine riche : decors, reliefs et degrades ----------------------- */
+/* Les regles ci-dessus aplatissent volontairement ombres et rayons. Ce jeu de
+   classes, pose explicitement, redonne de la matiere aux pages de la solution
+   sans revenir sur le reste de la vitrine : un fond degrade, un quadrillage
+   discret, des halos colores et des cartes qui ont une epaisseur. */
+.vitrine .bande-riche {
+  background:
+    radial-gradient(58rem 32rem at 82% -12%, rgb(var(--brand-100) / 0.55), transparent 62%),
+    radial-gradient(46rem 30rem at 6% 106%, rgb(var(--feuille) / 0.12), transparent 60%),
+    linear-gradient(180deg, rgb(var(--surface)) 0%, rgb(var(--ink-50)) 100%);
+}
+.vitrine .bande-riche-brand {
+  background:
+    radial-gradient(44rem 26rem at 92% 8%, rgb(var(--brand-200) / 0.45), transparent 60%),
+    linear-gradient(180deg, rgb(var(--brand-50)) 0%, rgb(var(--surface)) 100%);
+}
+.vitrine .bande-riche-feuille {
+  background:
+    radial-gradient(40rem 24rem at 8% 0%, rgb(var(--feuille) / 0.16), transparent 58%),
+    linear-gradient(180deg, rgb(var(--feuille-50)) 0%, rgb(var(--surface)) 100%);
+}
+/* Quadrillage de fond, a la maille du papier millimetre : il donne une texture
+   au fond sans ajouter d'element a lire. Toujours pose en decor, aria-hidden. */
+.vitrine .motif-quadrillage {
+  background-image:
+    linear-gradient(to right, rgb(var(--ink-900) / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--ink-900) / 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, transparent 78%);
+}
+.vitrine .halo-brand,
+.vitrine .halo-feuille {
+  border-radius: 999px;
+  filter: blur(56px);
+}
+.vitrine .halo-brand {
+  background: rgb(var(--brand-400) / 0.28);
+}
+.vitrine .halo-feuille {
+  background: rgb(var(--feuille) / 0.22);
+}
+/* Carte en relief : l'ombre porte l'elevation, le degre de fond la matiere, et
+   le liseret colore en tete rattache la carte a sa section. */
+.vitrine .carte-riche {
+  border-radius: 14px;
+  border: 1px solid rgb(var(--ink-200));
+  background: linear-gradient(160deg, rgb(var(--surface)) 0%, rgb(var(--ink-50)) 100%);
+  box-shadow:
+    0 1px 2px rgb(var(--marine) / 0.05),
+    0 18px 34px -22px rgb(var(--marine) / 0.28);
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.35s ease,
+    border-color 0.35s ease;
+}
+.vitrine .carte-riche:hover {
+  border-color: rgb(var(--brand-200));
+  box-shadow:
+    0 2px 4px rgb(var(--marine) / 0.06),
+    0 26px 46px -24px rgb(var(--marine) / 0.34);
+}
+.vitrine .carte-riche-liseret::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(90deg, rgb(var(--brand-500)), rgb(var(--feuille)));
+}
+/* Pastille d'icone en degrade : la teinte encre unique de `.puce-icone` est
+   volontairement contournee ici, ces sections en ont besoin comme accroche. */
+.vitrine .puce-riche {
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(150deg, rgb(var(--brand-500)), rgb(var(--brand-700)));
+  box-shadow: 0 10px 20px -12px rgb(var(--brand-700) / 0.7);
+}
+.vitrine .puce-riche-feuille {
+  background: linear-gradient(150deg, rgb(var(--feuille)), rgb(var(--marine) / 0.9));
+  box-shadow: 0 10px 20px -12px rgb(var(--feuille) / 0.7);
+}
+/* Chiffre fantome place derriere le titre d'une carte : il ordonne la lecture
+   sans ajouter de texte, et reste hors du flux d'accessibilite. */
+.vitrine .chiffre-fantome {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-size: 5.5rem;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: rgb(var(--brand-500) / 0.09);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine .carte-riche {
+    transition: none;
+  }
+}

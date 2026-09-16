@@ -5,7 +5,10 @@ import {
   ClipboardCheck,
   Clock,
   GraduationCap,
+  LayoutGrid,
   Leaf,
+  Library,
+  ListChecks,
   ListOrdered,
   Mail,
   MapPin,
@@ -13,6 +16,7 @@ import {
   Play,
   Route,
   ScanSearch,
+  Sparkles,
   Target,
 } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -41,9 +45,17 @@ const REASSURANCE = [
 
 /* Chiffres vérifiables dans la configuration (REFERENTIELS_EVALUABLES). */
 const FAITS = [
-  { valeur: 87, libelle: 'critères dans le référentiel SMARTEX SustWay' },
-  { valeur: 6, libelle: 'parties d’évaluation' },
-  { valeur: REFERENTIELS_EVALUABLES.length, libelle: 'référentiels évaluables' },
+  {
+    valeur: 87,
+    libelle: 'critères dans le référentiel SMARTEX SustWay',
+    icone: ListChecks,
+  },
+  { valeur: 6, libelle: 'parties d’évaluation', icone: LayoutGrid },
+  {
+    valeur: REFERENTIELS_EVALUABLES.length,
+    libelle: 'référentiels évaluables',
+    icone: Library,
+  },
 ];
 
 /*
@@ -55,7 +67,8 @@ const RAISONS = [
   {
     icone: ClipboardCheck,
     titre: 'Des notes tenues par vos preuves',
-    texte: 'Chaque verdict cite le passage du document qui le justifie. Une déclaration ne suffit pas à valider un critère.',
+    texte:
+      'Chaque verdict cite le passage du document qui le justifie. Une déclaration ne suffit pas à valider un critère.',
   },
   {
     icone: Target,
@@ -92,26 +105,63 @@ const ICONES_PRESTATION = {
 };
 
 const PUBLICS = [
-  { photo: photoEntreprises, titre: 'Entreprises', texte: 'Pilotez et valorisez votre démarche RSE.' },
-  { photo: photoInstitutions, titre: 'Institutions publiques', texte: 'Renforcez la transparence et la performance.' },
-  { photo: photoOng, titre: 'ONG et associations', texte: 'Mesurez votre impact et structurez vos actions.' },
-  { photo: photoBailleurs, titre: 'Bailleurs et partenaires', texte: 'Appuyez des initiatives à fort impact.' },
+  {
+    photo: photoEntreprises,
+    titre: 'Entreprises',
+    texte: 'Pilotez et valorisez votre démarche RSE.',
+  },
+  {
+    photo: photoInstitutions,
+    titre: 'Institutions publiques',
+    texte: 'Renforcez la transparence et la performance.',
+  },
+  {
+    photo: photoOng,
+    titre: 'ONG et associations',
+    texte: 'Mesurez votre impact et structurez vos actions.',
+  },
+  {
+    photo: photoBailleurs,
+    titre: 'Bailleurs et partenaires',
+    texte: 'Appuyez des initiatives à fort impact.',
+  },
 ];
 
 const CONTACTS = [
-  { icone: Mail, libelle: 'Écrire', valeur: SMARTEX.email, lien: `mailto:${SMARTEX.email}` },
-  { icone: Phone, libelle: 'Appeler', valeur: SMARTEX.telephone, lien: `tel:${SMARTEX.telephone.replace(/\s/g, '')}` },
-  { icone: MapPin, libelle: 'Nous trouver', valeur: SMARTEX.adresse, lien: null },
-  { icone: Clock, libelle: 'Nos horaires', valeur: SMARTEX.horaires, lien: null },
+  {
+    icone: Mail,
+    libelle: 'Écrire',
+    valeur: SMARTEX.email,
+    lien: `mailto:${SMARTEX.email}`,
+  },
+  {
+    icone: Phone,
+    libelle: 'Appeler',
+    valeur: SMARTEX.telephone,
+    lien: `tel:${SMARTEX.telephone.replace(/\s/g, '')}`,
+  },
+  {
+    icone: MapPin,
+    libelle: 'Nous trouver',
+    valeur: SMARTEX.adresse,
+    lien: null,
+  },
+  {
+    icone: Clock,
+    libelle: 'Nos horaires',
+    valeur: SMARTEX.horaires,
+    lien: null,
+  },
 ];
 
 const classeTitreSection =
   'font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-ink-900 sm:text-[2.75rem] [text-wrap:balance]';
 const classeLienSouligne =
   'inline-flex min-h-12 items-center self-start text-base font-semibold text-ink-900 underline decoration-ink-300 underline-offset-[6px] transition-colors hover:decoration-brand-600 lg:self-auto';
-/* Carte de section : filet sobre, léger soulèvement au survol. */
-const classeCarte =
-  'group h-full rounded-[12px] border border-ink-200 bg-surface p-6 transition duration-300 hover:border-brand-300 motion-safe:hover:-translate-y-1';
+/* Carte de section : fond dégradé, relief porté par l'ombre, liseret en tête. */
+const classeCarte = 'carte-riche group relative h-full overflow-hidden p-6 motion-safe:hover:-translate-y-1.5 sm:p-7';
+const classePuce =
+  'puce-riche inline-flex h-12 w-12 items-center justify-center transition-transform duration-500 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-105';
 
 /**
  * Page « Solution » : la vitrine de la plateforme, en thème clair.
@@ -128,10 +178,26 @@ export default function Services() {
   return (
     <div>
       {/* --------------------------------------------------------- Héros */}
-      <section className="border-b border-ink-200">
+      <section className="bande-riche relative isolate overflow-hidden border-b border-ink-200">
+        {/* Décor : quadrillage millimétré et deux halos, purement visuels. */}
+        <div className="motif-quadrillage pointer-events-none absolute inset-0 -z-10" aria-hidden />
+        <div
+          className="halo-brand pointer-events-none absolute -right-24 -top-32 -z-10 h-80 w-80 motion-safe:animate-respiration"
+          aria-hidden
+        />
+        <div
+          className="halo-feuille pointer-events-none absolute -bottom-40 -left-24 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          style={{ animationDelay: '1.6s' }}
+          aria-hidden
+        />
+
         <div className="mx-auto grid max-w-[75rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
           <div className="min-w-0 motion-safe:animate-apparition-bas">
-            <p className="sur-titre">La solution {SMARTEX.produit}</p>
+            <p className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-surface/80 px-3.5 py-1.5 text-[13px] font-semibold text-brand-600 backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" strokeWidth={2} aria-hidden />
+              Plateforme d’évaluation et experts {SMARTEX.editeur}
+            </p>
+            <p className="sur-titre mt-6">La solution {SMARTEX.produit}</p>
             <h1 className="mt-4 max-w-[14ch] text-ink-900">Votre démarche RSE, notée sur vos preuves.</h1>
 
             <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-ink-600">
@@ -175,12 +241,19 @@ export default function Services() {
 
       {/* ------------------------------------------------ Ligne de repères */}
       <section className="border-b border-ink-200 bg-surface">
-        <ul className="mx-auto flex max-w-[75rem] flex-col gap-3 px-5 py-6 text-[15px] text-ink-600 sm:flex-row sm:flex-wrap sm:gap-x-10">
-          {FAITS.map((fait) => (
-            <li key={fait.libelle}>
-              <CompteurAnime valeur={fait.valeur} className="chiffre-cle mr-1.5 inline-block align-baseline" />{' '}
-              {fait.libelle}
-            </li>
+        <ul className="mx-auto grid max-w-[75rem] gap-5 px-5 py-12 sm:grid-cols-3">
+          {FAITS.map((fait, index) => (
+            <Revele key={fait.libelle} as="li" delai={index * 80}>
+              <div className="carte-riche carte-riche-liseret relative flex h-full items-center gap-4 overflow-hidden p-5">
+                <span className={`${classePuce} shrink-0`}>
+                  <fait.icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                </span>
+                <p className="text-[15px] leading-snug text-ink-600">
+                  <CompteurAnime valeur={fait.valeur} className="chiffre-cle block" />
+                  {fait.libelle}
+                </p>
+              </div>
+            </Revele>
           ))}
         </ul>
       </section>
@@ -188,7 +261,11 @@ export default function Services() {
       <SectionOrganisations />
 
       {/* --------------------------------------- Pourquoi s'en servir */}
-      <section className="bande-brand border-b border-ink-200">
+      <section className="bande-riche-brand relative isolate overflow-hidden border-b border-ink-200">
+        <div
+          className="halo-brand pointer-events-none absolute -right-32 top-10 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <p className="sur-titre">Pourquoi l’utiliser</p>
@@ -202,12 +279,15 @@ export default function Services() {
           <ul className="mt-12 grid gap-6 sm:grid-cols-2">
             {RAISONS.map((raison, index) => (
               <Revele key={raison.titre} as="li" delai={index * 70}>
-                <article className={classeCarte}>
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-ink-100 text-ink-900 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5">
-                    <raison.icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                <article className={`${classeCarte} carte-riche-liseret`}>
+                  <span className="chiffre-fantome pointer-events-none absolute right-4 top-2 select-none" aria-hidden>
+                    {index + 1}
                   </span>
-                  <h3 className="mt-4 font-display text-xl font-bold leading-snug text-ink-900">{raison.titre}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{raison.texte}</p>
+                  <span className={classePuce}>
+                    <raison.icone className="h-6 w-6" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <h3 className="mt-5 font-display text-xl font-bold leading-snug text-ink-900">{raison.titre}</h3>
+                  <p className="mt-2.5 text-[15px] leading-relaxed text-ink-600">{raison.texte}</p>
                 </article>
               </Revele>
             ))}
@@ -235,7 +315,11 @@ export default function Services() {
       </section>
 
       {/* ------------------------------------------------------ Prestations */}
-      <section className="bande-feuille border-b border-ink-200">
+      <section className="bande-riche-feuille relative isolate overflow-hidden border-b border-ink-200">
+        <div
+          className="halo-feuille pointer-events-none absolute -left-28 top-6 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <p className="sur-titre">Nos prestations</p>
@@ -251,14 +335,14 @@ export default function Services() {
               const Icone = ICONES_PRESTATION[metier.code];
               return (
                 <Revele key={metier.code} as="li" delai={index * 70}>
-                  <article className={classeCarte}>
+                  <article className={`${classeCarte} carte-riche-liseret`}>
                     {Icone ? (
-                      <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-surface text-ink-900 ring-1 ring-ink-200 transition-transform duration-300 motion-safe:group-hover:-translate-y-0.5">
-                        <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                      <span className={`${classePuce} puce-riche-feuille`}>
+                        <Icone className="h-6 w-6" strokeWidth={1.75} aria-hidden />
                       </span>
                     ) : null}
-                    <h3 className="mt-4 font-display text-lg font-bold leading-snug text-ink-900">{metier.titre}</h3>
-                    <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{metier.texte}</p>
+                    <h3 className="mt-5 font-display text-lg font-bold leading-snug text-ink-900">{metier.titre}</h3>
+                    <p className="mt-2.5 text-[15px] leading-relaxed text-ink-600">{metier.texte}</p>
                   </article>
                 </Revele>
               );
@@ -268,7 +352,8 @@ export default function Services() {
       </section>
 
       {/* --------------------------------------------- Domaine d'application */}
-      <section className="border-b border-ink-200">
+      <section className="bande-riche relative isolate overflow-hidden border-b border-ink-200">
+        <div className="motif-quadrillage pointer-events-none absolute inset-0 -z-10" aria-hidden />
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <p className="sur-titre">Domaine d’application</p>
@@ -278,33 +363,48 @@ export default function Services() {
             </p>
           </div>
 
-          <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-6">
+          {/* Le titre est posé sur la photo, sous un voile dégradé : l'image
+              porte la section au lieu de servir de vignette. */}
+          <ul className="mt-12 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
             {PUBLICS.map((publicCible, index) => (
               <Revele key={publicCible.titre} as="li" delai={index * 80} className="group">
-                <div className="overflow-hidden rounded-[8px]">
-                  <img
-                    src={publicCible.photo}
-                    alt=""
-                    aria-hidden
-                    loading="lazy"
-                    className="aspect-[4/3] w-full object-cover transition-transform duration-[900ms] ease-out motion-safe:group-hover:scale-105"
-                  />
-                </div>
-                <h3 className="mt-3 font-display text-base font-bold leading-snug text-ink-900 sm:mt-4 sm:text-xl">
-                  {publicCible.titre}
-                </h3>
-                <p className="mt-1 text-[15px] leading-relaxed text-ink-600">{publicCible.texte}</p>
+                <article className="carte-riche relative h-full overflow-hidden motion-safe:group-hover:-translate-y-1.5">
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={publicCible.photo}
+                      alt=""
+                      aria-hidden
+                      loading="lazy"
+                      className="aspect-[4/3] w-full object-cover transition-transform duration-[900ms] ease-out motion-safe:group-hover:scale-110"
+                    />
+                    <div
+                      className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--marine))]/85 via-[rgb(var(--marine))]/20 to-transparent"
+                      aria-hidden
+                    />
+                    <h3 className="absolute inset-x-4 bottom-3 font-display text-base font-bold leading-snug text-white drop-shadow sm:text-lg">
+                      {publicCible.titre}
+                    </h3>
+                  </div>
+                  <p className="px-4 py-4 text-[15px] leading-relaxed text-ink-600">{publicCible.texte}</p>
+                </article>
               </Revele>
             ))}
           </ul>
 
           {/* Les référentiels réellement chargés dans la plateforme : le
               domaine d'application se lit aussi à ce qu'on peut évaluer. */}
-          <dl className="mt-14 grid gap-x-8 gap-y-6 border-t border-ink-200 pt-10 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {REFERENTIELS_EVALUABLES.map((referentiel, index) => (
-              <Revele key={referentiel.code} delai={index * 60}>
-                <dt className="font-display text-lg font-bold text-ink-900">{referentiel.nom}</dt>
-                <dd className="mt-1 text-[15px] leading-relaxed text-ink-600">{referentiel.texte}</dd>
+              <Revele key={referentiel.code} delai={index * 60} className="group h-full">
+                <div className="carte-riche relative h-full overflow-hidden p-5 motion-safe:group-hover:-translate-y-1">
+                  <dt className="flex items-center gap-3 font-display text-lg font-bold text-ink-900">
+                    <span className="puce-riche inline-flex h-9 w-9 shrink-0 items-center justify-center text-xs font-extrabold">
+                      {referentiel.code.slice(0, 2)}
+                    </span>
+                    {referentiel.nom}
+                  </dt>
+                  <dd className="mt-3 text-[15px] leading-relaxed text-ink-600">{referentiel.texte}</dd>
+                </div>
               </Revele>
             ))}
           </dl>
@@ -314,7 +414,12 @@ export default function Services() {
       <ApercuFormules />
 
       {/* ------------------------------------------------- Nous contacter */}
-      <section id="smartex" className="scroll-mt-20 bande-brand">
+      <section id="smartex" className="bande-riche relative isolate scroll-mt-20 overflow-hidden">
+        <div className="motif-quadrillage pointer-events-none absolute inset-0 -z-10" aria-hidden />
+        <div
+          className="halo-brand pointer-events-none absolute -bottom-32 right-0 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <div className="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             <p className="sur-titre">Nous contacter</p>
@@ -348,7 +453,7 @@ export default function Services() {
             {CONTACTS.map((contact, index) => (
               <Revele key={contact.libelle} as="li" delai={index * 70}>
                 <div className={classeCarte}>
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-ink-100 text-ink-900">
+                  <span className={classePuce}>
                     <contact.icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                   </span>
                   <p className="mt-4 text-sm font-medium text-ink-500">{contact.libelle}</p>

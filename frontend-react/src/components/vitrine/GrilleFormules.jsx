@@ -128,15 +128,15 @@ export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
                 <article
                   key={carte.code}
                   className={clsx(
-                    'carte-posee relative flex h-full flex-col rounded-[12px] border bg-surface p-6 sm:p-7',
-                    misEnAvant ? 'border-ink-900 ring-1 ring-ink-900' : 'border-ink-200'
+                    'carte-riche relative flex h-full flex-col overflow-hidden p-6 sm:p-7',
+                    misEnAvant && 'carte-riche-liseret ring-1 ring-brand-200',
                   )}
                 >
                   {/* « Recommandée » et non « Le plus populaire » : un
                       conseil se défend, un classement de ventes demanderait
                       des chiffres qu'on n'affiche pas. */}
                   {misEnAvant ? (
-                    <span className="absolute -top-3 left-6 whitespace-nowrap rounded-[4px] bg-ink-900 px-2.5 py-1 text-xs font-semibold text-ink-50">
+                    <span className="absolute right-5 top-5 whitespace-nowrap rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white">
                       Recommandée
                     </span>
                   ) : null}
@@ -179,10 +179,7 @@ export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
                   ) : null}
 
                   <ul
-                    className={clsx(
-                      'space-y-3',
-                      HERITAGE[carte.code] ? 'mt-4' : 'mt-5 border-t border-ink-200 pt-5'
-                    )}
+                    className={clsx('space-y-3', HERITAGE[carte.code] ? 'mt-4' : 'mt-5 border-t border-ink-200 pt-5')}
                   >
                     {carte.points.map((point) => (
                       <li key={point} className="flex gap-3 text-[15px] leading-snug text-ink-700">
@@ -221,7 +218,7 @@ export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
                         'btn-presse mt-8 inline-flex min-h-12 w-full items-center justify-center rounded-[4px] px-5 text-base font-semibold',
                         misEnAvant
                           ? 'bg-brand-600 text-white hover:bg-brand-700'
-                          : 'border border-ink-300 text-ink-900 hover:border-ink-900'
+                          : 'border border-ink-300 text-ink-900 hover:border-ink-900',
                       )}
                     >
                       Choisir {carte.nom}
