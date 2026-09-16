@@ -4,13 +4,6 @@ import AppelAction from '../components/AppelAction';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
 import ListeQuestions from '../components/vitrine/ListeQuestions';
 import { COMPARATIF, QUESTIONS } from '../lib/formules';
-import { SMARTEX } from '../config/smartex';
-
-const AVANTAGES = [
-  'Des fonctionnalités adaptées à vos besoins',
-  'Un accompagnement à chaque étape',
-  'Une licence annuelle, sans reconduction tacite',
-];
 
 /*
  * Colonnes du comparatif. Les valeurs de COMPARATIF sont écrites pour ces trois
@@ -99,20 +92,9 @@ export default function Formules() {
       {/* --------------------------------------------------------- Héros */}
       <section>
         <div className="mx-auto max-w-[75rem] px-5 pb-10 pt-10 sm:pt-14 lg:pb-12 lg:pt-20">
-          <p className="sur-titre">Nos formules</p>
-          <h1 className="titre-page mt-4 max-w-[20ch] text-ink-900">Choisissez la formule adaptée à vos besoins.</h1>
-          <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">
-            Quelle que soit la taille de votre structure, {SMARTEX.editeur} vous propose des formules simples. Vous
-            évoluez à votre rythme vers une performance durable.
-          </p>
-          <ul className="mt-8 flex flex-col gap-3 text-[15px] text-ink-700 sm:flex-row sm:flex-wrap sm:gap-x-8">
-            {AVANTAGES.map((avantage) => (
-              <li key={avantage} className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-feuille" strokeWidth={2.5} aria-hidden />
-                {avantage}
-              </li>
-            ))}
-          </ul>
+          {/* Seul titre de la page depuis le retrait du bloc d'introduction :
+              il porte donc le niveau 1, sans changer d'apparence. */}
+          <h1 className="sur-titre">Nos formules</h1>
         </div>
       </section>
 
@@ -122,7 +104,7 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}
-      <section className="border-t border-ink-200">
+      <section className="bande-brand border-t border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment se passe l’achat.</h2>
           <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
@@ -160,7 +142,7 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------------ Comparatif */}
-      <section className="border-b border-ink-200">
+      <section className="bande-feuille border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Les formules, ligne par ligne.</h2>
           <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">

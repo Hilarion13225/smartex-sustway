@@ -129,7 +129,7 @@ export default function Services() {
         <ul className="mx-auto flex max-w-[75rem] flex-col gap-3 px-5 py-6 text-[15px] text-ink-600 sm:flex-row sm:flex-wrap sm:gap-x-10">
           {FAITS.map((fait) => (
             <li key={fait.libelle}>
-              <b className="font-display text-xl font-bold tabular-nums text-ink-900">{fait.valeur}</b> {fait.libelle}
+              <b className="chiffre-cle mr-1.5 inline-block align-baseline">{fait.valeur}</b> {fait.libelle}
             </li>
           ))}
         </ul>
@@ -138,7 +138,7 @@ export default function Services() {
       <SectionOrganisations />
 
       {/* ------------------------------------------------ Comment ça marche */}
-      <section className="border-b border-ink-200">
+      <section className="bande-brand border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment ça marche.</h2>
@@ -175,7 +175,7 @@ export default function Services() {
       </section>
 
       {/* --------------------------------------- Types d'organisations */}
-      <section className="border-b border-ink-200">
+      <section className="bande-feuille border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <h2 className={classeTitreSection}>Pour toutes les organisations.</h2>

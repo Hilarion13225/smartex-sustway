@@ -249,7 +249,7 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
-      <section id="formulaire" className="scroll-mt-20 border-b border-ink-200">
+      <section id="formulaire" className="bande-brand scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto grid max-w-[75rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">

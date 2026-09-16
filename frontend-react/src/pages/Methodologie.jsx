@@ -134,7 +134,7 @@ export default function Methodologie() {
       </section>
 
       {/* ------------------------------------------- Démarche en 3 étapes */}
-      <section id="demarche" className="scroll-mt-20 border-b border-ink-200">
+      <section id="demarche" className="bande-brand scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Une démarche en trois étapes.</h2>
 
@@ -184,7 +184,7 @@ export default function Methodologie() {
       </section>
 
       {/* ------------------------------------------ Intelligence artificielle */}
-      <section className="border-b border-ink-200">
+      <section className="bande-feuille border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>De vos preuves au plan d’action.</h2>
           <p className="mt-4 max-w-[60ch] text-lg leading-relaxed text-ink-600">

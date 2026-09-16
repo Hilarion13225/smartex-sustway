@@ -128,7 +128,7 @@ export default function GrilleFormules({ niveauTitre: Titre = 'h2' }) {
                 <article
                   key={carte.code}
                   className={clsx(
-                    'relative flex h-full flex-col rounded-[12px] border bg-surface p-6 sm:p-7',
+                    'carte-posee relative flex h-full flex-col rounded-[12px] border bg-surface p-6 sm:p-7',
                     misEnAvant ? 'border-ink-900 ring-1 ring-ink-900' : 'border-ink-200'
                   )}
                 >
