@@ -100,8 +100,17 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------ Cartes formules */}
-      <section id="grille-formules" className="mx-auto max-w-[75rem] scroll-mt-24 px-5 pb-16 pt-6">
-        <GrilleFormules />
+      <section
+        id="grille-formules"
+        className="bande-riche relative isolate scroll-mt-24 overflow-hidden border-y border-ink-200"
+      >
+        <div
+          className="halo-brand pointer-events-none absolute -right-24 -top-20 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
+        <div className="mx-auto max-w-[75rem] px-5 pb-16 pt-10">
+          <GrilleFormules />
+        </div>
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}

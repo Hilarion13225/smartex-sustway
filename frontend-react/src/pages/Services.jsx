@@ -240,7 +240,11 @@ export default function Services() {
       </section>
 
       {/* ------------------------------------------------ Ligne de repères */}
-      <section className="border-b border-ink-200 bg-surface">
+      <section className="bande-riche-brand relative isolate overflow-hidden border-b border-ink-200">
+        <div
+          className="halo-feuille pointer-events-none absolute -left-20 -bottom-24 -z-10 h-64 w-64 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <ul className="mx-auto grid max-w-[75rem] gap-5 px-5 py-12 sm:grid-cols-3">
           {FAITS.map((fait, index) => (
             <Revele key={fait.libelle} as="li" delai={index * 80}>
@@ -296,7 +300,11 @@ export default function Services() {
       </section>
 
       {/* ------------------------------------------------ Comment ça marche */}
-      <section className="border-b border-ink-200 bg-surface">
+      <section className="bande-riche relative isolate overflow-hidden border-b border-ink-200">
+        <div
+          className="halo-feuille pointer-events-none absolute -right-24 bottom-0 -z-10 h-72 w-72 motion-safe:animate-respiration"
+          aria-hidden
+        />
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
