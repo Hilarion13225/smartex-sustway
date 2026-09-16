@@ -20,15 +20,6 @@ const REASSURANCE = [
   { titre: 'Attestation', texte: 'Remise à l’issue de chaque parcours.' },
 ];
 
-const FORMATS = [
-  { titre: 'Ateliers pratiques', texte: 'Mise en situation directe sur des cas concrets liés à votre secteur d’activité.' },
-  { titre: 'Cours de maître', texte: 'Sessions animées par des experts reconnus sur un sujet RSE/DD précis.' },
-  { titre: 'Séminaires de formation', texte: 'Programme structuré sur plusieurs sessions, avec supports et évaluation.' },
-  { titre: 'Conférences — débats', texte: 'Temps d’échange sur les grands enjeux RSE et développement durable.' },
-  { titre: 'Réunions entreprises', texte: 'Format dédié à une organisation, adapté à son contexte et ses équipes.' },
-  { titre: 'Activités intervenants', texte: `Intervention d’experts ${SMARTEX.editeur} directement dans vos équipes.` },
-];
-
 const SECTEURS = [
   { nom: 'Actualités générales', photo: photoActuGenerale },
   { nom: 'BTP', photo: photoBtp },
@@ -85,8 +76,8 @@ const classeTitreSection =
  *
  * Même langage que les autres pages de la vitrine : aucun élément n'y est
  * cliquable s'il n'en a pas l'air, et rien n'a l'air cliquable s'il ne l'est
- * pas — d'où la disparition du soulèvement au survol des formats et des
- * thématiques, qui ne mènent nulle part.
+ * pas — d'où la disparition du soulèvement au survol des thématiques,
+ * qui ne mènent nulle part.
  */
 export default function Formation() {
   return (
@@ -135,29 +126,6 @@ export default function Formation() {
             className="aspect-[4/3] w-full min-w-0 rounded-[12px] object-cover"
             loading="eager"
           />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------ Nos formats */}
-      <section className="border-b border-ink-200 bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Six formats, un même niveau d’exigence.</h2>
-
-          {/* Une liste à filets plutôt que six cartes à icône : les formats se
-              parcourent, ils ne se comparent pas case à case. */}
-          <ul className="mt-12 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
-            {FORMATS.map((format, index) => (
-              <li key={format.titre} className="grid grid-cols-[2rem_1fr] border-t border-ink-300 py-5">
-                <span className="pt-0.5 text-sm font-medium tabular-nums text-ink-500">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span className="min-w-0">
-                  <span className="block font-display text-xl font-bold leading-snug text-ink-900">{format.titre}</span>
-                  <span className="mt-1.5 block text-[15px] leading-relaxed text-ink-600">{format.texte}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 

@@ -42,7 +42,7 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
               comme le bandeau d'appel des pages publiques — il reste sombre
               dans les deux thèmes. Masqué sous `lg`, où le formulaire passe
               seul en premier écran. */}
-          <aside className="relative hidden flex-col rounded-[12px] bg-[#14234B] p-8 text-white dark:bg-[#1B2A55] lg:flex">
+          <aside className="relative hidden flex-col rounded-[12px] bg-[#14234B] p-8 text-white lg:flex">
             <p className="text-sm text-white/70">Par {SMARTEX.editeur}</p>
             <p className="mt-6 font-display text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-white [text-wrap:balance]">
               Votre démarche RSE, notée sur vos preuves.

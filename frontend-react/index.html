@@ -29,7 +29,9 @@
         // ThemeContext) : sans ce cas particulier, un visiteur en préférence
         // claire verrait un flash blanc avant que React ne force le sombre.
         if (window.location.pathname === '/') {
-          document.documentElement.classList.add('dark');
+          // `dark-force` distingue ce sombre impose du sombre choisi : la
+          // vitrine ne suit plus le second, mais garde le premier.
+          document.documentElement.classList.add('dark', 'dark-force');
           return;
         }
         try {

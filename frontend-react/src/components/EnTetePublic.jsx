@@ -3,11 +3,9 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
-import BasculeTheme from './BasculeTheme';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
-import { useTheme } from '../theme/ThemeContext';
 
 const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea';
 
@@ -46,9 +44,6 @@ export default function EnTetePublic() {
   const [ouvert, setOuvert] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
-  // Sur une page qui impose le sombre, BasculeTheme ne rend rien : le filet
-  // qui le précède resterait seul.
-  const { sombreForce } = useTheme();
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
   const boutonMenu = useRef(null);
@@ -145,14 +140,6 @@ export default function EnTetePublic() {
           >
             <Search className="h-[18px] w-[18px]" aria-hidden />
           </button>
-
-          {sombreForce ? null : (
-            <>
-              <span className="mx-1 h-6 w-px bg-ink-200" aria-hidden />
-              <BasculeTheme />
-              <span className="mx-1 h-6 w-px bg-ink-200" aria-hidden />
-            </>
-          )}
 
           <Link
             to="/connexion"
@@ -260,12 +247,6 @@ export default function EnTetePublic() {
             </Link>
           </div>
 
-          {sombreForce ? null : (
-            <div className="mt-6 flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-ink-600">Thème</span>
-              <BasculeTheme />
-            </div>
-          )}
         </nav>
         </div>
       ) : null}

@@ -37,6 +37,10 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', sombreForce || estSombre);
+    // La vitrine ne suit plus la préférence de thème : elle reste claire.
+    // Seul le sombre *imposé* par une page la concerne encore, et c'est ce
+    // marqueur qui l'en informe.
+    document.documentElement.classList.toggle('dark-force', sombreForce);
   }, [estSombre, sombreForce]);
 
   useEffect(() => {
