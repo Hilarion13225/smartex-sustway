@@ -38,6 +38,7 @@ import ReferentielsListe from './pages/ReferentielsListe';
 import ReferentielDetail from './pages/ReferentielDetail';
 import ImportReferentiel from './pages/ImportReferentiel';
 import IndicePreparation from './pages/IndicePreparation';
+import PageIntrouvable from './pages/PageIntrouvable';
 import CritereEvaluation from './pages/CritereEvaluation';
 import Documents from './pages/Documents';
 import Questionnaire from './pages/Questionnaire';
@@ -127,6 +128,9 @@ export default function App() {
               <Route path="referentiels/import" element={<ImportReferentiel />} />
               <Route path="referentiels/import/:importId" element={<ImportReferentiel />} />
               <Route path="referentiels/:code" element={<ReferentielDetail />} />
+              {/* Une adresse inconnue sous /app reste dans l'espace de travail :
+                  la renvoyer à la vitrine faisait croire à une déconnexion. */}
+              <Route path="*" element={<PageIntrouvable />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

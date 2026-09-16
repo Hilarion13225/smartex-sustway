@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+
 import { CheckCircle2, Lock, Sparkles } from 'lucide-react';
-import { Alerte } from '../ui';
+import { Alerte, Card } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
 
 /** Cadence d'interrogation de l'avancement — une analyse par critère prend quelques secondes. */
@@ -132,8 +133,8 @@ export default function ClotureMission({
       {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
 
       {peutAnalyser ? (
-        <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+        <Card className="p-5">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-ink-900">
             <Sparkles className="h-4 w-4 text-brand-600" aria-hidden />
             Analyser la mission
           </h2>
@@ -191,12 +192,12 @@ export default function ClotureMission({
               {lancement ? 'Lancement…' : avancement ? 'Relancer l’analyse' : 'Lancer l’analyse'}
             </button>
           ) : null}
-        </section>
+        </Card>
       ) : null}
 
       {peutCloturer ? (
-        <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+        <Card className="p-5">
+          <h2 className="flex items-center gap-2 text-base font-semibold text-ink-900">
             <Lock className="h-4 w-4 text-brand-600" aria-hidden />
             Clôturer la mission
           </h2>
@@ -215,7 +216,7 @@ export default function ClotureMission({
             <Lock className="h-4 w-4" aria-hidden />
             {cloture ? 'Clôture…' : 'Clôturer la mission'}
           </button>
-        </section>
+        </Card>
       ) : null}
     </div>
   );

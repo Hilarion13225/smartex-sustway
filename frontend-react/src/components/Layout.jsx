@@ -69,7 +69,7 @@ const GROUPES_AUDIT = [
           { libelle: 'Toutes les missions', chemin: (id) => `/app/${id}/audits` },
           { libelle: 'En cours', chemin: (id) => `/app/${id}/audits?statut=EN_COURS` },
           { libelle: 'À valider', chemin: (id) => `/app/${id}/audits?vue=a-valider` },
-          { libelle: 'Terminées', chemin: (id) => `/app/${id}/audits?statut=CLOTURE` },
+          { libelle: 'Terminées', chemin: (id) => `/app/${id}/audits?statut=TERMINE` },
         ],
       },
       {
@@ -104,7 +104,7 @@ const GROUPES_AUDIT = [
         ],
       },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
-      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Équipe', icone: Users },
+      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Utilisateurs et permissions', icone: Users },
     ],
   },
   {
@@ -112,11 +112,15 @@ const GROUPES_AUDIT = [
     // les rendrait inatteignables alors qu'elles existent et sont routées.
     titre: 'Suivi',
     liens: [
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo },
-      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
-      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Bibliothèque documentaire', icone: FolderOpen },
+      // Ces trois entrées se suivent et se ressemblent. Leur différence
+      // tient à l'origine de ce qu'elles listent — un écart, la correction
+      // d'un écart, un axe validé — et rien dans le menu ne la disait :
+      // il fallait ouvrir chaque page pour la découvrir.
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX, description: 'Les écarts constatés, toutes missions confondues.' },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo, description: 'Les actions qui traitent ces écarts. Elles naissent des non-conformités.' },
+      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target, description: 'Construits à partir des axes validés — distincts des actions correctives.' },
+      { vers: '/app/comparaison', libelle: 'Comparer les organisations', icone: Columns3 },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
         libelle: 'Financements verts',
@@ -128,7 +132,7 @@ const GROUPES_AUDIT = [
   {
     titre: 'Paramètres',
     liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et paiements', icone: Wallet, administration: true },
       { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
@@ -148,7 +152,7 @@ const GROUPES_ENTREPRISE = [
     titre: 'Pilotage',
     liens: [
       { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
-      { vers: '/app/comparaison', libelle: 'Comparaison d’entreprises', icone: Columns3 },
+      { vers: '/app/comparaison', libelle: 'Comparer les organisations', icone: Columns3 },
       { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
       {
         chemin: (id) => `/app/${id}/financements-verts`,
@@ -161,19 +165,21 @@ const GROUPES_ENTREPRISE = [
   {
     titre: 'Audit',
     liens: [
-      { vers: '/app/entreprises', libelle: 'Entreprises et sites', icone: Building2 },
+      { vers: '/app/entreprises', libelle: 'Organisations et sites', icone: Building2 },
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Collecte de preuves', icone: FolderOpen },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Bibliothèque documentaire', icone: FolderOpen },
       { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo },
-      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
+      // Même triplet que dans la navigation de supervision, mêmes libellés,
+      // mêmes explications : la distinction ne doit pas dépendre du rôle.
+      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX, description: 'Les écarts constatés, toutes missions confondues.' },
+      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo, description: 'Les actions qui traitent ces écarts. Elles naissent des non-conformités.' },
+      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target, description: 'Construits à partir des axes validés — distincts des actions correctives.' },
     ],
   },
   {
     titre: 'Administration',
     liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et facturation', icone: Wallet, administration: true },
+      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et paiements', icone: Wallet, administration: true },
       { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
       {
         vers: '/app/referentiels',
@@ -217,21 +223,41 @@ const GROUPES_COLLABORATEUR = [
     liens: [
       { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
       { chemin: (id) => `/app/${id}/audits`, libelle: 'Mes missions', icone: ClipboardList },
-      // Répondre au questionnaire est le travail même du collaborateur, et
-      // l'API l'y autorise déjà (`preuve:deposer` sur ReponseQuestionResource).
-      // Sans cette entrée il fallait traverser une mission puis un critère
-      // pour atteindre sa propre tâche.
-      { chemin: (id) => `/app/${id}/questionnaire`, libelle: 'Questionnaire', icone: ClipboardList },
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Mes documents', icone: FolderOpen },
+      { chemin: (id) => `/app/${id}/documents`, libelle: 'Bibliothèque documentaire', icone: FolderOpen },
       // D28 : le collaborateur lit le plan collectif et toutes ses actions —
       // n'en montrer qu'une partie rendrait la progression incompréhensible —
       // et n'agit que sur celles qui lui sont affectées. Sans cette entrée,
       // l'accès que l'API lui accorde n'avait aucun chemin de navigation.
-      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target },
+      {
+        chemin: (id) => `/app/${id}/plans`,
+        libelle: 'Plans d’amélioration',
+        icone: Target,
+        description: 'Le plan collectif et toutes ses actions, en lecture.',
+      },
       // Le collaborateur lit tout le plan (D28), mais son propre travail y
       // était noyé : il fallait ouvrir chaque plan de chaque mission pour le
       // retrouver. Cette entrée est la contrepartie de cette lecture large.
-      { chemin: (id) => `/app/${id}/mes-actions`, libelle: 'Mes actions', icone: ListChecks },
+      {
+        chemin: (id) => `/app/${id}/mes-actions`,
+        libelle: 'Mes actions',
+        icone: ListChecks,
+        description: 'Les actions du plan dont vous êtes responsable.',
+      },
+    ],
+  },
+  {
+    titre: 'Référence',
+    liens: [
+      // Cette page montre quels critères s'appliquent à l'organisation compte
+      // tenu de son secteur (RG34) — un aperçu du périmètre, non un endroit
+      // où répondre. Elle s'appelait « Questionnaire », ce qui envoyait le
+      // collaborateur y chercher son travail : on répond aux critères depuis
+      // une mission, et « Mes missions » y mène.
+      {
+        chemin: (id) => `/app/${id}/questionnaire`,
+        libelle: 'Périmètre applicable',
+        icone: ClipboardList,
+      },
     ],
   },
   {
@@ -444,10 +470,27 @@ export default function Layout() {
 
   return (
     <div className="flex h-full bg-ink-50">
+      {/*
+        `invisible` accompagne `-translate-x-full` : une transformation deplace
+        le tiroir hors de l'ecran mais ne le retire ni de l'ordre de tabulation
+        ni de l'arbre d'accessibilite. Sans elle, le tiroir ferme gardait 22
+        elements focusables, et les douze premieres tabulations aboutissaient a
+        un anneau de focus peint hors champ.
+
+        Le comportement est conditionne par le point de rupture, pas par
+        `ouvert` : au-dela de `lg` la barre est permanente et `ouvert` y vaut
+        `false` par defaut, donc `lg:visible` la garde navigable. Un
+        `inert={!ouvert}` aurait rendu la navigation du poste de travail
+        inaccessible.
+
+        `transition-[transform,visibility]` preserve l'animation de fermeture :
+        `visibility` ne bascule qu'a la fin de la transition, le tiroir glisse
+        donc encore au lieu de disparaitre d'un coup.
+      */}
       <aside
         className={clsx(
-          'sidebar-tech bordure-sidebar fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r transition-transform duration-300 lg:static lg:translate-x-0',
-          ouvert ? 'translate-x-0' : '-translate-x-full'
+          'sidebar-tech bordure-sidebar fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r transition-[transform,visibility] duration-300 lg:visible lg:static lg:translate-x-0',
+          ouvert ? 'translate-x-0' : 'invisible -translate-x-full'
         )}
       >
 
@@ -476,13 +519,13 @@ export default function Layout() {
               className="titre-sidebar mb-1.5 block text-[11px] font-semibold uppercase tracking-wider"
               htmlFor="entreprise-courante"
             >
-              Entreprise
+              Organisation
             </label>
             {entreprises.length > SEUIL_RECHERCHE_ENTREPRISE ? (
               <input
                 type="search"
                 className="champ-sidebar mb-1.5"
-                placeholder="Rechercher une entreprise…"
+                placeholder="Rechercher une organisation…"
                 value={filtreEntreprise}
                 onChange={(e) => setFiltreEntreprise(e.target.value)}
                 aria-controls="entreprise-courante"
@@ -533,7 +576,7 @@ export default function Layout() {
                         <span
                           key={lien.libelle}
                           className="lien-app texte-sidebar-attenue cursor-not-allowed opacity-40"
-                          title="Sélectionnez d’abord une entreprise"
+                          title="Sélectionnez d’abord une organisation"
                         >
                           <lien.icone className="texte-sidebar-attenue h-4 w-4 shrink-0" aria-hidden />
                           <span className="flex-1 truncate">{lien.libelle}</span>
@@ -561,6 +604,10 @@ export default function Layout() {
                       <NavLink
                         to={cible}
                         end={lien.fin}
+                        // Le libellé tient sur une ligne tronquée : l'explication
+                        // ne peut pas y entrer sans la couper. Elle passe donc
+                        // par `title`, comme le fait déjà l'entrée désactivée.
+                        title={lien.description}
                         onClick={() => setOuvert(false)}
                         className={({ isActive }) =>
                           clsx('lien-app group', isActive ? 'lien-app-actif' : 'lien-sidebar-inactif')
@@ -647,7 +694,12 @@ export default function Layout() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 py-6 lg:px-8">
-          <Outlet />
+          {/* Les missions collectées plus haut servaient déjà deux
+              consommateurs — la recherche de l'en-tête et la cloche. Une page
+              qui connaît un identifiant de mission sans en connaître le nom
+              peut les relire ici plutôt que de refaire l'appel pour un seul
+              libellé. Rien n'est chargé de plus pour les exposer. */}
+          <Outlet context={{ missions: missionsCourantes }} />
         </main>
       </div>
     </div>

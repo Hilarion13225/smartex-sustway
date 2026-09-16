@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
 import SaisieCritereMission from '../components/audit/SaisieCritereMission';
 import SyntheseMission from '../components/audit/SyntheseMission';
@@ -79,10 +80,7 @@ function VoletDomaines({ score, criteres }) {
       {lignes.map((ligne) => {
         const avancement = ligne.total > 0 ? Math.round((ligne.evalues / ligne.total) * 100) : 0;
         return (
-          <section
-            key={ligne.code}
-            className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm"
-          >
+          <Card key={ligne.code} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-ink-900" title={ligne.nom}>
@@ -103,7 +101,7 @@ function VoletDomaines({ score, criteres }) {
             <p className="mt-2 text-xs text-ink-500">
               {ligne.evalues} / {ligne.total} critères évalués
             </p>
-          </section>
+          </Card>
         );
       })}
     </div>
@@ -217,7 +215,7 @@ export default function AuditDetail() {
 
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -233,6 +231,16 @@ export default function AuditDetail() {
         <Vide message="Audit introuvable ou non accessible." />
       ) : (
         <>
+          <Breadcrumb
+            elements={[
+              entreprises.length > 1 && entreprise
+                ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+                : null,
+              { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+              { libelle: audit.nom },
+            ]}
+          />
+
           <PageTitre
             icone={ClipboardCheck}
             titre={audit.nom}
@@ -301,16 +309,16 @@ export default function AuditDetail() {
                 ) : null}
               <div className="lg:max-w-xl">
               <Card className="p-5">
-                <CardHeader titre="Sites de la mission" sousTitre="Sites de l'entreprise couverts par cette mission." icone={MapPin} />
+                <CardHeader titre="Sites de la mission" sousTitre="Sites de l'organisation couverts par cette mission." icone={MapPin} />
                 {sitesEntreprise.length === 0 ? (
                   <div className="mt-3">
                     <p className="text-sm text-ink-500">
-                      Aucun site actif pour cette entreprise — la mission porte sur l'entreprise entière.
+                      Aucun site actif pour cette organisation — la mission porte sur l'organisation entière.
                     </p>
                     {peutModifier ? (
                       <Link to={`/app/${entrepriseId}`} className="btn-secondary mt-3">
                         <MapPin className="h-4 w-4" aria-hidden />
-                        Ajouter un site à l'entreprise
+                        Ajouter un site à l'organisation
                       </Link>
                     ) : null}
                   </div>
@@ -341,7 +349,7 @@ export default function AuditDetail() {
                       </button>
                     ) : null}
                     {!peutModifier && sitesAudit.length === 0 ? (
-                      <p className="mt-3 text-xs text-ink-500">Aucun site sélectionné — la mission porte sur l'entreprise entière.</p>
+                      <p className="mt-3 text-xs text-ink-500">Aucun site sélectionné — la mission porte sur l'organisation entière.</p>
                     ) : null}
                   </>
                 )}

@@ -2,17 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Download, FolderKanban, Trash2 } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Alerte, Badge, Loader, Vide } from '../components/ui';
+import { Alerte, Badge, Card, Loader, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { exporterCsv } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
+import { STATUTS_PROJET as STATUTS } from '../lib/tonsStatuts';
 
-const STATUTS = {
-  BROUILLON: { ton: 'neutre', libelle: 'Brouillon' },
-  EN_COURS: { ton: 'bleu', libelle: 'En cours' },
-  CLOTURE: { ton: 'vert', libelle: 'Clôturé' },
-  ARCHIVE: { ton: 'neutre', libelle: 'Archivé' },
-};
 
 /** Statut d'une mission, rendu lisible sans réécrire la valeur inconnue. */
 const STATUTS_MISSION = {
@@ -224,8 +219,8 @@ export default function ProjetDetail() {
       ) : null}
 
       <Revele>
-        <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-ink-900">Comparaison — {intitule}</h2>
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-ink-900">Comparaison — {intitule}</h2>
           <p className="mt-0.5 text-xs text-ink-500">
             Note totale, coefficient total et score pondéré de chaque organisation du projet.
           </p>
@@ -324,7 +319,7 @@ export default function ProjetDetail() {
               </li>
             ))}
           </ul>
-        </section>
+        </Card>
       </Revele>
     </div>
   );

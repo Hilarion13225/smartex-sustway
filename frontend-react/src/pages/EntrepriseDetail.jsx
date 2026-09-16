@@ -20,6 +20,7 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { COULEURS, GraphiqueLigne } from '../components/charts';
 import { api, ApiError } from '../lib/apiClient';
+import PageIntrouvable from './PageIntrouvable';
 import { formaterDate } from '../lib/export';
 
 const TAILLES = [
@@ -45,6 +46,7 @@ export default function EntrepriseDetail() {
 
   const [sites, setSites] = useState(null);
   const [chargementSites, setChargementSites] = useState(true);
+  const [erreurSites, setErreurSites] = useState(null);
 
   const [editionFiche, setEditionFiche] = useState(false);
 
@@ -58,10 +60,16 @@ export default function EntrepriseDetail() {
 
   const rafraichirSites = useCallback(() => {
     setChargementSites(true);
+    setErreurSites(null);
     api
       .get(`/api/v1/entreprises/${entrepriseId}/sites`)
+      // Un échec rendait `[]`, et la carte annonçait « aucun site » : une
+      // organisation multi-sites paraissait n'en avoir aucun.
+      .catch((err) => {
+        setErreurSites(err instanceof ApiError ? err.message : 'Chargement des sites impossible');
+        return null;
+      })
       .then(setSites)
-      .catch(() => setSites([]))
       .finally(() => setChargementSites(false));
   }, [entrepriseId]);
 
@@ -71,7 +79,13 @@ export default function EntrepriseDetail() {
   }, [rafraichirAbonnement, rafraichirSites]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    // La route `:entrepriseId` capte tout segment unique sous /app : une faute
+    // de frappe arrivait donc ici, et n'y trouvait qu'un état vide sans
+    // chemin de retour, alors que la page introuvable existe depuis P1.4 et
+    // sait justement quoi proposer. Elle ne distingue pas l'organisation
+    // inexistante de l'inaccessible — l'ancien libellé ne le faisait pas non
+    // plus, et ne pas révéler laquelle des deux est le bon réflexe.
+    return <PageIntrouvable />;
   }
 
   const peutAdministrer = peut('entreprise:modifier', abonnement?.formuleCode);
@@ -80,7 +94,7 @@ export default function EntrepriseDetail() {
     <>
       <Link to="/app/entreprises" className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour aux entreprises
+        Retour aux organisations
       </Link>
 
       <PageTitre
@@ -113,7 +127,7 @@ export default function EntrepriseDetail() {
         <Revele>
           <Card className="mb-6 p-5">
             <CardHeader
-              titre="Fiche entreprise"
+              titre="Fiche organisation"
               icone={Building2}
               sousTitre="Identité légale, secteur, taille, effectif et chiffre d’affaires — le secteur détermine la criticité des critères du référentiel."
             />
@@ -148,7 +162,7 @@ export default function EntrepriseDetail() {
               onPaye={rafraichirAbonnement}
             />
           ) : (
-            <Vide message="Aucun abonnement trouvé pour cette entreprise." />
+            <Vide message="Aucun abonnement trouvé pour cette organisation." />
           )}
           </Card>
         </Revele>
@@ -156,12 +170,18 @@ export default function EntrepriseDetail() {
         <Revele delai={120}>
           <Card className="h-full p-5">
           <CardHeader titre="Sites" icone={MapPin} />
+          {erreurSites ? (
+            <div className="mb-4">
+              <Alerte ton="rouge">{erreurSites}</Alerte>
+            </div>
+          ) : null}
           {chargementSites ? (
             <Loader message="Chargement des sites…" />
           ) : (
             <SitesSection
               entrepriseId={entrepriseId}
               sites={sites}
+              erreurChargement={erreurSites}
               onChange={rafraichirSites}
               peutModifier={peutAdministrer}
             />
@@ -190,9 +210,11 @@ function EvolutionScoreSection({ entrepriseId, secteurCode }) {
   const [missions, setMissions] = useState(null);
   const [benchmark, setBenchmark] = useState(null);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState(null);
 
   useEffect(() => {
     setChargement(true);
+    setErreur(null);
     api
       .get(`/api/v1/entreprises/${entrepriseId}/audits`)
       .then((audits) =>
@@ -205,7 +227,15 @@ function EvolutionScoreSection({ entrepriseId, secteurCode }) {
         )
       )
       .then((resultats) => setMissions(resultats.filter((m) => m.historique.length > 0)))
-      .catch(() => setMissions([]))
+      // Un échec rendait `[]`, et le panneau annonçait « pas encore
+      // d'historique » : un historique réel devenait indiscernable d'une API
+      // tombée.
+      .catch((err) => {
+        setErreur(
+          err instanceof ApiError ? err.message : 'Chargement de l’évolution du score impossible'
+        );
+        setMissions(null);
+      })
       .finally(() => setChargement(false));
   }, [entrepriseId]);
 
@@ -221,6 +251,8 @@ function EvolutionScoreSection({ entrepriseId, secteurCode }) {
   }, [secteurCode]);
 
   if (chargement) return <Loader message="Chargement de l’évolution du score…" />;
+
+  if (erreur) return <Alerte ton="rouge">{erreur}</Alerte>;
 
   if (!missions || missions.length === 0) {
     return (
@@ -484,7 +516,7 @@ function AbonnementSection({ entrepriseId, abonnement, payerAbonnement, onPaye }
 
 const SITE_VIDE = { nom: '', adresse: '', ville: '', codePostal: '', paysCodeIso2: 'CI' };
 
-function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
+function SitesSection({ entrepriseId, sites, erreurChargement, onChange, peutModifier }) {
   const [afficherFormulaire, setAfficherFormulaire] = useState(false);
   const [siteEnEdition, setSiteEnEdition] = useState(null);
   const [formulaire, setFormulaire] = useState(SITE_VIDE);
@@ -601,7 +633,7 @@ function SitesSection({ entrepriseId, sites, onChange, peutModifier }) {
             </li>
           ))}
         </ul>
-      ) : (
+      ) : erreurChargement ? null : (
         <Vide message="Aucun site pour l’instant." />
       )}
 

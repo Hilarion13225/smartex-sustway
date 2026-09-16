@@ -72,7 +72,7 @@ export default function Documents() {
   }
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   const peutDeposer = peut('preuve:deposer', abonnement?.formuleCode);
@@ -83,7 +83,7 @@ export default function Documents() {
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre
@@ -118,7 +118,7 @@ export default function Documents() {
             </Revele>
           ) : (
             <Alerte ton="ambre">
-              Votre rôle ou la formule souscrite par cette entreprise ne permet pas le dépôt de documents.
+              Votre rôle ou la formule souscrite par cette organisation ne permet pas le dépôt de documents.
             </Alerte>
           )}
 
@@ -226,7 +226,7 @@ function FormulaireDepot({ entrepriseId, sites, onDepose }) {
             Site concerné (optionnel)
           </label>
           <select id="document-site" className="input" value={siteId} onChange={(e) => setSiteId(e.target.value)}>
-            <option value="">Toute l’entreprise</option>
+            <option value="">Toute l’organisation</option>
             {sites.map((site) => (
               <option key={site.id} value={site.id}>
                 {site.nom}
@@ -246,7 +246,7 @@ function FormulaireDepot({ entrepriseId, sites, onDepose }) {
           </button>
           <p className="flex items-center gap-1.5 text-xs text-ink-500">
             <MapPin className="h-3.5 w-3.5" aria-hidden />
-            Le document reste isolé dans l’espace de cette entreprise.
+            Le document reste isolé dans l’espace de cette organisation.
           </p>
         </div>
       </form>

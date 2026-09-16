@@ -5,7 +5,7 @@ export function Card({
   children,
   className
 }) {
-  return <section className={clsx('card rounded-2xl border-ink-100', className)}>{children}</section>;
+  return <section className={clsx('card', className)}>{children}</section>;
 }
 export function CardHeader({
   titre,
@@ -79,7 +79,13 @@ export function StatCard({
       <div className="min-w-0">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{libelle}</p>
         <p className="mt-0.5 text-2xl font-semibold text-ink-900">{valeur}</p>
-        {detail ? <p className="mt-0.5 truncate text-xs text-ink-500">{detail}</p> : null}
+        {/* `truncate` est voulu, mais a 1024 px le detail perd jusqu'a 27 % de sa
+            longueur : le `title` garde la valeur entiere accessible. */}
+        {detail ? (
+          <p className="mt-0.5 truncate text-xs text-ink-500" title={typeof detail === 'string' ? detail : undefined}>
+            {detail}
+          </p>
+        ) : null}
       </div>
     </div>;
 }

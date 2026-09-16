@@ -9,9 +9,8 @@ import VoletVersions from '../components/referentiel/VoletVersions';
 import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
+import { TONS_CRITICITE, TONS_STATUT_REFERENTIEL as TONS_STATUT } from '../lib/tonsStatuts';
 
-const TONS_STATUT = { ACTIF: 'vert', INACTIF: 'neutre', SUSPENDU: 'ambre', ARCHIVE: 'rouge' };
-const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const NIVEAUX_CRITICITE = ['FAIBLE', 'MOYENNE', 'ELEVEE', 'CRITIQUE'];
 /**
  * Portée d'un critère dans les questionnaires.

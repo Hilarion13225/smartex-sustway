@@ -54,7 +54,7 @@ export default function VoletPlansMission({ entrepriseId, auditId }) {
         </p>
         <Link to={`/app/${entrepriseId}/plans`} className="btn-ghost text-sm">
           <Target className="h-4 w-4" aria-hidden />
-          Tous les plans de l’entreprise
+          Tous les plans de l’organisation
         </Link>
       </div>
 

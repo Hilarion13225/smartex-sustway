@@ -129,7 +129,7 @@ export default function CarteCritere({
             {scenario}
           </p>
         ) : (
-          <p className="mt-2.5 text-sm text-ink-400">Aucune situation décrite par l’organisation.</p>
+          <p className="mt-2.5 text-sm text-ink-500">Aucune situation décrite par l’organisation.</p>
         )}
       </div>
 

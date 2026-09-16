@@ -93,13 +93,13 @@ export default function Entreprises() {
     <>
       <PageTitre
         icone={Building2}
-        titre="Entreprises"
-        description="Chaque entreprise est créée avec un abonnement — la formule Free ne permet pas la création."
+        titre="Organisations"
+        description="Chaque organisation est créée avec un abonnement — la formule Free ne permet pas la création."
         actions={
           peutCreer ? (
             <button type="button" className="btn-vitrine" onClick={() => setAfficherFormulaire((v) => !v)}>
               {afficherFormulaire ? <X className="h-4 w-4" aria-hidden /> : <PlusCircle className="h-4 w-4" aria-hidden />}
-              {afficherFormulaire ? 'Fermer' : 'Nouvelle entreprise'}
+              {afficherFormulaire ? 'Fermer' : 'Nouvelle organisation'}
             </button>
           ) : null
         }
@@ -198,14 +198,14 @@ export default function Entreprises() {
             </div>
             <button type="submit" className="btn-vitrine" disabled={chargement}>
               {chargement ? <SustwayLoader taille="sm" /> : null}
-              Créer l’entreprise
+              Créer l’organisation
             </button>
           </form>
         </Card>
       ) : null}
 
       {entreprises.length === 0 ? (
-        <div className="relative overflow-hidden rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-14 text-center">
+        <div className="relative overflow-hidden rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-12 text-center">
           <div
             className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-halo-brand motion-safe:animate-apparition-douce"
             aria-hidden
@@ -213,13 +213,13 @@ export default function Entreprises() {
           <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
             <Building2 className="h-6 w-6" aria-hidden />
           </span>
-          <p className="relative mt-4 text-base font-semibold text-ink-900">Aucune entreprise pour l’instant</p>
+          <p className="relative mt-4 text-base font-semibold text-ink-900">Aucune organisation pour l’instant</p>
           <p className="relative mx-auto mt-1 max-w-md text-sm text-ink-500">
-            Créez votre première entreprise pour lancer une évaluation RSE et suivre votre score domaine par domaine.
+            Créez votre première organisation pour lancer une évaluation RSE et suivre votre score domaine par domaine.
           </p>
           <button type="button" className="btn-vitrine relative mt-5" onClick={() => setAfficherFormulaire(true)}>
             <Sparkles className="h-4 w-4" aria-hidden />
-            Créer une entreprise
+            Créer une organisation
           </button>
         </div>
       ) : (
@@ -238,8 +238,8 @@ export default function Entreprises() {
           ) : null}
 
           {entreprisesFiltrees.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-10 text-center text-sm text-ink-500">
-              Aucune entreprise ne correspond à « {recherche} ».
+            <p className="rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-12 text-center text-sm text-ink-500">
+              Aucune organisation ne correspond à « {recherche} ».
             </p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -273,7 +273,19 @@ export default function Entreprises() {
                           <dt className="text-[11px] text-ink-500">Effectif</dt>
                         </div>
                         <div className="min-w-0 rounded-xl bg-ink-50 px-3 py-2">
-                          <dd className="truncate text-sm font-semibold tabular-nums text-ink-900">
+                          {/* La forme compacte tronque a 1024 px : « 450 M XOF » perd sa
+                              devise. L'infobulle porte le montant exact plutot que de
+                              repeter l'abreviation, qui n'apprendrait rien de plus. */}
+                          <dd
+                            className="truncate text-sm font-semibold tabular-nums text-ink-900"
+                            title={
+                              e.chiffreAffaires == null
+                                ? undefined
+                                : `${Number(e.chiffreAffaires).toLocaleString('fr-FR')} ${
+                                    e.deviseChiffreAffaires ?? ''
+                                  }`.trim()
+                            }
+                          >
                             {e.chiffreAffaires == null
                               ? '—'
                               : `${Number(e.chiffreAffaires).toLocaleString('fr-FR', {

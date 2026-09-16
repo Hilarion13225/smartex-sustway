@@ -80,13 +80,13 @@ export default function MesActions() {
     }
   }
 
-  if (!entreprise) return <Vide message="Entreprise introuvable ou non accessible." />;
+  if (!entreprise) return <Vide message="Organisation introuvable ou non accessible." />;
 
   return (
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre

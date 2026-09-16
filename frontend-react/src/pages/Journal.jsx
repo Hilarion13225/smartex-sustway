@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Download, History, Search } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
-import { api } from '../lib/apiClient';
+import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
+import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDateHeure } from '../lib/export';
 
@@ -34,18 +34,29 @@ export default function Journal() {
   const [page, setPage] = useState(0);
   const [finAtteinte, setFinAtteinte] = useState(false);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState(null);
   const [recherche, setRecherche] = useState('');
 
+  // `page` ne retient que la dernière page réellement obtenue : un lot qui
+  // échoue ne doit pas être compté comme lu, sinon le bouton « Charger plus »
+  // reprendrait à la page suivante et sauterait les entrées manquantes.
   const charger = useCallback(
     (numeroPage) => {
       setChargement(true);
+      setErreur(null);
       api
         .get(`/api/v1/entreprises/${entrepriseId}/journal?page=${numeroPage}&taille=${TAILLE_PAGE}`)
         .then((lot) => {
           setEntrees((prev) => (numeroPage === 0 ? lot : [...prev, ...lot]));
+          setPage(numeroPage);
           setFinAtteinte(lot.length < TAILLE_PAGE);
         })
-        .catch(() => setFinAtteinte(true))
+        // Un lot plus court que la page marque la fin du journal — un échec
+        // de chargement, non : le marquer ainsi arrêtait la liste en silence,
+        // sans rien dire, et laissait croire le journal complet.
+        .catch((err) =>
+          setErreur(err instanceof ApiError ? err.message : 'Chargement du journal impossible')
+        )
         .finally(() => setChargement(false));
     },
     [entrepriseId]
@@ -53,6 +64,7 @@ export default function Journal() {
 
   useEffect(() => {
     setPage(0);
+    setFinAtteinte(false);
     charger(0);
   }, [charger]);
 
@@ -68,9 +80,7 @@ export default function Journal() {
   }, [entrees, recherche]);
 
   function chargerSuite() {
-    const suivante = page + 1;
-    setPage(suivante);
-    charger(suivante);
+    charger(page + 1);
   }
 
   function exporter() {
@@ -89,14 +99,14 @@ export default function Journal() {
   }
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre
@@ -145,6 +155,12 @@ export default function Journal() {
             />
           </div>
 
+          {erreur ? (
+            <div className="px-5 pt-4">
+              <Alerte ton="rouge">{erreur}</Alerte>
+            </div>
+          ) : null}
+
           {entreesFiltrees.length > 0 ? (
             <Tableau entetes={['Horodatage', 'Utilisateur', 'Action', 'Entité', 'Identifiant']}>
               {entreesFiltrees.map((e) => (
@@ -161,16 +177,16 @@ export default function Journal() {
             </Tableau>
           ) : chargement ? (
             <Loader message="Chargement du journal…" />
-          ) : (
+          ) : erreur ? null : (
             <div className="p-6">
-              <Vide message="Aucune entrée dans le journal pour cette entreprise." />
+              <Vide message="Aucune entrée dans le journal pour cette organisation." />
             </div>
           )}
 
           {!finAtteinte ? (
             <div className="border-t border-ink-100 p-4 text-center">
               <button type="button" className="btn-secondary" disabled={chargement} onClick={chargerSuite}>
-                Charger plus d’entrées
+                {erreur ? 'Réessayer' : 'Charger plus d’entrées'}
               </button>
             </div>
           ) : null}

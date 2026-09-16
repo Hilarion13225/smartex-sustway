@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
+import Breadcrumb from '../components/Breadcrumb';
 import { AlertTriangle, ArrowLeft, ClipboardX, PlusCircle } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
@@ -7,16 +8,23 @@ import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
+import {
+  TONS_NIVEAU_NON_CONFORMITE as TONS_NIVEAU,
+  TONS_PRIORITE_ACTION as TONS_PRIORITE,
+  TONS_STATUT_NON_CONFORMITE as TONS_STATUT_NC,
+} from '../lib/tonsStatuts';
 
-const TONS_NIVEAU = { MINEURE: 'neutre', MODEREE: 'bleu', MAJEURE: 'ambre', CRITIQUE: 'rouge' };
-const TONS_STATUT_NC = { OUVERTE: 'rouge', EN_TRAITEMENT: 'ambre', CLOTUREE: 'vert' };
-const TONS_PRIORITE = { BASSE: 'neutre', MOYENNE: 'bleu', HAUTE: 'ambre', CRITIQUE: 'rouge' };
 
 /** RG17/RG18 — non-conformités générées automatiquement à la validation d'une évaluation, et leur plan d'actions correctives. */
 export default function NonConformites() {
   const { entrepriseId, auditId } = useParams();
   const { entreprises } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
+  const { missions } = useOutletContext() ?? {};
+  // Résolution par identifiant exact, jamais par position : à défaut de
+  // correspondance, le fil reste générique plutôt que d'emprunter le nom
+  // d'une autre mission.
+  const nomMission = (missions ?? []).find((m) => m.id === auditId)?.nom ?? 'Mission';
 
   const [nonConformites, setNonConformites] = useState(null);
   const [chargement, setChargement] = useState(true);
@@ -37,7 +45,7 @@ export default function NonConformites() {
   }, [rafraichir]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -47,10 +55,25 @@ export default function NonConformites() {
         Retour à la mission
       </Link>
 
+      {/* Cette page ne charge pas la mission — elle n'en a besoin que pour
+          ses écarts. Le nom vient donc des missions que le Layout tient déjà
+          en mémoire ; « Mission » reste le repli le temps du chargement, ou
+          si la mission n'appartient pas à l'organisation courante. */}
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+          { libelle: nomMission, vers: `/app/${entrepriseId}/audits/${auditId}` },
+          { libelle: 'Non-conformités' },
+        ]}
+      />
+
       <PageTitre
         icone={ClipboardX}
         titre="Non-conformités"
-        description="Écarts détectés lors des évaluations et plan d’actions correctives associé."
+        description="Écarts détectés sur cette mission et actions correctives associées. Pour les écarts de toutes les missions, voir « Non-conformités » dans le menu de l’organisation."
       />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { Loader } from '../ui';
+import { Badge, Loader } from '../ui';
 import TracabiliteIa from './TracabiliteIa';
 import Rectification from './Rectification';
 import { analyseDepuisEvaluation } from './analyseCritere';
@@ -88,9 +88,7 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
                 <p className="mt-0.5 text-xs text-ink-500">{critere.critereLibelle}</p>
               </div>
             </div>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-              Conformité probable : {analyse.score}%
-            </span>
+            <Badge ton="vert">Conformité probable : {analyse.score}%</Badge>
           </div>
 
           <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

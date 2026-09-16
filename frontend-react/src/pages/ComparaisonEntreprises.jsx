@@ -83,8 +83,8 @@ export default function ComparaisonEntreprises() {
     <>
       <PageTitre
         icone={Columns3}
-        titre="Comparaison d’entreprises"
-        description={`Comparez jusqu’à ${MAX_ENTREPRISES} entreprises côte à côte, sur le score global et le profil par domaine de leur mission la plus récente.`}
+        titre="Comparer les organisations"
+        description={`Comparez jusqu’à ${MAX_ENTREPRISES} organisations côte à côte, sur le score global et le profil par domaine de leur mission la plus récente.`}
         actions={
           resultats ? (
             <button type="button" className="btn-secondary" onClick={exporter}>
@@ -97,7 +97,7 @@ export default function ComparaisonEntreprises() {
 
       <Revele>
         <Card className="mb-6 p-5">
-          <CardHeader titre="Entreprises comparées" sousTitre={`${MAX_ENTREPRISES} entreprises au maximum`} />
+          <CardHeader titre="Organisations comparées" sousTitre={`${MAX_ENTREPRISES} organisations au maximum`} />
           <div className="mt-4 flex flex-wrap gap-2">
             {entreprises.map((e) => {
               const active = selection.includes(e.id);
@@ -115,7 +115,7 @@ export default function ComparaisonEntreprises() {
             })}
           </div>
           {entreprises.length === 0 ? (
-            <p className="mt-3 text-sm text-ink-500">Aucune entreprise accessible pour l’instant.</p>
+            <p className="mt-3 text-sm text-ink-500">Aucune organisation accessible pour l’instant.</p>
           ) : (
             <button
               type="button"
@@ -137,7 +137,7 @@ export default function ComparaisonEntreprises() {
         <Revele delai={80}>
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
-              <CardHeader titre="Score global" sousTitre="Mission la plus récente de chaque entreprise" />
+              <CardHeader titre="Score global" sousTitre="Mission la plus récente de chaque organisation" />
               <div className="h-80 p-5">
                 {resultats.some((r) => r.score) ? (
                   <GraphiqueBarres
@@ -154,13 +154,13 @@ export default function ComparaisonEntreprises() {
                     max={5}
                   />
                 ) : (
-                  <Vide message="Aucun score disponible pour ces entreprises." />
+                  <Vide message="Aucun score disponible pour ces organisations." />
                 )}
               </div>
             </Card>
 
             <Card>
-              <CardHeader titre="Profil par domaine" sousTitre="Score sur 5, référentiel de la première entreprise" />
+              <CardHeader titre="Profil par domaine" sousTitre="Score sur 5, référentiel de la première organisation" />
               <div className="h-80 p-5">
                 {domaines.length > 0 ? (
                   <GraphiqueRadar

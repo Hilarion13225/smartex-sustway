@@ -21,7 +21,7 @@ export default function PanneauAlertes({ alertes }) {
 
   return (
     <div className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-      <h2 className="text-sm font-semibold text-ink-900">Alertes prioritaires</h2>
+      <h2 className="text-base font-semibold text-ink-900">Alertes prioritaires</h2>
       <p className="mt-0.5 text-xs text-ink-500">Points nécessitant une attention immédiate.</p>
 
       {alertes.length === 0 ? (

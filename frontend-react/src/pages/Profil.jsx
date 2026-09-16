@@ -73,7 +73,7 @@ function SectionProfil() {
 
   return (
     <Card className="p-5">
-      <CardHeader titre="Mes informations" icone={UserCog} sousTitre="Visible par vos collaborateurs sur les pages de l’entreprise." />
+      <CardHeader titre="Mes informations" icone={UserCog} sousTitre="Visible par vos collaborateurs sur les pages de l’organisation." />
 
       {erreur ? (
         <div className="mt-3">

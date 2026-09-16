@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Check, Plus, Sparkles, TriangleAlert } from 'lucide-react';
 import clsx from 'clsx';
-import { Alerte, Badge, Loader } from '../ui';
+import { Alerte, Badge, Card, Loader } from '../ui';
 import { api, ApiError } from '../../lib/apiClient';
 import { formaterScore, valeurScoreAffichee } from '../../lib/scoreAffiche';
+import { TONS_NIVEAU_NON_CONFORMITE as TONS_NIVEAU } from '../../lib/tonsStatuts';
 
-const TONS_NIVEAU = { CRITIQUE: 'rouge', MAJEURE: 'ambre', MODEREE: 'bleu', MINEURE: 'neutre' };
 const RANG_NIVEAU = { CRITIQUE: 0, MAJEURE: 1, MODEREE: 2, MINEURE: 3 };
 
 /** Priorité d'action déduite de la gravité de l'écart qui la motive. */
@@ -139,10 +139,7 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
       </p>
 
       {domaines.map((domaine) => (
-        <section
-          key={domaine.code}
-          className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm"
-        >
+        <Card key={domaine.code} className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="truncate text-sm font-semibold text-ink-900" title={domaine.nom}>
@@ -225,7 +222,7 @@ export default function VoletPlanAction({ entrepriseId, auditId, criteres, score
               );
             })}
           </ul>
-        </section>
+        </Card>
       ))}
 
       <p className="flex items-start gap-2 text-xs text-ink-500">

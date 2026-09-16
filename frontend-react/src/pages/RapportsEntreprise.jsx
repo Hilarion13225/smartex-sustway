@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
-import { api } from '../lib/apiClient';
+import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
+import { TONS_STATUT_MISSION as TONS_STATUT_AUDIT } from '../lib/tonsStatuts';
 
-const TONS_STATUT_AUDIT = { BROUILLON: 'neutre', EN_COURS: 'bleu', TERMINE: 'vert', CLOTURE: 'neutre' };
 
 /**
  * Vue transverse : un rapport (module 12 — synthèse, détaillé, plan
@@ -22,13 +22,21 @@ export default function RapportsEntreprise() {
 
   const [audits, setAudits] = useState(null);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState(null);
 
   const charger = useCallback(() => {
     setChargement(true);
+    setErreur(null);
     api
       .get(`/api/v1/entreprises/${entrepriseId}/audits`)
+      // Un échec rendait `[]`, et la page annonçait alors « aucune mission » :
+      // rien ne distinguait une organisation sans mission d'une API tombée,
+      // et l'on pouvait croire un travail perdu.
+      .catch((err) => {
+        setErreur(err instanceof ApiError ? err.message : 'Chargement des missions impossible');
+        return null;
+      })
       .then(setAudits)
-      .catch(() => setAudits([]))
       .finally(() => setChargement(false));
   }, [entrepriseId]);
 
@@ -37,7 +45,7 @@ export default function RapportsEntreprise() {
   }, [charger]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -45,8 +53,14 @@ export default function RapportsEntreprise() {
       <PageTitre
         icone={FileText}
         titre="Rapports RSE"
-        description={`${entreprise.raisonSociale} — synthèse, plan d'actions et rapports détaillés, mission par mission.`}
+        description={`${entreprise.raisonSociale} — toutes missions confondues : synthèse, plan d'actions et rapports détaillés, mission par mission.`}
       />
+
+      {erreur ? (
+        <div className="mb-6">
+          <Alerte ton="rouge">{erreur}</Alerte>
+        </div>
+      ) : null}
 
       {chargement ? (
         <Loader message="Chargement des missions…" />
@@ -72,7 +86,7 @@ export default function RapportsEntreprise() {
             </Tableau>
           </Card>
         </Revele>
-      ) : (
+      ) : erreur ? null : (
         <Vide message="Aucune mission pour l’instant — créez-en une depuis « Missions d’audit »." />
       )}
     </>

@@ -88,7 +88,7 @@ export default function PlansAmelioration() {
   }, [lignes]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   const peutPiloter = peut('audit:modifier', entreprise.formuleCode);
@@ -106,7 +106,7 @@ export default function PlansAmelioration() {
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre

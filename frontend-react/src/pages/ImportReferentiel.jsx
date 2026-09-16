@@ -9,6 +9,7 @@ import PublierBrouillon from '../components/referentiel/import/PublierBrouillon'
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
+import { ApiError } from '../lib/apiClient';
 import {
   STATUT,
   consulterBrouillon,
@@ -72,11 +73,20 @@ export default function ImportReferentiel() {
 
 function Accueil({ surImportCree }) {
   const [imports, setImports] = useState(null);
+  const [erreurImports, setErreurImports] = useState(null);
 
   const rafraichir = useCallback(() => {
+    setErreurImports(null);
     listerImports()
-      .then(setImports)
-      .catch(() => setImports([]));
+      // Un échec rendait `[]`, et l'écran annonçait « aucun import » : un
+      // dépôt en cours d'analyse paraissait avoir disparu.
+      .catch((err) => {
+        setErreurImports(
+          err instanceof ApiError ? err.message : 'Chargement des imports impossible'
+        );
+        return [];
+      })
+      .then(setImports);
   }, []);
 
   useEffect(() => {
@@ -104,9 +114,15 @@ function Accueil({ surImportCree }) {
             Imports récents
           </h2>
 
+          {erreurImports ? (
+            <div className="mb-4">
+              <Alerte ton="rouge">{erreurImports}</Alerte>
+            </div>
+          ) : null}
+
           {imports === null ? (
             <Loader message="Chargement des imports…" />
-          ) : imports.length === 0 ? (
+          ) : erreurImports ? null : imports.length === 0 ? (
             <Vide message="Aucun import pour le moment." />
           ) : (
             <Tableau entetes={['Fichier', 'Déposé le', 'Par', 'Statut', '']}>

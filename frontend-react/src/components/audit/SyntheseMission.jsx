@@ -1,4 +1,6 @@
 import { GraphiqueAnneau } from '../charts';
+import { Card } from '../ui';
+
 import { formaterScore } from '../../lib/scoreAffiche';
 
 /** Palette de la jauge : rempli en émeraude, reste en gris neutre. */
@@ -51,6 +53,10 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
   const conformite =
     (score?.nombreCriteresEvalues ?? 0) > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null;
   const domaines = score?.domaines ?? [];
+  // Servi par l'API depuis toujours, jamais lu jusqu'ici. Une évaluation en
+  // revue n'est ni évaluée ni « non évaluée » : elle disparaissait des deux
+  // compteurs, et la mission paraissait plus avancée qu'elle ne l'était.
+  const enRevue = score?.nombreCriteresEnRevue ?? 0;
   const noteTotale = score?.noteTotale ?? null;
   const coefficientTotal = score?.coefficientTotal ?? null;
   const ton = risque ? TONS_RISQUE[risque] : null;
@@ -58,19 +64,24 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.8fr)_minmax(0,0.8fr)]">
       {/* --- Avancement --- */}
-      <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-ink-900">Progression globale</h2>
+      <Card className="p-5">
+        <h2 className="text-base font-semibold text-ink-900">Progression globale</h2>
         <div className="mt-4">
           <Jauge pourcentage={progression} legende="Complété" couleurs={COULEURS_JAUGE} />
         </div>
         <p className="mt-3 text-center text-xs text-ink-500">
           {criteresEvalues} / {criteresTotal} critères évalués
         </p>
-      </section>
+        {enRevue > 0 ? (
+          <p className="mt-1 text-center text-xs font-medium text-violet-700 dark:text-violet-300">
+            {enRevue} en attente de revue
+          </p>
+        ) : null}
+      </Card>
 
       {/* --- Score par domaine --- */}
-      <section className="min-w-0 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-ink-900">Par domaine</h2>
+      <Card className="min-w-0 p-5">
+        <h2 className="text-base font-semibold text-ink-900">Par domaine</h2>
         {domaines.length === 0 ? (
           <p className="mt-4 text-xs text-ink-500">
             Les scores par domaine apparaîtront dès les premières évaluations.
@@ -126,12 +137,12 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
             </table>
           </div>
         )}
-      </section>
+      </Card>
 
       {/* --- Conformité et risque --- */}
       <div className="space-y-4">
-        <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-ink-900">Conformité</h2>
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-ink-900">Conformité</h2>
           {conformite == null ? (
             <p className="mt-4 text-xs text-ink-500">Aucune évaluation.</p>
           ) : (
@@ -146,20 +157,20 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
               <p className="mt-2 text-center text-[11px] text-ink-500">Score moyen pondéré</p>
             </>
           )}
-        </section>
+        </Card>
 
-        <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-ink-900">Risque global</h2>
+        <Card className="p-5">
+          <h2 className="text-base font-semibold text-ink-900">Risque global</h2>
           {ton ? (
             <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-ink-800">
               <span className={`h-2.5 w-2.5 rounded-full ${ton.point}`} />
               {ton.libelle}
             </p>
           ) : (
-            <p className="mt-3 text-sm text-ink-400">Non évalué</p>
+            <p className="mt-3 text-sm text-ink-500">Non évalué</p>
           )}
           <p className="mt-1 text-xs text-ink-500">Déduit des non-conformités ouvertes.</p>
-        </section>
+        </Card>
       </div>
     </div>
   );

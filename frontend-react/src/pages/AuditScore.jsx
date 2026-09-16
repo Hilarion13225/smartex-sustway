@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
+import clsx from 'clsx';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Gauge, HelpCircle, TriangleAlert } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb';
+import { ArrowLeft, CheckCircle2, Gauge, HelpCircle, Hourglass, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
@@ -72,7 +74,7 @@ export default function AuditScore() {
   }, [rafraichir]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -88,6 +90,17 @@ export default function AuditScore() {
         <Vide message="Score introuvable ou non accessible." />
       ) : (
         <>
+          <Breadcrumb
+            elements={[
+              entreprises.length > 1 && entreprise
+                ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+                : null,
+              { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+              { libelle: audit.nom, vers: `/app/${entrepriseId}/audits/${auditId}` },
+              { libelle: 'Score' },
+            ]}
+          />
+
           <PageTitre
             icone={Gauge}
             titre={`Tableau de bord — ${audit.nom}`}
@@ -98,16 +111,30 @@ export default function AuditScore() {
           {score.nombreCriteresEvalues === 0 ? (
             <Alerte ton="ambre">
               Aucun critère n’a encore d’évaluation validée — le score global n’est pas encore représentatif de la
-              conformité réelle de l’entreprise.
+              conformité réelle de l’organisation.
             </Alerte>
           ) : null}
 
           <Revele>
-            <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* La vignette de revue n'apparaît qu'au-delà de zéro. Sur trois
+                colonnes elle se retrouvait seule sous la rangée pleine ; la
+                quatrième colonne n'est donc ouverte que lorsqu'il y a bien
+                quatre vignettes à placer. */}
+            <div
+              className={clsx(
+                'mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3',
+                // Palier `2xl` et non `xl` : à 1280px quatre cartes ne laissent
+                // que 114px à leur ligne de détail, qui se coupait alors — le
+                // défaut même que P2.1 puis P3-4 cherchaient à supprimer.
+                // La quatrième vignette descend donc sous la rangée jusqu'à
+                // 1536px : une carte isolée se lit, un texte tronqué non.
+                score.nombreCriteresEnRevue > 0 && '2xl:grid-cols-4'
+              )}
+            >
               <StatCard
                 libelle="Score global"
                 valeur={score.nombreCriteresEvalues > 0 ? `${formaterScore(score.scoreGlobal)} / 5` : '—'}
-                detail="Somme des notes / somme des coefficients"
+                detail="Notes / coefficients"
                 icone={Gauge}
                 ton={score.nombreCriteresEvalues > 0 ? tonScore(score.scoreGlobal) : 'neutre'}
               />
@@ -121,10 +148,25 @@ export default function AuditScore() {
               <StatCard
                 libelle="Non évalués"
                 valeur={score.nombreCriteresNonEvalues}
-                detail="Aucune évaluation lancée pour l’instant"
+                detail="Aucune évaluation lancée"
                 icone={HelpCircle}
                 ton="neutre"
               />
+              {/* Une évaluation en revue ne compte ni dans le score ni parmi
+                  les non évalués : sans cette vignette, elle n'apparaissait
+                  nulle part, et une mission pouvait sembler terminée alors
+                  qu'une décision restait à prendre. Le compteur vient de
+                  l'API — il n'est pas recalculé ici — et disparaît quand il
+                  n'y a rien à trancher, pour ne pas devenir du bruit. */}
+              {score.nombreCriteresEnRevue > 0 ? (
+                <StatCard
+                  libelle="En attente de revue"
+                  valeur={score.nombreCriteresEnRevue}
+                  detail="À valider avant le score"
+                  icone={Hourglass}
+                  ton="violet"
+                />
+              ) : null}
             </div>
           </Revele>
 

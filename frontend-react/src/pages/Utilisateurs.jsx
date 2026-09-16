@@ -10,8 +10,8 @@ import { PERMISSIONS_PAR_ROLE, ROLE_LIBELLE, possedePermission } from '../auth/p
 import { formaterDate } from '../lib/export';
 
 const PERMISSIONS_LIBELLE = {
-  'entreprise:creer': 'Créer une entreprise',
-  'entreprise:modifier': 'Modifier l’entreprise et ses sites',
+  'entreprise:creer': 'Créer une organisation',
+  'entreprise:modifier': 'Modifier l’organisation et ses sites',
   'audit:creer': 'Lancer une mission d’audit',
   'audit:modifier': 'Modifier une mission',
   'preuve:deposer': 'Déposer des documents et preuves',
@@ -120,11 +120,11 @@ export default function Utilisateurs() {
   }, [membres]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   if (accesInterdit) {
-    return <Vide message="Cette page n'est pas accessible au responsable de l'entreprise." />;
+    return <Vide message="Cette page n'est pas accessible au responsable de l'organisation." />;
   }
 
   const formule = abonnement?.formuleCode;
@@ -133,7 +133,7 @@ export default function Utilisateurs() {
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre
@@ -214,7 +214,7 @@ export default function Utilisateurs() {
 
           <Revele delai={80}>
             <Card className="mb-6 p-0">
-              <CardHeader titre="Accès à l’entreprise" icone={Users} sousTitre="Rattachements actifs" />
+              <CardHeader titre="Accès à l’organisation" icone={Users} sousTitre="Rattachements actifs" />
               {membres.length > 0 ? (
                 <Tableau
                   entetes={[
@@ -241,7 +241,7 @@ export default function Utilisateurs() {
                       <td className="td">
                         <Badge ton="bleu">{ROLE_LIBELLE[m.roleCode] ?? m.roleNom}</Badge>
                       </td>
-                      <td className="td text-sm text-ink-600">{m.siteNom ?? 'Toute l’entreprise'}</td>
+                      <td className="td text-sm text-ink-600">{m.siteNom ?? 'Toute l’organisation'}</td>
                       <td className="td">
                         <Badge ton={m.deuxfaActive ? 'vert' : 'neutre'}>{m.deuxfaActive ? 'Active' : 'Inactive'}</Badge>
                       </td>
@@ -283,7 +283,7 @@ export default function Utilisateurs() {
                 </Tableau>
               ) : (
                 <div className="p-6">
-                  <Vide message="Aucun utilisateur rattaché à cette entreprise." />
+                  <Vide message="Aucun utilisateur rattaché à cette organisation." />
                 </div>
               )}
             </Card>
@@ -306,7 +306,7 @@ export default function Utilisateurs() {
                       <td className="td">
                         <Badge ton="bleu">{ROLE_LIBELLE[i.roleCode] ?? i.roleNom}</Badge>
                       </td>
-                      <td className="td text-sm text-ink-600">{i.siteNom ?? 'Toute l’entreprise'}</td>
+                      <td className="td text-sm text-ink-600">{i.siteNom ?? 'Toute l’organisation'}</td>
                       <td className="td text-sm text-ink-600">{formaterDate(i.createdAt)}</td>
                       <td className="td text-sm text-ink-600">{formaterDate(i.expireAt)}</td>
                       {peutGererMembres ? (
@@ -448,7 +448,7 @@ function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre
             value={formulaire.siteId}
             onChange={(e) => setFormulaire({ ...formulaire, siteId: e.target.value })}
           >
-            <option value="">Toute l’entreprise</option>
+            <option value="">Toute l’organisation</option>
             {sites
               .filter((s) => s.statut === 'ACTIF')
               .map((s) => (
