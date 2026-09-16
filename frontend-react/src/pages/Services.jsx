@@ -139,7 +139,7 @@ export default function Services() {
       <SectionOrganisations />
 
       {/* ------------------------------------------------ Comment ça marche */}
-      <section className="bande-brand border-b border-ink-200">
+      <section className="border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment ça marche.</h2>
@@ -163,7 +163,7 @@ export default function Services() {
       {/* ------------------------------------------------ Ce que vous y gagnez */}
       <section className="border-b border-ink-200 bg-surface">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Ce que vous y gagnez.</h2>
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Ce que vous y <span className="text-brand-600">gagnez</span>.</h2>
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {BENEFICES.map((benefice, index) => (
               <Revele key={benefice.titre} as="li" delai={index * 70} className="border-t border-ink-300 pt-4">
@@ -176,11 +176,11 @@ export default function Services() {
       </section>
 
       {/* --------------------------------------- Types d'organisations */}
-      <section className="bande-feuille border-b border-ink-200">
+      <section className="border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
-            <h2 className={classeTitreSection}>Pour toutes les organisations.</h2>
-            <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
+            <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Pour toutes les organisations.</h2>
+            <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
               Chacun évalue sa performance RSE et ESG avec le référentiel qui lui correspond.
             </p>
           </div>
@@ -209,8 +209,8 @@ export default function Services() {
       <section id="smartex" className="scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
-            <h2 className={classeTitreSection}>Une solution de {SMARTEX.editeur}.</h2>
-            <p className="mt-4 max-w-[52ch] text-lg leading-relaxed text-ink-600">
+            <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Une solution de {SMARTEX.editeur}.</h2>
+            <p className="mx-auto mt-4 max-w-[52ch] text-center text-lg leading-relaxed text-ink-600">
               {SMARTEX.editeur} fait du conseil, de l’audit et des outils numériques pour la performance durable.
               {' '}
               {SMARTEX.produit} met cette expertise dans une plateforme.

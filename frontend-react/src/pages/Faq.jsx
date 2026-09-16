@@ -71,10 +71,9 @@ export default function Faq() {
         description={`Méthodologie, formules, confidentialité : les réponses aux questions les plus posées à l’équipe ${SMARTEX.editeur}.`}
       />
 
-      {/* Fond teinte et questions posees dans des cadres blancs : sur une page
-          aussi longue, le contraste entre le fond et le bloc lu donne un point
+      {/* Questions posees dans des cadres blancs : sur une page aussi longue,
+          le contraste entre le fond de page et le bloc lu donne un point
           d'ancrage que la liste a filets seule ne donnait pas. */}
-      <div className="bande-feuille">
       <section className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
         {/* Sommaire collant sur grand écran. Sur téléphone il est omis : les
             trois thèmes se suivent de près, et un sommaire en tête ne ferait
@@ -116,7 +115,6 @@ export default function Faq() {
           ))}
         </div>
       </section>
-      </div>
 
       <AppelAction
         titre="Votre question n’est pas dans la liste ?"

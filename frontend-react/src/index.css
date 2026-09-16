@@ -89,10 +89,6 @@
     --brand-800: 90 16 12;
     --brand-900: 62 11 8;
     --feuille: 6 122 85;
-    /* Teinte tres claire de la feuille, pour les bandes de section. Le ton
-       plein ne sert qu'aux traits et aux icones ; il faut un fond pose sous
-       du texte d'encre, d'ou ce cran ajoute plutot qu'un opacite arbitraire. */
-    --feuille-50: 236 246 242;
   }
   /* Palette sombre de la vitrine. Elle ne repond plus a `.dark` mais a
      `.dark-force` : la vitrine ne suit plus la preference de theme du
@@ -428,18 +424,6 @@
   font-family: Satoshi, Inter, system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-/* --- Rythme colore des pages vitrine ---------------------------------- */
-/* Trois fonds au lieu de deux. Le gris et le blanc alternaient sans jamais
-   donner de point d'accroche ; les deux teintes ci-dessous en posent un, sans
-   jamais assombrir la page : ce sont des cran 50, poses sous du texte d'encre
-   dont le contraste reste mesure au-dessus du seuil AA. */
-.vitrine .bande-brand {
-  background-color: rgb(var(--brand-50));
-}
-.vitrine .bande-feuille {
-  background-color: rgb(var(--feuille-50));
 }
 
 /* --- Carte posee -------------------------------------------------------- */

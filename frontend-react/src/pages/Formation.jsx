@@ -98,11 +98,11 @@ export default function Formation() {
       </section>
 
       {/* -------------------------------------------------- Nos thématiques */}
-      <section id="thematiques" className="bande-brand scroll-mt-20 border-b border-ink-200">
+      <section id="thematiques" className="scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
-            <h2 className={classeTitreSection}>Des contenus adaptés à votre activité.</h2>
-            <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
+            <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Des contenus adaptés à votre activité.</h2>
+            <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
               Les enjeux RSE d’une banque ne sont pas ceux d’une mine. Chaque thématique part des réalités de votre
               secteur.
             </p>

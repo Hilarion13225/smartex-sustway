@@ -136,9 +136,9 @@ export default function Methodologie() {
       </section>
 
       {/* ------------------------------------------- Démarche en 3 étapes */}
-      <section id="demarche" className="bande-brand scroll-mt-20 border-b border-ink-200">
+      <section id="demarche" className="scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Une démarche en trois étapes.</h2>
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Une démarche en <span className="text-brand-600">trois étapes</span>.</h2>
 
           {/* Frise verticale : l'ordre est l'information principale, un rail
               continu qui relie des numéros le dit mieux qu'une rangée de
@@ -175,8 +175,8 @@ export default function Methodologie() {
       {/* --------------------------------------------- Amélioration continue */}
       <section className="border-b border-ink-200 bg-surface">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>L’amélioration continue au cœur de l’approche.</h2>
-          <p className="mt-4 max-w-[60ch] text-lg leading-relaxed text-ink-600">
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>L’<span className="text-brand-600">amélioration continue</span> au cœur de l’approche.</h2>
+          <p className="mx-auto mt-4 max-w-[60ch] text-center text-lg leading-relaxed text-ink-600">
             La roue de Deming (PDCA) aide les organisations à sortir de la stagnation et à progresser durablement. Pointez
             une étape pour la situer sur la roue.
           </p>
@@ -186,10 +186,10 @@ export default function Methodologie() {
       </section>
 
       {/* ------------------------------------------ Intelligence artificielle */}
-      <section className="bande-feuille border-b border-ink-200">
+      <section className="border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>De vos preuves au plan d’action.</h2>
-          <p className="mt-4 max-w-[60ch] text-lg leading-relaxed text-ink-600">
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>De vos preuves au <span className="text-brand-600">plan d’action</span>.</h2>
+          <p className="mx-auto mt-4 max-w-[60ch] text-center text-lg leading-relaxed text-ink-600">
             Chaque évaluation suit le même chemin. Vous déposez des documents, l’IA les confronte au référentiel, et vous
             ressortez avec des priorités, pas avec une opinion.
           </p>
@@ -204,7 +204,7 @@ export default function Methodologie() {
       {/* -------------------------------------------------- Nos principes */}
       <section className="border-b border-ink-200 bg-surface">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Six principes fondent la démarche.</h2>
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}><span className="text-brand-600">Six principes</span> fondent la démarche.</h2>
 
           {/* Un principe sans description n'affiche que son intitulé : les
               deux derniers n'ont pas encore de définition propre côté métier

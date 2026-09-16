@@ -86,10 +86,11 @@ export default function ChaineEtapes({ etapes }) {
           className="absolute top-7 hidden border-t-2 border-dashed border-ink-300 md:block"
           style={{ left: `${marge}%`, right: `${marge}%` }}
         />
-        {/* Portion franchie du rail, en feuille. */}
+        {/* Portion franchie du rail. Un seul accent sur cette vitrine : le
+            bordeaux, decline en deux intensites plutot qu'en deux teintes. */}
         <span
           aria-hidden
-          className="absolute top-7 hidden border-t-2 border-feuille transition-all duration-500 md:block"
+          className="absolute top-7 hidden border-t-2 border-brand-600 transition-all duration-500 md:block"
           style={{ left: `${marge}%`, width: `${progression}%` }}
         />
 
@@ -109,7 +110,7 @@ export default function ChaineEtapes({ etapes }) {
                     className={clsx(
                       'relative z-10 mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-[4px] border-2 font-display text-lg font-bold tabular-nums transition-all duration-500',
                       courante && 'scale-105 border-brand-600 bg-brand-600 text-white shadow-soft',
-                      franchie && !courante && 'border-feuille bg-feuille text-white',
+                      franchie && !courante && 'border-brand-600 bg-surface text-brand-700',
                       !courante && !franchie && 'border-ink-300 bg-surface text-ink-500'
                     )}
                   >

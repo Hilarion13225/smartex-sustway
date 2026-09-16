@@ -3,8 +3,7 @@ import { Check, Minus } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
 import Revele from '../components/Revele';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
-import ListeQuestions from '../components/vitrine/ListeQuestions';
-import { COMPARATIF, QUESTIONS } from '../lib/formules';
+import { COMPARATIF } from '../lib/formules';
 
 /*
  * Colonnes du comparatif. Les valeurs de COMPARATIF sont écrites pour ces trois
@@ -105,10 +104,10 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}
-      <section className="bande-brand border-t border-ink-200">
+      <section className="border-t border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment se passe l’achat.</h2>
-          <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Comment se passe <span className="text-brand-600">l’achat</span>.</h2>
+          <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
             Tout se fait en ligne, en quelques minutes. Pas de rendez-vous nécessaire.
           </p>
 
@@ -127,7 +126,7 @@ export default function Formules() {
       {/* ------------------------------------------- Ce que tout le monde a */}
       <section className="border-y border-ink-200 bg-surface">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Toutes nos formules incluent.</h2>
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Toutes nos formules <span className="text-brand-600">incluent</span>.</h2>
 
           {/* Rien d'inventé ici : chaque point reprend une ligne du comparatif
               ou une réponse déjà donnée dans les questions fréquentes. */}
@@ -143,10 +142,10 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------------ Comparatif */}
-      <section className="bande-feuille border-b border-ink-200">
+      <section className="border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`max-w-2xl ${classeTitreSection}`}>Les formules, ligne par ligne.</h2>
-          <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Les formules, <span className="text-brand-600">ligne par ligne</span>.</h2>
+          <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
             Chaque formule contient la précédente. Le tableau montre ce que chacune ajoute.
           </p>
 
@@ -199,16 +198,16 @@ export default function Formules() {
         </div>
       </section>
 
-      {/* ------------------------------------------------ Questions fréquentes */}
+      {/* Les questions elles-memes vivaient ici ET sur la page FAQ : le meme
+          tableau `QUESTIONS` de `lib/formules`, rendu deux fois mot pour mot.
+          Seul le renvoi subsiste, pour ne pas couper le chemin vers la FAQ
+          depuis la page ou l'acheteur se decide. */}
       <section className="bg-surface">
-        <div className="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-          <div>
-            <h2 className={classeTitreSection}>Vos questions avant de choisir.</h2>
-            <Link to="/faq" viewTransition className="lien-trait mt-6 text-base">
-              Voir toutes les questions
-            </Link>
-          </div>
-          <ListeQuestions questions={QUESTIONS} className="min-w-0" />
+        <div className="mx-auto max-w-[75rem] px-5 py-16 text-center sm:py-20">
+          <h2 className={`mx-auto max-w-3xl ${classeTitreSection}`}>Vos questions avant de choisir.</h2>
+          <Link to="/faq" viewTransition className="lien-trait mt-6 inline-block text-base">
+            Voir toutes les questions
+          </Link>
         </div>
       </section>
 
