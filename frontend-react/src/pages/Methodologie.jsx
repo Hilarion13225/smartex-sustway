@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Play } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
+import Revele from '../components/Revele';
 import ModaleVideo from '../components/ModaleVideo';
 import RoueDeming from '../components/vitrine/RoueDeming';
+import ChaineEtapes from '../components/vitrine/ChaineEtapes';
 import { FONDEMENTS, REFERENCES_METHODOLOGIQUES, SMARTEX } from '../config/smartex';
 import photoHero from '../assets/methodologie/banniere.jpg';
 
@@ -192,18 +194,10 @@ export default function Methodologie() {
             ressortez avec des priorités, pas avec une opinion.
           </p>
 
-          {/* Même motif que « Comment ça marche » sur la page Solution : un
-              filet épais par maillon, numéroté. L'enchaînement se lit de gauche
-              à droite sur grand écran, de haut en bas sur téléphone. */}
-          <ol className="mt-12 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-7">
-            {CHAINE.map((maillon, index) => (
-              <li key={maillon.libelle} className="border-t-2 border-ink-900 pt-4">
-                <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
-                <h3 className="mt-1 font-display text-lg font-bold leading-snug text-ink-900">{maillon.libelle}</h3>
-                <p className="mt-1.5 text-[15px] leading-snug text-ink-600">{maillon.detail}</p>
-              </li>
-            ))}
-          </ol>
+          {/* L'enchaînement se lit de gauche à droite sur grand écran, de haut
+              en bas sur téléphone. L'accent se déplace d'un maillon à l'autre ;
+              aucun libellé n'est jamais masqué. */}
+          <ChaineEtapes etapes={CHAINE} />
         </div>
       </section>
 
@@ -217,13 +211,13 @@ export default function Methodologie() {
               (voir config/smartex.js), et répéter celle du voisin donnerait
               une section qui se contredit elle-même. */}
           <ul className="mt-12 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-            {FONDEMENTS.map((principe) => (
-              <li key={principe.titre} className="border-t border-ink-300 pt-4">
+            {FONDEMENTS.map((principe, index) => (
+              <Revele key={principe.titre} as="li" delai={index * 70} className="border-t border-ink-300 pt-4">
                 <h3 className="font-display text-xl font-bold leading-snug text-ink-900">{principe.titre}</h3>
                 {principe.texte ? (
                   <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{principe.texte}</p>
                 ) : null}
-              </li>
+              </Revele>
             ))}
           </ul>
         </div>

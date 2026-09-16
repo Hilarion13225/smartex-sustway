@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import AppelAction from '../components/AppelAction';
+import Revele from '../components/Revele';
 import { SMARTEX } from '../config/smartex';
 import photoBanniere from '../assets/formation/banniere.jpg';
 import photoActuGenerale from '../assets/formation/actu-generale.jpg';
@@ -111,8 +112,8 @@ export default function Formation() {
               image claire (le chantier, l'hôtel), le contraste tombait sous le
               seuil de lecture malgré le dégradé. */}
           <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-5">
-            {SECTEURS.map((secteur) => (
-              <li key={secteur.nom}>
+            {SECTEURS.map((secteur, index) => (
+              <Revele key={secteur.nom} as="li" delai={index * 45}>
                 <img
                   src={secteur.photo}
                   alt=""
@@ -121,7 +122,7 @@ export default function Formation() {
                   className="aspect-[4/3] w-full rounded-[8px] object-cover"
                 />
                 <h3 className="mt-3 font-display text-base font-bold leading-snug text-ink-900 sm:text-lg">{secteur.nom}</h3>
-              </li>
+              </Revele>
             ))}
           </ul>
         </div>

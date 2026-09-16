@@ -491,15 +491,13 @@
   display: none;
 }
 
-/* --- Un seul mouvement ------------------------------------------------- */
-/* Plus d'apparition au défilement section par section : le seul mouvement
-   de la vitrine est celui du spécimen, au chargement. `Revele` reste intact
-   pour l'espace connecté, qui l'utilise sur vingt-six pages. */
-.vitrine .revele {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
+/* --- Mouvement de la vitrine ------------------------------------------ */
+/* L'apparition au defilement avait ete coupee ici : le seul mouvement de la
+   vitrine etait celui du specimen, au chargement. Elle est retablie, mais
+   tenue courte — 45 a 90 ms de decalage entre deux elements d'une meme
+   grille — et seulement sur les grilles repetees, jamais sur le texte courant
+   ni sur ce qui est deja visible au chargement. `prefers-reduced-motion`
+   continue de la neutraliser entierement (voir la regle de `.revele`). */
 
 /* --- Hiérarchie des rayons --------------------------------------------- */
 /* 4 px pour les contrôles, 8 pour les petits blocs, 12 pour les panneaux :

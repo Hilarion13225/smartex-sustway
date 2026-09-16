@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Check, Minus } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
+import Revele from '../components/Revele';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
 import ListeQuestions from '../components/vitrine/ListeQuestions';
 import { COMPARATIF, QUESTIONS } from '../lib/formules';
@@ -113,11 +114,11 @@ export default function Formules() {
 
           <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
             {ETAPES_ACHAT.map((etape, index) => (
-              <li key={etape.titre} className="border-t-2 border-ink-900 pt-4">
+              <Revele key={etape.titre} as="li" delai={index * 70} className="border-t-2 border-ink-900 pt-4">
                 <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
                 <h3 className="mt-1 font-display text-xl font-bold leading-snug text-ink-900">{etape.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{etape.texte}</p>
-              </li>
+              </Revele>
             ))}
           </ol>
         </div>
