@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Play } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
+import Revele from '../components/Revele';
 import ModaleVideo from '../components/ModaleVideo';
 import PreuveVersVerdict from '../components/vitrine/PreuveVersVerdict';
 import SectionOrganisations from '../components/vitrine/SectionOrganisations';
@@ -129,7 +130,7 @@ export default function Services() {
         <ul className="mx-auto flex max-w-[75rem] flex-col gap-3 px-5 py-6 text-[15px] text-ink-600 sm:flex-row sm:flex-wrap sm:gap-x-10">
           {FAITS.map((fait) => (
             <li key={fait.libelle}>
-              <b className="font-display text-xl font-bold tabular-nums text-ink-900">{fait.valeur}</b> {fait.libelle}
+              <b className="chiffre-cle mr-1.5 inline-block align-baseline">{fait.valeur}</b> {fait.libelle}
             </li>
           ))}
         </ul>
@@ -138,7 +139,7 @@ export default function Services() {
       <SectionOrganisations />
 
       {/* ------------------------------------------------ Comment ça marche */}
-      <section className="border-b border-ink-200">
+      <section className="bande-brand border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment ça marche.</h2>
@@ -149,11 +150,11 @@ export default function Services() {
 
           <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
             {ETAPES.map((etape, index) => (
-              <li key={etape.titre} className="border-t-2 border-ink-900 pt-4">
+              <Revele key={etape.titre} as="li" delai={index * 70} className="border-t-2 border-ink-900 pt-4">
                 <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
                 <h3 className="mt-1 font-display text-xl font-bold leading-snug text-ink-900">{etape.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{etape.texte}</p>
-              </li>
+              </Revele>
             ))}
           </ol>
         </div>
@@ -164,18 +165,18 @@ export default function Services() {
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Ce que vous y gagnez.</h2>
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-            {BENEFICES.map((benefice) => (
-              <li key={benefice.titre} className="border-t border-ink-300 pt-4">
+            {BENEFICES.map((benefice, index) => (
+              <Revele key={benefice.titre} as="li" delai={index * 70} className="border-t border-ink-300 pt-4">
                 <h3 className="font-display text-xl font-bold leading-snug text-ink-900">{benefice.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{benefice.texte}</p>
-              </li>
+              </Revele>
             ))}
           </ul>
         </div>
       </section>
 
       {/* --------------------------------------- Types d'organisations */}
-      <section className="border-b border-ink-200">
+      <section className="bande-feuille border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <h2 className={classeTitreSection}>Pour toutes les organisations.</h2>
@@ -185,8 +186,8 @@ export default function Services() {
           </div>
 
           <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-6">
-            {PUBLICS.map((publicCible) => (
-              <li key={publicCible.titre}>
+            {PUBLICS.map((publicCible, index) => (
+              <Revele key={publicCible.titre} as="li" delai={index * 80}>
                 <img
                   src={publicCible.photo}
                   alt=""
@@ -196,7 +197,7 @@ export default function Services() {
                 />
                 <h3 className="mt-3 font-display text-base font-bold leading-snug text-ink-900 sm:mt-4 sm:text-xl">{publicCible.titre}</h3>
                 <p className="mt-1 text-[15px] leading-relaxed text-ink-600">{publicCible.texte}</p>
-              </li>
+              </Revele>
             ))}
           </ul>
         </div>

@@ -89,8 +89,16 @@
     --brand-800: 90 16 12;
     --brand-900: 62 11 8;
     --feuille: 6 122 85;
+    /* Teinte tres claire de la feuille, pour les bandes de section. Le ton
+       plein ne sert qu'aux traits et aux icones ; il faut un fond pose sous
+       du texte d'encre, d'ou ce cran ajoute plutot qu'un opacite arbitraire. */
+    --feuille-50: 236 246 242;
   }
-  .dark .vitrine {
+  /* Palette sombre de la vitrine. Elle ne repond plus a `.dark` mais a
+     `.dark-force` : la vitrine ne suit plus la preference de theme du
+     visiteur, elle reste claire. Seule une page qui impose le sombre --
+     la page d'entree et son decor tech -- la reactive. */
+  .dark-force .vitrine {
     --ink-50: 12 21 48;
     --ink-100: 21 32 66;
     --ink-200: 36 49 86;
@@ -422,31 +430,74 @@
   letter-spacing: -0.02em;
 }
 
+/* --- Rythme colore des pages vitrine ---------------------------------- */
+/* Trois fonds au lieu de deux. Le gris et le blanc alternaient sans jamais
+   donner de point d'accroche ; les deux teintes ci-dessous en posent un, sans
+   jamais assombrir la page : ce sont des cran 50, poses sous du texte d'encre
+   dont le contraste reste mesure au-dessus du seuil AA. */
+.vitrine .bande-brand {
+  background-color: rgb(var(--brand-50));
+}
+.vitrine .bande-feuille {
+  background-color: rgb(var(--feuille-50));
+}
+
+/* --- Carte posee -------------------------------------------------------- */
+/* Elevation statique, sans soulevement au survol : sur cette vitrine rien n'a
+   l'air cliquable s'il ne l'est pas, et une carte tarifaire ne l'est pas — seul
+   son bouton l'est. L'ombre donne la profondeur sans promettre un clic. */
+.vitrine .carte-posee {
+  box-shadow: 0 1px 2px rgb(var(--marine) / 0.04), 0 12px 28px -16px rgb(var(--marine) / 0.16);
+}
+
+/* --- Chiffre-cle ------------------------------------------------------ */
+/* Les reperes chiffres etaient ecrits a la taille du texte courant : ils se
+   lisaient, mais ne se voyaient pas. En bordeaux et deux crans plus haut, ils
+   deviennent le premier point d'accroche de la section. */
+.vitrine .chiffre-cle {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--brand-600));
+}
 /* --- Libellé de section : casse de phrase, sans filet ----------------- */
 /* Remplace le sur-titre en petites capitales espacées, le tic de page
    générée le plus répandu. Le libellé ne subsiste que là où il informe. */
 .vitrine .sur-titre {
-  gap: 0;
+  gap: 0.75rem;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0;
   text-transform: none;
-  color: rgb(var(--ink-500));
+  color: rgb(var(--brand-600));
+}
+/* Le filet rend l'intitule reperable d'un coup d'oeil sans le crier : il
+   remplace les petites capitales espacees, ecartees plus tot. Pose en
+   pseudo-element, il s'applique aux six pages sans toucher a leur balisage. */
+.vitrine .sur-titre::before {
+  content: '';
+  display: inline-block;
+  width: 1.75rem;
+  height: 2px;
+  flex: none;
+  border-radius: 999px;
+  background-color: currentColor;
 }
 .vitrine .filet {
   display: none;
 }
 
-/* --- Un seul mouvement ------------------------------------------------- */
-/* Plus d'apparition au défilement section par section : le seul mouvement
-   de la vitrine est celui du spécimen, au chargement. `Revele` reste intact
-   pour l'espace connecté, qui l'utilise sur vingt-six pages. */
-.vitrine .revele {
-  opacity: 1;
-  transform: none;
-  transition: none;
-}
+/* --- Mouvement de la vitrine ------------------------------------------ */
+/* L'apparition au defilement avait ete coupee ici : le seul mouvement de la
+   vitrine etait celui du specimen, au chargement. Elle est retablie, mais
+   tenue courte — 45 a 90 ms de decalage entre deux elements d'une meme
+   grille — et seulement sur les grilles repetees, jamais sur le texte courant
+   ni sur ce qui est deja visible au chargement. `prefers-reduced-motion`
+   continue de la neutraliser entierement (voir la regle de `.revele`). */
 
 /* --- Hiérarchie des rayons --------------------------------------------- */
 /* 4 px pour les contrôles, 8 pour les petits blocs, 12 pour les panneaux :
@@ -569,17 +620,18 @@ input.border-none:focus-visible {
   outline: 2px solid rgb(var(--brand-600));
   outline-offset: 2px;
 }
+
 /* En sombre, le bordeaux 600 tombe sous 3:1 sur le fond marine : le contour
    de focus et la bordure d'erreur prennent le cran plus clair. */
-.dark .vitrine a:focus-visible,
-.dark .vitrine button:focus-visible,
-.dark .vitrine input:focus-visible,
-.dark .vitrine select:focus-visible,
-.dark .vitrine textarea:focus-visible,
-.dark .vitrine iframe:focus-visible {
+.dark-force .vitrine a:focus-visible,
+.dark-force .vitrine button:focus-visible,
+.dark-force .vitrine input:focus-visible,
+.dark-force .vitrine select:focus-visible,
+.dark-force .vitrine textarea:focus-visible,
+.dark-force .vitrine iframe:focus-visible {
   outline-color: rgb(var(--brand-400));
 }
-.dark .vitrine .input[aria-invalid='true'] {
+.dark-force .vitrine .input[aria-invalid='true'] {
   border-color: rgb(var(--brand-400));
 }
 

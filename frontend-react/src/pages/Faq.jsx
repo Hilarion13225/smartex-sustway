@@ -1,4 +1,5 @@
 import EnTeteVitrine from '../components/EnTeteVitrine';
+import Revele from '../components/Revele';
 import AppelAction from '../components/AppelAction';
 import ListeQuestions from '../components/vitrine/ListeQuestions';
 import { QUESTIONS as QUESTIONS_FORMULES } from '../lib/formules';
@@ -70,6 +71,10 @@ export default function Faq() {
         description={`Méthodologie, formules, confidentialité : les réponses aux questions les plus posées à l’équipe ${SMARTEX.editeur}.`}
       />
 
+      {/* Fond teinte et questions posees dans des cadres blancs : sur une page
+          aussi longue, le contraste entre le fond et le bloc lu donne un point
+          d'ancrage que la liste a filets seule ne donnait pas. */}
+      <div className="bande-feuille">
       <section className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
         {/* Sommaire collant sur grand écran. Sur téléphone il est omis : les
             trois thèmes se suivent de près, et un sommaire en tête ne ferait
@@ -89,9 +94,10 @@ export default function Faq() {
           </ul>
         </nav>
 
-        <div className="min-w-0 max-w-3xl space-y-14 sm:space-y-16">
+        <div className="min-w-0 max-w-3xl space-y-8">
           {THEMES.map((theme, indexTheme) => (
-            <section key={theme.ancre} id={theme.ancre} aria-labelledby={`titre-${theme.ancre}`} className="scroll-mt-28">
+            <Revele key={theme.ancre} delai={indexTheme * 90}>
+            <section id={theme.ancre} aria-labelledby={`titre-${theme.ancre}`} className="carte-posee scroll-mt-28 rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8">
               <h2
                 id={`titre-${theme.ancre}`}
                 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]"
@@ -106,9 +112,11 @@ export default function Faq() {
                 className="mt-6"
               />
             </section>
+            </Revele>
           ))}
         </div>
       </section>
+      </div>
 
       <AppelAction
         titre="Votre question n’est pas dans la liste ?"

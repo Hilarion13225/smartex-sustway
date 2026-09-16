@@ -175,7 +175,7 @@ export default function Contact() {
 
   const messageErreur = (nom) =>
     erreurs[nom] ? (
-      <p id={`contact-${nom}-erreur`} className="mt-1.5 text-sm font-medium text-brand-700 dark:text-brand-400">
+      <p id={`contact-${nom}-erreur`} className="mt-1.5 text-sm font-medium text-brand-700">
         {erreurs[nom]}
       </p>
     ) : null;
@@ -249,7 +249,7 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
-      <section id="formulaire" className="scroll-mt-20 border-b border-ink-200">
+      <section id="formulaire" className="bande-brand scroll-mt-20 border-b border-ink-200">
         <div className="mx-auto grid max-w-[75rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">
@@ -393,13 +393,13 @@ export default function Contact() {
               Écrivez-nous
             </h2>
             <p className="mt-2 text-[15px] text-ink-600">
-              Les champs marqués d’un <span className="text-brand-600 dark:text-brand-400">*</span> sont obligatoires.
+              Les champs marqués d’un <span className="text-brand-600">*</span> sont obligatoires.
             </p>
 
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="contact-nom">
-                  Nom complet <span className="text-brand-600 dark:text-brand-400">*</span>
+                  Nom complet <span className="text-brand-600">*</span>
                 </label>
                 <input
                   id="contact-nom"
@@ -416,7 +416,7 @@ export default function Contact() {
 
               <div>
                 <label className="label" htmlFor="contact-email">
-                  Adresse e-mail <span className="text-brand-600 dark:text-brand-400">*</span>
+                  Adresse e-mail <span className="text-brand-600">*</span>
                 </label>
                 <input
                   id="contact-email"
@@ -435,7 +435,7 @@ export default function Contact() {
 
               <div>
                 <label className="label" htmlFor="contact-organisation">
-                  Organisation <span className="text-brand-600 dark:text-brand-400">*</span>
+                  Organisation <span className="text-brand-600">*</span>
                 </label>
                 <input
                   id="contact-organisation"
@@ -479,7 +479,7 @@ export default function Contact() {
 
               <div className="sm:col-span-2">
                 <label className="label" htmlFor="contact-sujet">
-                  Sujet <span className="text-brand-600 dark:text-brand-400">*</span>
+                  Sujet <span className="text-brand-600">*</span>
                 </label>
                 <select
                   id="contact-sujet"
@@ -501,7 +501,7 @@ export default function Contact() {
 
               <div className="sm:col-span-2">
                 <label className="label" htmlFor="contact-message">
-                  Votre message <span className="text-brand-600 dark:text-brand-400">*</span>
+                  Votre message <span className="text-brand-600">*</span>
                 </label>
                 <textarea
                   id="contact-message"

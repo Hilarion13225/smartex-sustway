@@ -3,11 +3,11 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
-import BasculeTheme from './BasculeTheme';
 import RechercheVitrine from './RechercheVitrine';
+import MenuDeroulant from './MenuDeroulant';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
-import { useTheme } from '../theme/ThemeContext';
+import { SMARTEX } from '../config/smartex';
 
 const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea';
 
@@ -18,8 +18,13 @@ const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disab
  * tardives.
  */
 const LIENS = [
-  { vers: '/services', libelle: 'Solution' },
-  { vers: '/methodologie', libelle: 'Méthodologie' },
+  {
+    libelle: `La solution ${SMARTEX.produit}`,
+    sousLiens: [
+      { vers: '/services', libelle: 'La solution' },
+      { vers: '/methodologie', libelle: 'Méthodologie' },
+    ],
+  },
   { vers: '/formules', libelle: 'Formules' },
   { vers: '/formation', libelle: 'Se former' },
   { vers: '/contact', libelle: 'Contact' },
@@ -46,9 +51,6 @@ export default function EnTetePublic() {
   const [ouvert, setOuvert] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
-  // Sur une page qui impose le sombre, BasculeTheme ne rend rien : le filet
-  // qui le précède resterait seul.
-  const { sombreForce } = useTheme();
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
   const boutonMenu = useRef(null);
@@ -129,11 +131,22 @@ export default function EnTetePublic() {
         </Link>
 
         <nav className="hidden items-center whitespace-nowrap min-[1200px]:flex" aria-label="Navigation principale">
-          {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
-              {lien.libelle}
-            </NavLink>
-          ))}
+          {LIENS.map((lien) =>
+            lien.sousLiens ? (
+              <MenuDeroulant
+                key={lien.libelle}
+                libelle={lien.libelle}
+                liens={lien.sousLiens}
+                classeDeclencheur={classeLien({
+                  isActive: lien.sousLiens.some((sous) => pathname === sous.vers),
+                })}
+              />
+            ) : (
+              <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
+                {lien.libelle}
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className="ml-auto hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
@@ -145,14 +158,6 @@ export default function EnTetePublic() {
           >
             <Search className="h-[18px] w-[18px]" aria-hidden />
           </button>
-
-          {sombreForce ? null : (
-            <>
-              <span className="mx-1 h-6 w-px bg-ink-200" aria-hidden />
-              <BasculeTheme />
-              <span className="mx-1 h-6 w-px bg-ink-200" aria-hidden />
-            </>
-          )}
 
           <Link
             to="/connexion"
@@ -204,21 +209,47 @@ export default function EnTetePublic() {
           className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto overscroll-contain border-t border-ink-200 bg-ink-50 motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1200px]:hidden"
         >
         <nav className="mx-auto flex max-w-[75rem] flex-col px-5 pb-10 pt-2" aria-label="Navigation principale">
-          {LIENS.map((lien) => (
-            <NavLink
-              key={lien.vers}
-              to={lien.vers}
-              onClick={fermer}
-              className={({ isActive }) =>
-                clsx(
-                  'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                  isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
-                )
-              }
-            >
-              {lien.libelle}
-            </NavLink>
-          ))}
+          {/* Le panneau mobile occupe tout l'ecran : un second niveau repliable
+              y ajouterait un geste sans rien reveler de plus. Le groupe est donc
+              annonce par son intitule, ses pages listees en dessous. */}
+          {LIENS.map((lien) =>
+            lien.sousLiens ? (
+              <div key={lien.libelle}>
+                <p className="pt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
+                  {lien.libelle}
+                </p>
+                {lien.sousLiens.map((sous) => (
+                  <NavLink
+                    key={sous.vers}
+                    to={sous.vers}
+                    onClick={fermer}
+                    className={({ isActive }) =>
+                      clsx(
+                        'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
+                        isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
+                      )
+                    }
+                  >
+                    {sous.libelle}
+                  </NavLink>
+                ))}
+              </div>
+            ) : (
+              <NavLink
+                key={lien.vers}
+                to={lien.vers}
+                onClick={fermer}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
+                    isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
+                  )
+                }
+              >
+                {lien.libelle}
+              </NavLink>
+            )
+          )}
 
           <button
             type="button"
@@ -260,12 +291,6 @@ export default function EnTetePublic() {
             </Link>
           </div>
 
-          {sombreForce ? null : (
-            <div className="mt-6 flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-ink-600">Thème</span>
-              <BasculeTheme />
-            </div>
-          )}
         </nav>
         </div>
       ) : null}

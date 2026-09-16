@@ -2,8 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 
-/** Lien de navigation d'apparence normale, dont le clic affiche un sous-menu (clic extérieur pour fermer). */
-export default function MenuDeroulant({ libelle, liens }) {
+/**
+ * Lien de navigation d'apparence normale, dont le clic affiche un sous-menu
+ * (clic extérieur pour fermer).
+ *
+ * `classeDeclencheur` laisse l'appelant aligner le déclencheur sur ses voisins :
+ * l'en-tête public marque sa page active par un trait posé sur la bordure basse
+ * de l'en-tête, là où `lien-nav` souligne le mot. Par défaut, l'apparence
+ * d'origine.
+ */
+export default function MenuDeroulant({ libelle, liens, classeDeclencheur = 'lien-nav' }) {
   const [ouvert, setOuvert] = useState(false);
   const ref = useRef(null);
 
@@ -16,9 +24,30 @@ export default function MenuDeroulant({ libelle, liens }) {
     return () => document.removeEventListener('mousedown', surClicExterieur);
   }, [ouvert]);
 
+  // Échap referme le menu et rend le focus au déclencheur : sans cela, un
+  // utilisateur au clavier n'a aucun moyen d'en sortir sans le traverser.
+  useEffect(() => {
+    if (!ouvert) return undefined;
+    const surTouche = (evenement) => {
+      if (evenement.key === 'Escape') {
+        setOuvert(false);
+        const declencheur = ref.current && ref.current.querySelector('button');
+        if (declencheur) declencheur.focus();
+      }
+    };
+    document.addEventListener('keydown', surTouche);
+    return () => document.removeEventListener('keydown', surTouche);
+  }, [ouvert]);
+
   return (
     <div ref={ref} className="relative" onMouseEnter={() => setOuvert(true)} onMouseLeave={() => setOuvert(false)}>
-      <button type="button" onClick={() => setOuvert((valeur) => !valeur)} className="lien-nav" aria-expanded={ouvert}>
+      <button
+        type="button"
+        onClick={() => setOuvert((valeur) => !valeur)}
+        className={classeDeclencheur}
+        aria-expanded={ouvert}
+        aria-haspopup="true"
+      >
         {libelle}
       </button>
       <div

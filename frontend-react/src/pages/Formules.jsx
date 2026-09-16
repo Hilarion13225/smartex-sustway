@@ -1,16 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Check, Minus } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
+import Revele from '../components/Revele';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
 import ListeQuestions from '../components/vitrine/ListeQuestions';
 import { COMPARATIF, QUESTIONS } from '../lib/formules';
-import { SMARTEX } from '../config/smartex';
-
-const AVANTAGES = [
-  'Des fonctionnalités adaptées à vos besoins',
-  'Un accompagnement à chaque étape',
-  'Une licence annuelle, sans reconduction tacite',
-];
 
 /*
  * Colonnes du comparatif. Les valeurs de COMPARATIF sont écrites pour ces trois
@@ -99,20 +93,9 @@ export default function Formules() {
       {/* --------------------------------------------------------- Héros */}
       <section>
         <div className="mx-auto max-w-[75rem] px-5 pb-10 pt-10 sm:pt-14 lg:pb-12 lg:pt-20">
-          <p className="sur-titre">Nos formules</p>
-          <h1 className="titre-page mt-4 max-w-[20ch] text-ink-900">Choisissez la formule adaptée à vos besoins.</h1>
-          <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">
-            Quelle que soit la taille de votre structure, {SMARTEX.editeur} vous propose des formules simples. Vous
-            évoluez à votre rythme vers une performance durable.
-          </p>
-          <ul className="mt-8 flex flex-col gap-3 text-[15px] text-ink-700 sm:flex-row sm:flex-wrap sm:gap-x-8">
-            {AVANTAGES.map((avantage) => (
-              <li key={avantage} className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-feuille" strokeWidth={2.5} aria-hidden />
-                {avantage}
-              </li>
-            ))}
-          </ul>
+          {/* Seul titre de la page depuis le retrait du bloc d'introduction :
+              il porte donc le niveau 1, sans changer d'apparence. */}
+          <h1 className="sur-titre">Nos formules</h1>
         </div>
       </section>
 
@@ -122,7 +105,7 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}
-      <section className="border-t border-ink-200">
+      <section className="bande-brand border-t border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment se passe l’achat.</h2>
           <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
@@ -131,11 +114,11 @@ export default function Formules() {
 
           <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
             {ETAPES_ACHAT.map((etape, index) => (
-              <li key={etape.titre} className="border-t-2 border-ink-900 pt-4">
+              <Revele key={etape.titre} as="li" delai={index * 70} className="border-t-2 border-ink-900 pt-4">
                 <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
                 <h3 className="mt-1 font-display text-xl font-bold leading-snug text-ink-900">{etape.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{etape.texte}</p>
-              </li>
+              </Revele>
             ))}
           </ol>
         </div>
@@ -160,7 +143,7 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------------ Comparatif */}
-      <section className="border-b border-ink-200">
+      <section className="bande-feuille border-b border-ink-200">
         <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
           <h2 className={`max-w-2xl ${classeTitreSection}`}>Les formules, ligne par ligne.</h2>
           <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-ink-600">
