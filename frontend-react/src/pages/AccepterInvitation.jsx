@@ -69,7 +69,7 @@ export default function AccepterInvitation() {
           Invitation
         </>
       }
-      titre="Rejoindre une entreprise"
+      titre="Rejoindre une organisation"
       description="Créez votre compte pour accepter l’invitation reçue par email."
       atouts={ATOUTS}
     >

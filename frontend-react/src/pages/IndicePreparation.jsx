@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import Breadcrumb from '../components/Breadcrumb';
 import { ArrowLeft, Leaf, RefreshCw } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
+import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { explicationIndice, libelleIndice, libellePerimetre, porteUnScore } from '../lib/indiceBailleur';
 
 /** RG39/RG40/RG41/RG42/RG43 : indice de préparation bailleur (financements verts) — réservé à la formule Avancées. */
 export default function IndicePreparation() {
   const { entrepriseId, auditId } = useParams();
+  const { entreprises } = useApiAuth();
+  const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [audit, setAudit] = useState(null);
   const [bailleurs, setBailleurs] = useState([]);
@@ -68,6 +72,17 @@ export default function IndicePreparation() {
         <Vide message="Audit introuvable ou non accessible." />
       ) : (
         <>
+          <Breadcrumb
+            elements={[
+              entreprises.length > 1 && entreprise
+                ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+                : null,
+              { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+              { libelle: audit.nom, vers: `/app/${entrepriseId}/audits/${auditId}` },
+              { libelle: 'Indice de préparation' },
+            ]}
+          />
+
           <PageTitre
             icone={Leaf}
             titre="Indice de préparation — financements verts"

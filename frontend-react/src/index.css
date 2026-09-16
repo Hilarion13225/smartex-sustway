@@ -144,14 +144,20 @@
 }
 
 @layer components {
+  /* Le composant `Card` appliquait cette classe puis en annulait aussitot
+     le rayon et la teinte de bordure. La definition porte desormais ce que
+     l'application rend reellement ; le composant n'a plus rien a corriger. */
   .card {
-    @apply rounded-xl border border-ink-200 bg-surface shadow-sm;
+    @apply rounded-2xl border border-ink-100 bg-surface shadow-sm;
   }
   .card-header {
     @apply flex items-center justify-between gap-3 border-b border-ink-100 px-5 py-4;
   }
   .card-title {
-    @apply flex items-center gap-2 text-sm font-semibold text-ink-900;
+    /* `text-base` et non `text-sm` : un en-tete de carte est un titre de
+       section, et doit se distinguer du corps de texte qui suit. Voir la
+       hierarchie H1 20px / H2 16px / H3 14px posee en P4.3. */
+    @apply flex items-center gap-2 text-base font-semibold text-ink-900;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
@@ -161,6 +167,16 @@
   }
   .btn-secondary {
     @apply btn border border-ink-200 bg-surface text-ink-700 hover:bg-ink-100;
+    /* Seule variante bordee : ses 1 px de bordure en haut et en bas portaient
+       le bouton a 38 px la ou le primaire en fait 36. Les deux se cotoient
+       dans seize rangees d'actions, ou l'ecart se voyait.
+       On reprend ces 2 px sur le padding vertical plutot que d'epaissir le
+       primaire : la hauteur de reference reste 36 px, et `px-3.5` n'est pas
+       touche, donc la largeur ne bouge pas.
+       Declarations explicites apres le `@apply`, qui l'emporte donc sur le
+       `py-2` que celui-ci vient d'aplatir. */
+    padding-top: calc(0.5rem - 1px);
+    padding-bottom: calc(0.5rem - 1px);
   }
   .btn-ghost {
     @apply btn text-ink-600 hover:bg-ink-100;
@@ -500,6 +516,48 @@
 .vitrine button:hover {
   --tw-translate-y: 0;
   --tw-translate-x: 0;
+}
+
+/* --- Mise au point clavier de l'espace connecte ------------------------- */
+/*
+ * La vitrine avait son anneau de focus, l'espace connecte heritait de celui du
+ * navigateur : visible, mais etranger a la marque et insensible au theme.
+ *
+ * La regle qui suit ne porte que sur ce qui n'a pas deja son propre indicateur.
+ * Les champs de formulaire en sont volontairement absents : `.input`,
+ * `.champ-auth`, `.champ-sidebar` et les quelques champs stylés sur place
+ * remplacent l'outline par un anneau `ring` au focus, et une outline s'y
+ * ajouterait en double.
+ *
+ * Seule exception, `input.border-none` : les champs de recherche sans bordure
+ * (bibliotheque documentaire, journal, perimetre applicable) neutralisent
+ * l'outline sans rien mettre a la place — ils etaient donc les seuls elements
+ * interactifs de l'application invisibles au clavier.
+ *
+ * L'outline, plutot qu'une ombre, parce qu'elle ne participe pas au flux :
+ * aucun element ne bouge quand le focus arrive.
+ *
+ * Les regles `.vitrine` ci-dessous sont plus specifiques et viennent apres :
+ * la vitrine garde exactement son comportement actuel.
+ */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role='button']:focus-visible,
+[tabindex]:not([tabindex='-1']):focus-visible,
+input.border-none:focus-visible {
+  outline: 2px solid rgb(var(--brand-600));
+  outline-offset: 2px;
+}
+/* En sombre, le bordeaux 600 perd son contraste sur le fond encre : meme
+   correction que celle deja appliquee a la vitrine. */
+.dark a:focus-visible,
+.dark button:focus-visible,
+.dark summary:focus-visible,
+.dark [role='button']:focus-visible,
+.dark [tabindex]:not([tabindex='-1']):focus-visible,
+.dark input.border-none:focus-visible {
+  outline-color: rgb(var(--brand-400));
 }
 
 /* --- Mise au point clavier visible ------------------------------------- */

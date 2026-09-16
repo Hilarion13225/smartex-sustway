@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Leaf } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
-import { api } from '../lib/apiClient';
+import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
 import { explicationIndice, libelleIndice, libellePerimetre } from '../lib/indiceBailleur';
@@ -22,9 +22,11 @@ export default function FinancementsVerts() {
 
   const [lignes, setLignes] = useState(null);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState(null);
 
   const charger = useCallback(async () => {
     setChargement(true);
+    setErreur(null);
     try {
       const audits = await api.get(`/api/v1/entreprises/${entrepriseId}/audits`);
       const avecIndices = await Promise.all(
@@ -37,8 +39,12 @@ export default function FinancementsVerts() {
         })
       );
       setLignes(avecIndices);
-    } catch {
-      setLignes([]);
+    } catch (err) {
+      // Le `catch` muet remplaçait l'échec par une liste vide, et l'écran
+      // invitait à créer une mission qui existait peut-être déjà. Sur un écran
+      // de financement, l'affirmation porte à conséquence.
+      setErreur(err instanceof ApiError ? err.message : 'Chargement des missions impossible');
+      setLignes(null);
     } finally {
       setChargement(false);
     }
@@ -49,7 +55,7 @@ export default function FinancementsVerts() {
   }, [charger]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -64,6 +70,12 @@ export default function FinancementsVerts() {
         L’indice de préparation est une mesure d’alignement aux exigences du bailleur, et non une garantie
         d’éligibilité au financement. La décision finale relève de la seule compétence du bailleur.
       </Alerte>
+
+      {erreur ? (
+        <div className="mt-6">
+          <Alerte ton="rouge">{erreur}</Alerte>
+        </div>
+      ) : null}
 
       {chargement ? (
         <Loader message="Chargement des missions…" />
@@ -107,7 +119,7 @@ export default function FinancementsVerts() {
             </Tableau>
           </Card>
         </Revele>
-      ) : (
+      ) : erreur ? null : (
         <Vide message="Aucune mission pour l’instant — créez-en une depuis « Missions d’audit »." />
       )}
     </>

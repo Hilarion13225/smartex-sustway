@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react';
+import { Card } from '../ui';
 
 /**
  * Chaîne d'exploitation d'un référentiel, du cadre normatif à la
@@ -22,8 +23,8 @@ const MAILLONS = [
 
 export default function StructureReferentiel() {
   return (
-    <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-      <h2 className="text-sm font-semibold text-ink-900">Comment un référentiel est exploité</h2>
+    <Card className="p-5">
+      <h2 className="text-base font-semibold text-ink-900">Comment un référentiel est exploité</h2>
       <p className="mt-0.5 text-xs text-ink-500">
         Chaque maillon alimente le suivant : un critère devient une question posée en mission, dont
         les preuves nourrissent l’analyse, puis le score et le plan d’action.
@@ -46,6 +47,6 @@ export default function StructureReferentiel() {
         Les sous-domaines et les exigences détaillées ne sont pas encore modélisés : un critère porte
         aujourd’hui directement sa question et ses preuves attendues.
       </p>
-    </section>
+    </Card>
   );
 }

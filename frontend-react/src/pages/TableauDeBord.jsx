@@ -13,7 +13,7 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Loader } from '../components/ui';
+import { Card, Loader } from '../components/ui';
 import { COULEURS, GraphiqueAnneau, GraphiqueLigne } from '../components/charts';
 import CarteKpi from '../components/tableau-bord/CarteKpi';
 import TableMissions from '../components/tableau-bord/TableMissions';
@@ -221,7 +221,10 @@ export default function TableauDeBord() {
   );
 
   const kpis = useMemo(() => {
-    const actives = missionsVue.filter((m) => m.statut !== 'ARCHIVE');
+    // `statut_audit` vaut BROUILLON, EN_COURS, TERMINE ou ANNULE : une mission
+    // n'est jamais ARCHIVE — ce filtre-là n'écartait rien, et une mission
+    // annulée comptait parmi les actives.
+    const actives = missionsVue.filter((m) => m.statut !== 'ANNULE');
     const enCours = missionsVue.filter((m) => m.statut === 'EN_COURS');
     const aRisque = missionsVue.filter((m) => m.risque === 'ELEVE');
     const brouillons = missionsVue.filter((m) => m.statut === 'BROUILLON');
@@ -264,7 +267,7 @@ export default function TableauDeBord() {
   const missionsPrioritaires = useMemo(() => {
     const rang = { ELEVE: 0, MOYEN: 1, FAIBLE: 2 };
     return [...missionsVue]
-      .filter((m) => m.statut !== 'ARCHIVE')
+      .filter((m) => m.statut !== 'ANNULE')
       .sort((a, b) => (rang[a.risque] ?? 3) - (rang[b.risque] ?? 3) || a.progression - b.progression)
       .slice(0, 6);
   }, [missionsVue]);
@@ -407,7 +410,10 @@ export default function TableauDeBord() {
       {/* --- Accueil et action principale --- */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-ink-900">Bonjour, {prenom} 👋</h1>
+          {/* Convention P4.3 : H1 = 20 px / 600, comme `PageTitre`. Cet en-tete
+              reprend la meme structure (titre + description) sans passer par le
+              composant ; il en suit donc aussi la taille. */}
+          <h1 className="text-xl font-semibold text-ink-900">Bonjour, {prenom} 👋</h1>
           <p className="mt-1 text-sm text-ink-500">
             Voici la situation actuelle de vos missions d’audit RSE.
           </p>
@@ -424,8 +430,41 @@ export default function TableauDeBord() {
         ) : null}
       </div>
 
-      {/* --- Indicateurs --- */}
+      {/* Ce que l’utilisateur doit traiter vient avant ce qu’il doit
+          savoir : les alertes portent des liens vers l’écran où agir, les
+          indicateurs ne portent qu’un état. Elles étaient jusqu’ici sous
+          les compteurs et les graphiques, c’est-à-dire hors du premier
+          écran. */}
+      {/* --- Missions et alertes --- */}
       <Revele>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <Card className="min-w-0 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold text-ink-900">Missions à traiter</h2>
+              {premiereEntreprise ? (
+                <Link
+                  to={`/app/${premiereEntreprise}/audits`}
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
+                >
+                  Voir toutes
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Link>
+              ) : null}
+            </div>
+            <p className="mt-0.5 text-xs text-ink-500">
+              Classées par niveau de risque, puis par avancement.
+            </p>
+            <div className="mt-4">
+              <TableMissions missions={missionsPrioritaires} compact />
+            </div>
+          </Card>
+
+          <PanneauAlertes alertes={alertes} />
+        </div>
+      </Revele>
+
+      {/* --- Indicateurs --- */}
+      <Revele delai={60}>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
           <CarteKpi
             icone={Building2}
@@ -471,9 +510,9 @@ export default function TableauDeBord() {
       {/* --- Consolidation du portefeuille --- */}
       {consolide.missions > 0 ? (
         <Revele delai={30}>
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+          <Card className="p-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-sm font-semibold text-ink-900">Notation consolidée</h2>
+              <h2 className="text-base font-semibold text-ink-900">Notation consolidée</h2>
               <p className="text-xs text-ink-500">
                 Sur {consolide.missions} mission{consolide.missions > 1 ? 's' : ''} évaluée
                 {consolide.missions > 1 ? 's' : ''}
@@ -503,43 +542,15 @@ export default function TableauDeBord() {
               Le score du portefeuille est le quotient des deux sommes, non la moyenne des scores de
               mission : une mission de quatre-vingt-douze critères y pèse plus qu'une de seize.
             </p>
-          </section>
+          </Card>
         </Revele>
       ) : null}
-
-      {/* --- Missions et alertes --- */}
-      <Revele delai={60}>
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <section className="min-w-0 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-ink-900">Missions à traiter</h2>
-              {premiereEntreprise ? (
-                <Link
-                  to={`/app/${premiereEntreprise}/audits`}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
-                >
-                  Voir toutes
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
-              ) : null}
-            </div>
-            <p className="mt-0.5 text-xs text-ink-500">
-              Classées par niveau de risque, puis par avancement.
-            </p>
-            <div className="mt-4">
-              <TableMissions missions={missionsPrioritaires} compact />
-            </div>
-          </section>
-
-          <PanneauAlertes alertes={alertes} />
-        </div>
-      </Revele>
 
       {/* --- Graphiques --- */}
       <Revele delai={90}>
         <div className="grid gap-5 lg:grid-cols-2">
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-ink-900">Évolution des missions</h2>
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-ink-900">Évolution des missions</h2>
             <p className="mt-0.5 text-xs text-ink-500">
               Score moyen du portefeuille sur les six derniers mois.
             </p>
@@ -555,10 +566,10 @@ export default function TableauDeBord() {
                 />
               )}
             </div>
-          </section>
+          </Card>
 
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-ink-900">Répartition des risques</h2>
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-ink-900">Répartition des risques</h2>
             <p className="mt-0.5 text-xs text-ink-500">
               {missionsVue.length} mission{missionsVue.length > 1 ? 's' : ''} au total.
             </p>
@@ -574,7 +585,7 @@ export default function TableauDeBord() {
                 couleurs={[COULEURS.rouge, COULEURS.ambre, COULEURS.vert, COULEURS.gris]}
               />
             </div>
-          </section>
+          </Card>
         </div>
       </Revele>
 
@@ -586,13 +597,13 @@ export default function TableauDeBord() {
             lien={premiereEntreprise ? `/app/${premiereEntreprise}/pipeline-ia` : null}
           />
 
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-ink-900">Activité récente</h2>
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-ink-900">Activité récente</h2>
             <p className="mt-0.5 text-xs text-ink-500">Dernières actions enregistrées au journal.</p>
             <div className="mt-4">
               <FilActivite groupes={groupesActivite} />
             </div>
-          </section>
+          </Card>
         </div>
       </Revele>
 

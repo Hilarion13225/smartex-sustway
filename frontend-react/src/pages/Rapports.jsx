@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import Breadcrumb from '../components/Breadcrumb';
 import { ArrowLeft, Download, FileSpreadsheet, FileText, FileType } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
@@ -114,7 +115,7 @@ export default function Rapports() {
   }
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -124,10 +125,24 @@ export default function Rapports() {
         Retour à la mission
       </Link>
 
+      {/* Le nom de la mission n'est connu qu'une fois `audit` chargé : le fil
+          affiche « Mission » en attendant, plutôt que d'apparaître puis de
+          changer sous les yeux. */}
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+          { libelle: audit?.nom ?? 'Mission', vers: `/app/${entrepriseId}/audits/${auditId}` },
+          { libelle: 'Rapports' },
+        ]}
+      />
+
       <PageTitre
         icone={FileText}
         titre="Rapports"
-        description="Génération et téléchargement des rapports de la mission — module 12."
+        description="Rapports de cette mission — génération et téléchargement. Pour les rapports de toutes les missions, voir « Rapports » dans le menu de l’organisation."
       />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}

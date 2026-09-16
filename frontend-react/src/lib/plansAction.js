@@ -125,12 +125,7 @@ export const TON_STATUT_ACTION = {
 
 export const PRIORITES = ['BASSE', 'MOYENNE', 'HAUTE', 'CRITIQUE'];
 
-export const TON_PRIORITE = {
-  BASSE: 'neutre',
-  MOYENNE: 'bleu',
-  HAUTE: 'ambre',
-  CRITIQUE: 'rouge',
-};
+export { TONS_PRIORITE_ACTION as TON_PRIORITE } from './tonsStatuts';
 
 /**
  * Ce que l'exécutant d'une action peut poser lui-même.

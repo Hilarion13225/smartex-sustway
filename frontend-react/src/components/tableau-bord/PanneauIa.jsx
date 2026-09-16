@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { Card } from '../ui';
+
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 /**
@@ -9,13 +11,13 @@ import { ArrowRight, Sparkles } from 'lucide-react';
  */
 export default function PanneauIa({ metriques, lien }) {
   return (
-    <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+    <Card className="p-5">
       <div className="flex items-center gap-2.5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
           <Sparkles className="h-4 w-4" aria-hidden />
         </span>
         <div>
-          <h2 className="text-sm font-semibold text-ink-900">Intelligence IA</h2>
+          <h2 className="text-base font-semibold text-ink-900">Intelligence IA</h2>
           <p className="text-xs text-ink-500">
             Synthèse des analyses réalisées par l’intelligence artificielle.
           </p>
@@ -40,6 +42,6 @@ export default function PanneauIa({ metriques, lien }) {
           <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       ) : null}
-    </section>
+    </Card>
   );
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useOutletContext, useParams } from 'react-router-dom';
+import Breadcrumb from '../components/Breadcrumb';
 import { AlarmClock, Archive, ArrowLeft, Lock, PlusCircle, Target } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
@@ -46,6 +47,11 @@ export default function PlanAmeliorationDetail() {
   const { entrepriseId, auditId, planId } = useParams();
   const { entreprises, peut, roleCourant, utilisateur } = useApiAuth();
   const entreprise = entreprises.find((e) => e.id === entrepriseId);
+  // Le plan porte `auditId` mais jamais le nom de sa mission. Le Layout, lui,
+  // tient la liste des missions de l'organisation : la relire évite un appel
+  // pour un seul libellé. Correspondance par identifiant exact.
+  const { missions } = useOutletContext() ?? {};
+  const nomMission = (missions ?? []).find((m) => m.id === auditId)?.nom ?? 'Mission';
 
   const [plan, setPlan] = useState(null);
   const [actions, setActions] = useState([]);
@@ -109,7 +115,7 @@ export default function PlanAmeliorationDetail() {
     return resultat;
   }, [actions, axesValides]);
 
-  if (!entreprise) return <Vide message="Entreprise introuvable ou non accessible." />;
+  if (!entreprise) return <Vide message="Organisation introuvable ou non accessible." />;
   if (chargement) return <Loader message="Chargement du plan…" />;
 
   if (accesRefuse) {
@@ -148,6 +154,20 @@ export default function PlanAmeliorationDetail() {
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Tous les plans d’amélioration
       </Link>
+
+      {/* Le retour ci-dessus mène aux plans de l'organisation, et c'est bien
+          par là qu'on arrive ici : le fil suit ce chemin plutôt que celui de
+          la mission, dont cette page ne connaît que l'identifiant. */}
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Plans d’amélioration', vers: `/app/${entrepriseId}/plans` },
+          { libelle: nomMission, vers: `/app/${entrepriseId}/audits/${auditId}` },
+          { libelle: plan.titre },
+        ]}
+      />
 
       <PageTitre
         icone={Target}

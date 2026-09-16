@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, PlusCircle, Search } from 'lucide-react';
+import { ArrowLeft, ClipboardList, PlusCircle, Search } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import TableMissions from '../components/tableau-bord/TableMissions';
-import { Alerte, Card, Loader, Vide } from '../components/ui';
+import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
@@ -13,8 +13,8 @@ const STATUTS = [
   { valeur: '', libelle: 'Tous les statuts' },
   { valeur: 'BROUILLON', libelle: 'Brouillon' },
   { valeur: 'EN_COURS', libelle: 'En cours' },
-  { valeur: 'CLOTURE', libelle: 'Terminée' },
-  { valeur: 'ARCHIVE', libelle: 'Archivée' },
+  { valeur: 'TERMINE', libelle: 'Terminée' },
+  { valeur: 'ANNULE', libelle: 'Annulée' },
 ];
 
 const RISQUES = [
@@ -162,7 +162,7 @@ export default function AuditsListe() {
   }, [missionsVue, recherche, filtreStatut, filtreRisque, filtrePeriode, vue]);
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -172,37 +172,32 @@ export default function AuditsListe() {
         Retour à {entreprise.raisonSociale}
       </Link>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-ink-900">
-            {vue === 'a-valider'
-              ? 'Missions à valider'
-              : filtreStatut === 'EN_COURS'
-                ? 'Missions en cours'
-                : filtreStatut === 'CLOTURE'
-                  ? 'Missions terminées'
-                  : 'Missions d’audit'}
-          </h1>
-          <p className="mt-1 text-sm text-ink-500">
-            Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — {entreprise.raisonSociale}.
-          </p>
-        </div>
-        {peutCreerAudit ? (
-          <button
-            type="button"
-            className="btn-primary shrink-0"
-            onClick={() => setAfficherFormulaire((v) => !v)}
-          >
-            <PlusCircle className="h-4 w-4" aria-hidden />
-            Nouvelle mission
-          </button>
-        ) : null}
-      </div>
+      <PageTitre
+        icone={ClipboardList}
+        titre={
+          vue === 'a-valider'
+            ? 'Missions à valider'
+            : filtreStatut === 'EN_COURS'
+              ? 'Missions en cours'
+              : filtreStatut === 'TERMINE'
+                ? 'Missions terminées'
+                : 'Missions d’audit'
+        }
+        description={`Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — ${entreprise.raisonSociale}.`}
+        actions={
+          peutCreerAudit ? (
+            <button type="button" className="btn-primary shrink-0" onClick={() => setAfficherFormulaire((v) => !v)}>
+              <PlusCircle className="h-4 w-4" aria-hidden />
+              Nouvelle mission
+            </button>
+          ) : null
+        }
+      />
 
       {!peutCreerAudit ? (
         <Alerte ton="ambre">
           La création d’une nouvelle mission n’est pas disponible avec la formule actuelle de cette
-          entreprise.
+          organisation.
         </Alerte>
       ) : null}
 

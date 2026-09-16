@@ -3,19 +3,14 @@ import clsx from 'clsx';
 import { ArrowRight } from 'lucide-react';
 import { Badge } from '../ui';
 import { formaterScore } from '../../lib/scoreAffiche';
+import { TONS_STATUT_MISSION as TONS_STATUT } from '../../lib/tonsStatuts';
 
-const TONS_STATUT = {
-  BROUILLON: 'neutre',
-  EN_COURS: 'bleu',
-  CLOTURE: 'vert',
-  ARCHIVE: 'neutre',
-};
 
 const LIBELLES_STATUT = {
   BROUILLON: 'Brouillon',
   EN_COURS: 'En cours',
-  CLOTURE: 'Terminée',
-  ARCHIVE: 'Archivée',
+  TERMINE: 'Terminée',
+  ANNULE: 'Annulée',
 };
 
 const POINTS_RISQUE = {
@@ -156,8 +151,14 @@ export default function TableMissions({ missions, compact = false, etiquettePrem
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-ink-900">{mission.organisation}</p>
-                  <p className="truncate text-xs text-ink-500">{mission.nom}</p>
+                  {/* Le tableau ci-dessus porte deja ces `title` ; les cartes les
+                      omettaient, alors que ce sont elles qui tronquent a 390 px. */}
+                  <p className="truncate text-sm font-semibold text-ink-900" title={mission.organisation}>
+                    {mission.organisation}
+                  </p>
+                  <p className="truncate text-xs text-ink-500" title={mission.nom}>
+                    {mission.nom}
+                  </p>
                 </div>
                 <Badge ton={TONS_STATUT[mission.statut] ?? 'neutre'}>
                   {LIBELLES_STATUT[mission.statut] ?? mission.statut}

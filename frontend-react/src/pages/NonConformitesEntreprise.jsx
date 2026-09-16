@@ -7,11 +7,10 @@ import { COULEURS, GraphiqueAnneau } from '../components/charts';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
+import { TONS_NIVEAU_NON_CONFORMITE as TONS_NIVEAU, TONS_STATUT_NON_CONFORMITE as TONS_STATUT } from '../lib/tonsStatuts';
 
 const NIVEAUX = ['CRITIQUE', 'MAJEURE', 'MODEREE', 'MINEURE'];
 const COULEURS_NIVEAU = [COULEURS.rouge, COULEURS.ambre, '#eab308', COULEURS.gris];
-const TONS_NIVEAU = { MINEURE: 'neutre', MODEREE: 'bleu', MAJEURE: 'ambre', CRITIQUE: 'rouge' };
-const TONS_STATUT = { OUVERTE: 'rouge', EN_TRAITEMENT: 'ambre', CLOTUREE: 'vert' };
 
 /**
  * Vue transverse : toutes les non-conformités de l'entreprise, toutes
@@ -71,7 +70,7 @@ export default function NonConformitesEntreprise() {
   }
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
@@ -95,7 +94,7 @@ export default function NonConformitesEntreprise() {
       {chargement ? (
         <Loader message="Consolidation des non-conformités…" />
       ) : lignes.length === 0 ? (
-        <Vide message="Aucune non-conformité pour l’instant sur les missions de cette entreprise." />
+        <Vide message="Aucune non-conformité pour l’instant sur les missions de cette organisation." />
       ) : (
         <>
           <Revele>

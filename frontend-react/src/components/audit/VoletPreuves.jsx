@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
-import { Loader } from '../ui';
-import { api } from '../../lib/apiClient';
+import { Alerte, Loader } from '../ui';
+import { api, ApiError } from '../../lib/apiClient';
 import { formaterDateHeure } from '../../lib/export';
 
 /**
@@ -14,17 +14,27 @@ import { formaterDateHeure } from '../../lib/export';
 export default function VoletPreuves({ entrepriseId, auditId }) {
   const [preuves, setPreuves] = useState(null);
   const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur] = useState(null);
 
   useEffect(() => {
     setChargement(true);
+    setErreur(null);
     api
       .get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves`)
+      // Un échec rendait `[]`, et le volet annonçait « aucune preuve déposée » :
+      // sur une mission d'audit, cela revenait à affirmer un défaut de
+      // conformité que rien n'établit.
+      .catch((err) => {
+        setErreur(err instanceof ApiError ? err.message : 'Chargement des preuves impossible');
+        return null;
+      })
       .then(setPreuves)
-      .catch(() => setPreuves([]))
       .finally(() => setChargement(false));
   }, [entrepriseId, auditId]);
 
   if (chargement) return <Loader message="Chargement des preuves…" />;
+
+  if (erreur) return <Alerte ton="rouge">{erreur}</Alerte>;
 
   if (!preuves || preuves.length === 0) {
     return (

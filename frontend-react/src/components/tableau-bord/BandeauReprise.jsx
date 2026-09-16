@@ -29,7 +29,7 @@ const ELEMENTS = [
 export default function BandeauReprise() {
   return (
     <section className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-sm">
-      <h2 className="text-sm font-semibold text-ink-900">Reprise du travail</h2>
+      <h2 className="text-base font-semibold text-ink-900">Reprise du travail</h2>
       <p className="mt-1 text-sm text-ink-500">
         Votre progression est conservée : vous pouvez interrompre une mission et la reprendre là où
         vous vous êtes arrêté.

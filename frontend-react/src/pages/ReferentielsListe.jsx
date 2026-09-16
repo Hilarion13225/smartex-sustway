@@ -14,7 +14,7 @@ import {
 import clsx from 'clsx';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
-import { Alerte, Badge, Card, Loader, Vide } from '../components/ui';
+import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { GraphiqueAnneau } from '../components/charts';
 import CarteKpi from '../components/tableau-bord/CarteKpi';
 import StructureReferentiel from '../components/referentiel/StructureReferentiel';
@@ -23,9 +23,9 @@ import { lireDerniersConsultes } from '../components/referentiel/derniersConsult
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
+import { TONS_STATUT_REFERENTIEL as TONS_STATUT } from '../lib/tonsStatuts';
 
 const STATUTS = ['ACTIF', 'INACTIF', 'SUSPENDU', 'ARCHIVE'];
-const TONS_STATUT = { ACTIF: 'vert', INACTIF: 'neutre', SUSPENDU: 'ambre', ARCHIVE: 'neutre' };
 
 /**
  * Catalogue central des référentiels d'audit.
@@ -226,31 +226,25 @@ export default function ReferentielsListe() {
 
   return (
     <div className="space-y-6">
-      {/* --- Titre et actions --- */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-ink-900">Référentiel</h1>
-          <p className="mt-1 text-sm text-ink-500">
-            Centralisez et gérez les référentiels, normes et cadres utilisés pour vos audits.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {peutAdministrer ? (
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={() => setAfficherFormulaire((v) => !v)}
-            >
-              <PlusCircle className="h-4 w-4" aria-hidden />
-              Nouveau référentiel
+      <PageTitre
+        icone={BookOpen}
+        titre="Référentiels"
+        description="Centralisez et gérez les référentiels, normes et cadres utilisés pour vos audits."
+        actions={
+          <>
+            {peutAdministrer ? (
+              <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire((v) => !v)}>
+                <PlusCircle className="h-4 w-4" aria-hidden />
+                Nouveau référentiel
+              </button>
+            ) : null}
+            <button type="button" className="btn-secondary" onClick={exporterCatalogue}>
+              <Download className="h-4 w-4" aria-hidden />
+              Exporter
             </button>
-          ) : null}
-          <button type="button" className="btn-secondary" onClick={exporterCatalogue}>
-            <Download className="h-4 w-4" aria-hidden />
-            Exporter
-          </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {erreurGlobale ? <Alerte ton="rouge">{erreurGlobale}</Alerte> : null}
 
@@ -308,8 +302,8 @@ export default function ReferentielsListe() {
       {/* --- Catalogue et panneaux --- */}
       <Revele delai={60}>
         <div className="grid gap-5 xl:grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)]">
-          <section className="min-w-0 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-ink-900">Référentiels disponibles</h2>
+          <Card className="min-w-0 p-5">
+            <h2 className="text-base font-semibold text-ink-900">Référentiels disponibles</h2>
 
             <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,2fr)_repeat(2,minmax(0,1fr))]">
               <div className="relative">
@@ -494,12 +488,12 @@ export default function ReferentielsListe() {
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
 
           {/* --- Panneaux latéraux --- */}
           <div className="space-y-5">
-            <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-ink-900">Répartition par type</h2>
+            <Card className="p-5">
+              <h2 className="text-base font-semibold text-ink-900">Répartition par type</h2>
               <div className="mt-4 h-56">
                 {repartition.data.length === 0 ? (
                   <p className="text-xs text-ink-500">Aucun référentiel au catalogue.</p>
@@ -511,10 +505,10 @@ export default function ReferentielsListe() {
                   />
                 )}
               </div>
-            </section>
+            </Card>
 
-            <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-ink-900">Les plus utilisés</h2>
+            <Card className="p-5">
+              <h2 className="text-base font-semibold text-ink-900">Les plus utilisés</h2>
               <p className="mt-0.5 text-xs text-ink-500">Nombre de missions ouvertes dessus.</p>
               {usages === null ? (
                 <p className="mt-3 text-xs text-ink-400">Calcul en cours…</p>
@@ -537,10 +531,10 @@ export default function ReferentielsListe() {
                   ))}
                 </ul>
               )}
-            </section>
+            </Card>
 
-            <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-ink-900">Derniers consultés</h2>
+            <Card className="p-5">
+              <h2 className="text-base font-semibold text-ink-900">Derniers consultés</h2>
               {derniersConsultes.length === 0 ? (
                 <p className="mt-3 text-xs text-ink-500">
                   Les référentiels que vous ouvrez apparaîtront ici.
@@ -559,7 +553,7 @@ export default function ReferentielsListe() {
                   ))}
                 </ul>
               )}
-            </section>
+            </Card>
           </div>
         </div>
       </Revele>
@@ -567,7 +561,7 @@ export default function ReferentielsListe() {
       {/* --- Familles --- */}
       <Revele delai={90}>
         <section>
-          <h2 className="text-sm font-semibold text-ink-900">Explorer par catégorie</h2>
+          <h2 className="text-base font-semibold text-ink-900">Explorer par catégorie</h2>
           <p className="mt-0.5 text-xs text-ink-500">
             Filtre le catalogue sur les référentiels de la famille choisie.
           </p>
@@ -605,12 +599,12 @@ export default function ReferentielsListe() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <StructureReferentiel />
 
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+          <Card className="p-5">
             <div className="flex items-center gap-2.5">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
                 <Sparkles className="h-4 w-4" aria-hidden />
               </span>
-              <h2 className="text-sm font-semibold text-ink-900">Référentiels et analyse IA</h2>
+              <h2 className="text-base font-semibold text-ink-900">Référentiels et analyse IA</h2>
             </div>
             <p className="mt-3 text-sm leading-relaxed text-ink-600">
               Le pipeline d’agents s’appuie sur le libellé du critère, sa question et les preuves
@@ -626,7 +620,7 @@ export default function ReferentielsListe() {
                 <dd className="text-lg font-bold tabular-nums text-ink-900">{kpis.actifs}</dd>
               </div>
             </dl>
-          </section>
+          </Card>
         </div>
       </Revele>
     </div>

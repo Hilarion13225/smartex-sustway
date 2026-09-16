@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Download, Medal } from 'lucide-react';
 import clsx from 'clsx';
 import Revele from '../components/Revele';
-import { Alerte, Loader, Vide } from '../components/ui';
+import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
@@ -129,44 +129,42 @@ export default function Classement() {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-ink-900">Classement</h1>
-          <p className="mt-1 text-sm text-ink-500">
-            Organisations classées sur leur mission la plus récente, globalement ou domaine par
-            domaine.
-          </p>
-        </div>
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-          {/* Largeur bornée : les noms de domaines du référentiel Smartex font
-              plusieurs lignes, et un select en largeur automatique étirerait
-              la page bien au-delà de l'écran sur mobile. */}
-          <select
-            className="input w-full sm:w-56"
-            aria-label="Classer sur un domaine"
-            value={domaineChoisi}
-            onChange={(e) => setDomaineChoisi(e.target.value)}
-          >
-            <option value="">Score global</option>
-            {domaines.map((d) => (
-              <option key={d.code} value={d.code}>
-                {d.nom}
-              </option>
-            ))}
-          </select>
-          <button type="button" className="btn-secondary" onClick={exporter}>
-            <Download className="h-4 w-4" aria-hidden />
-            Exporter
-          </button>
-        </div>
-      </div>
+      <PageTitre
+        icone={Medal}
+        titre="Classement"
+        description="Organisations classées sur leur mission la plus récente, globalement ou domaine par domaine."
+        actions={
+          <>
+            {/* Largeur bornée : les noms de domaines du référentiel Smartex font
+                plusieurs lignes, et un select en largeur automatique étirerait
+                la page bien au-delà de l'écran sur mobile. */}
+            <select
+              className="input w-full sm:w-56"
+              aria-label="Classer sur un domaine"
+              value={domaineChoisi}
+              onChange={(e) => setDomaineChoisi(e.target.value)}
+            >
+              <option value="">Score global</option>
+              {domaines.map((d) => (
+                <option key={d.code} value={d.code}>
+                  {d.nom}
+                </option>
+              ))}
+            </select>
+            <button type="button" className="btn-secondary" onClick={exporter}>
+              <Download className="h-4 w-4" aria-hidden />
+              Exporter
+            </button>
+          </>
+        }
+      />
 
       {classees.length === 0 ? (
         <Vide message="Aucune organisation n’a de mission évaluée sur ce périmètre." />
       ) : (
         <Revele>
-          <section className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-semibold text-ink-900">{intitule}</h2>
+          <Card className="p-5">
+            <h2 className="text-base font-semibold text-ink-900">{intitule}</h2>
             <p className="mt-0.5 text-xs text-ink-500">
               {classees.length} organisation{classees.length > 1 ? 's' : ''} classée
               {classees.length > 1 ? 's' : ''}
@@ -263,7 +261,7 @@ export default function Classement() {
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         </Revele>
       )}
 

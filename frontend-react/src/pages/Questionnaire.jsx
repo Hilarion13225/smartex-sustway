@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, ListChecks, Search } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Download, ListChecks, Search } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres } from '../components/charts';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
+import { TONS_CRITICITE } from '../lib/tonsStatuts';
 
-const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const CRITICITES = ['CRITIQUE', 'ELEVEE', 'MOYENNE', 'FAIBLE'];
 
 /**
@@ -82,20 +82,20 @@ export default function Questionnaire() {
   }
 
   if (!entreprise) {
-    return <Vide message="Entreprise introuvable ou non accessible." />;
+    return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
   return (
     <>
       <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
         <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’entreprise
+        Retour à l’organisation
       </Link>
 
       <PageTitre
         icone={ListChecks}
-        titre="Questionnaire applicable"
-        description={`Composition dynamique du questionnaire pour ${entreprise.raisonSociale}${entreprise.secteurCode ? ` (secteur ${entreprise.secteurCode})` : ''} — la criticité affichée est celle appliquée à ce secteur.`}
+        titre="Périmètre applicable"
+        description={`Critères retenus pour ${entreprise.raisonSociale}${entreprise.secteurCode ? ` (secteur ${entreprise.secteurCode})` : ''} — la criticité affichée est celle appliquée à ce secteur. C’est le périmètre que figera la prochaine mission ; on répond aux critères depuis une mission.`}
         actions={
           <>
             <label className="label mb-0 sr-only" htmlFor="questionnaire-referentiel">
@@ -124,6 +124,20 @@ export default function Questionnaire() {
       />
 
       {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+
+      {/* Cette page dit ce qui sera demandé, pas où le renseigner. Sans ce
+          renvoi, l'utilisateur qui vient y chercher son travail n'a aucun
+          chemin vers les missions — c'est ce qui rendait l'ancienne entrée
+          « Questionnaire » trompeuse. */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-100 bg-ink-50 px-5 py-4">
+        <p className="text-sm text-ink-600">
+          Pour répondre aux critères et déposer vos preuves, ouvrez une mission d’audit.
+        </p>
+        <Link to={`/app/${entrepriseId}/audits`} className="btn-primary shrink-0">
+          <ClipboardList className="h-4 w-4" aria-hidden />
+          Voir les missions
+        </Link>
+      </div>
 
       {chargement ? (
         <Loader message="Composition du questionnaire…" />

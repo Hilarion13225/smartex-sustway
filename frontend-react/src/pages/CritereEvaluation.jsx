@@ -16,6 +16,7 @@ import {
   UploadCloud,
 } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
+import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -25,6 +26,7 @@ import { NIVEAUX_MATURITE } from '../components/audit/niveauxMaturite';
 import { memeTexte } from '../components/audit/libelles';
 import { libelleExclusion, libelleStatut, tonStatut } from '../components/audit/statutsCritere';
 import AxesAmelioration from '../components/audit/AxesAmelioration';
+import { TONS_CRITICITE } from '../lib/tonsStatuts';
 
 /**
  * Personnel interne Smartex : il supervise la mission mais ne renseigne pas
@@ -33,7 +35,6 @@ import AxesAmelioration from '../components/audit/AxesAmelioration';
  */
 const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
 
-const TONS_CRITICITE = { FAIBLE: 'neutre', MOYENNE: 'bleu', ELEVEE: 'ambre', CRITIQUE: 'rouge' };
 const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 'vert' };
 // Le questionnaire se répond sur l'échelle de maturité à cinq niveaux, la
 // même que la saisie de critère et que la note d'évaluation. Les anciennes
@@ -43,7 +44,8 @@ const TONS_STATUT_EVAL = { PROVISOIRE: 'ambre', EN_REVUE: 'violet', VALIDEE: 've
 export default function CritereEvaluation() {
   const { entrepriseId, auditId, auditCritereId } = useParams();
   const { state } = useLocation();
-  const { peut, roleCourant } = useApiAuth();
+  const { entreprises, peut, roleCourant } = useApiAuth();
+  const entreprise = entreprises.find((e) => e.id === entrepriseId);
 
   const [critere, setCritere] = useState(state?.critere ?? null);
   const [preuves, setPreuves] = useState(null);
@@ -115,6 +117,24 @@ export default function CritereEvaluation() {
         <Loader message="Chargement du critère…" />
       ) : (
         <>
+          {/* Quatre niveaux : c'est la page la plus enfouie du produit, et le
+              bouton de retour ci-dessus ne remonte que d'un cran. Le nom de la
+              mission n'est connu qu'une fois `audit` chargé ; en attendant, le
+              fil s'arrête à ce qu'il sait. */}
+          <Breadcrumb
+            elements={[
+              entreprises.length > 1 && entreprise
+                ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+                : null,
+              { libelle: 'Missions', vers: `/app/${entrepriseId}/audits` },
+              {
+                libelle: audit?.nom ?? 'Mission',
+                vers: `/app/${entrepriseId}/audits/${auditId}`,
+              },
+              { libelle: critere.critereCode },
+            ]}
+          />
+
           <PageTitre
             icone={ClipboardCheck}
             titre={`${critere.critereCode} — ${critere.critereLibelle}`}
@@ -243,7 +263,7 @@ function DeclarationLecture({ saisie, libelleCritere }) {
             {saisie.scenario}
           </p>
         ) : (
-          <p className="mt-2 text-sm text-ink-400">Aucune situation décrite.</p>
+          <p className="mt-2 text-sm text-ink-500">Aucune situation décrite.</p>
         )}
       </div>
     </div>
@@ -978,8 +998,12 @@ function ResultatEvaluation({ evaluation }) {
         </div>
       ) : null}
 
+      {/* Sans variante sombre, le bloc « Pistes d’amélioration » restait crème
+          sur une carte passée en rgb(23,28,38) : son détachement de la carte
+          passait de 1,04 à 16,46. Même couple de classes que la note
+          équivalente de CarteAnalyseIa. */}
       {evaluation.recommandationNecessaire ? (
-        <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
           <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
           <div>
             <p className="font-medium">Pistes d’amélioration</p>

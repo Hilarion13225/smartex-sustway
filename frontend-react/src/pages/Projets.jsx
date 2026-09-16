@@ -5,13 +5,8 @@ import Revele from '../components/Revele';
 import { Alerte, Badge, Loader, PageTitre, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
+import { STATUTS_PROJET as STATUTS } from '../lib/tonsStatuts';
 
-const STATUTS = {
-  BROUILLON: { ton: 'neutre', libelle: 'Brouillon' },
-  EN_COURS: { ton: 'bleu', libelle: 'En cours' },
-  CLOTURE: { ton: 'vert', libelle: 'Clôturé' },
-  ARCHIVE: { ton: 'neutre', libelle: 'Archivé' },
-};
 
 /** Date ISO rendue en français ; renvoie null si elle est absente. */
 function formaterDate(iso) {
@@ -232,7 +227,7 @@ function NouveauProjet({ referentiels, entreprises, onAnnuler, onCree }) {
       className="rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm"
     >
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-sm font-semibold text-ink-900">Nouveau projet</h2>
+        <h2 className="text-base font-semibold text-ink-900">Nouveau projet</h2>
         <button
           type="button"
           className="rounded-lg p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
