@@ -96,7 +96,7 @@ export default function CarrouselReferentiels({ referentiels }) {
               tabIndex={visible ? 0 : -1}
               aria-current={index === actif ? 'true' : undefined}
               className={clsx(
-                'absolute left-1/2 top-0 h-full w-[17rem] -translate-x-1/2 rounded-[16px] border p-6 text-left transition-all duration-500 ease-out sm:w-[19rem] sm:p-7',
+                'absolute left-1/2 top-0 h-full w-[17rem] -translate-x-1/2 rounded-[16px] border p-6 text-left transition-all duration-500 ease-out will-change-[transform,filter] sm:w-[19rem] sm:p-7',
                 index === actif
                   ? 'border-ink-200 bg-surface shadow-[0_2px_4px_rgb(var(--marine)/0.06),0_18px_40px_-20px_rgb(var(--marine)/0.28)]'
                   : 'border-ink-200 bg-ink-50'
@@ -105,6 +105,10 @@ export default function CarrouselReferentiels({ referentiels }) {
                 transform: `translateX(calc(-50% + ${ecart * 62}%)) scale(${1 - loin * 0.08}) rotate(${ecart * 2.5}deg)`,
                 zIndex: referentiels.length - loin,
                 opacity: visible ? 1 - loin * 0.08 : 0,
+                // Profondeur de champ : la fiche regardée est nette, les autres
+                // se brouillent à mesure qu'elles s'éloignent. L'œil va d'abord
+                // à ce qui est net, ce qui dit sans un mot laquelle on lit.
+                filter: loin === 0 ? 'none' : `blur(${loin * 1.6}px)`,
                 pointerEvents: visible ? 'auto' : 'none',
               }}
             >

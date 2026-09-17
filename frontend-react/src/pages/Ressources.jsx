@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Newspaper } from 'lucide-react';
-import AppelAction from '../components/AppelAction';
 import { SMARTEX } from '../config/smartex';
 
 const classeTitreSection =
@@ -107,10 +106,6 @@ export default function Ressources() {
         </div>
       </section>
 
-      <AppelAction
-        titre="Une question sur la démarche ?"
-        texte="Nos consultants répondent et vous orientent vers la ressource utile."
-      />
     </>
   );
 }

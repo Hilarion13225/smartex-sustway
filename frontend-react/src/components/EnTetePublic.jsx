@@ -126,8 +126,14 @@ export default function EnTetePublic() {
   }, [ouvert]);
 
   return (
-    // Barre posée sur la page plutôt que collée à son bord : une carte blanche
-    // aux angles arrondis, détachée des bords par une marge.
+    // Barre posée sur la page plutôt que collée à son bord : une carte
+    // translucide aux angles arrondis, détachée des bords par une marge.
+    //
+    // Le fond n'est plus plein : ce qui défile dessous transparaît, flouté.
+    // L'opacité reste haute — 80 % — parce qu'en dessous se succèdent un héros
+    // sombre, des plages papier et des photographies : trop transparente, la
+    // barre verrait la lisibilité de ses liens dépendre de l'endroit où l'on
+    // se trouve dans la page.
     //
     // L'en-tête lui-même n'a pas de fond. C'est ce qui fait que la marge prend
     // la couleur de la page quelle qu'elle soit : papier sur la vitrine, décor
@@ -141,7 +147,7 @@ export default function EnTetePublic() {
           marge. Ajouter un lien demande de revérifier à 1200 px. */}
       <div
         className={clsx(
-          'mx-auto flex h-16 max-w-[90rem] items-center gap-4 bg-surface px-5 shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
+          'mx-auto flex h-16 max-w-[90rem] items-center gap-4 bg-surface/80 px-5 backdrop-blur-xl shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
           ouvert ? 'rounded-t-[14px]' : 'rounded-[14px]'
         )}
       >
@@ -222,7 +228,7 @@ export default function EnTetePublic() {
             // Il descend jusqu'au contenu, pas jusqu'au bas de la fenêtre : six
             // liens ne remplissent pas un écran, et un grand rectangle blanc à
             // moitié vide n'apprend rien. Au-delà, il défile.
-            'max-h-[calc(100svh-5.5rem)] rounded-b-[14px] border-t border-ink-200 bg-surface',
+            'max-h-[calc(100svh-5.5rem)] rounded-b-[14px] border-t border-ink-200 bg-surface/90 backdrop-blur-xl',
             'shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
             'motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1320px]:hidden'
           )}

@@ -1,4 +1,3 @@
-import AppelAction from '../components/AppelAction';
 import EtapesMission from '../components/vitrine/EtapesMission';
 import { SMARTEX } from '../config/smartex';
 
@@ -30,10 +29,6 @@ export default function Deploiement() {
 
       <EtapesMission />
 
-      <AppelAction
-        titre="Prêt à lancer votre évaluation ?"
-        texte="Trois étapes, un périmètre défini avec vous, et un rapport qui dit sur quoi chaque note repose."
-      />
     </>
   );
 }

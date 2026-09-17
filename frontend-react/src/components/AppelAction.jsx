@@ -14,7 +14,7 @@ import { typoFr } from '../lib/typographie';
  * clic — sans flèche, qui n'ajoutait rien au verbe.
  */
 export default function AppelAction({
-  titre = 'Prêt à évaluer votre démarche RSE ?',
+  titre = 'Prêt à évaluer votre démarche RSE, ESG et DD ?',
   texte = 'Choisissez votre formule et commencez aujourd’hui. Accès à la plateforme dès le paiement validé.',
   action = { libelle: 'Choisir une formule', vers: '/formules#grille-formules' },
   secondaire = { libelle: 'Demander une démonstration', vers: '/contact' },
