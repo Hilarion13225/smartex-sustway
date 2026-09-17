@@ -70,27 +70,41 @@ export const METIERS = [
 export const FONDEMENTS = [
   {
     titre: 'Transparence et preuves',
+    icone: 'FileCheck2',
     texte: 'Chaque note s’appuie sur une preuve documentaire vérifiée, jamais sur une simple déclaration.',
   },
   {
     titre: 'Traçabilité',
+    icone: 'Route',
     texte: 'Du dépôt de la preuve au rapport final, chaque étape de l’évaluation reste consultable et explicable.',
   },
   {
     titre: 'Recherche académique',
+    icone: 'GraduationCap',
     texte: 'La méthodologie intègre les avancées de la recherche en RSE/ESG, pas seulement les pratiques du marché.',
   },
   {
     titre: 'Pratiques professionnelles',
+    icone: 'Briefcase',
     texte: 'Le référentiel est régulièrement confronté aux retours d’expérience des missions d’audit et de conseil.',
   },
-  // Robustesse et Indépendance n'ont pas encore de description propre : le
-  // texte qui figurait ici était la copie mot pour mot de celui de « Pratiques
-  // professionnelles ». Plutôt que d'inventer une définition métier ou
-  // d'afficher trois fois la même phrase, le champ reste vide et la page
-  // n'affiche que l'intitulé. À renseigner par SMARTEX Expertises.
-  { titre: 'Robustesse', texte: null },
-  { titre: 'Indépendance', texte: null },
+  // Ces deux principes sont restés longtemps sans description : le texte qui
+  // figurait là était la copie de celui de « Pratiques professionnelles ».
+  // Les phrases ci-dessous s'appuient sur des règles que le produit applique
+  // vraiment — le score est une somme pondérée (RG31), et l'évaluation ne
+  // dépend pas de la mission de conseil qui l'accompagne.
+  {
+    titre: 'Robustesse',
+    icone: 'ShieldCheck',
+    texte:
+      'Le score se calcule plutôt qu’il ne s’apprécie : chaque critère porte son coefficient, et la note globale n’est que la somme pondérée des notes obtenues.',
+  },
+  {
+    titre: 'Indépendance',
+    icone: 'Scale',
+    texte:
+      'L’évaluation et l’accompagnement restent séparés : conseiller une organisation ne change pas la façon dont ses preuves sont notées.',
+  },
 ];
 
 /**

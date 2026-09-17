@@ -1,0 +1,15 @@
+Logos des référentiels affichés par le carrousel de la page Méthodologie.
+
+Déposez ici un fichier .png par référentiel, nommé d'après son code en
+minuscules, les soulignés remplacés par des tirets :
+
+  iso-26000.png        ISO 26000
+  iso-45001.png        ISO 45001
+  global-compact.png   Pacte mondial des Nations unies
+  oit.png              Organisation internationale du travail
+  ocde.png             OCDE
+  smartex-sustway.png  Référentiel SMARTEX SustWay
+
+Fond transparent ou blanc, hauteur utile d'environ 128 px, largeur libre.
+Tant qu'un fichier manque, la fiche affiche le nom du référentiel sans logo :
+rien ne casse.

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BadgeCheck, Building2, Cpu, FileText, ListChecks, Play, Target, Users } from 'lucide-react';
+import { BadgeCheck, Briefcase, Building2, Cpu, FileCheck2, FileText, GraduationCap, ListChecks, Play, Route, Scale, ShieldCheck, Target, Users } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
 import Revele from '../components/Revele';
 import ModaleVideo from '../components/ModaleVideo';
 import RoueDeming from '../components/vitrine/RoueDeming';
 import ChaineEtapes from '../components/vitrine/ChaineEtapes';
+import CarrouselReferentiels from '../components/vitrine/CarrouselReferentiels';
 import ListeQuestions from '../components/vitrine/ListeQuestions';
 import BandeauReferentiels from '../components/vitrine/BandeauReferentiels';
 import BlocMedia from '../components/vitrine/BlocMedia';
@@ -116,6 +117,8 @@ const CHAINE = [
 ];
 
 const PILIERS = ['Environnement', 'Social', 'Gouvernance'];
+
+const ICONES_PRINCIPES = { FileCheck2, Route, GraduationCap, Briefcase, ShieldCheck, Scale };
 
 const classeTitreSection =
   'titre-section text-ink-900';
@@ -242,19 +245,45 @@ export default function Methodologie() {
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}><span className="text-brand-600">Six principes</span> fondent la démarche.</h2>
 
-          {/* Un principe sans description n'affiche que son intitulé : les
-              deux derniers n'ont pas encore de définition propre côté métier
-              (voir config/smartex.js), et répéter celle du voisin donnerait
-              une section qui se contredit elle-même. */}
-          <ul className="mt-12 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-            {FONDEMENTS.map((principe, index) => (
-              <Revele key={principe.titre} as="li" delai={index * 70} className="border-t border-ink-300 pt-4">
-                <h3 className="titre-objet text-ink-900">{principe.titre}</h3>
-                {principe.texte ? (
-                  <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{principe.texte}</p>
-                ) : null}
-              </Revele>
-            ))}
+          {/* Cartes à filet latéral : le filet marque le début de la carte
+              là où un trait horizontal la séparait de sa voisine. L'icône ne
+              fait que doubler l'intitulé — elle reste donc masquée aux
+              technologies d'assistance.
+
+              Le modèle dont ces cartes s'inspirent porte un lien « en savoir
+              plus » sous chaque texte. Il n'y en a pas ici : un principe n'a
+              pas de page à lui, et six liens qui mèneraient tous au même
+              endroit ne diraient rien de plus. */}
+          <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {FONDEMENTS.map((principe, index) => {
+              const Icone = ICONES_PRINCIPES[principe.icone];
+              return (
+                <Revele
+                  key={principe.titre}
+                  as="li"
+                  delai={index * 70}
+                  className="group relative overflow-hidden rounded-[16px] bg-ink-50 p-6 pl-7 ring-1 ring-transparent motion-safe:transition-[background-color,box-shadow] motion-safe:duration-300 hover:bg-surface hover:shadow-[0_1px_2px_rgb(var(--marine)/0.04),0_12px_28px_-18px_rgb(var(--marine)/0.25)] sm:p-7 sm:pl-8"
+                >
+                  {/* Au survol, le filet court sur toute la hauteur et la carte
+                      passe au blanc. Ni déplacement ni agrandissement : ces
+                      cartes ne sont pas cliquables, et les faire se soulever
+                      promettrait un clic qui n'existe pas. */}
+                  <span
+                    className="absolute inset-y-6 left-0 w-1 rounded-r-full bg-brand-600 motion-safe:transition-[top,bottom] motion-safe:duration-300 group-hover:inset-y-0"
+                    aria-hidden
+                  />
+                  {Icone ? (
+                    <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-[12px] bg-surface motion-safe:transition-colors motion-safe:duration-300 group-hover:bg-ink-100">
+                      <Icone className="h-5 w-5 text-ink-800" strokeWidth={1.75} aria-hidden />
+                    </span>
+                  ) : null}
+                  <h3 className="titre-objet text-ink-900">{principe.titre}</h3>
+                  {principe.texte ? (
+                    <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{principe.texte}</p>
+                  ) : null}
+                </Revele>
+              );
+            })}
           </ul>
         </div>
       </section>
@@ -269,24 +298,19 @@ export default function Methodologie() {
             </Link>
           </div>
 
-          {/* Grille à filets plutôt que cartes : ce sont des repères que l'on
-              parcourt, pas des objets à comparer. La dernière case rappelle le
-              référentiel propre à la plateforme, qui complète la rangée. */}
-          <ul className="mt-12 grid border-l border-t border-ink-200 sm:grid-cols-2 lg:grid-cols-3">
-            {REFERENCES_METHODOLOGIQUES.map((reference) => (
-              <li key={reference.code} className="border-b border-r border-ink-200 p-6 sm:p-8">
-                <p className="titre-objet text-ink-900">{reference.nom}</p>
-                <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{reference.texte}</p>
-              </li>
-            ))}
-            <li className="border-b border-r border-ink-200 bg-surface p-6 sm:p-8">
-              <p className="titre-objet text-ink-900">Référentiel {SMARTEX.produit}</p>
-              <p className="mt-2 text-[15px] leading-relaxed text-ink-600">
-                {REFERENTIEL_SMARTEX.criteres} critères en {REFERENTIEL_SMARTEX.parties} parties : le cadre que la
-                plateforme évalue, nourri par ces standards.
-              </p>
-            </li>
-          </ul>
+          {/* Les six repères en éventail : la fiche au centre, ses voisines
+              en retrait. Le référentiel propre à la plateforme ferme la série,
+              puisqu'il est ce que les cinq autres nourrissent. */}
+          <CarrouselReferentiels
+            referentiels={[
+              ...REFERENCES_METHODOLOGIQUES,
+              {
+                code: 'SMARTEX_SUSTWAY',
+                nom: `Référentiel ${SMARTEX.produit}`,
+                texte: `${REFERENTIEL_SMARTEX.criteres} critères en ${REFERENTIEL_SMARTEX.parties} parties : le cadre que la plateforme évalue, nourri par ces standards.`,
+              },
+            ]}
+          />
         </div>
       </section>
 
