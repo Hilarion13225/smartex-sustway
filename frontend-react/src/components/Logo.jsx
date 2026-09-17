@@ -11,6 +11,10 @@ const TAILLES = {
   sm: 'text-base min-[420px]:text-xl sm:text-2xl',
   md: 'text-3xl',
   lg: 'text-2xl sm:text-5xl lg:text-6xl',
+  // Posé au fil d'une phrase, le logotype prend la taille de celle-ci : c'est
+  // ce qui permet de l'employer dans un titre sans le figer à un corps qui ne
+  // serait juste qu'à une largeur d'écran.
+  heritee: 'text-[1em]',
 };
 
 /**
@@ -32,8 +36,8 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
         className
       )}
     >
-      <span className={clair ? 'text-white' : 'text-ink-900'}>SMARTEX</span>
-      <span className={clsx('relative ml-[0.1em] mr-[0.55em]', clair ? 'text-brand-300' : 'text-brand-600')}>
+      <span className={clair ? 'text-white' : 'text-ink-900'}>SMARTEX</span>{' '}
+      <span className={clsx('relative ml-[-0.12em] mr-[0.55em]', clair ? 'text-brand-300' : 'text-brand-600')}>
         SustWay
         <Leaf
           className={clsx(

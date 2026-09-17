@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import EnTetePublic from './EnTetePublic';
 import PiedPublic from './PiedPublic';
+import CurseurSuiveur from './vitrine/CurseurSuiveur';
 
 /** Mise en page commune des pages publiques (vitrine) : en-tête, contenu, pied de page. */
 export default function LayoutPublic() {
@@ -46,6 +47,7 @@ export default function LayoutPublic() {
       </main>
       {/* La page d'entrée s'arrête à son héros : elle n'affiche pas le pied de page. */}
       {estEntree ? null : <PiedPublic />}
+      <CurseurSuiveur />
     </div>
   );
 }

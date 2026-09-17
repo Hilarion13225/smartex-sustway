@@ -131,36 +131,14 @@ export default function Landing() {
   useSombreForce();
   const [videoOuverte, definirVideoOuverte] = useState(false);
 
-  /**
-   * Le hero occupe ce que l'en-tête laisse — celui-ci est `sticky` et haut de
-   * 65 px — et centre son contenu dedans. Mesuré avant : 297 px de vide sous
-   * le bloc en 1920x1080, et un débordement dès 1366x768 ; le contenu était
-   * collé en haut sur les grands écrans et coupé en bas sur les autres.
-   *
-   * `min-h` et non `h` : quand le contenu est plus haut que la fenêtre —
-   * téléphone, ou fenêtre courte en paysage — la section grandit et rien
-   * n'est rogné, malgré `overflow-hidden` qui n'est là que pour le décor.
-   *
-   * `svh` plutôt que `vh` : sur mobile, `vh` se calcule sur la fenêtre
-   * barre d'adresse rétractée, ce qui fait dépasser le contenu tant qu'elle
-   * est visible.
-   *
-   */
   return (
-    <section className="relative flex min-h-[calc(100svh-65px)] items-center overflow-hidden">
+    <section className="relative overflow-hidden">
       <FondTech />
 
-      <div className="relative mx-auto w-full max-w-[90rem] px-4 py-8 text-center sm:px-5 sm:py-10 [@media(max-height:850px)]:py-5">
-        {/* Deux colonnes à partir de `lg` : le discours à gauche, l'emblème à
-            droite. En dessous, la pile reste celle d'avant — emblème puis
-            texte — grâce à `order`, qui ne réordonne qu'au point de rupture :
-            l'ordre du document, lui, ne bouge pas, et le lecteur d'écran
-            comme la tabulation suivent la même suite qu'auparavant. */}
-        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12 [@media(max-height:850px)]:gap-5">
-          <div className="lg:order-2">
+      <div className="relative mx-auto max-w-[90rem] px-4 pb-8 pt-6 text-center sm:px-5 sm:pb-12 sm:pt-8">
         {/* Emblème : sphère de données, jauge de conformité, bouclier de la
             marque et les quatre natures d'objets manipulées par le moteur. */}
-        <div className="relative mx-auto aspect-[640/420] w-full max-w-xs motion-safe:animate-apparition-douce sm:max-w-xl lg:max-w-none [@media(max-height:850px)]:max-w-md lg:[@media(max-height:850px)]:max-w-xl">
+        <div className="relative mx-auto aspect-[640/420] w-full max-w-xs motion-safe:animate-apparition-douce sm:max-w-xl lg:max-w-3xl">
           <svg viewBox="0 0 640 420" className="h-full w-full" aria-hidden>
             <defs>
               <linearGradient id="degradeBouclier" x1="0" y1="0" x2="0" y2="1">
@@ -329,15 +307,13 @@ export default function Landing() {
             </span>
           ))}
         </div>
-          </div>
 
-          <div className="lg:order-1 lg:text-left">
         <h1
-          className="mx-auto mt-4 max-w-4xl text-balance text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:mx-0 lg:mt-0 lg:max-w-none lg:text-[1.6rem] lg:leading-[1.3] xl:text-[1.9rem]"
+          className="mx-auto mt-4 max-w-4xl text-[1.65rem] font-bold leading-[1.15] text-ink-900 motion-safe:animate-apparition-bas sm:text-4xl lg:max-w-none lg:text-[1rem] lg:leading-[1.25]"
           style={{ animationDelay: '120ms' }}
         >
-          Avec <span className="text-[#2e9e4b] dark:text-[#5fbd72]">SMARTEX SustWay</span>, évaluer et optimiser la démarche de maturité et la performance de votre entreprise<br className="lg:hidden" /> en matière de bonnes pratiques de {' '}
-          <span className="text-[#2e9e4b] dark:text-[#5fbd72]">RSE et ESG</span> en s’appuyant sur l’IA. <br className="lg:hidden" />Indépendance, Robustesse et Transparence de la Solution.
+          Avec <span className="text-[#2e9e4b] dark:text-[#5fbd72]">SMARTEX SustWay</span>, évaluer et optimiser la démarche de maturité et la performance de votre entreprise<br /> en matière de bonnes pratiques de {' '}
+          <span className="text-[#2e9e4b] dark:text-[#5fbd72]">RSE et ESG</span> en s’appuyant sur l’IA. <br />Indépendance, Robustesse et Transparence de la Solution.
         </h1>
 
         {/* <p
@@ -349,21 +325,18 @@ export default function Landing() {
         </p> */}
 
         <div
-          className="mt-6 flex flex-wrap items-center justify-center gap-3 motion-safe:animate-apparition-bas sm:mt-9 sm:gap-4 lg:justify-start"
+          className="mt-6 flex flex-wrap items-center justify-center gap-3 motion-safe:animate-apparition-bas sm:mt-9 sm:gap-4"
           style={{ animationDelay: '360ms' }}
         >
-          {/* « la solution » désigne la page que la navigation publique
-              intitule « Solution », c'est-à-dire /services. La méthodologie a
-              son propre lien dans le menu. */}
           <Link
-            to="/services"
-            className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base lg:px-6 lg:py-3 lg:text-[0.95rem]"
+            to="/methodologie"
+            className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
             Découvrir la solution
           </Link>
           <Link
             to="/formules"
-            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base lg:px-5 lg:py-3 lg:text-[0.95rem]"
+            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
             <Layers
               className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400 sm:h-5 sm:w-5"
@@ -375,7 +348,7 @@ export default function Landing() {
           <button
             type="button"
             onClick={() => definirVideoOuverte(true)}
-            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base lg:px-5 lg:py-3 lg:text-[0.95rem]"
+            className="btn-vitrine-clair group px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
             <PlayCircle
               className="h-4 w-4 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400 sm:h-5 sm:w-5"
@@ -394,29 +367,27 @@ export default function Landing() {
           />
         ) : null}
 
-        <dl className="mt-10 grid gap-6 text-left sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:mt-10 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-6 [@media(max-height:850px)]:mt-6 [@media(max-height:850px)]:gap-4">
+        <dl className="mt-10 grid gap-6 text-left sm:mt-14 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-ink-100">
           {BENEFICES.map((benefice, index) => (
             <Revele key={benefice.titre} delai={index * 110}>
-              <div className="group flex gap-3">
+              <div className="group flex gap-3 lg:px-6">
                 <benefice.icone
                   className="mt-0.5 h-8 w-8 shrink-0 text-brand-600 transition-transform duration-300 group-hover:scale-110 dark:text-brand-400"
                   strokeWidth={1.5}
                   aria-hidden
                 />
                 <div>
-                  <dt className="text-pretty text-sm font-semibold text-ink-900">{benefice.titre}</dt>
-                  <dd className="mt-1 text-pretty text-sm leading-relaxed text-ink-500">{benefice.texte}</dd>
+                  <dt className="text-sm font-semibold text-ink-900">{benefice.titre}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-ink-500">{benefice.texte}</dd>
                 </div>
               </div>
             </Revele>
           ))}
         </dl>
-          </div>
-        </div>
 
         <Link
-          to="/services"
-          className="mt-8 inline-flex flex-col items-center gap-2 text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400 sm:mt-12 sm:text-[0.65rem] sm:tracking-[0.3em] [@media(max-height:850px)]:mt-4 [@media(max-height:850px)]:gap-1"
+          to="/methodologie"
+          className="mt-8 inline-flex flex-col items-center gap-2 text-[0.6rem] font-semibold uppercase tracking-[0.25em] text-brand-600 transition hover:text-brand-700 dark:text-brand-400 sm:mt-12 sm:text-[0.65rem] sm:tracking-[0.3em]"
         >
           Découvrir
           <span className="flex h-9 w-6 items-start justify-center rounded-full border-2 border-brand-400 pt-1.5">

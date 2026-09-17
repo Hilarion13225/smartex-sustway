@@ -156,7 +156,10 @@ export default function EnTetePublic() {
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
 
-        <nav className="hidden items-center whitespace-nowrap min-[1320px]:flex" aria-label="Navigation principale">
+        <nav
+          className="hidden flex-1 items-center justify-center whitespace-nowrap min-[1320px]:flex"
+          aria-label="Navigation principale"
+        >
           {LIENS.map((lien) => (
             <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
               {lien.libelle}
@@ -164,7 +167,7 @@ export default function EnTetePublic() {
           ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-1.5 whitespace-nowrap min-[1320px]:flex">
+        <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1320px]:flex">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
