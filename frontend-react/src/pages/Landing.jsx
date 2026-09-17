@@ -329,7 +329,7 @@ export default function Landing() {
           style={{ animationDelay: '360ms' }}
         >
           <Link
-            to="/methodologie"
+            to="/services"
             className="btn-vitrine px-6 py-3 text-sm transition-transform duration-300 hover:-translate-y-0.5 sm:px-8 sm:py-3.5 sm:text-base"
           >
             Découvrir la solution
