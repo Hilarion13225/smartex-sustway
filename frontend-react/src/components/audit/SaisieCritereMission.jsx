@@ -6,7 +6,7 @@ import ListeCriteres from './ListeCriteres';
 import NavigationCritere from './NavigationCritere';
 import CarteCritere from './CarteCritere';
 import PanneauAnalyseIa from './PanneauAnalyseIa';
-import { analyseDepuisEvaluation, analyserCritere } from './analyseCritere';
+import { analyseDepuisEvaluation } from './analyseCritere';
 import { memeTexte } from './libelles';
 import { estDansPerimetre, estRenseigne, libelleExclusion } from './statutsCritere';
 import { Alerte, Loader } from '../ui';
@@ -70,7 +70,9 @@ export default function SaisieCritereMission({
   const [listeOuverte, setListeOuverte] = useState(false);
   const [depotEnCours, setDepotEnCours] = useState(false);
   const [analyse, setAnalyse] = useState(null);
-  const [analyseEnCours, setAnalyseEnCours] = useState(false);
+  // Plus rien ne lance d'analyse depuis cet ecran : la carte s'en sert
+  // seulement pour ne pas afficher son rappel pendant une passe.
+  const analyseEnCours = false;
   const [erreurAnalyse, setErreurAnalyse] = useState(null);
   const [signatureAnalysee, setSignatureAnalysee] = useState(null);
   const [dernierEnregistrement, setDernierEnregistrement] = useState(null);
@@ -88,15 +90,17 @@ export default function SaisieCritereMission({
   useEffect(() => () => clearTimeout(minuteur.current), []);
 
   /**
-   * Recharge l'évaluation la plus récente et les preuves du critère affiché.
-   * `silencieux` évite de masquer la carte derrière l'indicateur de chargement
-   * quand elle est déjà à l'écran — après un dépôt de preuve, seule la liste
-   * des fichiers change, faire disparaître le critère donnerait l'impression
-   * d'un rechargement de la page.
+   * Recharge l'évaluation la plus récente, la saisie et les preuves.
+   *
+   * À n'appeler que lorsque le critère affiché change : cette fonction
+   * écrase le niveau et le scénario avec ce que le serveur connait. Une
+   * réponse choisie mais pas encore enregistrée y est donc perdue — c'est
+   * ce qui décochait la réponse quelques secondes après un dépôt de preuve.
+   * Pour rafraîchir la seule liste des fichiers, voir `chargerPreuves`.
    */
-  const chargerCritere = useCallback((silencieux = false) => {
+  const chargerCritere = useCallback(() => {
     if (!critereId) return;
-    if (!silencieux) setChargement(true);
+    setChargement(true);
     setErreur(null);
     setErreurAnalyse(null);
     Promise.all([
@@ -150,6 +154,24 @@ export default function SaisieCritereMission({
       })
       .catch((err) => setErreur(err instanceof ApiError ? err.message : 'Chargement du critère impossible'))
       .finally(() => setChargement(false));
+  }, [entrepriseId, auditId, critereId, codeCritere]);
+
+  /**
+   * Rafraîchit la seule liste des preuves.
+   *
+   * Déposer un fichier ne change ni le niveau ni le scénario côté serveur :
+   * les relire n'apprendrait rien et écraserait la saisie en cours.
+   */
+  const chargerPreuves = useCallback(() => {
+    if (!critereId) return;
+    api
+      .get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves`)
+      .then((toutes) =>
+        setPreuves((toutes ?? []).filter((preuve) => (preuve.critereCodes ?? []).includes(codeCritere)))
+      )
+      .catch((err) =>
+        setErreur(err instanceof ApiError ? err.message : 'Chargement des preuves impossible')
+      );
   }, [entrepriseId, auditId, critereId, codeCritere]);
 
   useEffect(() => {
@@ -233,22 +255,6 @@ export default function SaisieCritereMission({
     if (await enregistrer()) allerA(indice + 1);
   }
 
-  /** Lance le pipeline d'agents IA sur le critère affiché. */
-  async function lancerAnalyse() {
-    if (!critereId) return;
-    setAnalyseEnCours(true);
-    setErreurAnalyse(null);
-    try {
-      const resultat = await analyserCritere({ entrepriseId, auditId, critereId });
-      setAnalyse(resultat);
-      setSignatureAnalysee(signature(niveau, scenario, preuves.length));
-      surChangement?.();
-    } catch (err) {
-      setErreurAnalyse(err instanceof ApiError ? err.message : 'Analyse IA impossible');
-    } finally {
-      setAnalyseEnCours(false);
-    }
-  }
 
   function allerA(nouvelIndice) {
     setIndice(Math.min(criteres.length - 1, Math.max(0, nouvelIndice)));
@@ -261,6 +267,33 @@ export default function SaisieCritereMission({
       (c) => c.domaineCode === domaineCode && estDansPerimetre(c) && !estRenseigne(c)
     );
     if (cible >= 0) allerA(cible);
+  }
+
+  /**
+   * Retire une pièce jointe à ce critère.
+   *
+   * La confirmation dit ce que la liste ne laisse pas deviner : le fichier
+   * quitte aussi la bibliothèque documentaire de l'organisation. Le serveur
+   * refuse le retrait d'une pièce déjà soumise aux agents — elle appartient
+   * alors à la trace du résultat qu'elle a produit — et son message est
+   * affiché tel quel, puisque lui seul connaît la raison du refus.
+   */
+  async function supprimerPreuve(preuveId) {
+    const piece = preuves.find((p) => p.id === preuveId);
+    const nom = piece?.documentNomOriginal ?? 'ce fichier';
+    if (!window.confirm(
+      `Supprimer « ${nom} » ? Il sera retiré de ce critère et de la bibliothèque documentaire.`
+    )) {
+      return;
+    }
+    setErreur(null);
+    try {
+      await api.delete(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves/${preuveId}`);
+      chargerPreuves();
+      surChangement?.();
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : 'Suppression de la preuve impossible');
+    }
   }
 
   /** Téléverse chaque fichier puis l'associe au critère comme preuve. */
@@ -279,7 +312,7 @@ export default function SaisieCritereMission({
           auditCritereIds: [critereId],
         });
       }
-      chargerCritere(true);
+      chargerPreuves();
       surChangement?.();
     } catch (err) {
       setErreur(err instanceof ApiError ? err.message : 'Dépôt de la preuve impossible');
@@ -390,6 +423,7 @@ export default function SaisieCritereMission({
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',
               }))}
               surAjoutFichiers={ajouterPreuves}
+              surSuppressionFichier={supprimerPreuve}
               depotEnCours={depotEnCours}
               surPrecedent={() => allerA(indice - 1)}
               surBrouillon={surBrouillon}
@@ -406,7 +440,6 @@ export default function SaisieCritereMission({
           analyseDesynchronisee={desynchronisee}
           erreurAnalyse={erreurAnalyse}
           peutAnalyser={peutAnalyser && !exclusion}
-          surAnalyser={lancerAnalyse}
           domaine={domaineCode ?? '—'}
           domaineCompletes={completesDuDomaine}
           domaineTotal={criteresDuDomaine.length}
