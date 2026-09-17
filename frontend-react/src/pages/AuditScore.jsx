@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import { ArrowLeft, CheckCircle2, Gauge, HelpCircle, Hourglass, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Gauge, HelpCircle, Hourglass, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Barre, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
@@ -79,11 +79,6 @@ export default function AuditScore() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à la mission
-      </Link>
-
       {chargement ? (
         <Loader message="Calcul du score…" />
       ) : !audit || !score ? (

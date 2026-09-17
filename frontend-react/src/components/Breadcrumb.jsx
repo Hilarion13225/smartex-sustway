@@ -14,8 +14,12 @@ import { ChevronRight } from 'lucide-react';
  * — là où une déduction faite à partir de l'URL devrait deviner ces libellés
  * ou les redemander à l'API.
  *
- * Il ne remplace pas les boutons de retour existants, qui restent utiles pour
- * revenir d'un cran sans viser : les deux gestes ne sont pas les mêmes.
+ * Un bouton « ← Retour » garde sa place quand il vise un cran que le fil ne
+ * donne pas — « Retour à la mission » depuis un critère, par exemple. En
+ * revanche, sur les pages posées directement sur une organisation, il visait
+ * exactement le premier maillon : deux liens vers la même adresse, empilés.
+ * Ces boutons ont été retirés, et le maillon de l'organisation y est devenu
+ * inconditionnel — il porte désormais le retour, il n'est plus décoratif.
  *
  * @param {{libelle: string, vers?: string}[]} elements — dans l'ordre, du plus
  *        général au plus précis. Un élément sans `vers` n'est pas cliquable ;

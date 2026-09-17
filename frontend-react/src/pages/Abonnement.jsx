@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, CalendarClock, CreditCard, Receipt, Smartphone, Wallet } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { BadgeCheck, CalendarClock, CreditCard, Receipt, Smartphone, Wallet } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate, formaterDateHeure } from '../lib/export';
@@ -74,11 +75,12 @@ export default function Abonnement() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Abonnement et paiements' },
+        ]}
+      />
       <PageTitre
         icone={Wallet}
         titre="Abonnement et paiements"

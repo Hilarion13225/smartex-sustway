@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Leaf } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
@@ -60,6 +61,14 @@ export default function FinancementsVerts() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Financements verts' },
+        ]}
+      />
       <PageTitre
         icone={Leaf}
         titre="Financements verts"

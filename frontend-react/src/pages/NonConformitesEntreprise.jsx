@@ -4,6 +4,7 @@ import { ClipboardX, Download } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau } from '../components/charts';
+import Breadcrumb from '../components/Breadcrumb';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
@@ -75,6 +76,14 @@ export default function NonConformitesEntreprise() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Non-conformités' },
+        ]}
+      />
       <PageTitre
         icone={ClipboardX}
         titre="Non-conformités"

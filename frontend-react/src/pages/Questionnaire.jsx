@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, Download, ListChecks, Search } from 'lucide-react';
+import { ClipboardList, Download, ListChecks, Search } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres } from '../components/charts';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
@@ -87,11 +88,12 @@ export default function Questionnaire() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Périmètre applicable' },
+        ]}
+      />
       <PageTitre
         icone={ListChecks}
         titre="Périmètre applicable"

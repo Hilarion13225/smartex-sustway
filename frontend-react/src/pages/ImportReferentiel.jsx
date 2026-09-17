@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, FileUp, Sparkles } from 'lucide-react';
+import { FileUp, Sparkles } from 'lucide-react';
 import EtapesImport from '../components/referentiel/import/EtapesImport';
 import DepotReferentiel from '../components/referentiel/import/DepotReferentiel';
 import SuiviAnalyse from '../components/referentiel/import/SuiviAnalyse';
 import RelectureBrouillon from '../components/referentiel/import/RelectureBrouillon';
 import PublierBrouillon from '../components/referentiel/import/PublierBrouillon';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDateHeure } from '../lib/export';
 import { ApiError } from '../lib/apiClient';
@@ -95,6 +96,8 @@ function Accueil({ surImportCree }) {
 
   return (
     <div>
+      <Breadcrumb elements={[{ libelle: 'Référentiels', vers: '/app/referentiels' }, { libelle: 'Import intelligent' }]} />
+
       <PageTitre
         titre="Import intelligent"
         icone={Sparkles}
@@ -252,10 +255,13 @@ function Assistant({ importId }) {
 
   return (
     <div>
-      <Link className="btn-ghost mb-4 inline-flex" to="/app/referentiels/import">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Tous les imports
-      </Link>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Référentiels', vers: '/app/referentiels' },
+          { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
+          { libelle: importSuivi.nomFichier },
+        ]}
+      />
 
       <PageTitre
         titre={importSuivi.nomFichier}

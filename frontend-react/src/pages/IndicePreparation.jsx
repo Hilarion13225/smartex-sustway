@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import { ArrowLeft, Leaf, RefreshCw } from 'lucide-react';
+import { Leaf, RefreshCw } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
@@ -61,11 +61,6 @@ export default function IndicePreparation() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à la mission
-      </Link>
-
       {chargement ? (
         <Loader message="Chargement de l’indice de préparation…" />
       ) : !audit ? (

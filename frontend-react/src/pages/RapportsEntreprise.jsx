@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
@@ -50,6 +51,14 @@ export default function RapportsEntreprise() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Rapports RSE' },
+        ]}
+      />
       <PageTitre
         icone={FileText}
         titre="Rapports RSE"

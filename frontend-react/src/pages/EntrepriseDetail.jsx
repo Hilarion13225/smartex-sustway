@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  ArrowLeft,
   Building2,
-  ListChecks,
   MapPin,
   Pencil,
   PlusCircle,
@@ -11,12 +9,13 @@ import {
   Smartphone,
   TrendingUp,
   Trash2,
-  Users,
   Wallet,
 } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import { useApiAuth } from '../auth/useApiAuth';
+import { groupesDeLOrganisation } from '../lib/navigationOrganisation';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { COULEURS, GraphiqueLigne } from '../components/charts';
 import { api, ApiError } from '../lib/apiClient';
@@ -92,35 +91,32 @@ export default function EntrepriseDetail() {
 
   return (
     <>
-      <Link to="/app/entreprises" className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour aux organisations
-      </Link>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Organisations', vers: '/app/entreprises' },
+          { libelle: entreprise.raisonSociale },
+        ]}
+      />
 
       <PageTitre
         icone={MapPin}
         titre={entreprise.raisonSociale}
         description={`${entreprise.identifiantLegal}${entreprise.secteurCode ? ' — ' + entreprise.secteurCode : ''}${entreprise.taille ? ' — ' + entreprise.taille : ''}`}
         actions={
-          <>
-            {peutAdministrer ? (
-              <button type="button" className="btn-secondary" onClick={() => setEditionFiche((v) => !v)}>
-                <Pencil className="h-4 w-4" aria-hidden />
-                Modifier la fiche
-              </button>
-            ) : null}
-            <Link to={`/app/${entrepriseId}/questionnaire`} className="btn-primary">
-              <ListChecks className="h-4 w-4" aria-hidden />
-              Questionnaire
-            </Link>
-            {roleCourant !== 'RESPONSABLE_ENTREPRISE' ? (
-              <Link to={`/app/${entrepriseId}/utilisateurs`} className="btn-secondary">
-                <Users className="h-4 w-4" aria-hidden />
-                Utilisateurs
-              </Link>
-            ) : null}
-          </>
+          peutAdministrer ? (
+            <button type="button" className="btn-secondary" onClick={() => setEditionFiche((v) => !v)}>
+              <Pencil className="h-4 w-4" aria-hidden />
+              Modifier la fiche
+            </button>
+          ) : null
         }
+      />
+
+      <AccesOrganisation
+        entrepriseId={entrepriseId}
+        peut={peut}
+        formule={abonnement?.formuleCode}
+        roleCourant={roleCourant}
       />
 
       {editionFiche ? (
@@ -143,15 +139,10 @@ export default function EntrepriseDetail() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Revele>
           <Card className="h-full p-5">
-          <CardHeader
-            titre="Abonnement"
-            icone={Wallet}
-            action={
-              <Link to={`/app/${entrepriseId}/abonnement`} className="btn-ghost">
-                Historique des paiements
-              </Link>
-            }
-          />
+          {/* L'historique des paiements est une entrée du bloc d'accès
+              ci-dessus (« Abonnement et paiements ») : un second lien vers la
+              même adresse, à deux écrans d'intervalle, n'ajoute rien. */}
+          <CardHeader titre="Abonnement" icone={Wallet} />
           {chargementAbonnement ? (
             <Loader message="Chargement de l’abonnement…" />
           ) : abonnement ? (
@@ -203,6 +194,59 @@ export default function EntrepriseDetail() {
         </Card>
       </Revele>
     </>
+  );
+}
+
+/**
+ * Tout ce qui s'ouvre depuis cette organisation.
+ *
+ * C'est le point d'entrée de la supervision, dont le menu ne garde que ce qui
+ * vaut pour le portefeuille entier : sans sélecteur d'organisation, ses
+ * entrées par organisation visaient une entreprise choisie à sa place.
+ *
+ * Les groupes, les libellés et les conditions de visibilité viennent de
+ * `lib/navigationOrganisation.js`, le même module que la barre latérale des
+ * comptes client. Les retaper ici aurait créé la seconde navigation qui finit
+ * par diverger de la première.
+ */
+function AccesOrganisation({ entrepriseId, peut, formule, roleCourant }) {
+  const groupes = groupesDeLOrganisation(entrepriseId, { peut, formule, roleCourant });
+  if (groupes.length === 0) return null;
+
+  return (
+    <Revele>
+      <div className="mb-6 space-y-5">
+        {groupes.map((groupe) => (
+          <section key={groupe.titre}>
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+              {groupe.titre}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {groupe.liens.map((lien) => {
+                const Icone = lien.icone;
+                return (
+                  <Link
+                    key={lien.vers}
+                    to={lien.vers}
+                    className="group flex items-start gap-3 rounded-xl border border-ink-200 bg-surface p-3.5 transition-colors hover:border-brand-300 hover:bg-ink-50"
+                  >
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-600 transition-colors group-hover:bg-brand-50 group-hover:text-brand-700">
+                      <Icone className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-ink-900">{lien.libelle}</span>
+                      {lien.description ? (
+                        <span className="mt-0.5 block text-xs leading-snug text-ink-500">{lien.description}</span>
+                      ) : null}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </Revele>
   );
 }
 

@@ -130,6 +130,17 @@ export const ROLES_ADMINISTRATION_ENTREPRISE = new Set([
 ]);
 
 /**
+ * Rôles qui supervisent un portefeuille d'organisations clientes, au lieu de
+ * travailler dans la leur.
+ *
+ * Trois écrans en dépendent — la barre latérale, le tableau de bord et la liste
+ * des organisations — d'où sa place ici plutôt que dans l'un des trois.
+ * ADMIN_AUDIT a été fusionné dans SUPER_ADMIN (V43) puis désactivé (V44) : il
+ * n'y figure plus.
+ */
+export const ROLES_SUPERVISION = new Set(['SUPER_ADMIN']);
+
+/**
  * Libellés affichés. Les trois rôles désactivés (V44) y restent : un compte
  * historique consulté dans le journal d'audit doit se lire, même si le rôle
  * n'est plus attribuable. Ils n'apparaissent en revanche plus dans

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlarmClock, ArrowLeft, CheckCircle2, Download, ListTodo, PlusCircle, TriangleAlert } from 'lucide-react';
+import { AlarmClock, CheckCircle2, Download, ListTodo, PlusCircle, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
 import SustwayLoader from '../components/SustwayLoader';
 import { COULEURS, GraphiqueAnneau } from '../components/charts';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDate } from '../lib/export';
@@ -150,11 +151,12 @@ export default function PlanActions() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Actions correctives' },
+        ]}
+      />
       <PageTitre
         icone={ListTodo}
         titre="Actions correctives"

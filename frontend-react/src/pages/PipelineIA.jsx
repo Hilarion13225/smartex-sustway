@@ -5,6 +5,7 @@ import { CheckCircle2, Cpu, FileText, HelpCircle, Hourglass } from 'lucide-react
 import Revele from '../components/Revele';
 import { Alerte, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres } from '../components/charts';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 
@@ -82,6 +83,14 @@ export default function PipelineIA() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          entreprises.length > 1 && entreprise
+            ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
+            : null,
+          { libelle: 'Pipeline IA' },
+        ]}
+      />
       <PageTitre
         icone={Cpu}
         titre="Pipeline IA"

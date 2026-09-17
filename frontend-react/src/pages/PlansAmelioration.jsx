@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, ListChecks, PlusCircle, Target, TrendingUp } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { CheckCircle2, ListChecks, PlusCircle, Target, TrendingUp } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import CartePlan from '../components/plans/CartePlan';
 import FormulairePlan from '../components/plans/FormulairePlan';
+import Breadcrumb from '../components/Breadcrumb';
 import {
   LIBELLE_STATUT_PLAN,
   STATUTS_PLAN,
@@ -104,11 +105,12 @@ export default function PlansAmelioration() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Plans d’amélioration' },
+        ]}
+      />
       <PageTitre
         icone={Target}
         titre="Plans d’amélioration"

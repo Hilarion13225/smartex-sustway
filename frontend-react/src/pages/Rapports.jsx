@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import { ArrowLeft, Download, FileSpreadsheet, FileText, FileType } from 'lucide-react';
+import { Download, FileSpreadsheet, FileText, FileType } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
@@ -120,11 +120,6 @@ export default function Rapports() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à la mission
-      </Link>
-
       {/* Le nom de la mission n'est connu qu'une fois `audit` chargé : le fil
           affiche « Mission » en attendant, plutôt que d'apparaître puis de
           changer sous les yeux. */}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useOutletContext, useParams } from 'react-router-dom';
+import { useOutletContext, useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import { AlertTriangle, ArrowLeft, ClipboardX, PlusCircle } from 'lucide-react';
+import { AlertTriangle, ClipboardX, PlusCircle } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
@@ -50,11 +50,6 @@ export default function NonConformites() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à la mission
-      </Link>
-
       {/* Cette page ne charge pas la mission — elle n'en a besoin que pour
           ses écarts. Le nom vient donc des missions que le Layout tient déjà
           en mémoire ; « Mission » reste le repli le temps du chargement, ou

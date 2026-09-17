@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Download, FolderKanban, Trash2 } from 'lucide-react';
+import { ArrowRight, Download, FolderKanban, Trash2 } from 'lucide-react';
 import Revele from '../components/Revele';
-import { Alerte, Badge, Card, Loader, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
+import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { exporterCsv } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
@@ -153,34 +154,35 @@ export default function ProjetDetail() {
 
   return (
     <div className="space-y-5">
-      <Link to="/app/projets" className="btn-ghost -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Projets
-      </Link>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Projets d’audit', vers: '/app/projets' },
+          { libelle: projet.nom },
+        ]}
+      />
+
+      {/* L'en-tête passe par `PageTitre` comme toutes les autres pages : cet
+          écran et le tableau de bord étaient les deux derniers à recomposer le
+          leur à la main. Le badge de statut voyage dans `actions`, la même
+          convention que la fiche d'un référentiel. */}
+      <PageTitre
+        icone={FolderKanban}
+        titre={projet.nom}
+        description={projet.description || undefined}
+        actions={
+          <Badge ton={STATUTS[projet.statut]?.ton ?? 'neutre'}>
+            {STATUTS[projet.statut]?.libelle ?? projet.statut}
+          </Badge>
+        }
+      />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 items-start gap-3">
-          <span className="rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 p-2.5 text-white shadow-glow">
-            <FolderKanban className="h-5 w-5" aria-hidden />
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-semibold text-ink-900">{projet.nom}</h1>
-              <Badge ton={STATUTS[projet.statut]?.ton ?? 'neutre'}>
-                {STATUTS[projet.statut]?.libelle ?? projet.statut}
-              </Badge>
-            </div>
-            {projet.description ? (
-              <p className="mt-1 max-w-3xl text-sm text-ink-500">{projet.description}</p>
-            ) : null}
-            <p className="mt-1 text-xs text-ink-500">
-              {projet.referentielNom} · du {formaterDate(projet.dateDebut)}
-              {projet.dateFin ? ` au ${formaterDate(projet.dateFin)}` : ''} ·{' '}
-              {projet.nombreEntreprises}{' '}
-              organisation{projet.nombreEntreprises > 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
+        <p className="text-xs text-ink-500">
+          {projet.referentielNom} · du {formaterDate(projet.dateDebut)}
+          {projet.dateFin ? ` au ${formaterDate(projet.dateFin)}` : ''} ·{' '}
+          {projet.nombreEntreprises}{' '}
+          organisation{projet.nombreEntreprises > 1 ? 's' : ''}
+        </p>
 
         <div className="flex w-full flex-wrap gap-2 sm:w-auto">
           {/* Largeur bornée : les noms de domaines du référentiel Smartex font

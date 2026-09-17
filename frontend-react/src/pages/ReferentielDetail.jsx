@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { BookOpen, ChevronDown, ChevronRight, PlusCircle } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Tableau, Vide } from '../components/ui';
@@ -8,6 +8,7 @@ import VoletExigences from '../components/referentiel/VoletExigences';
 import VoletVersions from '../components/referentiel/VoletVersions';
 import { memoriserConsultation } from '../components/referentiel/derniersConsultes';
 import { api, ApiError } from '../lib/apiClient';
+import Breadcrumb from '../components/Breadcrumb';
 import { useApiAuth } from '../auth/useApiAuth';
 import { TONS_CRITICITE, TONS_STATUT_REFERENTIEL as TONS_STATUT } from '../lib/tonsStatuts';
 
@@ -91,17 +92,21 @@ export default function ReferentielDetail() {
 
   return (
     <>
-      <Link to="/app/referentiels" className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour aux référentiels
-      </Link>
-
       {chargement ? (
         <Loader message="Chargement du référentiel…" />
       ) : !referentiel ? (
         <Vide message="Référentiel introuvable." />
       ) : (
         <>
+          {/* À l'intérieur de cette branche seulement : le fil nomme le
+              référentiel, qui n'existe pas encore pendant le chargement. */}
+          <Breadcrumb
+            elements={[
+              { libelle: 'Référentiels', vers: '/app/referentiels' },
+              { libelle: referentiel.nom },
+            ]}
+          />
+
           <PageTitre
             icone={BookOpen}
             titre={referentiel.nom}

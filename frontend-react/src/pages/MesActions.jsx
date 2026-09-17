@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { AlarmClock, ArrowLeft, CheckCircle2, ListChecks, Target } from 'lucide-react';
+import { AlarmClock, CheckCircle2, ListChecks, Target } from 'lucide-react';
 import Revele from '../components/Revele';
 import SustwayLoader from '../components/SustwayLoader';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { useApiAuth } from '../auth/useApiAuth';
 import { formaterDate } from '../lib/export';
 import {
@@ -84,11 +85,12 @@ export default function MesActions() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Mes actions' },
+        ]}
+      />
       <PageTitre
         icone={ListChecks}
         titre="Mes actions"

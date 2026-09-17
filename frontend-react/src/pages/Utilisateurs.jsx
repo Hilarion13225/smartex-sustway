@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Hourglass, KeyRound, Minus, Pencil, ShieldCheck, UserMinus, UserPlus, Users, XCircle } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Check, Hourglass, KeyRound, Minus, Pencil, ShieldCheck, UserMinus, UserPlus, Users, XCircle } from 'lucide-react';
 import Revele from '../components/Revele';
 import SustwayLoader from '../components/SustwayLoader';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { PERMISSIONS_PAR_ROLE, ROLE_LIBELLE, possedePermission } from '../auth/permissions';
@@ -131,11 +132,12 @@ export default function Utilisateurs() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Utilisateurs et permissions' },
+        ]}
+      />
       <PageTitre
         icone={Users}
         titre="Utilisateurs et permissions"

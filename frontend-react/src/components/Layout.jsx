@@ -5,23 +5,15 @@ import {
   Building2,
   ChevronDown,
   ClipboardList,
-  ClipboardX,
   Columns3,
   FolderKanban,
   FolderOpen,
-  FileText,
-  History,
   LayoutDashboard,
-  Leaf,
   ListChecks,
-  ListTodo,
   Menu,
-  Sparkles,
   Target,
   Trophy,
-  Users,
   UserCog,
-  Wallet,
   X,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -30,7 +22,8 @@ import { useTheme } from '../theme/ThemeContext';
 import EnTeteApp from './EnTeteApp';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { ROLE_LIBELLE, ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
+import { ROLE_LIBELLE, ROLES_SUPERVISION } from '../auth/permissions';
+import { GROUPES_ORGANISATION, lienVisible as lienAutorise } from '../lib/navigationOrganisation';
 import { SMARTEX } from '../config/smartex';
 
 const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
@@ -38,59 +31,59 @@ const CLE_ENTREPRISE_COURANTE = 'smartex.entrepriseCouranteId';
 const SEUIL_RECHERCHE_ENTREPRISE = 6;
 const CLE_GROUPES_REPLIES = 'smartex.sidebarGroupesReplies';
 
-/** Au-delà de ce nombre d'entreprises accessibles, le sélecteur affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
-
-// ROLES_ADMINISTRATION_ENTREPRISE est défini dans auth/permissions.js : le
-// tableau de bord en a besoin lui aussi pour savoir s'il peut lire le
-// journal, et deux copies finiraient par diverger.
-
 /**
- * Navigation groupée façon Pilotage / Audit / Administration. Un lien sans
- * `entreprise: true` est une route globale ; les autres pointent vers
- * l'entreprise actuellement sélectionnée dans le sélecteur de la sidebar
- * (voir plus bas) — notre application est multi-tenant (section 2.2), donc
- * contrairement au prototype de référence il n'existe pas de route plate
- * unique pour « les non-conformités » ou « le journal » : il faut toujours
- * une entreprise de contexte.
+ * Navigation de supervision : uniquement ce qui vaut pour le portefeuille
+ * entier.
+ *
+ * Elle portait onze entrées visant une organisation précise — bibliothèque,
+ * non-conformités, rapports, journal, abonnement… — alors que le sélecteur
+ * d'organisation est refusé à ce rôle (voir plus bas). L'identifiant employé
+ * retombait sur `entreprises[0]` : on cliquait « Bibliothèque documentaire »
+ * et on atterrissait chez une organisation qu'on n'avait ni choisie ni vue
+ * nommée. Ces entrées vivent maintenant dans la fiche de l'organisation, où
+ * le contexte est explicite — voir `lib/navigationOrganisation.js`, qui les
+ * définit une seule fois pour la fiche et pour la barre des comptes client.
+ *
+ * L'application est multi-tenant (section 2.2) : il n'existe pas de route
+ * plate pour « les non-conformités » ou « le journal », il faut toujours une
+ * organisation de contexte. C'est précisément pourquoi ces pages se
+ * rejoignent par une organisation plutôt que par ce menu.
  */
 const GROUPES_AUDIT = [
   {
-    titre: 'Navigation',
+    titre: 'Pilotage',
     liens: [
-      { vers: '/app', libelle: 'Vue générale', icone: LayoutDashboard, fin: true },
+      { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
+      { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
       {
-        chemin: (id) => `/app/${id}/audits`,
-        libelle: 'Missions d’audit',
-        icone: ClipboardList,
-        // Les sous-entrées visent la même page avec un filtre : « à valider »
-        // n'est pas un statut du modèle mais une mission entièrement évaluée
-        // et non close (voir AuditsListe).
-        enfants: [
-          { libelle: 'Toutes les missions', chemin: (id) => `/app/${id}/audits` },
-          { libelle: 'En cours', chemin: (id) => `/app/${id}/audits?statut=EN_COURS` },
-          { libelle: 'À valider', chemin: (id) => `/app/${id}/audits?vue=a-valider` },
-          { libelle: 'Terminées', chemin: (id) => `/app/${id}/audits?statut=TERMINE` },
-        ],
+        vers: '/app/comparaison',
+        libelle: 'Comparer les organisations',
+        icone: Columns3,
+        multiOrganisation: true,
       },
+    ],
+  },
+  {
+    titre: 'Parcours d’audit',
+    liens: [
       {
         vers: '/app/entreprises',
         libelle: 'Organisations',
         icone: Building2,
-        enfants: [
-          { libelle: 'Liste', vers: '/app/entreprises' },
-          { libelle: 'Profil organisation', chemin: (id) => `/app/${id}` },
-          { libelle: 'Historique des audits', chemin: (id) => `/app/${id}/audits` },
-        ],
+        description: 'Le portefeuille. Tout ce qui concerne une organisation s’ouvre depuis sa fiche.',
       },
       {
         // Un projet traverse les organisations : il n'a pas d'entreprise de
         // contexte, d'où un chemin global comme le classement.
         vers: '/app/projets',
-        libelle: 'Projets',
+        libelle: 'Projets d’audit',
         icone: FolderKanban,
       },
-      { vers: '/app/classement', libelle: 'Classement', icone: Trophy },
-      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
+    ],
+  },
+  {
+    titre: 'Administration',
+    liens: [
       {
         vers: '/app/referentiels',
         libelle: 'Référentiels',
@@ -99,41 +92,10 @@ const GROUPES_AUDIT = [
         // `referentiel:administrer` est portée par SUPER_ADMIN.
         permission: 'referentiel:administrer',
         enfants: [
-          { libelle: 'Domaines et critères', vers: '/app/referentiels' },
+          { libelle: 'Référentiels', vers: '/app/referentiels' },
           { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
         ],
       },
-      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports', icone: FileText, permission: 'rapport:consulter' },
-      { chemin: (id) => `/app/${id}/utilisateurs`, libelle: 'Utilisateurs et permissions', icone: Users },
-    ],
-  },
-  {
-    // Les pages hors navigation principale restent listées ici : les retirer
-    // les rendrait inatteignables alors qu'elles existent et sont routées.
-    titre: 'Suivi',
-    liens: [
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Bibliothèque documentaire', icone: FolderOpen },
-      // Ces trois entrées se suivent et se ressemblent. Leur différence
-      // tient à l'origine de ce qu'elles listent — un écart, la correction
-      // d'un écart, un axe validé — et rien dans le menu ne la disait :
-      // il fallait ouvrir chaque page pour la découvrir.
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX, description: 'Les écarts constatés, toutes missions confondues.' },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo, description: 'Les actions qui traitent ces écarts. Elles naissent des non-conformités.' },
-      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target, description: 'Construits à partir des axes validés — distincts des actions correctives.' },
-      { vers: '/app/comparaison', libelle: 'Comparer les organisations', icone: Columns3 },
-      {
-        chemin: (id) => `/app/${id}/financements-verts`,
-        libelle: 'Financements verts',
-        icone: Leaf,
-        permission: 'bailleur:consulter',
-      },
-    ],
-  },
-  {
-    titre: 'Paramètres',
-    liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et paiements', icone: Wallet, administration: true },
-      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
       { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
     ],
   },
@@ -142,61 +104,26 @@ const GROUPES_AUDIT = [
 /**
  * Navigation des comptes côté client — responsable d'entreprise et employé.
  *
- * Elle reste organisée par métier (pilotage, audit, administration) et donne
- * accès à toutes les pages opérationnelles : collecte de preuves, écarts,
- * plans d'actions, abonnement. Le responsable audit, lui, suit une
- * arborescence resserrée sur la supervision (voir GROUPES_AUDIT).
+ * Le groupe « Pilotage » lui appartient : il porte le tableau de bord et la
+ * comparaison, qui embrassent plusieurs organisations. Les trois groupes
+ * suivants viennent de `lib/navigationOrganisation.js`, partagé avec la fiche
+ * d'organisation — une seconde liste de libellés et de permissions aurait fini
+ * par diverger de la première.
  */
 const GROUPES_ENTREPRISE = [
   {
     titre: 'Pilotage',
     liens: [
       { vers: '/app', libelle: 'Tableau de bord', icone: LayoutDashboard, fin: true },
-      { vers: '/app/comparaison', libelle: 'Comparer les organisations', icone: Columns3 },
-      { chemin: (id) => `/app/${id}/rapports`, libelle: 'Rapports RSE', icone: FileText, permission: 'rapport:consulter' },
       {
-        chemin: (id) => `/app/${id}/financements-verts`,
-        libelle: 'Financements verts',
-        icone: Leaf,
-        permission: 'bailleur:consulter',
+        vers: '/app/comparaison',
+        libelle: 'Comparer les organisations',
+        icone: Columns3,
+        multiOrganisation: true,
       },
     ],
   },
-  {
-    titre: 'Audit',
-    liens: [
-      { vers: '/app/entreprises', libelle: 'Organisations et sites', icone: Building2 },
-      { chemin: (id) => `/app/${id}/audits`, libelle: 'Missions d’audit', icone: ClipboardList },
-      { chemin: (id) => `/app/${id}/documents`, libelle: 'Bibliothèque documentaire', icone: FolderOpen },
-      { chemin: (id) => `/app/${id}/pipeline-ia`, libelle: 'Pipeline IA', icone: Sparkles },
-      // Même triplet que dans la navigation de supervision, mêmes libellés,
-      // mêmes explications : la distinction ne doit pas dépendre du rôle.
-      { chemin: (id) => `/app/${id}/non-conformites`, libelle: 'Non-conformités', icone: ClipboardX, description: 'Les écarts constatés, toutes missions confondues.' },
-      { chemin: (id) => `/app/${id}/plan-actions`, libelle: 'Actions correctives', icone: ListTodo, description: 'Les actions qui traitent ces écarts. Elles naissent des non-conformités.' },
-      { chemin: (id) => `/app/${id}/plans`, libelle: 'Plans d’amélioration', icone: Target, description: 'Construits à partir des axes validés — distincts des actions correctives.' },
-    ],
-  },
-  {
-    titre: 'Administration',
-    liens: [
-      { chemin: (id) => `/app/${id}/abonnement`, libelle: 'Abonnement et paiements', icone: Wallet, administration: true },
-      { chemin: (id) => `/app/${id}/journal`, libelle: 'Journal d’audit', icone: History, administration: true },
-      {
-        vers: '/app/referentiels',
-        libelle: 'Référentiels',
-        icone: BookOpen,
-        permission: 'referentiel:administrer',
-        // Même sous-menu que dans la navigation de supervision. L'entrée reste
-        // masquée tant que le rôle ne porte pas `referentiel:administrer` —
-        // c'est le filtre existant qui décide, pas cette déclaration.
-        enfants: [
-          { libelle: 'Domaines et critères', vers: '/app/referentiels' },
-          { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
-        ],
-      },
-      { vers: '/app/profil', libelle: 'Profil & sécurité', icone: UserCog },
-    ],
-  },
+  ...GROUPES_ORGANISATION,
 ];
 
 /**
@@ -266,10 +193,6 @@ const GROUPES_COLLABORATEUR = [
   },
 ];
 
-/** Rôles qui conservent la navigation de supervision resserrée. */
-// Navigation de supervision. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN
-// (V43) puis désactivé (V44).
-const ROLES_NAVIGATION_AUDIT = new Set(['SUPER_ADMIN']);
 
 const JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS = [
@@ -418,7 +341,7 @@ export default function Layout() {
   // Trois navigations, une par famille de rôle : supervision, entreprise,
   // participation. Le collaborateur héritait jusqu'ici de celle du
   // responsable d'entreprise, qui l'emmène bien au-delà de ses tâches.
-  const groupes = ROLES_NAVIGATION_AUDIT.has(roleCourant)
+  const groupes = ROLES_SUPERVISION.has(roleCourant)
     ? GROUPES_AUDIT
     : roleCourant === 'COLLABORATEUR'
       ? GROUPES_COLLABORATEUR
@@ -462,10 +385,16 @@ export default function Layout() {
     if (cible) navigate(cible);
   }
 
+  // Le prédicat vit dans `lib/navigationOrganisation.js` : la fiche
+  // d'organisation affiche les mêmes liens et doit les masquer aux mêmes
+  // conditions.
   function lienVisible(lien) {
-    if (lien.permission && !peut(lien.permission, formuleCourante)) return false;
-    if (lien.administration && !ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant)) return false;
-    return true;
+    return lienAutorise(lien, {
+      peut,
+      formule: formuleCourante,
+      roleCourant,
+      nombreOrganisations: entreprises.length,
+    });
   }
 
   return (
@@ -511,9 +440,12 @@ export default function Layout() {
           </button>
         </div>
 
-        {/* Sélecteur réservé aux comptes côté client : le responsable audit
-            voit toutes les organisations et son contexte suit l'adresse. */}
-        {!ROLES_NAVIGATION_AUDIT.has(roleCourant) && entreprises.length > 0 ? (
+        {/* Sélecteur réservé aux comptes côté client — la supervision n'a plus
+            d'entrée liée à une organisation dans son menu, tout passe par la
+            fiche — et seulement à partir de deux organisations : en dessous,
+            c'est un déroulant sans choix. Le masquer ne change rien aux liens,
+            l'organisation courante restant déduite de l'adresse. */}
+        {!ROLES_SUPERVISION.has(roleCourant) && entreprises.length > 1 ? (
           <div className="relative px-5 pb-3">
             <label
               className="titre-sidebar mb-1.5 block text-[11px] font-semibold uppercase tracking-wider"

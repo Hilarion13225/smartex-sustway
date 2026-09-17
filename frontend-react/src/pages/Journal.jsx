@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Download, History, Search } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { Download, History, Search } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
+import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv, formaterDateHeure } from '../lib/export';
@@ -104,11 +105,12 @@ export default function Journal() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à l’organisation
-      </Link>
-
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: 'Journal d’audit' },
+        ]}
+      />
       <PageTitre
         icone={History}
         titre="Journal d’audit"
