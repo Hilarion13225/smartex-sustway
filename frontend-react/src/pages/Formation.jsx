@@ -37,7 +37,7 @@ const SECTEURS = [
 
 
 const classeTitreSection =
-  'font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-ink-900 sm:text-[2.75rem] [text-wrap:balance]';
+  'titre-section text-ink-900';
 
 /**
  * Page « Se former ».
@@ -56,7 +56,7 @@ export default function Formation() {
           <div className="min-w-0">
             <h1 className="titre-page max-w-[16ch] text-ink-900">Développez vos compétences en RSE et ESG.</h1>
 
-            <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-ink-600">
+            <p className="mt-6 texte-chapo text-ink-600">
               Ateliers, séminaires, conférences et certificats de spécialisation : des formations pratiques pour passer
               de la théorie à l’action.
             </p>
@@ -97,11 +97,11 @@ export default function Formation() {
       </section>
 
       {/* -------------------------------------------------- Nos thématiques */}
-      <section id="thematiques" className="scroll-mt-20 border-b border-ink-200">
+      <section id="thematiques" className="border-b border-ink-200">
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
-            <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Des contenus adaptés à votre activité.</h2>
-            <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
+            <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Des contenus <span className="text-brand-600">adaptés à votre activité</span>.</h2>
+            <p className="mx-auto mt-4 texte-chapo text-center text-ink-600">
               Les enjeux RSE d’une banque ne sont pas ceux d’une mine. Chaque thématique part des réalités de votre
               secteur.
             </p>

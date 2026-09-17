@@ -18,15 +18,18 @@ export default function AppelAction({
   texte = 'Choisissez votre formule et commencez aujourd’hui. Accès à la plateforme dès le paiement validé.',
   action = { libelle: 'Choisir une formule', vers: '/formules#grille-formules' },
   secondaire = { libelle: 'Demander une démonstration', vers: '/contact' },
+  // Bord oblique : éteint par défaut, parce que ce bandeau ferme sept pages et
+  // qu'une pente sur toutes ferait du procédé un tic plutôt qu'un accent.
+  diagonale = false,
 }) {
   return (
-    <section className="bg-[#14234B] text-white">
+    <section className={`bg-[#14234B] text-white${diagonale ? ' bord-diagonal' : ''}`}>
       <div className="mx-auto grid max-w-[90rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
         <div className="max-w-2xl">
-          <h2 className="font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-white [text-wrap:balance] sm:text-[2.5rem]">
+          <h2 className="titre-section text-white">
             {typoFr(titre)}
           </h2>
-          {texte ? <p className="mt-4 max-w-[56ch] text-lg leading-relaxed text-white/75">{typoFr(texte)}</p> : null}
+          {texte ? <p className="mt-4 texte-chapo text-white/75">{typoFr(texte)}</p> : null}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row">

@@ -56,8 +56,8 @@ function cadreOsm(portee) {
 const RENVOIS = [
   {
     titre: 'Votre question est peut-être déjà posée.',
-    texte: `Méthode, formules, confidentialité : les réponses les plus demandées sur ${SMARTEX.produit}.`,
-    lien: { vers: '/faq', libelle: 'Lire les questions fréquentes' },
+    texte: `Notation, référentiels, justification des écarts : les réponses les plus demandées sur ${SMARTEX.produit}.`,
+    lien: { vers: '/methodologie#questions', libelle: 'Lire les questions fréquentes' },
   },
   {
     titre: 'Former vos équipes à la RSE et à l’ESG.',
@@ -238,9 +238,9 @@ export default function Contact() {
     <div>
       {/* ------------------------------------------------ Héros typographique */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[90rem] px-5 py-14 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h1 className="titre-page max-w-[20ch] text-ink-900">Parlons de votre projet.</h1>
-          <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">
+          <p className="mt-6 texte-chapo text-ink-600">
             Entreprise, institution, ONG ou organisation internationale : décrivez-nous le périmètre à évaluer. Nous
             répondons sous 24 h ouvrées.
           </p>
@@ -248,17 +248,17 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
-      <section id="formulaire" className="scroll-mt-20 border-b border-ink-200">
-        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+      <section id="formulaire" className="border-b border-ink-200">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">
-            <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]">
+            <h2 className="titre-section text-ink-900">
               Nos coordonnées
             </h2>
 
             {/* Une liste à filets, lisible d'un coup d'œil, au lieu d'une
                 rangée de quatre pastilles d'icônes. */}
-            <dl className="mt-6 divide-y divide-ink-200 border-y border-ink-200">
+            <dl className="mt-12 divide-y divide-ink-200 border-y border-ink-200">
               <div className="py-4">
                 <dt className="text-sm text-ink-500">E-mail</dt>
                 <dd className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -365,7 +365,7 @@ export default function Contact() {
               <h2
                 ref={titreConfirmation}
                 tabIndex={-1}
-                className="mt-5 font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 outline-none sm:text-[1.875rem]"
+                className="mt-5 titre-section text-ink-900 outline-none"
               >
                 Message envoyé.
               </h2>
@@ -388,10 +388,10 @@ export default function Contact() {
             aria-busy={envoi.etat === 'envoi'}
             className="order-1 min-w-0 self-start rounded-[12px] border border-ink-200 bg-surface p-6 sm:p-8 lg:order-2"
           >
-            <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]">
+            <h2 className="titre-section text-ink-900">
               Écrivez-nous
             </h2>
-            <p className="mt-2 text-[15px] text-ink-600">
+            <p className="mt-4 text-[15px] text-ink-600">
               Les champs marqués d’un <span className="text-brand-600">*</span> sont obligatoires.
             </p>
 
@@ -574,10 +574,10 @@ export default function Contact() {
 
       {/* ---------------------------------------------------------- Renvois */}
       <section className="bg-surface">
-        <ul className="mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-16 md:grid-cols-2 md:gap-16">
+        <ul className="mx-auto grid max-w-[90rem] gap-10 px-5 py-16 sm:py-20 md:grid-cols-2 md:gap-16">
           {RENVOIS.map((renvoi) => (
             <li key={renvoi.lien.vers} className="flex flex-col border-t border-ink-300 pt-5">
-              <h2 className="font-display text-xl font-bold leading-snug text-ink-900 sm:text-[1.375rem]">{renvoi.titre}</h2>
+              <h2 className="titre-objet text-ink-900">{renvoi.titre}</h2>
               <p className="mt-2 max-w-[48ch] text-[15px] leading-relaxed text-ink-600">{renvoi.texte}</p>
               <Link to={renvoi.lien.vers} viewTransition className="lien-trait mt-3 text-base">
                 {renvoi.lien.libelle}

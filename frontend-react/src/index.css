@@ -3,6 +3,22 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- Où atterrit une ancre ------------------------------------------
+   * L'en-tête de la vitrine est collant et haut de 65 px. Sans marge de
+   * défilement, une section visée par une ancre se range dessous. Chaque
+   * page l'avait compris seule, avec sa propre valeur — mesuré au
+   * navigateur, la même ancre arrivait à 15 px sous l'en-tête sur Contact
+   * et Formation, 31 px sur Formules, 113 px sur Services. Une valeur ici
+   * remplace les quatre : 88 px, soit la hauteur de l'en-tête et de quoi
+   * respirer au-dessus du titre visé.
+   *
+   * La règle porte aussi le critère WCAG 2.2 « Focus Not Obscured » : au
+   * clavier, Chrome tient compte du collant de lui-même (vérifié sur
+   * 74 tabulations), les autres moteurs non. */
+  html {
+    scroll-padding-top: 5.5rem;
+  }
+
   /*
    * Palette "ink" et "surface" en variables CSS plutôt qu'en hexadécimal figé
    * dans tailwind.config.js : la classe .dark (posée sur l'élément html par
@@ -39,6 +55,12 @@
     --brand-800: 92 19 16;
     --brand-900: 67 14 12;
     --feuille: 5 150 105;
+    /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
+       servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
+       derivent — l'une tres sombre pour la section pleine, l'autre tres
+       claire pour les cartes posees dessus — et ne portent aucun verdict. */
+    --vert-profond: 12 50 39;
+    --vert-clair: 214 240 224;
   }
   .dark {
     --ink-50: 16 20 28;
@@ -89,6 +111,12 @@
     --brand-800: 90 16 12;
     --brand-900: 62 11 8;
     --feuille: 6 122 85;
+    /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
+       servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
+       derivent — l'une tres sombre pour la section pleine, l'autre tres
+       claire pour les cartes posees dessus — et ne portent aucun verdict. */
+    --vert-profond: 12 50 39;
+    --vert-clair: 214 240 224;
   }
   /*
    * En-tete toujours clair, meme sur une page qui impose le sombre.
@@ -127,6 +155,12 @@
     --brand-800: 92 19 16;
     --brand-900: 67 14 12;
     --feuille: 5 150 105;
+    /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
+       servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
+       derivent — l'une tres sombre pour la section pleine, l'autre tres
+       claire pour les cartes posees dessus — et ne portent aucun verdict. */
+    --vert-profond: 12 50 39;
+    --vert-clair: 214 240 224;
   }
 
   /* Palette sombre de la vitrine. Elle ne repond plus a `.dark` mais a
@@ -161,6 +195,12 @@
     --brand-800: 238 150 140;
     --brand-900: 246 196 190;
     --feuille: 63 180 136;
+    /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
+       servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
+       derivent — l'une tres sombre pour la section pleine, l'autre tres
+       claire pour les cartes posees dessus — et ne portent aucun verdict. */
+    --vert-profond: 12 50 39;
+    --vert-clair: 214 240 224;
   }
 
   html,
@@ -689,6 +729,44 @@ input.border-none:focus-visible {
   line-height: 1.04;
 }
 
+/* --- Les deux crans sous le titre de page ----------------------------- */
+/* Le même rôle s'écrivait à trois tailles selon la page : 2,75 rem sur
+   Méthodologie, Services, Formules et Formation ; 2 rem sur Déploiement et
+   Ressources ; 1,875 rem sur Contact et la FAQ. Chaque page avait recopié sa
+   propre chaîne d'utilitaires, et les valeurs avaient dérivé. Un lecteur qui
+   passe d'une page à l'autre ne voit pas trois nuances de titre, il voit une
+   hiérarchie qui ne tient pas.
+   Une valeur par rôle, portée par le socle. Le pas est franc — 56 / 40 / 22 —
+   là où 56 / 44 laissait le titre de section trop près du titre de page pour
+   qu'on les distingue d'un coup d'œil. Le crénage suit la taille : plus le
+   corps est grand, plus il se resserre. */
+.vitrine .titre-section {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 1.15rem + 2vw, 2.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.vitrine .titre-objet {
+  font-family: Satoshi, Inter, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.1875rem, 1.05rem + 0.45vw, 1.375rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* --- Le paragraphe d'entrée ------------------------------------------- */
+/* Mesuré à 18 px sur Méthodologie et Services, 17 px sur Déploiement : même
+   rôle, deux corps — et sept largeurs de ligne, de 50ch à 62ch, pour la même
+   phrase d'ouverture. La mesure est bornée ici plutôt que page par page :
+   c'est elle, pas la taille, qui décide si une ligne se lit d'un trait. */
+.vitrine .texte-chapo {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 60ch;
+}
+
 /* --- Le spécimen du héros : le seul mouvement de la vitrine ------------- */
 /* État de repos = état final : sans animation (ou sous « réduire les
    animations »), le passage est surligné, le lien tracé, le verdict et la
@@ -924,4 +1002,62 @@ input.border-none:focus-visible {
 .vitrine .btn-vitrine-clair {
   font-size: 1rem;
   font-weight: 600;
+}
+
+/* --- Bandeau de référentiels : le seul défilement de la vitrine ---------
+   Le mouvement est continu, donc il doit pouvoir s'arrêter. Trois sorties,
+   parce qu'une seule ne suffit jamais : le survol, le focus clavier de
+   n'importe quel élément du bandeau, et un bouton explicite — WCAG 2.2.2
+   l'exige pour tout mouvement dépassant cinq secondes. Sous « réduire les
+   animations », il ne démarre pas du tout. */
+.vitrine .bandeau-defile {
+  animation: defile-bandeau 42s linear infinite;
+  will-change: transform;
+}
+.vitrine .bandeau-arret:hover .bandeau-defile,
+.vitrine .bandeau-arret:focus-within .bandeau-defile,
+.vitrine .bandeau-defile[data-pause='true'] {
+  animation-play-state: paused;
+}
+@keyframes defile-bandeau {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* La liste est écrite deux fois : à mi-course, la copie occupe la place
+       de l'original et la boucle est invisible. */
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine .bandeau-defile {
+    animation: none;
+  }
+}
+
+/* --- Bord oblique entre deux plages ------------------------------------
+   La section remonte de la hauteur de sa pente et se découpe d'autant : le
+   triangle retiré laisse voir la section qui la précède, quelle que soit sa
+   couleur. Le retrait compense la remontée, pour que le contenu ne bouge pas
+   d'un pixel — sans lui, le premier titre passerait sous l'oblique.
+   Sous 768 px la pente est réduite : à 4,5 rem sur un écran étroit, elle
+   mangeait un tiers de la hauteur visible. */
+.vitrine .bord-diagonal {
+  --pente: 4.5rem;
+  margin-top: calc(var(--pente) * -1);
+  padding-top: var(--pente);
+  clip-path: polygon(0 var(--pente), 100% 0, 100% 100%, 0 100%);
+}
+@media (max-width: 767px) {
+  .vitrine .bord-diagonal {
+    --pente: 2rem;
+  }
+}
+
+/* --- Le chiffre-clé posé sur une plage sombre --------------------------
+   Le bordeaux de `.chiffre-cle` descend à 2,4:1 sur le marine : il se voit
+   mais ne se lit plus. Sur fond sombre, le repère chiffré prend donc le vert
+   clair, qui ne porte aucun verdict lui non plus. */
+.vitrine .chiffre-cle.sur-sombre {
+  color: rgb(var(--vert-clair));
 }

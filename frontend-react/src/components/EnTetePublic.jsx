@@ -43,15 +43,14 @@ const LIENS = [
 const ACTION = { vers: '/formules#grille-formules', libelle: 'Choisir une formule' };
 
 /*
- * Lien de bureau. La page active est marquée par un trait bordeaux posé sur la
- * bordure basse de l'en-tête — comme l'onglet ouvert d'un registre — plutôt
- * que par un soulignement flottant sous le mot.
+ * Lien de bureau. La page active est marquée par une pastille bordeaux très
+ * claire, posée derrière le mot : sur une barre arrondie et détachée, un trait
+ * collé à la bordure basse n'avait plus de bordure où se poser.
  */
 function classeLien({ isActive }) {
   return clsx(
-    'relative flex h-16 items-center px-2 text-[15px] font-medium transition-colors',
-    'after:absolute after:inset-x-2 after:-bottom-px after:h-0.5 after:bg-brand-600',
-    isActive ? 'text-ink-900 after:opacity-100' : 'text-ink-600 after:opacity-0 hover:text-ink-900'
+    'flex min-h-10 items-center rounded-[8px] px-2.5 text-[15px] font-medium transition-colors',
+    isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
   );
 }
 
@@ -127,13 +126,25 @@ export default function EnTetePublic() {
   }, [ouvert]);
 
   return (
-    // Fond plein, sans flou ni ombre : l'en-tête est une bande du registre,
-    // pas une vitre posée au-dessus de la page.
-    <header className="sticky top-0 z-40 border-b border-ink-200 bg-ink-50">
-      {/* Espacements serrés au plus juste : avec cinq liens, la barre complète
+    // Barre posée sur la page plutôt que collée à son bord : une carte blanche
+    // aux angles arrondis, détachée des bords par une marge.
+    //
+    // L'en-tête lui-même n'a pas de fond. C'est ce qui fait que la marge prend
+    // la couleur de la page quelle qu'elle soit : papier sur la vitrine, décor
+    // sombre sur la page d'entrée. Un fond clair posé là dessinait un cadre
+    // pâle autour de la carte, visible dès que la page en dessous était
+    // sombre. La carte, elle, reste pleine et opaque : les liens ne sont
+    // jamais brouillés par ce qui défile derrière.
+    <header className="sticky top-0 z-40 px-3 pb-2 pt-2.5 sm:px-5">
+      {/* Espacements serrés au plus juste : avec six liens, la barre complète
           tient dans les 1200 px de la vitrine avec une vingtaine de pixels de
           marge. Ajouter un lien demande de revérifier à 1200 px. */}
-      <div className="mx-auto flex h-16 max-w-[90rem] items-center gap-4 px-5">
+      <div
+        className={clsx(
+          'mx-auto flex h-16 max-w-[90rem] items-center gap-4 bg-surface px-5 shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
+          ouvert ? 'rounded-t-[14px]' : 'rounded-[14px]'
+        )}
+      >
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" />
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
@@ -196,17 +207,27 @@ export default function EnTetePublic() {
         </div>
       </div>
 
-      {/* Panneau plein écran sous l'en-tête. Rendu dans l'en-tête et non dans
-          un portail : il reste ainsi sous l'enveloppe `.vitrine`, dont il
+      {/* Le panneau prolonge la carte de l'en-tête : mêmes marges latérales,
+          même blanc, mêmes angles en bas, et la carte renonce aux siens en haut
+          du panneau — les deux ne font qu'une pièce. Rendu dans l'en-tête et non
+          dans un portail : il reste ainsi sous l'enveloppe `.vitrine`, dont il
           reprend la palette et les règles de focus. `fixed` se cale sur la
           fenêtre, l'en-tête collant n'ayant aucune transformation. */}
       {ouvert ? (
         <div
           id="menu-mobile"
           ref={panneauMenu}
-          className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto overscroll-contain border-t border-ink-200 bg-ink-50 motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1320px]:hidden"
+          className={clsx(
+            'fixed inset-x-3 top-[74px] z-40 overflow-y-auto overscroll-contain sm:inset-x-5',
+            // Il descend jusqu'au contenu, pas jusqu'au bas de la fenêtre : six
+            // liens ne remplissent pas un écran, et un grand rectangle blanc à
+            // moitié vide n'apprend rien. Au-delà, il défile.
+            'max-h-[calc(100svh-5.5rem)] rounded-b-[14px] border-t border-ink-200 bg-surface',
+            'shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
+            'motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1320px]:hidden'
+          )}
         >
-        <nav className="mx-auto flex max-w-[90rem] flex-col px-5 pb-10 pt-2" aria-label="Navigation principale">
+        <nav className="flex flex-col px-5 pb-6 pt-1" aria-label="Navigation principale">
           {/* Le panneau mobile occupe tout l'ecran : un second niveau repliable
               y ajouterait un geste sans rien reveler de plus. Le groupe est donc
               annonce par son intitule, ses pages listees en dessous. */}

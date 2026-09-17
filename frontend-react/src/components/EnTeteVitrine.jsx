@@ -26,15 +26,15 @@ export default function EnTeteVitrine({ icone, titre, description, image, video,
       <div
         className={
           image
-            ? 'mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-16'
-            : 'mx-auto max-w-[90rem] px-5 py-14 sm:py-20'
+            ? 'mx-auto grid max-w-[90rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-16'
+            : 'mx-auto max-w-[90rem] px-5 py-16 sm:py-20'
         }
       >
         <div className="min-w-0">
           <h1 className="titre-page max-w-[24ch] text-ink-900">
             {typoFr(titre)}
           </h1>
-          {chapo ? <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">{typoFr(chapo)}</p> : null}
+          {chapo ? <p className="mt-6 texte-chapo text-ink-600">{typoFr(chapo)}</p> : null}
 
           {reperes?.length ? (
             <ul className="mt-10 flex flex-col gap-3 border-t border-ink-200 pt-6 sm:flex-row sm:flex-wrap sm:gap-x-10">

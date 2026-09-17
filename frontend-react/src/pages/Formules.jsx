@@ -1,9 +1,29 @@
-import { Link } from 'react-router-dom';
 import { Check, Minus } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
 import Revele from '../components/Revele';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
-import { COMPARATIF } from '../lib/formules';
+import ListeQuestions from '../components/vitrine/ListeQuestions';
+import { COMPARATIF, QUESTIONS } from '../lib/formules';
+
+/*
+ * Les questions que l'on se pose avant de choisir. Elles étaient rendues sur
+ * une page « Questions fréquentes » commune ; cette page mêlait la méthodologie, la
+ * notation et les tarifs, et aucune page ne portait plus son sujet en entier.
+ * Elles reviennent donc ici, là où l'acheteur se décide.
+ *
+ * La première vient de cette même page et y était classée sous « la
+ * démarche » : sa réponse distingue Standard, Avancées et Entreprise, c'est
+ * donc une différence d'offre. Elle est reprise mot pour mot, comme les six
+ * suivantes, qui restent lues depuis `lib/formules` — une seule source.
+ */
+const QUESTIONS_AVANT_DE_CHOISIR = [
+  {
+    question: 'Un expert relit-il les résultats ?',
+    reponse:
+      'En formule Standard, l’évaluation est réalisée par le pipeline d’agents IA, et chaque critère affiche un indice de confiance. En formules Avancées et Entreprise, un critère dont l’indice de confiance est jugé insuffisant est relu par un expert avant d’être validé.',
+  },
+  ...QUESTIONS,
+];
 
 /*
  * Colonnes du comparatif. Les valeurs de COMPARATIF sont écrites pour ces trois
@@ -76,7 +96,7 @@ const ETAPES_ACHAT = [
 ];
 
 const classeTitreSection =
-  'font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-ink-900 sm:text-[2.75rem] [text-wrap:balance]';
+  'titre-section text-ink-900';
 
 /**
  * Page « Formules ».
@@ -101,15 +121,15 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------ Cartes formules */}
-      <section id="grille-formules" className="mx-auto max-w-[90rem] scroll-mt-24 px-5 pb-16 pt-6">
+      <section id="grille-formules" className="mx-auto max-w-[90rem] px-5 pb-16 pt-6">
         <GrilleFormules />
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}
-      <section className="border-t border-ink-200">
+      <section id="achat" className="border-t border-ink-200">
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Comment se passe <span className="text-brand-600">l’achat</span>.</h2>
-          <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
+          <p className="mx-auto mt-4 texte-chapo text-center text-ink-600">
             Tout se fait en ligne, en quelques minutes. Pas de rendez-vous nécessaire.
           </p>
 
@@ -117,7 +137,7 @@ export default function Formules() {
             {ETAPES_ACHAT.map((etape, index) => (
               <Revele key={etape.titre} as="li" delai={index * 70} className="border-t-2 border-ink-900 pt-4">
                 <p className="text-sm font-medium tabular-nums text-ink-500">{index + 1}</p>
-                <h3 className="mt-1 font-display text-xl font-bold leading-snug text-ink-900">{etape.titre}</h3>
+                <h3 className="mt-1 titre-objet text-ink-900">{etape.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{etape.texte}</p>
               </Revele>
             ))}
@@ -126,7 +146,7 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------- Ce que tout le monde a */}
-      <section className="border-y border-ink-200 bg-surface">
+      <section id="inclus" className="border-y border-ink-200 bg-surface">
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Toutes nos formules <span className="text-brand-600">incluent</span>.</h2>
 
@@ -135,7 +155,7 @@ export default function Formules() {
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {INCLUS.map((element) => (
               <li key={element.titre} className="border-t border-ink-300 pt-4">
-                <h3 className="font-display text-xl font-bold leading-snug text-ink-900">{element.titre}</h3>
+                <h3 className="titre-objet text-ink-900">{element.titre}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{element.texte}</p>
               </li>
             ))}
@@ -144,10 +164,10 @@ export default function Formules() {
       </section>
 
       {/* ------------------------------------------------------ Comparatif */}
-      <section className="border-b border-ink-200">
+      <section id="comparatif" className="border-b border-ink-200">
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Les formules, <span className="text-brand-600">ligne par ligne</span>.</h2>
-          <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
+          <p className="mx-auto mt-4 texte-chapo text-center text-ink-600">
             Chaque formule contient la précédente. Le tableau montre ce que chacune ajoute.
           </p>
 
@@ -200,16 +220,14 @@ export default function Formules() {
         </div>
       </section>
 
-      {/* Les questions elles-memes vivaient ici ET sur la page FAQ : le meme
-          tableau `QUESTIONS` de `lib/formules`, rendu deux fois mot pour mot.
-          Seul le renvoi subsiste, pour ne pas couper le chemin vers la FAQ
-          depuis la page ou l'acheteur se decide. */}
-      <section className="bg-surface">
-        <div className="mx-auto max-w-[90rem] px-5 py-16 text-center sm:py-20">
-          <h2 className={`mx-auto max-w-3xl ${classeTitreSection}`}>Vos questions avant de choisir.</h2>
-          <Link to="/faq" viewTransition className="lien-trait mt-6 inline-block text-base">
-            Voir toutes les questions
-          </Link>
+      <section id="questions" className="bg-surface">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
+          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Vos questions avant de choisir.</h2>
+          <ListeQuestions
+            questions={QUESTIONS_AVANT_DE_CHOISIR}
+            ouverteParDefaut={0}
+            className="mx-auto mt-10 max-w-3xl"
+          />
         </div>
       </section>
 

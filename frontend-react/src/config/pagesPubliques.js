@@ -18,7 +18,7 @@ export const PAGES_PUBLIQUES = [
     chemin: '/methodologie',
     titre: 'Méthodologie',
     description: 'La démarche en trois étapes, la roue de Deming et les standards mobilisés.',
-    motsCles: ['methodologie', 'referentiel', 'criteres', 'notation', 'score', 'iso 26000', 'iso 45001', 'demarche', 'pdca', 'deming', 'global compact', 'oit', 'ocde', 'principes'],
+    motsCles: ['methodologie', 'referentiel', 'criteres', 'notation', 'score', 'iso 26000', 'iso 45001', 'demarche', 'pdca', 'deming', 'global compact', 'oit', 'ocde', 'principes', 'questions', 'faq', 'aide', 'reponses'],
   },
   {
     chemin: '/formules',
@@ -37,12 +37,6 @@ export const PAGES_PUBLIQUES = [
     titre: 'Se former',
     description: 'Montée en compétence des équipes sur la RSE, l’ESG et l’ISR.',
     motsCles: ['formation', 'se former', 'apprendre', 'competences', 'isr', 'sensibilisation', 'academy'],
-  },
-  {
-    chemin: '/faq',
-    titre: 'Questions fréquentes',
-    description: 'Les réponses aux questions les plus posées sur la plateforme.',
-    motsCles: ['faq', 'questions', 'aide', 'reponses', 'frequentes'],
   },
   {
     chemin: '/mentions-legales',

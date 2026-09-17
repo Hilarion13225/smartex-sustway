@@ -13,7 +13,6 @@ import Deploiement from './pages/Deploiement';
 import Ressources from './pages/Ressources';
 import Formation from './pages/Formation';
 import Contact from './pages/Contact';
-import Faq from './pages/Faq';
 import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
@@ -81,7 +80,7 @@ export default function App() {
             <Route path="/ressources" element={<Ressources />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<Faq />} />
+            <Route path="/faq" element={<Navigate to="/methodologie#questions" replace />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
           </Route>
           <Route path="/connexion" element={<ConnexionReelle />} />

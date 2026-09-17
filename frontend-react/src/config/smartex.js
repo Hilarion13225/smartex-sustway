@@ -119,8 +119,23 @@ export const REFERENCES_METHODOLOGIQUES = [
 ];
 
 /** Référentiels réellement chargés dans la plateforme et sélectionnables pour une évaluation. */
+/*
+ * Les chiffres du référentiel, relevés dans la base le jour de leur mise à
+ * jour : version publiée de SMARTEX_SUSTWAY, 92 critères actifs répartis sur
+ * 6 domaines. Ils étaient recopiés en toutes lettres à six endroits de la
+ * vitrine ; passés à 92, cinq d'entre eux seraient restés à 87. Une seule
+ * source, et la requête qui la vérifie :
+ *
+ *   select count(*), count(distinct domaine_id) from critere
+ *    where referentiel_version_id = (version publiée de SMARTEX_SUSTWAY);
+ */
+export const REFERENTIEL_SMARTEX = {
+  criteres: 92,
+  parties: 6,
+};
+
 export const REFERENTIELS_EVALUABLES = [
-  { code: 'SMARTEX_SUSTWAY', nom: `Référentiel ${SMARTEX.produit}`, texte: '87 critères en 6 parties, issus de l’étude sectorielle CGECI.' },
+  { code: 'SMARTEX_SUSTWAY', nom: `Référentiel ${SMARTEX.produit}`, texte: `${REFERENTIEL_SMARTEX.criteres} critères en ${REFERENTIEL_SMARTEX.parties} parties, issus de l’étude sectorielle CGECI.` },
   { code: 'PRI', nom: 'PRI', texte: 'Principles for Responsible Investment — secteur finance.' },
   { code: 'GRESB', nom: 'GRESB', texte: 'Global Real Estate Sustainability Benchmark — secteur immobilier.' },
   { code: 'ITIE', nom: 'ITIE', texte: 'Initiative pour la Transparence dans les Industries Extractives — secteur minier.' },

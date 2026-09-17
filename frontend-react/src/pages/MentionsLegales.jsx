@@ -66,7 +66,7 @@ export default function MentionsLegales() {
       {/* Un texte juridique se lit comme un document, pas comme une grille de
           cartes : des filets entre les sections, un sommaire collant pour
           aller droit à la clause cherchée, la ligne tenue sous 70 caractères. */}
-      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
+      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
         <nav aria-label="Sommaire des mentions légales" className="hidden lg:block">
           <ul className="sticky top-28 space-y-1 border-l border-ink-200">
             {SECTIONS.map((section) => (
@@ -87,9 +87,9 @@ export default function MentionsLegales() {
             <article
               key={section.ancre}
               id={section.ancre}
-              className="scroll-mt-28 border-t border-ink-200 py-8 first:border-t-0 first:pt-0"
+              className="border-t border-ink-200 py-8 first:border-t-0 first:pt-0"
             >
-              <h2 className="font-display text-xl font-bold leading-snug tracking-[-0.01em] text-ink-900 sm:text-[1.375rem]">
+              <h2 className="titre-objet text-ink-900">
                 {section.titre}
               </h2>
               <div className="mt-3 max-w-[65ch] space-y-3 text-base leading-[1.65] text-ink-600">

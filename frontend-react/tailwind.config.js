@@ -27,6 +27,10 @@ export default {
         // Vert de la vitrine : « conforme », progression, pilier
         // Environnement. Réservé à ce sens, jamais décoratif.
         feuille: 'rgb(var(--feuille) / <alpha-value>)',
+        // Deux fonds derives de Feuille, jamais un verdict : le vert qui dit
+        // « conforme » reste `feuille` et lui seul.
+        'vert-profond': 'rgb(var(--vert-profond) / <alpha-value>)',
+        'vert-clair': 'rgb(var(--vert-clair) / <alpha-value>)',
         // Défini via des variables CSS (voir index.css, :root et .dark) plutôt
         // qu'en hexadécimal fixe : la même classe `bg-ink-50`/`text-ink-900`
         // change alors de sens selon le thème actif, sans qu'aucune des ~40

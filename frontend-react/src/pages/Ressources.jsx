@@ -4,7 +4,7 @@ import AppelAction from '../components/AppelAction';
 import { SMARTEX } from '../config/smartex';
 
 const classeTitreSection =
-  'font-display text-[1.75rem] font-bold leading-tight text-ink-900 sm:text-[2rem]';
+  'titre-section text-ink-900';
 
 /**
  * Rubriques annoncées par la navigation.
@@ -55,7 +55,7 @@ export default function Ressources() {
           <h1 className="titre-page max-w-[20ch] text-ink-900">
             Comprendre, apprendre, suivre l’actualité.
           </h1>
-          <p className="mt-5 max-w-2xl text-[17px] leading-relaxed text-ink-600">
+          <p className="mt-5 texte-chapo text-ink-600">
             Tout ce qui aide à saisir la démarche RSE et ESG, et à s’y préparer.
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function Ressources() {
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16">
             <div>
               <h2 className={classeTitreSection}>{DISPONIBLE.titre}</h2>
-              <p className="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-ink-600">
+              <p className="mt-4 texte-chapo text-ink-600">
                 {DISPONIBLE.texte}
               </p>
               <Link
