@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, ArrowRight, Info, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Info, Sparkles } from 'lucide-react';
 import JaugeCirculaire from './JaugeCirculaire';
 import TracabiliteIa from './TracabiliteIa';
 import Rectification from './Rectification';
@@ -18,7 +18,6 @@ export default function CarteAnalyseIa({
   desynchronisee,
   erreur,
   peutAnalyser,
-  surAnalyser,
 }) {
   const [detailOuvert, setDetailOuvert] = useState(false);
 
@@ -154,25 +153,16 @@ export default function CarteAnalyseIa({
         </p>
       ) : null}
 
-      {peutAnalyser ? (
-        <button
-          type="button"
-          onClick={surAnalyser}
-          disabled={enCours}
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-ink-200 bg-surface px-4 py-2.5 text-sm font-medium text-ink-700 transition-colors hover:bg-ink-100 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {enCours ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Analyse en cours…
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4" aria-hidden />
-              {analyse ? 'Relancer l’analyse IA' : 'Lancer l’analyse IA'}
-            </>
-          )}
-        </button>
+      {/* L'analyse ne se lance plus critère par critère : on répond et on
+          dépose les preuves partout, puis on lance une fois depuis la mission
+          (« Analyser la mission »). Attendre le service d'agents à chaque
+          critère immobilisait l'auditeur au milieu de sa collecte. */}
+      {peutAnalyser && !enCours ? (
+        <p className="mt-4 text-xs text-ink-500">
+          {desynchronisee
+            ? 'La prochaine analyse de la mission reprendra ce critère avec vos dernières saisies.'
+            : 'L’analyse IA se lance depuis la mission, une fois la collecte terminée.'}
+        </p>
       ) : null}
     </section>
   );

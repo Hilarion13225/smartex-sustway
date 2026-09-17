@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
+import { ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
 import SaisieCritereMission from '../components/audit/SaisieCritereMission';
@@ -220,11 +220,6 @@ export default function AuditDetail() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour aux audits
-      </Link>
-
       {chargement ? (
         <Loader message="Chargement de la mission…" />
       ) : !audit ? (

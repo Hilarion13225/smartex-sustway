@@ -97,6 +97,9 @@ public class AnalyseCritereService {
 
         /** RG35 : le critère est non applicable ou retiré du périmètre ; rien n'a été soumis ni écrit. */
         record HorsPerimetre(String message) implements Resultat {}
+
+        /** Le critère porte déjà une évaluation : il ne sera pas réanalysé. */
+        record DejaAnalyse() implements Resultat {}
     }
 
     /** RG35 : message commun aux refus d'analyse, de validation et de saisie sur un critère exclu. */
@@ -119,6 +122,16 @@ public class AnalyseCritereService {
         // filtre déjà sa liste, un critère peut être exclu entre-temps.
         if (!auditCritere.isActif() || !auditCritere.isApplicable()) {
             return new Resultat.HorsPerimetre(messageHorsPerimetre(auditCritere));
+        }
+
+        // Une analyse par critere, definitive. Un critere deja evalue n'est
+        // plus soumis aux agents, meme si sa saisie ou ses preuves changent
+        // ensuite : le resultat produit est celui qui fait foi. La garde est
+        // ici, comme celle de RG35 juste au-dessus, pour que l'analyse
+        // unitaire comme la passe de mission s'y heurtent — un filtre pose
+        // seulement dans les appelants se contournerait par un appel direct.
+        if (evaluationRepository.laPlusRecenteParAuditCritere(auditCritere.getId()).isPresent()) {
+            return new Resultat.DejaAnalyse();
         }
 
         UUID auditCritereId = auditCritere.getId();

@@ -3,6 +3,7 @@ package com.smartexsustway.api.mission;
 import com.smartexsustway.api.domain.entity.Audit;
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
+import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,17 +36,27 @@ public class AnalyseTransactionnelle {
 
     @Inject AuditRepository auditRepository;
     @Inject AuditCritereRepository auditCritereRepository;
+    @Inject EvaluationRepository evaluationRepository;
     @Inject AnalyseCritereService analyseCritereService;
 
     /** Issue d'un critère : analysé, rien à analyser, ou échec du pipeline. */
     public enum Issue { ANALYSE, RIEN, ECHEC }
 
-    /** Critères que la passe traitera : ceux que la mission porte réellement. */
+    /**
+     * Critères que la passe traitera.
+     *
+     * Ceux que la mission porte réellement, moins ceux qui portent déjà une
+     * évaluation : une analyse par critère, définitive. Le filtre est ici en
+     * plus de la garde du service, non pour la doubler mais pour que la passe
+     * ne parcoure pas ce qu'elle ne traitera pas — sans lui, le compteur
+     * annonçait quatre-vingt-douze critères pour n'en analyser que quelques-uns.
+     */
     @Transactional
     public List<UUID> idsDesCriteresAAnalyser(UUID auditId) {
         return auditCritereRepository.parAudit(auditId).stream()
                 .filter(AuditCritere::isActif)
                 .filter(AuditCritere::isApplicable)
+                .filter(c -> evaluationRepository.laPlusRecenteParAuditCritere(c.getId()).isEmpty())
                 .map(AuditCritere::getId)
                 .toList();
     }
@@ -61,7 +72,12 @@ public class AnalyseTransactionnelle {
         if (resultat instanceof AnalyseCritereService.Resultat.Analyse) {
             return Issue.ANALYSE;
         }
-        if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser) {
+        if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser
+                || resultat instanceof AnalyseCritereService.Resultat.DejaAnalyse) {
+            // « Déjà analysé » se range avec « rien à analyser » : dans les deux
+            // cas la passe n'avait pas à travailler. Le ranger dans les échecs
+            // ferait croire à une panne là où la règle a simplement joué — le
+            // cas survient si le critère est évalué entre le filtre et ici.
             return Issue.RIEN;
         }
         return Issue.ECHEC;

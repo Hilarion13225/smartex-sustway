@@ -2,6 +2,7 @@ package com.smartexsustway.api.mission;
 
 import com.smartexsustway.api.domain.entity.AuditCritere;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
+import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -38,6 +39,7 @@ public class AnalyseMissionService {
     private static final Logger LOG = Logger.getLogger(AnalyseMissionService.class);
 
     @Inject AuditCritereRepository auditCritereRepository;
+    @Inject EvaluationRepository evaluationRepository;
     @Inject AnalyseTransactionnelle transactions;
 
     /**
@@ -89,11 +91,23 @@ public class AnalyseMissionService {
         return a != null && !a.terminee();
     }
 
-    /** Critères que la passe traitera : ceux que la mission porte réellement. */
+    /**
+     * Critères que la passe traitera.
+     *
+     * Même sélection que {@code AnalyseTransactionnelle.idsDesCriteresAAnalyser},
+     * et il faut qu'elle le reste : c'est elle qui annonce le total dans la
+     * réponse au lancement, celle-là qui parcourt. Quand les deux divergeaient,
+     * la passe annonçait quatre-vingt-douze critères puis en rapportait
+     * quatre-vingt-six, sans que rien n'explique l'écart.
+     *
+     * Un critère déjà évalué en est exclu : une analyse par critère,
+     * définitive.
+     */
     public List<AuditCritere> criteresAAnalyser(UUID auditId) {
         return auditCritereRepository.parAudit(auditId).stream()
                 .filter(AuditCritere::isActif)
                 .filter(AuditCritere::isApplicable)
+                .filter(c -> evaluationRepository.laPlusRecenteParAuditCritere(c.getId()).isEmpty())
                 .toList();
     }
 

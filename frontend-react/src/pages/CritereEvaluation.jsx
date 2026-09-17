@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
-  ArrowLeft,
   CheckCircle2,
   ChevronDown,
   ClipboardCheck,
@@ -108,11 +107,6 @@ export default function CritereEvaluation() {
 
   return (
     <>
-      <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-ghost mb-4 -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à la mission
-      </Link>
-
       {chargement || !critere ? (
         <Loader message="Chargement du critère…" />
       ) : (
@@ -386,8 +380,6 @@ function EvaluationSection({
   onChange,
 }) {
   const { roleCourant, peut } = useApiAuth();
-  const [chargement, setChargement] = useState(false);
-  const [erreur, setErreur] = useState(null);
 
   // Décider d'un axe relève du pilotage de la mission, permission que l'API
   // exige déjà : `audit:modifier`. Aucune permission nouvelle n'est introduite
@@ -401,44 +393,27 @@ function EvaluationSection({
   // vérité — ce test ne fait qu'éviter d'afficher un bouton qui rendrait 403.
   const peutValiderLEvaluation = peut('evaluation:valider', formuleCode);
 
-  async function lancerEvaluation() {
-    setErreur(null);
-    setChargement(true);
-    try {
-      await api.post(
-        `/api/v1/entreprises/${entrepriseId}/audits/${auditId}/criteres/${auditCritereId}/evaluations`,
-        undefined
-      );
-      onChange();
-    } catch (err) {
-      setErreur(err instanceof ApiError ? err.message : 'Erreur inattendue');
-    } finally {
-      setChargement(false);
-    }
-  }
 
   return (
     <div className="space-y-4">
-      {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
-
       {exclusion ? (
         <Alerte ton="neutre">
           {exclusion} — ce critère est exclu du périmètre de la mission : aucune nouvelle évaluation
           ne peut y être lancée ni validée. Son historique reste consultable.
         </Alerte>
-      ) : (
-        <>
-          <button type="button" className="btn-primary w-full" disabled={!peutEvaluer || chargement} onClick={lancerEvaluation}>
-            {chargement ? <SustwayLoader taille="sm" /> : <Sparkles className="h-4 w-4" aria-hidden />}
-            {chargement ? 'Analyse en cours (Document → Evidence → Compliance)…' : 'Lancer l’évaluation IA'}
-          </button>
-          {!peutEvaluer ? (
-            <p className="text-xs text-ink-500">
-              Déposez une preuve ou renseignez le questionnaire avant de pouvoir lancer l’évaluation.
-            </p>
-          ) : null}
-        </>
-      )}
+      ) : null}
+
+      {/* L'analyse ne part plus d'ici. On répond et on dépose les preuves sur
+          tous les critères, puis on lance l'analyse une fois depuis la
+          mission : attendre le service d'agents à chaque critère immobilisait
+          l'auditeur, et il a rarement de quoi décider à ce moment-là. */}
+      {!exclusion && !derniereEvaluation ? (
+        <p className="text-xs text-ink-500">
+          {peutEvaluer
+            ? 'Ce critère est prêt à être analysé. L’analyse IA se lance depuis la mission, une fois la collecte terminée.'
+            : 'Déposez une preuve ou renseignez le questionnaire : le critère entrera alors dans la prochaine analyse de la mission.'}
+        </p>
+      ) : null}
 
       {derniereEvaluation ? <ResultatEvaluation evaluation={derniereEvaluation} /> : <Vide message="Aucune évaluation pour l’instant." />}
 

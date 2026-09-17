@@ -146,6 +146,11 @@ public class EvaluationResource {
             // existe mais n'appartient plus au périmètre évaluable.
             return erreur(409, horsPerimetre.message());
         }
+        // 409 et non 400 : la demande est bien formée, c'est l'état du critère
+        // qui s'y oppose. Une analyse par critère, définitive.
+        if (resultat instanceof AnalyseCritereService.Resultat.DejaAnalyse) {
+            return erreur(409, "Ce critère a déjà été analysé : son résultat fait foi et ne sera pas recalculé.");
+        }
         if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser) {
             return erreur(400, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
                     + "— impossible de lancer l'analyse IA");
@@ -246,6 +251,9 @@ public class EvaluationResource {
         // service d'agents se ferait transaction ouverte.
         var resultat = analyseCritereV2Service.analyser(auditId, auditCritereId, utilisateurId);
 
+        if (resultat instanceof AnalyseCritereV2Service.Resultat.DejaAnalyse) {
+            return erreur(409, "Ce critère a déjà été analysé : son résultat fait foi et ne sera pas recalculé.");
+        }
         if (resultat instanceof AnalyseCritereV2Service.Resultat.RienAAnalyser) {
             return erreur(400, "Aucune preuve ni scénario sur ce critère — impossible de lancer l'analyse IA");
         }

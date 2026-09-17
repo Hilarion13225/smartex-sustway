@@ -12,6 +12,7 @@ import com.smartexsustway.api.domain.enums.FormulePipeline;
 import com.smartexsustway.api.domain.enums.SourceEvaluation;
 import com.smartexsustway.api.domain.enums.StatutEvaluation;
 import com.smartexsustway.api.domain.repository.AnalyseIaRepository;
+import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.AuditCritereRepository;
 import com.smartexsustway.api.domain.repository.AuditRepository;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
@@ -90,6 +91,7 @@ public class AnalyseCritereV2Service {
     @Inject AuditCritereRepository auditCritereRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject AnalyseIaRepository analyseIaRepository;
+    @Inject EvaluationRepository evaluationRepository;
     @Inject ConstructionContexteIa constructionContexteIa;
     @Inject PersistanceResultatV2Service persistance;
     @Inject StorageService storageService;
@@ -119,9 +121,22 @@ public class AnalyseCritereV2Service {
 
         /** RG35 : critère exclu pendant l'analyse ; passe close en erreur, rien d'écrit. L'appelant en fait un 409. */
         record HorsPerimetre(String message) implements Resultat {}
+
+        /** Le critère porte déjà une évaluation : il ne sera pas réanalysé. */
+        record DejaAnalyse() implements Resultat {}
     }
 
     public Resultat analyser(UUID auditId, UUID auditCritereId, UUID declencheParId) {
+        // Une analyse par critere, definitive. Un critere deja evalue n'est
+        // plus soumis aux agents, meme si sa saisie ou ses preuves changent
+        // ensuite : le resultat produit est celui qui fait foi. La garde est
+        // ici, comme celle de RG35 juste au-dessus, pour que l'analyse
+        // unitaire comme la passe de mission s'y heurtent — un filtre pose
+        // seulement dans les appelants se contournerait par un appel direct.
+        if (evaluationRepository.laPlusRecenteParAuditCritere(auditCritereId).isPresent()) {
+            return new Resultat.DejaAnalyse();
+        }
+
         // --- T0 : réservation atomique -----------------------------------
         //
         // Courte et volontairement pauvre : elle prend le verrou, vérifie,

@@ -16,7 +16,6 @@ export default function PanneauAnalyseIa({
   analyseDesynchronisee,
   erreurAnalyse,
   peutAnalyser,
-  surAnalyser,
   domaine,
   domaineCompletes,
   domaineTotal,
@@ -31,7 +30,6 @@ export default function PanneauAnalyseIa({
         desynchronisee={analyseDesynchronisee}
         erreur={erreurAnalyse}
         peutAnalyser={peutAnalyser}
-        surAnalyser={surAnalyser}
       />
 
       <CarteProgressionDomaine

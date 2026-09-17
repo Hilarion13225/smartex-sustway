@@ -23,6 +23,12 @@ function enPoints(texte) {
  * Seuls les critères déjà évalués sont interrogés — l'API n'expose pas de
  * liste d'évaluations à l'échelle d'une mission, et questionner les critères
  * non évalués reviendrait à lancer autant de requêtes pour rien.
+ *
+ * <strong>Ce volet montre l'état courant, pas l'historique.</strong> Il ne
+ * retient que la dernière analyse IA de chaque critère. Les passes
+ * antérieures sont conservées (RG14) et se consultent sur la fiche du
+ * critère, sous « Historique des évaluations » — d'où le lien « Voir le
+ * critère » au bas de chaque carte.
  */
 export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
   const [analyses, setAnalyses] = useState(null);
@@ -64,7 +70,8 @@ export default function VoletAnalysesIa({ entrepriseId, auditId, criteres }) {
   if (!analyses || analyses.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed border-ink-200 px-4 py-10 text-center text-sm text-ink-500">
-        Aucune analyse IA sur cette mission. Lancez-en une depuis un critère.
+        Aucune analyse IA sur cette mission. Renseignez les critères, puis lancez l’analyse
+        depuis la vue d’ensemble de la mission.
       </p>
     );
   }
