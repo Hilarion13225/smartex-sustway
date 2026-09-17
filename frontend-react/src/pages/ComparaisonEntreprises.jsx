@@ -3,7 +3,7 @@ import { Columns3, Download } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
-import { api } from '../lib/apiClient';
+import { chargerDernieresMissions } from '../lib/portefeuille';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
@@ -38,18 +38,8 @@ export default function ComparaisonEntreprises() {
     setChargement(true);
     setErreur(null);
     try {
-      const donnees = await Promise.all(
-        selection.map(async (entrepriseId) => {
-          const entreprise = entreprises.find((e) => e.id === entrepriseId);
-          const audits = await api.get(`/api/v1/entreprises/${entrepriseId}/audits`).catch(() => []);
-          const dernier = [...audits].sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut))[0];
-          if (!dernier) return { entreprise, audit: null, score: null };
-          const score = await api
-            .get(`/api/v1/entreprises/${entrepriseId}/audits/${dernier.id}/score`)
-            .catch(() => null);
-          return { entreprise, audit: dernier, score };
-        })
-      );
+      const choisies = selection.map((id) => entreprises.find((e) => e.id === id));
+      const donnees = await chargerDernieresMissions(choisies);
       setResultats(donnees);
     } catch {
       setErreur('Impossible de calculer la comparaison.');

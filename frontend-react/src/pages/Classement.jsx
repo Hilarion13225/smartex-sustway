@@ -4,7 +4,7 @@ import { ArrowRight, Download, Medal } from 'lucide-react';
 import clsx from 'clsx';
 import Revele from '../components/Revele';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
-import { api } from '../lib/apiClient';
+import { chargerDernieresMissions } from '../lib/portefeuille';
 import { useApiAuth } from '../auth/useApiAuth';
 import { exporterCsv } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
@@ -31,20 +31,7 @@ export default function Classement() {
 
   const charger = useCallback(async () => {
     setChargement(true);
-    const resultats = await Promise.all(
-      entreprises.map(async (entreprise) => {
-        const audits = await api.get(`/api/v1/entreprises/${entreprise.id}/audits`).catch(() => []);
-        // Mission la plus récente : celle qui décrit l'état courant.
-        const derniere = [...(audits ?? [])].sort(
-          (a, b) => new Date(b.dateDebut) - new Date(a.dateDebut)
-        )[0];
-        if (!derniere) return { entreprise, mission: null, score: null };
-        const score = await api
-          .get(`/api/v1/entreprises/${entreprise.id}/audits/${derniere.id}/score`)
-          .catch(() => null);
-        return { entreprise, mission: derniere, score };
-      })
-    );
+    const resultats = await chargerDernieresMissions(entreprises);
     setLignes(resultats);
     setChargement(false);
   }, [entreprises]);

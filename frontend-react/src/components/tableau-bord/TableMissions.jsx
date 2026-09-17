@@ -45,12 +45,22 @@ function Progression({ pourcentage, compact = false }) {
  * gestionnaire : la navigation au clavier et l'ouverture dans un nouvel
  * onglet fonctionnent alors sans code supplémentaire.
  */
-export default function TableMissions({ missions, compact = false, etiquettePremiereColonne = 'Organisation' }) {
+export default function TableMissions({
+  missions,
+  compact = false,
+  etiquettePremiereColonne = 'Organisation',
+  action = null,
+}) {
   if (missions.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-ink-200 px-4 py-10 text-center text-sm text-ink-500">
-        Aucune mission d’audit pour l’instant.
-      </p>
+      // Une mission est le point de départ de tout le reste : sans elle, ni
+      // preuve, ni analyse, ni écart, ni rapport. L'écran l'annonçait sans
+      // jamais dire par où commencer. `action` reste facultative — l'appelant
+      // ne la fournit que lorsqu'un premier pas lui est réellement ouvert.
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-ink-200 px-4 py-10 text-center">
+        <p className="text-sm text-ink-500">Aucune mission d’audit pour l’instant.</p>
+        {action}
+      </div>
     );
   }
 

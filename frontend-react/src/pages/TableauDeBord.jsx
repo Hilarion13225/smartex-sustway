@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -21,9 +21,15 @@ import PanneauAlertes from '../components/tableau-bord/PanneauAlertes';
 import PanneauIa from '../components/tableau-bord/PanneauIa';
 import FilActivite from '../components/tableau-bord/FilActivite';
 import BandeauReprise from '../components/tableau-bord/BandeauReprise';
-import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { ROLES_ADMINISTRATION_ENTREPRISE } from '../auth/permissions';
+import { ROLES_ADMINISTRATION_ENTREPRISE, ROLES_SUPERVISION } from '../auth/permissions';
+import {
+  aTraiterEnPremier,
+  parOrganisation,
+  usePortefeuille,
+  vueDesMissions,
+} from '../lib/portefeuille';
+import { listerMesActions } from '../lib/plansAction';
 import { exporterCsv, formaterDate } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
 
@@ -101,60 +107,16 @@ export default function TableauDeBord() {
   // famille de rôles à laquelle l'API ouvre le journal d'audit.
   const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
 
-  const [missions, setMissions] = useState([]);
-  const [historique, setHistorique] = useState([]);
-  const [journal, setJournal] = useState([]);
-  const [chargement, setChargement] = useState(true);
+  const superviseur = ROLES_SUPERVISION.has(roleCourant);
+  const collaborateur = roleCourant === 'COLLABORATEUR';
+  const plusieursOrganisations = superviseur || entreprises.length > 1;
 
-  const charger = useCallback(async () => {
-    setChargement(true);
-
-    const parEntreprise = await Promise.all(
-      entreprises.map(async (entreprise) => {
-        const audits = await api.get(`/api/v1/entreprises/${entreprise.id}/audits`).catch(() => []);
-        return Promise.all(
-          audits.map(async (audit) => {
-            const [score, nonConformites, points, plans] = await Promise.all([
-              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score`).catch(() => null),
-              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/non-conformites`).catch(() => []),
-              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/score-historique`).catch(() => []),
-              // Les plans d'amélioration : le tableau de bord ignorait
-              // jusqu'ici tout le travail de planification.
-              api.get(`/api/v1/entreprises/${entreprise.id}/audits/${audit.id}/plans-action`).catch(() => []),
-            ]);
-            return { entreprise, audit, score, nonConformites, points, plans };
-          })
-        );
-      })
-    );
-    const toutes = parEntreprise.flat();
-    setMissions(toutes);
-    setHistorique(toutes.flatMap((m) => m.points ?? []));
-
-    // Journal de chaque entreprise accessible : le fil d'activité est global,
-    // l'API ne l'expose que par entreprise.
-    //
-    // Le journal est réservé à l'administration de l'entreprise : l'appeler
-    // pour un collaborateur produit un 403 par entreprise, visible en console
-    // et sans effet utile. On s'abstient plutôt que de rattraper l'erreur.
-    const journaux = peutLireLeJournal
-      ? await Promise.all(
-          entreprises.map((entreprise) =>
-            api
-              .get(`/api/v1/entreprises/${entreprise.id}/journal`)
-              .then((entrees) => (entrees ?? []).map((e) => ({ ...e, entreprise })))
-              .catch(() => [])
-          )
-        )
-      : [];
-    setJournal(journaux.flat());
-
-    setChargement(false);
-  }, [entreprises, peutLireLeJournal]);
-
-  useEffect(() => {
-    charger();
-  }, [charger]);
+  // La collecte vit dans `lib/portefeuille.js` : le classement, la comparaison
+  // et l'en-tête en ont besoin aussi, et trois copies de la même boucle
+  // finissaient par rendre des chiffres qui ne concordaient plus.
+  const { missions, historique, journal, chargement } = usePortefeuille(entreprises, {
+    avecJournal: peutLireLeJournal,
+  });
 
   /**
    * Synthèse des plans d'amélioration, toutes missions confondues.
@@ -173,52 +135,17 @@ export default function TableauDeBord() {
     };
   }, [missions]);
 
-  /** Missions ramenées à la forme attendue par le tableau. */
-  const missionsVue = useMemo(
-    () =>
-      missions.map(({ entreprise, audit, score, nonConformites }) => {
-        const total = score?.nombreCriteresTotal ?? audit.nombreCriteres ?? 0;
-        const evalues = score?.nombreCriteresEvalues ?? 0;
-        const critiques = nonConformites.filter((nc) => nc.niveau === 'CRITIQUE').length;
-        const majeures = nonConformites.filter((nc) => nc.niveau === 'MAJEURE').length;
+  // La mise en forme des missions vit dans `lib/portefeuille.js`, avec la
+  // collecte : la liste des organisations lit les mêmes champs.
+  const missionsVue = useMemo(() => vueDesMissions(missions), [missions]);
 
-        // Le risque se lit sur les non-conformités constatées, pas sur le
-        // score : une mission peu avancée mais déjà porteuse d'un écart
-        // critique doit remonter en tête.
-        let risque = null;
-        if (evalues > 0) {
-          if (critiques > 0) risque = 'ELEVE';
-          else if (majeures > 0) risque = 'MOYEN';
-          else risque = 'FAIBLE';
-        }
-
-        return {
-          id: audit.id,
-          organisation: entreprise.raisonSociale ?? entreprise.nom ?? '—',
-          nom: audit.nom,
-          progression: total > 0 ? Math.round((evalues / total) * 100) : 0,
-          // Le score global est noté sur 5 (RG31) : ramené en pourcentage
-          // pour tenir dans une colonne aux côtés de la progression.
-          // Le score est celui de la grille, noté sur 5 ; la conformité en est
-          // la traduction en pourcentage pour la lecture rapide.
-          // V74-C3-B11 : sans critère évalué, le 0 du serveur est une absence.
-          score: evalues > 0 ? score.scoreGlobal : null,
-          noteTotale: score?.noteTotale ?? null,
-          coefficientTotal: score?.coefficientTotal ?? null,
-          conformite:
-            evalues > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null,
-          risque,
-          statut: audit.statut,
-          echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
-          lien: `/app/${entreprise.id}/audits/${audit.id}`,
-          critiques,
-          nonEvalues: score?.nombreCriteresNonEvalues ?? Math.max(0, total - evalues),
-          evalues,
-          total,
-        };
-      }),
-    [missions]
+  // Le portefeuille vu organisation par organisation — l'axe de lecture d'un
+  // superviseur, qui ne pilote pas des missions en vrac.
+  const lignesPortefeuille = useMemo(
+    () => parOrganisation(entreprises, missionsVue),
+    [entreprises, missionsVue]
   );
+  const aTraiter = useMemo(() => aTraiterEnPremier(lignesPortefeuille), [lignesPortefeuille]);
 
   const kpis = useMemo(() => {
     // `statut_audit` vaut BROUILLON, EN_COURS, TERMINE ou ANNULE : une mission
@@ -378,13 +305,64 @@ export default function TableauDeBord() {
     const analysees = missionsVue.filter((m) => m.evalues > 0).length;
     const ecarts = missionsVue.reduce((somme, m) => somme + m.critiques, 0);
     return [
-      { valeur: kpis.totalEvalues, libelle: 'Critères évalués sur le portefeuille' },
+      {
+        valeur: kpis.totalEvalues,
+        // « Portefeuille » ne veut rien dire pour qui suit une seule
+        // organisation, et encore moins pour qui y execute des taches.
+        libelle: plusieursOrganisations ? 'Critères évalués sur le portefeuille' : 'Critères évalués',
+      },
       { valeur: analysees, libelle: 'Missions comportant une analyse' },
       { valeur: ecarts, libelle: 'Écarts critiques remontés' },
     ];
-  }, [missionsVue, kpis]);
+  }, [missionsVue, kpis, plusieursOrganisations]);
 
-  const premiereEntreprise = entreprises[0]?.id;
+
+  /**
+   * Les actions affectees a la personne connectee.
+   *
+   * Meme source que sa page dediee : `listerMesActions` filtre sur l'identite
+   * du jeton, rien n'est trie ni choisi ici. Le chargement n'a lieu que pour
+   * le role qui affiche le bloc — les autres n'emettent aucune requete.
+   */
+  const [mesActions, setMesActions] = useState([]);
+  useEffect(() => {
+    if (!collaborateur) return undefined;
+    let annule = false;
+    Promise.all(
+      entreprises.map((e) => listerMesActions(e.id).catch(() => []))
+    ).then((listes) => {
+      if (!annule) setMesActions(listes.flat());
+    });
+    return () => {
+      annule = true;
+    };
+  }, [collaborateur, entreprises]);
+
+  // En retard d'abord, puis par echeance la plus proche. Une action sans
+  // echeance ferme la marche : rien ne dit qu'elle presse.
+  const actionsATraiter = useMemo(() => {
+    const ouvertes = mesActions.filter((a) => a.statut === 'OUVERTE' || a.statut === 'EN_COURS');
+    return [...ouvertes]
+      .sort((a, b) => {
+        if (a.enRetard !== b.enRetard) return a.enRetard ? -1 : 1;
+        if (!a.dateEcheance) return 1;
+        if (!b.dateEcheance) return -1;
+        return a.dateEcheance.localeCompare(b.dateEcheance);
+      })
+      .slice(0, 5);
+  }, [mesActions]);
+  /**
+   * L'organisation vers laquelle pointent les raccourcis — et seulement pour
+   * un compte client, qui travaille dans la sienne.
+   *
+   * Dix liens de cette page visaient `entreprises[0]` : un superviseur qui
+   * cliquait « Nouvelle mission d'audit » la créait dans une organisation
+   * choisie à sa place, jamais nommée à l'écran. C'est le même défaut que
+   * celui corrigé dans la barre latérale. Ici, il suffit que la valeur soit
+   * nulle : chacun de ces liens est déjà conditionné par elle, et le bloc
+   * « À traiter » donne au superviseur le choix explicite qui manquait.
+   */
+  const premiereEntreprise = superviseur ? null : entreprises[0]?.id;
   const prenom = utilisateur?.prenom ?? '';
 
   function exporterMissions() {
@@ -414,8 +392,13 @@ export default function TableauDeBord() {
               reprend la meme structure (titre + description) sans passer par le
               composant ; il en suit donc aussi la taille. */}
           <h1 className="text-xl font-semibold text-ink-900">Bonjour, {prenom} 👋</h1>
+          {/* Un superviseur ne regarde pas « ses » missions mais celles de ses
+              organisations clientes : le dire autrement lui faisait lire un
+              écran qui n'était pas le sien. */}
           <p className="mt-1 text-sm text-ink-500">
-            Voici la situation actuelle de vos missions d’audit RSE.
+            {plusieursOrganisations
+              ? `Votre portefeuille : ${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}.`
+              : 'Voici la situation actuelle de vos missions d’audit RSE.'}
           </p>
         </div>
         {/* Le raccourci annonce une création : ne le proposer qu'à qui peut
@@ -429,6 +412,23 @@ export default function TableauDeBord() {
           </Link>
         ) : null}
       </div>
+
+      {/* Pour un superviseur, l'unité de travail est l'organisation, pas la
+          mission : c'est elle qu'il ouvre, elle dont il répond. Ce bloc vient
+          en premier pour la même raison que les alertes précèdent les
+          indicateurs — il porte des liens vers l'endroit où agir. */}
+      {/* Ce que la personne doit faire vient avant ce qu'elle doit savoir.
+          Le collaborateur voyait cinq indicateurs de pilotage et la notation
+          consolidee, mais pas une seule des actions qui lui sont affectees. */}
+      {collaborateur ? <MesActionsDuJour actions={actionsATraiter} entreprises={entreprises} /> : null}
+
+      {/* Le besoin ne tient pas au role mais au nombre d'organisations : un
+          responsable qui en gere plusieurs cherche la meme chose qu'un
+          superviseur — laquelle demande un geste. C'est d'ailleurs pourquoi
+          « Comparer les organisations » figure dans sa navigation. */}
+      {plusieursOrganisations ? (
+        <OrganisationsATraiter bilan={aTraiter} total={lignesPortefeuille.length} />
+      ) : null}
 
       {/* Ce que l’utilisateur doit traiter vient avant ce qu’il doit
           savoir : les alertes portent des liens vers l’écran où agir, les
@@ -455,7 +455,20 @@ export default function TableauDeBord() {
               Classées par niveau de risque, puis par avancement.
             </p>
             <div className="mt-4">
-              <TableMissions missions={missionsPrioritaires} compact />
+              <TableMissions
+                missions={missionsPrioritaires}
+                compact
+                // « Voir toutes » mène à une liste vide tant qu'aucune mission
+                // n'existe : c'est la seule situation où ce panneau doit
+                // ouvrir le parcours plutôt que le résumer.
+                action={
+                  premiereEntreprise && peutCreerMission ? (
+                    <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
+                      Créer la première mission
+                    </Link>
+                  ) : null
+                }
+              />
             </div>
           </Card>
 
@@ -594,7 +607,11 @@ export default function TableauDeBord() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <PanneauIa
             metriques={metriquesIa}
-            lien={premiereEntreprise ? `/app/${premiereEntreprise}/pipeline-ia` : null}
+            // Le Pipeline IA a ete retire de la navigation du collaborateur :
+            // l'y renvoyer depuis l'accueil rouvrirait par la fenetre ce que
+            // le menu ferme. Les trois compteurs restent, ce sont des
+            // resultats, pas du raisonnement.
+            lien={premiereEntreprise && !collaborateur ? `/app/${premiereEntreprise}/pipeline-ia` : null}
           />
 
           <Card className="p-5">
@@ -646,5 +663,147 @@ export default function TableauDeBord() {
         <BandeauReprise />
       </Revele>
     </div>
+  );
+}
+
+/**
+ * Les organisations qui demandent une intervention, en premier.
+ *
+ * Un superviseur ne pilote pas des missions en vrac : il répond
+ * d'organisations, dont certaines vont mal et la plupart n'appellent rien.
+ * Le bloc ne montre donc que celles qui appellent quelque chose.
+ *
+ * « Aucune mission ouverte » se compte, ne se liste pas : sur le portefeuille
+ * réel, ce cas remplissait huit lignes identiques et repoussait le reste hors
+ * de vue. Une phrase le dit, le portefeuille complet est à un clic.
+ */
+function OrganisationsATraiter({ bilan, total }) {
+  const { urgentes, reste, sansMission } = bilan;
+  const rienASignaler = urgentes.length === 0;
+
+  return (
+    <Revele>
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-ink-900">À traiter</h2>
+          <Link
+            to="/app/entreprises"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
+          >
+            Tout le portefeuille
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
+
+        {rienASignaler ? (
+          <p className="mt-4 rounded-xl border border-dashed border-ink-200 px-4 py-8 text-center text-sm text-ink-500">
+            {total === 0
+              ? 'Aucune organisation dans le portefeuille pour l’instant.'
+              : 'Aucun écart critique, aucune mission en attente de validation.'}
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {urgentes.map((l) => (
+              <li key={l.entreprise.id}>
+                <Link
+                  to={`/app/${l.entreprise.id}`}
+                  className="group flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-ink-200 px-4 py-3 transition-colors hover:border-brand-300 hover:bg-ink-50"
+                >
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-900">
+                    {l.entreprise.raisonSociale}
+                  </span>
+
+                  {/* Chaque motif est nommé : « 3 » seul ne dit pas de quoi il
+                      s'agit, et c'est le motif qui décide du geste. */}
+                  {l.critiques > 0 ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-700">
+                      <TriangleAlert className="h-4 w-4" aria-hidden />
+                      {l.critiques} écart{l.critiques > 1 ? 's' : ''} critique{l.critiques > 1 ? 's' : ''}
+                    </span>
+                  ) : null}
+                  {l.aValider > 0 ? (
+                    <span className="text-sm font-medium text-amber-700">
+                      {l.aValider} mission{l.aValider > 1 ? 's' : ''} à valider
+                    </span>
+                  ) : null}
+
+                  <ArrowRight
+                    className="h-4 w-4 shrink-0 text-ink-300 transition-transform group-hover:translate-x-1 group-hover:text-brand-600"
+                    aria-hidden
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {reste > 0 || sansMission > 0 ? (
+          <p className="mt-3 text-xs text-ink-500">
+            {reste > 0
+              ? `${reste} autre${reste > 1 ? 's' : ''} organisation${reste > 1 ? 's' : ''} signalée${reste > 1 ? 's' : ''}. `
+              : ''}
+            {sansMission > 0
+              ? `${sansMission} organisation${sansMission > 1 ? 's' : ''} sans mission ouverte.`
+              : ''}
+          </p>
+        ) : null}
+      </Card>
+    </Revele>
+  );
+}
+
+function MesActionsDuJour({ actions, entreprises }) {
+  const premiere = entreprises[0]?.id;
+  return (
+    <Revele>
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-ink-900">Mes actions</h2>
+          {premiere ? (
+            <Link
+              to={`/app/${premiere}/mes-actions`}
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400"
+            >
+              Toutes mes actions
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          ) : null}
+        </div>
+
+        {actions.length === 0 ? (
+          <p className="mt-4 rounded-xl border border-dashed border-ink-200 px-4 py-8 text-center text-sm text-ink-500">
+            Aucune action ne vous est affectée pour l’instant.
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {actions.map((action) => (
+              <li
+                key={action.id}
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-ink-200 px-4 py-3"
+              >
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-900">
+                  {action.titre}
+                </span>
+                {action.planTitre ? (
+                  <span className="truncate text-xs text-ink-500">{action.planTitre}</span>
+                ) : null}
+                {/* Le retard se lit sans avoir à comparer une date à celle du
+                    jour : c'est lui qui décide de l'ordre de la liste. */}
+                {action.enRetard ? (
+                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-rose-700">
+                    <TriangleAlert className="h-4 w-4" aria-hidden />
+                    En retard
+                  </span>
+                ) : action.dateEcheance ? (
+                  <span className="text-sm text-ink-500">
+                    Pour le {formaterDate(action.dateEcheance)}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </Revele>
   );
 }

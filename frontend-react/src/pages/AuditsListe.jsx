@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, PlusCircle, Search } from 'lucide-react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ClipboardList, PlusCircle, Search } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import TableMissions from '../components/tableau-bord/TableMissions';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
@@ -165,24 +166,29 @@ export default function AuditsListe() {
     return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
+  // Le fil et l'en-tete nomment la meme page : un seul calcul, pas deux
+  // listes de conditions a garder d'accord.
+  const titre =
+    vue === 'a-valider'
+      ? 'Missions à valider'
+      : filtreStatut === 'EN_COURS'
+        ? 'Missions en cours'
+        : filtreStatut === 'TERMINE'
+          ? 'Missions terminées'
+          : 'Missions d’audit';
+
   return (
     <div className="space-y-5">
-      <Link to={`/app/${entrepriseId}`} className="btn-ghost -ml-2">
-        <ArrowLeft className="h-4 w-4" aria-hidden />
-        Retour à {entreprise.raisonSociale}
-      </Link>
+      <Breadcrumb
+        elements={[
+          { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` },
+          { libelle: titre },
+        ]}
+      />
 
       <PageTitre
         icone={ClipboardList}
-        titre={
-          vue === 'a-valider'
-            ? 'Missions à valider'
-            : filtreStatut === 'EN_COURS'
-              ? 'Missions en cours'
-              : filtreStatut === 'TERMINE'
-                ? 'Missions terminées'
-                : 'Missions d’audit'
-        }
+        titre={titre}
         description={`Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — ${entreprise.raisonSociale}.`}
         actions={
           peutCreerAudit ? (
@@ -281,7 +287,21 @@ export default function AuditsListe() {
               {missionsFiltrees.length} mission{missionsFiltrees.length > 1 ? 's' : ''} affichée
               {missionsFiltrees.length > 1 ? 's' : ''} sur {missionsVue.length}.
             </p>
-            <TableMissions missions={missionsFiltrees} etiquettePremiereColonne="Référentiel" />
+            <TableMissions
+              missions={missionsFiltrees}
+              etiquettePremiereColonne="Référentiel"
+              // Proposé uniquement quand la liste est vraiment vide : après un
+              // filtrage, le geste attendu est de relâcher le filtre, pas de
+              // créer une mission de plus.
+              action={
+                peutCreerAudit && missionsVue.length === 0 ? (
+                  <button type="button" className="btn-primary" onClick={() => setAfficherFormulaire(true)}>
+                    <PlusCircle className="h-4 w-4" aria-hidden />
+                    Créer la première mission
+                  </button>
+                ) : null
+              }
+            />
           </div>
         </Revele>
       )}

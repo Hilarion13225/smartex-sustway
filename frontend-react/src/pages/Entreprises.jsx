@@ -1,19 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Building2, CheckCircle2, Clock, PlusCircle, Search, Sparkles, X } from 'lucide-react';
+import { ArrowRight, ArrowUpDown, Building2, CheckCircle2, Clock, PlusCircle, Search, Sparkles, X } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
-import { Alerte, Badge, Card, PageTitre } from '../components/ui';
+import { ROLES_SUPERVISION } from '../auth/permissions';
+import { Alerte, Badge, Card, PageTitre, Tableau } from '../components/ui';
+import { parOrganisation, usePortefeuille, vueDesMissions } from '../lib/portefeuille';
+import { formaterScore } from '../lib/scoreAffiche';
 import { api, ApiError } from '../lib/apiClient';
 
 /** Au-delà de ce nombre d'entreprises, la page affiche un champ de recherche (cas SUPER_ADMIN, accès global). */
 const SEUIL_RECHERCHE = 6;
 
+/** Référence stable : passée au hook, elle lui évite de relancer sa collecte à chaque rendu. */
+const AUCUNE = [];
+
 /** RG24/RG25 : la création exige une formule payante (Free refusée par l'API). */
 export default function Entreprises() {
-  const { entreprises, creerEntreprise, peut } = useApiAuth();
+  const { entreprises, creerEntreprise, peut, roleCourant } = useApiAuth();
   const [recherche, setRecherche] = useState('');
+  const [filtreSecteur, setFiltreSecteur] = useState('');
+  const [filtreFormule, setFiltreFormule] = useState('');
+  const [tri, setTri] = useState({ colonne: 'critiques', ascendant: false });
 
   const [secteurs, setSecteurs] = useState([]);
   const [formulaire, setFormulaire] = useState({
@@ -69,13 +78,81 @@ export default function Entreprises() {
   // n'est inventée ici — on passe celle qui sera réellement envoyée.
   const peutCreer = entreprises.length === 0 || peut('entreprise:creer', formulaire.formuleCode);
 
+  /**
+   * Le tableau de suivi, et non la grille de cartes, dès qu'il y a un
+   * portefeuille à balayer — ou dès qu'on le supervise.
+   *
+   * Les cartes disent qui est l'organisation ; le tableau dit où elle en est.
+   * À trois organisations la première réponse suffit, à trente elle oblige à
+   * ouvrir chaque fiche pour trouver celle qui va mal.
+   */
+  const enSupervision = ROLES_SUPERVISION.has(roleCourant);
+  const vueTableau = enSupervision || entreprises.length > SEUIL_RECHERCHE;
+
+  // Les indicateurs coûtent une requête par organisation, plus quatre par
+  // mission : on ne les charge que si le tableau les affiche. Le tableau vide
+  // doit être une constante, sinon le hook repartirait à chaque rendu.
+  const aSuivre = useMemo(() => (vueTableau ? entreprises : AUCUNE), [vueTableau, entreprises]);
+  const { missions, chargement: chargementSuivi } = usePortefeuille(aSuivre);
+  const suivi = useMemo(
+    () => parOrganisation(entreprises, vueDesMissions(missions)),
+    [entreprises, missions]
+  );
+  const suiviParId = useMemo(
+    () => new Map(suivi.map((l) => [l.entreprise.id, l])),
+    [suivi]
+  );
+
   const entreprisesFiltrees = useMemo(() => {
     const requete = recherche.trim().toLowerCase();
-    if (!requete) return entreprises;
-    return entreprises.filter(
-      (e) => e.raisonSociale.toLowerCase().includes(requete) || e.identifiantLegal?.toLowerCase().includes(requete)
+    return entreprises.filter((e) => {
+      if (filtreSecteur && e.secteurCode !== filtreSecteur) return false;
+      if (filtreFormule && e.formuleCode !== filtreFormule) return false;
+      if (!requete) return true;
+      return (
+        e.raisonSociale.toLowerCase().includes(requete) ||
+        e.identifiantLegal?.toLowerCase().includes(requete)
+      );
+    });
+  }, [entreprises, recherche, filtreSecteur, filtreFormule]);
+
+  /**
+   * Tri : une organisation sans mission n'a pas de score, et un « — » ne se
+   * compare pas. Elle est renvoyée en fin de liste quel que soit le sens,
+   * plutôt que de valoir zéro — ce serait dire qu'elle a échoué.
+   */
+  const lignesTriees = useMemo(() => {
+    const valeur = (e) => {
+      const l = suiviParId.get(e.id);
+      switch (tri.colonne) {
+        case 'missions': return l?.missions ?? 0;
+        case 'score': return l?.score ?? null;
+        case 'ecarts': return l?.ecartsOuverts ?? 0;
+        case 'critiques': return l?.critiques ?? 0;
+        default: return e.raisonSociale?.toLowerCase() ?? '';
+      }
+    };
+    const sens = tri.ascendant ? 1 : -1;
+    return [...entreprisesFiltrees].sort((a, b) => {
+      const va = valeur(a);
+      const vb = valeur(b);
+      if (va == null && vb == null) return 0;
+      if (va == null) return 1;
+      if (vb == null) return -1;
+      if (typeof va === 'string') return sens * va.localeCompare(vb, 'fr');
+      return sens * (va - vb);
+    });
+  }, [entreprisesFiltrees, suiviParId, tri]);
+
+  function trierPar(colonne) {
+    setTri((prec) =>
+      prec.colonne === colonne
+        ? { colonne, ascendant: !prec.ascendant }
+        // Un classement part du plus élevé : on cherche l'organisation la plus
+        // en difficulté, pas la plus tranquille. Le nom, lui, part de A.
+        : { colonne, ascendant: colonne === 'nom' }
     );
-  }, [entreprises, recherche]);
+  }
 
   const statistiques = [
     { libelle: 'Entreprises suivies', valeur: entreprises.length, icone: Building2, ton: 'bleu' },
@@ -224,23 +301,58 @@ export default function Entreprises() {
         </div>
       ) : (
         <>
-          {entreprises.length > SEUIL_RECHERCHE ? (
-            <div className="relative mb-4 max-w-sm">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden />
-              <input
-                type="search"
-                className="input pl-9"
-                placeholder="Rechercher par raison sociale ou identifiant légal…"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-              />
+          {entreprises.length > SEUIL_RECHERCHE || vueTableau ? (
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <div className="relative min-w-0 flex-1 sm:max-w-sm">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" aria-hidden />
+                <input
+                  type="search"
+                  className="input pl-9"
+                  placeholder="Rechercher par raison sociale ou identifiant légal…"
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                />
+              </div>
+              {/* Les options viennent des organisations présentes, pas d'une
+                  liste figée : proposer un filtre qui ne rend rien est une
+                  impasse de plus. */}
+              <select
+                className="input w-auto"
+                value={filtreSecteur}
+                onChange={(e) => setFiltreSecteur(e.target.value)}
+                aria-label="Filtrer par secteur"
+              >
+                <option value="">Tous les secteurs</option>
+                {[...new Set(entreprises.map((e) => e.secteurCode).filter(Boolean))].sort().map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
+              <select
+                className="input w-auto"
+                value={filtreFormule}
+                onChange={(e) => setFiltreFormule(e.target.value)}
+                aria-label="Filtrer par formule"
+              >
+                <option value="">Toutes les formules</option>
+                {[...new Set(entreprises.map((e) => e.formuleCode).filter(Boolean))].sort().map((code) => (
+                  <option key={code} value={code}>{code}</option>
+                ))}
+              </select>
             </div>
           ) : null}
 
           {entreprisesFiltrees.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-12 text-center text-sm text-ink-500">
-              Aucune organisation ne correspond à « {recherche} ».
+              Aucune organisation ne correspond à cette recherche.
             </p>
+          ) : vueTableau ? (
+            <TableauDeSuivi
+              lignes={lignesTriees}
+              suivi={suiviParId}
+              tri={tri}
+              surTri={trierPar}
+              chargement={chargementSuivi}
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {entreprisesFiltrees.map((e, index) => (
@@ -310,5 +422,101 @@ export default function Entreprises() {
         </>
       )}
     </>
+  );
+}
+
+/** Colonnes du tableau de suivi, dans l'ordre de lecture. */
+const COLONNES = [
+  { cle: 'nom', libelle: 'Organisation' },
+  { cle: null, libelle: 'Secteur' },
+  { cle: null, libelle: 'Formule' },
+  { cle: 'missions', libelle: 'Missions', nombre: true },
+  { cle: 'score', libelle: 'Score', nombre: true },
+  { cle: 'critiques', libelle: 'Critiques', nombre: true },
+  { cle: 'ecarts', libelle: 'Écarts ouverts', nombre: true },
+];
+
+/**
+ * Le portefeuille sous forme balayable.
+ *
+ * La liste affichait l'identité d'une organisation — raison sociale,
+ * identifiant légal, effectif, chiffre d'affaires — mais rien de son état
+ * d'audit : pour savoir laquelle demandait une intervention, il fallait les
+ * ouvrir une par une. Ces colonnes-là répondent à la question sans ouvrir
+ * quoi que ce soit, et se trient pour faire remonter le cas le plus grave.
+ *
+ * Les indicateurs arrivent après le reste : le nom et le secteur s'affichent
+ * immédiatement, les chiffres les rejoignent. Afficher zéro en attendant
+ * ferait lire une organisation saine là où l'on ne sait simplement pas encore.
+ */
+function TableauDeSuivi({ lignes, suivi, tri, surTri, chargement }) {
+  return (
+    <Tableau
+      entetes={COLONNES.map((c) =>
+        c.cle ? (
+          <button
+            key={c.libelle}
+            type="button"
+            onClick={() => surTri(c.cle)}
+            className="inline-flex items-center gap-1 font-medium transition-colors hover:text-brand-700"
+            aria-sort={tri.colonne === c.cle ? (tri.ascendant ? 'ascending' : 'descending') : 'none'}
+          >
+            {c.libelle}
+            {tri.colonne === c.cle ? (
+              <ArrowUpDown className="h-3.5 w-3.5 text-brand-600" aria-hidden />
+            ) : (
+              <ArrowUpDown className="h-3.5 w-3.5 text-ink-300" aria-hidden />
+            )}
+          </button>
+        ) : (
+          c.libelle
+        )
+      )}
+    >
+      {lignes.map((e) => {
+        const l = suivi.get(e.id);
+        // Tant que la collecte n'a pas rendu, on ne sait pas : le tiret le dit,
+        // un zéro prétendrait le contraire.
+        const inconnu = chargement || !l;
+        return (
+          <tr key={e.id} className="transition-colors hover:bg-ink-50">
+            <td className="px-4 py-3">
+              <Link to={`/app/${e.id}`} className="group inline-flex items-center gap-1.5">
+                <span className="text-sm font-medium text-ink-900 group-hover:text-brand-700">
+                  {e.raisonSociale}
+                </span>
+                <ArrowRight
+                  className="h-3.5 w-3.5 text-ink-300 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-600"
+                  aria-hidden
+                />
+              </Link>
+              <span className="block text-xs text-ink-400">{e.identifiantLegal}</span>
+            </td>
+            <td className="px-4 py-3 text-sm text-ink-500">{e.secteurCode ?? '—'}</td>
+            <td className="px-4 py-3">
+              <Badge ton={e.statut === 'ACTIF' ? 'vert' : 'neutre'}>{e.formuleCode ?? e.statut}</Badge>
+            </td>
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink-700">
+              {inconnu ? '—' : l.missions}
+            </td>
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink-900">
+              {inconnu || l.score == null ? '—' : formaterScore(l.score)}
+            </td>
+            <td className="px-4 py-3 text-right text-sm tabular-nums">
+              {inconnu ? (
+                '—'
+              ) : l.critiques > 0 ? (
+                <span className="font-semibold text-rose-700">{l.critiques}</span>
+              ) : (
+                <span className="text-ink-400">0</span>
+              )}
+            </td>
+            <td className="px-4 py-3 text-right text-sm tabular-nums text-ink-700">
+              {inconnu ? '—' : l.ecartsOuverts}
+            </td>
+          </tr>
+        );
+      })}
+    </Tableau>
   );
 }

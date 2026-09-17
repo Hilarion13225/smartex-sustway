@@ -100,12 +100,23 @@ export function Barre({
     }} />
     </div>;
 }
+/**
+ * État vide.
+ *
+ * `action` est facultative et n'existait pas : un écran encore vide énonçait
+ * ce qui manquait sans jamais dire par où commencer. Elle ne se renseigne que
+ * là où un premier pas existe vraiment — et l'appelant ne la transmet que si
+ * le rôle et la formule l'autorisent, pour ne pas proposer un geste qui
+ * répondrait 403.
+ */
 export function Vide({
-  message
+  message,
+  action
 }) {
   return <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-12 text-center">
       <Info className="h-6 w-6 text-ink-300" aria-hidden />
       <p className="text-sm text-ink-500">{message}</p>
+      {action ? <div className="mt-2">{action}</div> : null}
     </div>;
 }
 
@@ -146,7 +157,10 @@ export function Tableau({
       <table className="min-w-full divide-y divide-ink-100">
         <thead className="bg-ink-50">
           <tr>
-            {entetes.map(entete => <th key={entete} className="th" scope="col">
+            {/* La clé vient du rang, pas du contenu : un en-tête peut être un
+                bouton de tri plutôt qu'une chaîne, et un objet ne fait pas une
+                clé. L'ordre des colonnes ne change pas en cours de route. */}
+            {entetes.map((entete, rang) => <th key={rang} className="th" scope="col">
                 {entete}
               </th>)}
           </tr>
