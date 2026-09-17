@@ -9,43 +9,6 @@ import ChaineEtapes from '../components/vitrine/ChaineEtapes';
 import { FONDEMENTS, REFERENCES_METHODOLOGIQUES, SMARTEX } from '../config/smartex';
 import photoHero from '../assets/methodologie/banniere.jpg';
 
-/*
- * Démarche en trois étapes, adaptée de la roue de Deming. Le déroulé venait
- * d'un paragraphe unique par étape : il est ici éclaté en points de liste,
- * sans un mot ajouté ni retiré au fond — un visiteur lit une étape en trois
- * secondes, pas un pavé de huit lignes.
- */
-const ETAPES = [
-  {
-    titre: 'Cadrage et diagnostic',
-    resume: 'On délimite ce qui est évalué, puis l’IA analyse les preuves déposées.',
-    points: [
-      'Périmètre de la mission et variables de caractérisation de l’entreprise',
-      'Questionnaire d’évaluation adapté au secteur d’activité',
-      'Preuves documentaires déposées puis analysées par le pipeline d’agents IA',
-      'Une probabilité de conformité produite pour chaque critère',
-    ],
-  },
-  {
-    titre: 'Les livrables',
-    resume: 'Un rapport qui dit où vous en êtes, et ce qu’il reste à corriger.',
-    points: [
-      'Rapport de synthèse : profil RSE global et profil par domaine évalué',
-      'Conformités et non-conformités, degré de maturité de la démarche',
-      'Plans d’actions correctives, priorisés selon les risques identifiés',
-      'Indice de préparation à l’éligibilité au financement vert des PTF',
-    ],
-  },
-  {
-    titre: 'Communication et valorisation',
-    resume: 'Vos résultats deviennent un support de dialogue avec vos parties prenantes.',
-    points: [
-      'Rapport exportable, prêt à être partagé',
-      'Communication des résultats de l’évaluation',
-      'Valorisation de la démarche RSE et ESG auprès des parties prenantes',
-    ],
-  },
-];
 
 /*
  * Chaîne de traitement, du référentiel à l'action corrective. Volontairement
@@ -82,10 +45,9 @@ export default function Methodologie() {
     <div>
       {/* --------------------------------------------------------- Héros */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto grid max-w-[75rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
           <div className="min-w-0">
-            <p className="sur-titre">Notre méthodologie</p>
-            <h1 className="titre-page mt-4 max-w-[18ch] text-ink-900">Une méthode claire, du cadrage au plan d’action.</h1>
+            <h1 className="titre-page max-w-[18ch] text-ink-900">Une méthode claire, du cadrage au plan d’action.</h1>
 
             <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-ink-600">
               Une démarche transparente et indépendante, fondée sur des référentiels reconnus, sur vos preuves
@@ -93,12 +55,15 @@ export default function Methodologie() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#demarche"
+              {/* Menait à la section « trois étapes » de cette page ; celle-ci
+                  est devenue la page Déploiement. */}
+              <Link
+                to="/deploiement"
+                viewTransition
                 className="btn-presse inline-flex min-h-12 items-center justify-center rounded-[4px] bg-brand-600 px-6 text-base font-semibold text-white hover:bg-brand-700"
               >
                 Découvrir la démarche
-              </a>
+              </Link>
               <button
                 type="button"
                 onClick={() => definirVideoOuverte(true)}
@@ -136,45 +101,10 @@ export default function Methodologie() {
       </section>
 
       {/* ------------------------------------------- Démarche en 3 étapes */}
-      <section id="demarche" className="scroll-mt-20 border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
-          <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Une démarche en <span className="text-brand-600">trois étapes</span>.</h2>
-
-          {/* Frise verticale : l'ordre est l'information principale, un rail
-              continu qui relie des numéros le dit mieux qu'une rangée de
-              pastilles colorées. */}
-          <ol className="mt-12">
-            {ETAPES.map((etape, index) => (
-              <li key={etape.titre} className="relative grid grid-cols-[2.5rem_1fr] gap-x-5 pb-12 last:pb-0 sm:gap-x-8 lg:grid-cols-[2.5rem_20rem_1fr]">
-                {index < ETAPES.length - 1 ? (
-                  <span className="absolute bottom-0 left-5 top-10 w-px bg-ink-200" aria-hidden />
-                ) : null}
-                <span className="relative flex h-10 w-10 items-center justify-center rounded-full border border-ink-300 bg-ink-50 font-display text-base font-bold tabular-nums text-ink-900">
-                  {index + 1}
-                </span>
-
-                <div className="min-w-0 pt-1.5">
-                  <h3 className="font-display text-xl font-bold leading-snug text-ink-900 sm:text-[1.375rem]">{etape.titre}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{etape.resume}</p>
-                </div>
-
-                <ul className="col-start-2 mt-4 space-y-2.5 lg:col-start-3 lg:mt-0 lg:pt-2">
-                  {etape.points.map((point) => (
-                    <li key={point} className="flex gap-3 text-[15px] leading-relaxed text-ink-700">
-                      <span className="mt-[0.7em] h-px w-3 shrink-0 bg-ink-400" aria-hidden />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
 
       {/* --------------------------------------------- Amélioration continue */}
       <section className="border-b border-ink-200 bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>L’<span className="text-brand-600">amélioration continue</span> au cœur de l’approche.</h2>
           <p className="mx-auto mt-4 max-w-[60ch] text-center text-lg leading-relaxed text-ink-600">
             La roue de Deming (PDCA) aide les organisations à sortir de la stagnation et à progresser durablement. Pointez
@@ -187,7 +117,7 @@ export default function Methodologie() {
 
       {/* ------------------------------------------ Intelligence artificielle */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>De vos preuves au <span className="text-brand-600">plan d’action</span>.</h2>
           <p className="mx-auto mt-4 max-w-[60ch] text-center text-lg leading-relaxed text-ink-600">
             Chaque évaluation suit le même chemin. Vous déposez des documents, l’IA les confronte au référentiel, et vous
@@ -203,7 +133,7 @@ export default function Methodologie() {
 
       {/* -------------------------------------------------- Nos principes */}
       <section className="border-b border-ink-200 bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}><span className="text-brand-600">Six principes</span> fondent la démarche.</h2>
 
           {/* Un principe sans description n'affiche que son intitulé : les
@@ -225,7 +155,7 @@ export default function Methodologie() {
 
       {/* --------------------------------------- Référentiels et standards */}
       <section>
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Référentiels et standards mobilisés.</h2>
             <Link to="/services" viewTransition className="lien-trait text-base">

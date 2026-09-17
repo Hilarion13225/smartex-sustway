@@ -84,9 +84,8 @@ export default function Services() {
     <div>
       {/* --------------------------------------------------------- Héros */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto grid max-w-[75rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
           <div className="min-w-0">
-            <p className="sur-titre">Évaluation RSE et ESG en ligne</p>
             <h1 className="mt-4 max-w-[14ch] text-ink-900">Votre démarche RSE, notée sur vos preuves.</h1>
 
             <p className="mt-6 max-w-[50ch] text-lg leading-relaxed text-ink-600">
@@ -127,7 +126,7 @@ export default function Services() {
 
       {/* ------------------------------------------------ Ligne de repères */}
       <section className="border-b border-ink-200 bg-surface">
-        <ul className="mx-auto flex max-w-[75rem] flex-col gap-3 px-5 py-6 text-[15px] text-ink-600 sm:flex-row sm:flex-wrap sm:gap-x-10">
+        <ul className="mx-auto flex max-w-[90rem] flex-col gap-3 px-5 py-6 text-[15px] text-ink-600 sm:flex-row sm:flex-wrap sm:gap-x-10">
           {FAITS.map((fait) => (
             <li key={fait.libelle}>
               <b className="chiffre-cle mr-1.5 inline-block align-baseline">{fait.valeur}</b> {fait.libelle}
@@ -140,7 +139,7 @@ export default function Services() {
 
       {/* ------------------------------------------------ Comment ça marche */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Comment ça marche.</h2>
             <Link to="/methodologie" viewTransition className={classeLienSouligne}>
@@ -162,7 +161,7 @@ export default function Services() {
 
       {/* ------------------------------------------------ Ce que vous y gagnez */}
       <section className="border-b border-ink-200 bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Ce que vous y <span className="text-brand-600">gagnez</span>.</h2>
           <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {BENEFICES.map((benefice, index) => (
@@ -177,7 +176,7 @@ export default function Services() {
 
       {/* --------------------------------------- Types d'organisations */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Pour toutes les organisations.</h2>
             <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
@@ -207,7 +206,7 @@ export default function Services() {
 
       {/* ----------------------------------------------- Qui est derrière */}
       <section id="smartex" className="scroll-mt-20 border-b border-ink-200">
-        <div className="mx-auto grid max-w-[75rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16">
+        <div className="mx-auto grid max-w-[90rem] gap-10 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Une solution de {SMARTEX.editeur}.</h2>
             <p className="mx-auto mt-4 max-w-[52ch] text-center text-lg leading-relaxed text-ink-600">

@@ -59,7 +59,6 @@ export default function MentionsLegales() {
   return (
     <div>
       <EnTeteVitrine
-        etiquette="Informations légales"
         titre="Mentions légales"
         description={`Conditions d’édition, propriété intellectuelle et traitement des données de la plateforme ${SMARTEX.produit}.`}
       />
@@ -67,7 +66,7 @@ export default function MentionsLegales() {
       {/* Un texte juridique se lit comme un document, pas comme une grille de
           cartes : des filets entre les sections, un sommaire collant pour
           aller droit à la clause cherchée, la ligne tenue sous 70 caractères. */}
-      <section className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
+      <section className="mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[14rem_1fr] lg:gap-16">
         <nav aria-label="Sommaire des mentions légales" className="hidden lg:block">
           <ul className="sticky top-28 space-y-1 border-l border-ink-200">
             {SECTIONS.map((section) => (

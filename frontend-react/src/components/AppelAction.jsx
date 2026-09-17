@@ -21,7 +21,7 @@ export default function AppelAction({
 }) {
   return (
     <section className="bg-[#14234B] text-white">
-      <div className="mx-auto grid max-w-[75rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
+      <div className="mx-auto grid max-w-[90rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
         <div className="max-w-2xl">
           <h2 className="font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-white [text-wrap:balance] sm:text-[2.5rem]">
             {typoFr(titre)}

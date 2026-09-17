@@ -18,7 +18,7 @@ import { typoFr } from '../lib/typographie';
  * transmet, et les ignorer évite de casser un appel futur.
  */
 // eslint-disable-next-line no-unused-vars
-export default function EnTeteVitrine({ etiquette, icone, titre, description, image, video, messages, reperes }) {
+export default function EnTeteVitrine({ icone, titre, description, image, video, messages, reperes }) {
   const chapo = description ?? messages?.[0];
 
   return (
@@ -26,13 +26,12 @@ export default function EnTeteVitrine({ etiquette, icone, titre, description, im
       <div
         className={
           image
-            ? 'mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-16'
-            : 'mx-auto max-w-[75rem] px-5 py-14 sm:py-20'
+            ? 'mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-end lg:gap-16'
+            : 'mx-auto max-w-[90rem] px-5 py-14 sm:py-20'
         }
       >
         <div className="min-w-0">
-          {etiquette ? <p className="sur-titre">{etiquette}</p> : null}
-          <h1 className={etiquette ? 'titre-page mt-4 max-w-[24ch] text-ink-900' : 'titre-page max-w-[24ch] text-ink-900'}>
+          <h1 className="titre-page max-w-[24ch] text-ink-900">
             {typoFr(titre)}
           </h1>
           {chapo ? <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">{typoFr(chapo)}</p> : null}

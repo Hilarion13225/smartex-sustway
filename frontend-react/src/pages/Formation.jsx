@@ -52,10 +52,9 @@ export default function Formation() {
     <div>
       {/* --------------------------------------------------------- Héros */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto grid max-w-[75rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16 lg:pb-20 lg:pt-20">
           <div className="min-w-0">
-            <p className="sur-titre">Nos formations</p>
-            <h1 className="titre-page mt-4 max-w-[16ch] text-ink-900">Développez vos compétences en RSE et ESG.</h1>
+            <h1 className="titre-page max-w-[16ch] text-ink-900">Développez vos compétences en RSE et ESG.</h1>
 
             <p className="mt-6 max-w-[54ch] text-lg leading-relaxed text-ink-600">
               Ateliers, séminaires, conférences et certificats de spécialisation : des formations pratiques pour passer
@@ -99,7 +98,7 @@ export default function Formation() {
 
       {/* -------------------------------------------------- Nos thématiques */}
       <section id="thematiques" className="scroll-mt-20 border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="max-w-2xl">
             <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Des contenus adaptés à votre activité.</h2>
             <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">

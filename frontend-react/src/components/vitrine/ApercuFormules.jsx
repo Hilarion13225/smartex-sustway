@@ -11,7 +11,7 @@ import GrilleFormules from './GrilleFormules';
 export default function ApercuFormules() {
   return (
     <section className="border-b border-ink-200 bg-surface">
-      <div className="mx-auto max-w-[75rem] px-5 pt-16 sm:pt-20">
+      <div className="mx-auto max-w-[90rem] px-5 pt-16 sm:pt-20">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2 className="font-display text-[1.875rem] font-bold leading-[1.08] tracking-[-0.025em] text-ink-900 sm:text-[2.75rem] [text-wrap:balance]">
@@ -29,7 +29,7 @@ export default function ApercuFormules() {
       </div>
 
       {/* Même enveloppe que sur la page Formules, pour une grille identique. */}
-      <div className="mx-auto max-w-[75rem] px-5 pb-16 pt-12 sm:pb-20">
+      <div className="mx-auto max-w-[90rem] px-5 pb-16 pt-12 sm:pb-20">
         <GrilleFormules niveauTitre="h3" />
       </div>
     </section>

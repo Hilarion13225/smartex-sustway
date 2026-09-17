@@ -238,9 +238,8 @@ export default function Contact() {
     <div>
       {/* ------------------------------------------------ Héros typographique */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-14 sm:py-20">
-          <p className="sur-titre">Contact</p>
-          <h1 className="titre-page mt-4 max-w-[20ch] text-ink-900">Parlons de votre projet.</h1>
+        <div className="mx-auto max-w-[90rem] px-5 py-14 sm:py-20">
+          <h1 className="titre-page max-w-[20ch] text-ink-900">Parlons de votre projet.</h1>
           <p className="mt-6 max-w-[60ch] text-lg leading-relaxed text-ink-600">
             Entreprise, institution, ONG ou organisation internationale : décrivez-nous le périmètre à évaluer. Nous
             répondons sous 24 h ouvrées.
@@ -250,7 +249,7 @@ export default function Contact() {
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
       <section id="formulaire" className="scroll-mt-20 border-b border-ink-200">
-        <div className="mx-auto grid max-w-[75rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+        <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-14 sm:py-16 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">
             <h2 className="font-display text-2xl font-bold leading-tight tracking-[-0.02em] text-ink-900 sm:text-[1.875rem]">
@@ -575,7 +574,7 @@ export default function Contact() {
 
       {/* ---------------------------------------------------------- Renvois */}
       <section className="bg-surface">
-        <ul className="mx-auto grid max-w-[75rem] gap-10 px-5 py-14 sm:py-16 md:grid-cols-2 md:gap-16">
+        <ul className="mx-auto grid max-w-[90rem] gap-10 px-5 py-14 sm:py-16 md:grid-cols-2 md:gap-16">
           {RENVOIS.map((renvoi) => (
             <li key={renvoi.lien.vers} className="flex flex-col border-t border-ink-300 pt-5">
               <h2 className="font-display text-xl font-bold leading-snug text-ink-900 sm:text-[1.375rem]">{renvoi.titre}</h2>

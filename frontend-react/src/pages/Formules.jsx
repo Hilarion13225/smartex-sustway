@@ -91,21 +91,23 @@ export default function Formules() {
     <div>
       {/* --------------------------------------------------------- Héros */}
       <section>
-        <div className="mx-auto max-w-[75rem] px-5 pb-10 pt-10 sm:pt-14 lg:pb-12 lg:pt-20">
-          {/* Seul titre de la page depuis le retrait du bloc d'introduction :
-              il porte donc le niveau 1, sans changer d'apparence. */}
-          <h1 className="sur-titre">Nos formules</h1>
+        <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-10 sm:pt-14 lg:pb-12 lg:pt-20">
+          {/* Seul titre de la page depuis le retrait du bloc d'introduction.
+              Il portait le niveau 1 avec l'apparence d'une étiquette — quatorze
+              pixels, là où les autres pages titrent à cinquante-six : la page
+              s'ouvrait donc sur une grille de prix sans promesse. */}
+          <h1 className="titre-page max-w-[16ch] text-ink-900">Nos formules</h1>
         </div>
       </section>
 
       {/* ------------------------------------------------ Cartes formules */}
-      <section id="grille-formules" className="mx-auto max-w-[75rem] scroll-mt-24 px-5 pb-16 pt-6">
+      <section id="grille-formules" className="mx-auto max-w-[90rem] scroll-mt-24 px-5 pb-16 pt-6">
         <GrilleFormules />
       </section>
 
       {/* ------------------------------------------------ Déroulé de l'achat */}
       <section className="border-t border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Comment se passe <span className="text-brand-600">l’achat</span>.</h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
             Tout se fait en ligne, en quelques minutes. Pas de rendez-vous nécessaire.
@@ -125,7 +127,7 @@ export default function Formules() {
 
       {/* ------------------------------------------- Ce que tout le monde a */}
       <section className="border-y border-ink-200 bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Toutes nos formules <span className="text-brand-600">incluent</span>.</h2>
 
           {/* Rien d'inventé ici : chaque point reprend une ligne du comparatif
@@ -143,7 +145,7 @@ export default function Formules() {
 
       {/* ------------------------------------------------------ Comparatif */}
       <section className="border-b border-ink-200">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <h2 className={`mx-auto max-w-3xl text-center ${classeTitreSection}`}>Les formules, <span className="text-brand-600">ligne par ligne</span>.</h2>
           <p className="mx-auto mt-4 max-w-[56ch] text-center text-lg leading-relaxed text-ink-600">
             Chaque formule contient la précédente. Le tableau montre ce que chacune ajoute.
@@ -203,7 +205,7 @@ export default function Formules() {
           Seul le renvoi subsiste, pour ne pas couper le chemin vers la FAQ
           depuis la page ou l'acheteur se decide. */}
       <section className="bg-surface">
-        <div className="mx-auto max-w-[75rem] px-5 py-16 text-center sm:py-20">
+        <div className="mx-auto max-w-[90rem] px-5 py-16 text-center sm:py-20">
           <h2 className={`mx-auto max-w-3xl ${classeTitreSection}`}>Vos questions avant de choisir.</h2>
           <Link to="/faq" viewTransition className="lien-trait mt-6 inline-block text-base">
             Voir toutes les questions

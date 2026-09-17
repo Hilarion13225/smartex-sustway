@@ -31,7 +31,11 @@ export default function LayoutPublic() {
     // rendu hors d'elle, garde la sienne.
     <div className={`${estEntree ? '' : 'vitrine '}flex min-h-full flex-col bg-ink-50 text-ink-600`}>
       {estEntree ? (
-        <div className="vitrine contents">
+        // Sur la page d'entrée, le décor impose le sombre à toute la page.
+        // `entete-clair` repose la palette claire sur ce seul bloc : la barre
+        // reste blanche au-dessus du héros sombre. `contents` ne crée pas de
+        // boîte, l'en-tête reste donc collant.
+        <div className="entete-clair contents">
           <EnTetePublic />
         </div>
       ) : (

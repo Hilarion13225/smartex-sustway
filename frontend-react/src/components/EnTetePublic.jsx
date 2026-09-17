@@ -1,10 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+
+/*
+ * Largeur a partir de laquelle la barre complete tient sans deborder.
+ *
+ * Mesure sur la barre reelle : logo 225 px + navigation 637 px + actions
+ * 346 px, soit 1208 px, plus les marges internes. Le seuil valait 1200 px,
+ * herite de quatre entrees ; la navigation du document en compte six, et
+ * l'en-tete debordait entre 1200 et 1280 px. Relever le seuil plutot que
+ * raccourcir les libelles, qui viennent du document.
+ */
 import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import RechercheVitrine from './RechercheVitrine';
-import MenuDeroulant from './MenuDeroulant';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
 import { SMARTEX } from '../config/smartex';
@@ -18,15 +27,15 @@ const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disab
  * tardives.
  */
 const LIENS = [
-  {
-    libelle: `La solution ${SMARTEX.produit}`,
-    sousLiens: [
-      { vers: '/services', libelle: 'La solution' },
-      { vers: '/methodologie', libelle: 'Méthodologie' },
-    ],
-  },
-  { vers: '/formules', libelle: 'Formules' },
-  { vers: '/formation', libelle: 'Se former' },
+  // Les six entrées du document SMARTEX, dans son ordre. « Accueil » mène à la
+  // page qui présente la plateforme et la solution — c'est ce que le document
+  // attend de cette entrée, et `/accueil` y redirigeait déjà. La page d'entrée
+  // du site reste atteinte par le logo.
+  { vers: '/services', libelle: 'Accueil' },
+  { vers: '/methodologie', libelle: 'Méthodologie' },
+  { vers: '/deploiement', libelle: 'Déploiement' },
+  { vers: '/formules', libelle: 'Lancer une évaluation' },
+  { vers: '/ressources', libelle: 'Ressources' },
   { vers: '/contact', libelle: 'Contact' },
 ];
 
@@ -124,32 +133,21 @@ export default function EnTetePublic() {
       {/* Espacements serrés au plus juste : avec cinq liens, la barre complète
           tient dans les 1200 px de la vitrine avec une vingtaine de pixels de
           marge. Ajouter un lien demande de revérifier à 1200 px. */}
-      <div className="mx-auto flex h-16 max-w-[75rem] items-center gap-4 px-5">
+      <div className="mx-auto flex h-16 max-w-[90rem] items-center gap-4 px-5">
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" />
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
 
-        <nav className="hidden items-center whitespace-nowrap min-[1200px]:flex" aria-label="Navigation principale">
-          {LIENS.map((lien) =>
-            lien.sousLiens ? (
-              <MenuDeroulant
-                key={lien.libelle}
-                libelle={lien.libelle}
-                liens={lien.sousLiens}
-                classeDeclencheur={classeLien({
-                  isActive: lien.sousLiens.some((sous) => pathname === sous.vers),
-                })}
-              />
-            ) : (
-              <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
-                {lien.libelle}
-              </NavLink>
-            )
-          )}
+        <nav className="hidden items-center whitespace-nowrap min-[1320px]:flex" aria-label="Navigation principale">
+          {LIENS.map((lien) => (
+            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
+              {lien.libelle}
+            </NavLink>
+          ))}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
+        <div className="ml-auto hidden items-center gap-1.5 whitespace-nowrap min-[1320px]:flex">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
@@ -176,7 +174,7 @@ export default function EnTetePublic() {
         {/* Sous 1200 px : le logo, l'accès au compte dès que la place le
             permet, et un bouton de menu de 48 px — la taille d'un doigt, et
             non les 36 px de la version précédente. */}
-        <div className="ml-auto flex items-center gap-2 min-[1200px]:hidden">
+        <div className="ml-auto flex items-center gap-2 min-[1320px]:hidden">
           <Link
             to={ACTION.vers}
             onClick={fermer}
@@ -206,50 +204,27 @@ export default function EnTetePublic() {
         <div
           id="menu-mobile"
           ref={panneauMenu}
-          className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto overscroll-contain border-t border-ink-200 bg-ink-50 motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1200px]:hidden"
+          className="fixed inset-x-0 bottom-0 top-16 z-40 overflow-y-auto overscroll-contain border-t border-ink-200 bg-ink-50 motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1320px]:hidden"
         >
-        <nav className="mx-auto flex max-w-[75rem] flex-col px-5 pb-10 pt-2" aria-label="Navigation principale">
+        <nav className="mx-auto flex max-w-[90rem] flex-col px-5 pb-10 pt-2" aria-label="Navigation principale">
           {/* Le panneau mobile occupe tout l'ecran : un second niveau repliable
               y ajouterait un geste sans rien reveler de plus. Le groupe est donc
               annonce par son intitule, ses pages listees en dessous. */}
-          {LIENS.map((lien) =>
-            lien.sousLiens ? (
-              <div key={lien.libelle}>
-                <p className="pt-5 text-xs font-semibold uppercase tracking-[0.18em] text-ink-500">
-                  {lien.libelle}
-                </p>
-                {lien.sousLiens.map((sous) => (
-                  <NavLink
-                    key={sous.vers}
-                    to={sous.vers}
-                    onClick={fermer}
-                    className={({ isActive }) =>
-                      clsx(
-                        'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                        isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
-                      )
-                    }
-                  >
-                    {sous.libelle}
-                  </NavLink>
-                ))}
-              </div>
-            ) : (
+          {LIENS.map((lien) => (
               <NavLink
-                key={lien.vers}
-                to={lien.vers}
-                onClick={fermer}
-                className={({ isActive }) =>
-                  clsx(
-                    'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                    isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
-                  )
-                }
-              >
-                {lien.libelle}
-              </NavLink>
-            )
-          )}
+              key={lien.vers}
+              to={lien.vers}
+              onClick={fermer}
+              className={({ isActive }) =>
+                clsx(
+                  'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
+                  isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
+                )
+              }
+            >
+              {lien.libelle}
+            </NavLink>
+          ))}
 
           <button
             type="button"

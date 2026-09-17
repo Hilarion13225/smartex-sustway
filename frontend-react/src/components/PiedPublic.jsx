@@ -81,7 +81,7 @@ export default function PiedPublic() {
 
   return (
     <footer className="bg-[#0B1633] text-white">
-      <div className="mx-auto max-w-[75rem] px-5 pb-10 pt-16">
+      <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-16">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
           {/* Marque et lettre d'information */}
           <div className="max-w-sm">
