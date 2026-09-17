@@ -17,7 +17,6 @@ const COLONNES = [
       { vers: '/services', libelle: 'Solution' },
       { vers: '/methodologie', libelle: 'Méthodologie' },
       { vers: '/formules', libelle: 'Formules' },
-      { vers: '/methodologie#questions', libelle: 'Questions fréquentes' },
     ],
   },
   {

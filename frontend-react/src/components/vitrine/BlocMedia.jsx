@@ -54,7 +54,9 @@ export default function BlocMedia({
             </p>
           ) : null}
           <h2 className="titre-section mt-4 text-ink-900">{titre}</h2>
-          <p className="mt-4 text-[17px] leading-relaxed text-ink-600">{texte}</p>
+          {/* Conditionnel comme `libelle` : un bloc peut n'avoir que son titre,
+              et un paragraphe vide laisserait sa marge derrière lui. */}
+          {texte ? <p className="mt-4 text-[17px] leading-relaxed text-ink-600">{texte}</p> : null}
           {action ? (
             <Link
               to={action.vers}

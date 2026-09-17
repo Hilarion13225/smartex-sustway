@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Eye, Play, Scale, ShieldCheck } from 'lucide-react';
 import AppelAction from '../components/AppelAction';
@@ -71,17 +71,6 @@ const classeLienSouligne =
  */
 export default function Services() {
   const [videoOuverte, definirVideoOuverte] = useState(false);
-  const videoFond = useRef(null);
-
-  // La vidéo part seule et tourne en boucle, sur décision explicite, et sans
-  // commande d'arrêt : c'est un choix assumé du propriétaire du site. Le seul
-  // garde-fou conservé est celui qui ne dépend pas du goût — sous « réduire
-  // les animations », elle ne démarre pas, et son affiche tient lieu de fond.
-  useEffect(() => {
-    const element = videoFond.current;
-    if (!element) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) element.pause();
-  }, []);
 
 
   return (
@@ -92,25 +81,25 @@ export default function Services() {
           démonstration en même temps ; la démonstration a sa propre section
           juste en dessous, et l'ouverture ne dit plus qu'une chose.
 
-          La vidéo est muette, en boucle, et ne porte aucune information : le
-          texte se suffit. Elle s'arrête au bouton, et ne démarre pas du tout
-          sous « réduire les animations » — l'affiche tient alors lieu de fond.
-          WCAG 2.2.2 l'exige pour tout mouvement dépassant cinq secondes. */}
+          Le fond était une vidéo en boucle ; c'est désormais une image fixe, à
+          votre demande. Elle ne porte aucune information — le texte se suffit —
+          et reste donc hors du fil de lecture des lecteurs d'écran. La question
+          de WCAG 2.2.2, qui vise tout mouvement dépassant cinq secondes, ne se
+          pose plus : il n'y a plus de mouvement à arrêter. */}
       <section className="relative isolate overflow-hidden bg-marine text-white">
-        <video
-          ref={videoFond}
-          poster={afficheHeros}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          tabIndex={-1}
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src="/videos/methodologie-overview.mp4" type="video/mp4" />
-        </video>
+        {/* `alt=""` suffit à la sortir du fil de lecture : y ajouter
+            `aria-hidden` serait contradictoire, et les analyseurs le relèvent. */}
+        <img src={afficheHeros} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        {/* Voile sombre, indispensable depuis que le fond est fixe : l'image
+            porte une large plage d'eau claire sur sa moitié droite, et le texte
+            blanc y passait sous le seuil de lisibilité. La vidéo, elle, restait
+            sombre assez longtemps pour s'en passer.
+
+            72 % et non 65 : le pixel le plus clair de l'image est presque blanc
+            (226, 255, 255), et sous un voile à 65 % le chapô — du blanc à 80 %,
+            18 px, donc soumis au seuil AA de 4,5:1 — n'atteignait que 3,9:1.
+            À 72 % il passe à 4,75:1, avec la même hiérarchie typographique. */}
+        <div className="absolute inset-0 bg-marine/[0.72]" aria-hidden />
 
         <div className="relative mx-auto max-w-[90rem] px-5 pb-16 pt-16 text-center sm:pb-20 sm:pt-24">
           <h1 className="mx-auto max-w-[18ch] text-white">Votre démarche RSE, ESG et DD, notée sur vos preuves.</h1>

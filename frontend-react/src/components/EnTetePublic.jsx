@@ -39,8 +39,11 @@ const LIENS = [
   { vers: '/contact', libelle: 'Contact' },
 ];
 
-/* L'action principale de la vitrine : elle mène à la grille des formules. */
-const ACTION = { vers: '/formules#grille-formules', libelle: 'Choisir une formule' };
+/* L'action principale de la vitrine. Elle menait à la grille des formules ;
+   elle ouvre désormais le parcours d'inscription, dont la première étape est
+   précisément le choix de la formule — un bouton « Créer un compte » qui
+   déposerait le visiteur sur une page de prix ne tiendrait pas sa promesse. */
+const ACTION = { vers: '/inscription', libelle: 'Créer un compte' };
 
 /*
  * Lien de bureau. La page active est marquée par une pastille bordeaux très

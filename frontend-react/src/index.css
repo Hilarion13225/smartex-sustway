@@ -723,8 +723,14 @@ input.border-none:focus-visible {
 
 /* --- Titre des pages intérieures -------------------------------------- */
 /* Un cran sous le titre d'accueil : les intitulés des pages secondaires sont
-   plus longs, et à 64 px ils cassaient en quatre lignes. */
-.vitrine h1.titre-page {
+   plus longs, et à 64 px ils cassaient en quatre lignes.
+
+   Le niveau 2 y est admis depuis que la page Formules s'ouvre sur un bandeau :
+   celui-ci porte le niveau 1, et « Formule de collaboration », qui reste le
+   titre de la grille tarifaire, descend d'un cran sans changer d'apparence.
+   Sans cette seconde règle il retombait à la taille d'un h2 nu. */
+.vitrine h1.titre-page,
+.vitrine h2.titre-page {
   font-size: clamp(2.25rem, 1.45rem + 2.7vw, 3.5rem);
   line-height: 1.04;
 }

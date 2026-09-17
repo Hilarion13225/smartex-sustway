@@ -56,6 +56,9 @@ export default function EtapesMission() {
           <span className="h-2 w-2 shrink-0 rounded-full bg-brand-600" aria-hidden />
           Le déroulé d’une mission
         </p>
+        {/* Niveau 2 : ce bloc a porté le niveau 1 tant que la page Déploiement
+            — la seule qui le monte — n'avait pas de titre à elle. Elle s'ouvre
+            de nouveau sur un bandeau, qui reprend ce niveau. */}
         <h2 className="titre-section mt-4 max-w-[18ch] text-ink-900">
           Une démarche en <span className="text-brand-600">trois étapes</span>.
         </h2>
