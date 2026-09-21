@@ -72,6 +72,14 @@ export const PAGES_PUBLIQUES = [
     motsCles: ['contact', 'nous ecrire', 'telephone', 'email', 'adresse', 'demonstration', 'demo', 'rendez-vous'],
   },
   {
+    // Retiree du pied de page, cette page n'a plus aucun lien entrant : la
+    // recherche est desormais le seul chemin qui y mene.
+    chemin: '/deploiement',
+    titre: 'Déploiement',
+    description: 'Comment la plateforme se met en place dans une organisation.',
+    motsCles: ['deploiement', 'mise en place', 'installation', 'demarrage', 'accompagnement', 'integration', 'projet'],
+  },
+  {
     chemin: '/formation',
     titre: 'Se former',
     description: 'Montée en compétence des équipes sur la RSE, l’ESG et l’ISR.',

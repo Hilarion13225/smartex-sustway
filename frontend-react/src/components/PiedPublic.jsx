@@ -1,20 +1,18 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { LineChart } from 'lucide-react';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
- * Colonnes de liens du pied de page — les quatre de la charte.
+ * Colonnes de liens du pied de page — trois, allégées.
  *
  * Toutes les destinations sont des pages réellement déclarées dans App.jsx :
  * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
  * renverrait le visiteur à la case départ sans message d'erreur.
  *
- * Le pied porte ici plus que les cinq entrées de la barre de navigation, et
- * c'est sa fonction : Méthodologie, Déploiement et Se former sont des pages à
- * part entière, que la barre laisse de côté pour rester lisible. Sans cette
- * reprise, elles ne seraient plus atteignables que par la recherche.
+ * Le pied ne reprend plus que l'essentiel. Formules, Méthodologie et
+ * Déploiement en sont sortis : les deux premières restent atteignables depuis
+ * les pages Offres et Ressources, qui y mènent en contexte.
  */
 const COLONNES = [
   {
@@ -24,9 +22,6 @@ const COLONNES = [
       { vers: '/solution', libelle: 'Solution' },
       { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
       { vers: '/offres', libelle: 'Offres' },
-      { vers: '/formules', libelle: 'Formules et tarifs' },
-      { vers: '/methodologie', libelle: 'Méthodologie' },
-      { vers: '/deploiement', libelle: 'Déploiement' },
     ],
   },
   {
@@ -40,20 +35,25 @@ const COLONNES = [
   {
     titre: 'SMARTEX',
     liens: [
-      { vers: '/services#smartex', libelle: 'À propos' },
       { vers: '/contact', libelle: 'Contact' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },
-  {
-    titre: 'Légal',
-    liens: [
-      { vers: '/mentions-legales', libelle: 'Mentions légales' },
-      { vers: '/mentions-legales#donnees-personnelles', libelle: 'Politique de confidentialité' },
-      { vers: '/mentions-legales#cookies', libelle: 'Cookies' },
-      { vers: '/mentions-legales#propriete-intellectuelle', libelle: 'Propriété intellectuelle' },
-    ],
-  },
+];
+
+/**
+ * Mentions obligatoires, reprises dans la barre inférieure.
+ *
+ * La colonne « Légal » a été retirée du pied de page, mais ces deux liens n'en
+ * disparaissent pas pour autant : un site doit rendre ses mentions légales et
+ * sa politique de confidentialité atteignables depuis chaque page, et le pied
+ * en est le seul endroit commun. Posés sur la ligne du copyright, ils ne
+ * pèsent plus sur la grille. Cookies et propriété intellectuelle sont deux
+ * sections de la page des mentions légales, qui les porte déjà.
+ */
+const MENTIONS = [
+  { vers: '/mentions-legales', libelle: 'Mentions légales' },
+  { vers: '/mentions-legales#donnees-personnelles', libelle: 'Politique de confidentialité' },
 ];
 
 /**
@@ -79,22 +79,6 @@ const TRACES_RESEAUX = {
  * rien dire.
  */
 export default function PiedPublic() {
-  const [courriel, definirCourriel] = useState('');
-
-  /*
-   * Aucun endpoint d'inscription à la newsletter n'existe côté API : le
-   * formulaire ouvre le client de messagerie du visiteur, comme le formulaire
-   * de la page Contact. Une fausse confirmation sans destinataire réel serait
-   * un mensonge visible.
-   */
-  const surInscription = (evenement) => {
-    evenement.preventDefault();
-    const corps = `Merci de m’inscrire à la lettre d’information ${SMARTEX.produit}.\n\nAdresse e-mail : ${courriel}`;
-    window.location.href = `mailto:${SMARTEX.email}?subject=${encodeURIComponent(
-      'Inscription à la lettre d’information'
-    )}&body=${encodeURIComponent(corps)}`;
-  };
-
   return (
     // #102F26 : le vert le plus profond de la charte, un cran sous le Forest
     // de l'appel à l'action qui précède. Les deux plages se distinguent sans
@@ -103,7 +87,7 @@ export default function PiedPublic() {
     <footer className="bg-[#102F26] text-white">
       <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-16">
         <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr] lg:gap-14">
-          {/* Marque et lettre d'information */}
+          {/* Marque */}
           <div className="max-w-sm">
             <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
               <Logo taille="sm" variante="clair" />
@@ -122,44 +106,15 @@ export default function PiedPublic() {
               Une solution de {SMARTEX.editeur} pour structurer, piloter et mesurer la performance RSE, ESG et
               développement durable des organisations.
             </p>
-
-            <form className="mt-8" onSubmit={surInscription}>
-              <label className="text-sm font-semibold text-white" htmlFor="pied-newsletter">
-                Recevoir nos actualités
-              </label>
-              {/* 16 px et 48 px de haut : sous 16 px, iOS zoome de lui-même à la
-                  mise au point. */}
-              <div className="mt-3 flex flex-col gap-2 min-[420px]:flex-row">
-                <input
-                  id="pied-newsletter"
-                  type="email"
-                  required
-                  value={courriel}
-                  onChange={(evenement) => definirCourriel(evenement.target.value)}
-                  placeholder="nom@organisation.com"
-                  autoComplete="email"
-                  className="min-h-12 min-w-0 flex-1 rounded-[4px] border border-white/25 bg-white/5 px-4 text-base text-white outline-none transition placeholder:text-white/40 focus:border-white/70"
-                />
-                <button
-                  type="submit"
-                  className="min-h-12 shrink-0 rounded-[4px] bg-white px-5 text-base font-semibold text-[#102F26] transition-colors hover:bg-brand-50"
-                >
-                  S’inscrire
-                </button>
-              </div>
-            </form>
           </div>
 
-          {/* Colonnes de liens */}
-          {/* Deux colonnes sur téléphone, quatre à partir de 640 px : à quatre
-              de front sur un écran de 360 px, « Politique de confidentialité »
-              passerait sur quatre lignes. */}
+          {/* Deux colonnes sur téléphone, trois à partir de 640 px. */}
           {/* Pas de `col-span` ici : la grille parente n'a que deux colonnes —
               le bloc de marque et celui-ci. Un `lg:col-span-3` hérité de la
               grille à quatre colonnes précédente débordait, ce qui renvoyait
               tout le bloc à la ligne suivante et laissait la moitié droite du
               pied de page vide. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
@@ -196,8 +151,19 @@ export default function PiedPublic() {
 
         {/* Barre inférieure */}
         <div className="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 lg:flex-row lg:items-center lg:justify-between">
-          <p>
-            © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span>
+              © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
+            </span>
+            {MENTIONS.map((mention) => (
+              <Link
+                key={mention.vers}
+                to={mention.vers}
+                className="underline-offset-4 transition-colors hover:text-white hover:underline"
+              >
+                {mention.libelle}
+              </Link>
+            ))}
           </p>
 
           {/*
