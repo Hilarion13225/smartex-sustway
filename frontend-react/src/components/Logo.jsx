@@ -37,7 +37,27 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
       )}
     >
       <span className={clair ? 'text-white' : 'text-ink-900'}>SMARTEX</span>{' '}
-      <span className={clsx('relative ml-[-0.12em] mr-[0.55em]', clair ? 'text-brand-300' : 'text-brand-600')}>
+      {/*
+       * Le bordeaux de la marque est écrit en clair, et non pris sur l'échelle
+       * `brand`.
+       *
+       * Cette échelle vaut le bordeaux dans l'espace connecté mais le vert du
+       * produit sous les enveloppes de la vitrine : le logotype aurait changé
+       * de couleur d'une page à l'autre. Or c'est une marque — elle se
+       * reconnaît à ce qu'elle ne bouge pas. #921F18 est la valeur qu'avait
+       * `brand-600` à la racine, donc exactement la teinte déjà en place dans
+       * l'application ; #E28D84 en est le cran clair, pour les panneaux
+       * sombres où le bordeaux plein ne contrasterait plus (5,8:1 sur le vert
+       * profond du pied de page, contre 1,6:1 pour le bordeaux plein).
+       *
+       * L'espace entre les deux mots est posé en marge et non par l'espace
+       * typographique du JSX : le conteneur est en `inline-flex`, et la
+       * disposition flexible supprime les blancs entre ses éléments — mesuré
+       * au navigateur, les deux mots se touchaient encore à 0 px. La valeur
+       * est en `em`, donc l'espace suit la taille du logotype, du logotype de
+       * 11 px du rail de navigation au titre de 60 px.
+       */}
+      <span className={clsx('relative ml-[0.25em] mr-[0.55em]', clair ? 'text-[#E28D84]' : 'text-[#921F18]')}>
         SustWay
         <Leaf
           className={clsx(
