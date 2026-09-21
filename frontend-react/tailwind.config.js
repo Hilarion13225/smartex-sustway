@@ -168,6 +168,17 @@ export default {
           '0%': { strokeDashoffset: 'var(--longueur, 1000)' },
           '100%': { strokeDashoffset: '0' },
         },
+        // Point qui parcourt le fil de la frise « demarche », de gauche a
+        // droite, puis recommence. `left` plutot que `translateX` : la course
+        // se mesure en pourcentage du fil, or `translateX(100%)` vaut 100 % de
+        // la largeur du point lui-meme, soit dix pixels. Un seul element de
+        // dix pixels est anime ainsi, le cout de mise en page est negligeable.
+        'point-frise': {
+          '0%': { left: '0%', opacity: '0' },
+          '8%': { opacity: '1' },
+          '88%': { opacity: '1' },
+          '100%': { left: '100%', opacity: '0' },
+        },
         // Montee d'une barre de graphique depuis sa base.
         'monte-barre': {
           '0%': { transform: 'scaleY(0)' },
@@ -217,6 +228,10 @@ export default {
         'zoom-lent': 'zoom-lent 24s ease-out both',
         'trace-courbe': 'trace-courbe 1.8s cubic-bezier(0.16, 1, 0.3, 1) both',
         'monte-barre': 'monte-barre 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+        // 5,5 s : le point met le meme temps a parcourir le fil qu'un regard a
+        // lire les cinq etapes. Plus court, il agite ; plus long, on ne le voit
+        // plus bouger.
+        'point-frise': 'point-frise 5.5s ease-in-out infinite',
         'flux-arete': 'flux-arete 4s linear infinite',
         'activation-noeud': 'activation-noeud 3.5s ease-in-out infinite',
         balayage: 'balayage 9s ease-in-out infinite',
