@@ -33,9 +33,21 @@ const TAILLES = {
   lg: 'min-h-12 px-6 text-base',
 };
 
+/*
+ * Deux formes, et non un rayon unique. `arrondi` est celui de la charte, 10 px.
+ * `pilule` reprend celui de la page d'entrée, où les trois actions du héros
+ * sont entièrement arrondies : les deux pages ouvrent le site l'une après
+ * l'autre, leurs boutons ne peuvent pas avoir deux dessins.
+ */
+const FORMES = {
+  arrondi: 'rounded-[10px]',
+  pilule: 'rounded-full',
+};
+
 export default function Bouton({
   niveau = 'principal',
   taille = 'md',
+  forme = 'arrondi',
   vers,
   href,
   className,
@@ -44,7 +56,8 @@ export default function Bouton({
 }) {
   const tertiaire = niveau === 'tertiaire';
   const classes = clsx(
-    'inline-flex items-center justify-center gap-2 rounded-[10px] font-semibold tracking-tight',
+    'inline-flex items-center justify-center gap-2 font-semibold tracking-tight',
+    FORMES[forme],
     // 150 ms : assez pour que le survol se sente, trop court pour qu'on
     // l'attende. La charte demande des transitions « rapides et élégantes ».
     'transition-all duration-150 ease-out',

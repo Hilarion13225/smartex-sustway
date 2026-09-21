@@ -127,11 +127,11 @@ export default function SectionHero() {
            * 360 px, chaque intitulé passerait sur trois lignes.
            */}
           <div className="mt-7 flex flex-col flex-wrap gap-3 sm:flex-row sm:justify-center">
-            <Bouton vers="/solution" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
+            <Bouton vers="/solution" niveau="principal-sombre" taille="lg" forme="pilule" className="w-full sm:w-auto">
               Découvrir la solution
             </Bouton>
 
-            <Bouton vers="/formules" niveau="secondaire-sombre" taille="lg" className="group w-full sm:w-auto">
+            <Bouton vers="/formules" niveau="secondaire-sombre" taille="lg" forme="pilule" className="group w-full sm:w-auto">
               <Layers
                 className="h-5 w-5 transition-transform duration-300 motion-safe:group-hover:scale-110"
                 strokeWidth={1.6}
@@ -143,6 +143,7 @@ export default function SectionHero() {
             <Bouton
               niveau="secondaire-sombre"
               taille="lg"
+              forme="pilule"
               className="group w-full sm:w-auto"
               onClick={() => definirVideoOuverte(true)}
             >
@@ -151,7 +152,7 @@ export default function SectionHero() {
                 strokeWidth={1.6}
                 aria-hidden
               />
-              Lire la vidéo
+              Démo
             </Bouton>
           </div>
         </Apparition>
