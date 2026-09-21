@@ -2,13 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
 /*
- * Largeur a partir de laquelle la barre complete tient sans deborder.
+ * Largeur à partir de laquelle la barre complète tient sans déborder.
  *
- * Mesure sur la barre reelle : logo 225 px + navigation 637 px + actions
- * 346 px, soit 1208 px, plus les marges internes. Le seuil valait 1200 px,
- * herite de quatre entrees ; la navigation du document en compte six, et
- * l'en-tete debordait entre 1200 et 1280 px. Relever le seuil plutot que
- * raccourcir les libelles, qui viennent du document.
+ * Mesuré au navigateur sur la barre réelle : logo 222 px, les cinq liens
+ * 451 px (Accueil 74, Solution 79, Fonctionnalités 129, Offres 65,
+ * Ressources 104) et les actions 355 px, plus 40 px de marges internes,
+ * 32 px d'écarts entre les trois groupes et 24 px de respiration autour de
+ * la navigation — soit 1124 px, et 1164 px de fenêtre une fois retirées les
+ * marges de l'en-tête. Le seuil est donc posé à 1200 px, qui laisse une
+ * soixantaine de pixels.
+ *
+ * Il valait 1320 px, calibré pour les six entrées de la navigation
+ * précédente, dont « Lancer une évaluation ». Les cinq entrées de la charte
+ * SMARTEX SustWay sont plus courtes de près de 200 px : le seuil hérité
+ * faisait basculer la barre en menu déroulant sur un portable de 1280 px
+ * alors qu'elle y tenait largement.
+ *
+ * Changer un libellé ou ajouter une entrée demande de refaire cette mesure.
  */
 import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
@@ -107,8 +117,16 @@ export default function EnTetePublic() {
       }
     };
 
-    // Passage en largeur bureau (rotation d'une tablette) : le menu n'a plus
-    // lieu d'être et bloquerait le défilement d'une page qui ne le montre pas.
+    /*
+     * Passage en largeur bureau (rotation d'une tablette) : le menu n'a plus
+     * lieu d'être et bloquerait le défilement d'une page qui ne le montre pas.
+     *
+     * Cette valeur doit rester celle des classes `min-[1200px]:` du rendu.
+     * Elles avaient divergé — 1200 ici, 1320 en CSS : entre les deux, le
+     * bouton de menu était affiché mais le panneau se refermait de lui-même
+     * au moindre redimensionnement, et le défilement de la page restait
+     * bloqué par le nettoyage qui ne s'exécutait pas dans l'ordre attendu.
+     */
     const largeurBureau = window.matchMedia('(min-width: 1200px)');
     const surLargeur = (requete) => {
       if (requete.matches) setOuvert(false);
@@ -145,9 +163,8 @@ export default function EnTetePublic() {
     // sombre. La carte, elle, reste pleine et opaque : les liens ne sont
     // jamais brouillés par ce qui défile derrière.
     <header className="sticky top-0 z-40 px-3 pb-2 pt-2.5 sm:px-5">
-      {/* Espacements serrés au plus juste : avec six liens, la barre complète
-          tient dans les 1200 px de la vitrine avec une vingtaine de pixels de
-          marge. Ajouter un lien demande de revérifier à 1200 px. */}
+      {/* Espacements serrés au plus juste : voir la mesure en tête de fichier
+          pour la largeur dont la barre complète a besoin. */}
       <div
         className={clsx(
           'mx-auto flex h-16 max-w-[90rem] items-center gap-4 bg-surface/80 px-5 backdrop-blur-xl shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
@@ -160,7 +177,7 @@ export default function EnTetePublic() {
         </Link>
 
         <nav
-          className="hidden flex-1 items-center justify-center whitespace-nowrap min-[1320px]:flex"
+          className="hidden flex-1 items-center justify-center whitespace-nowrap min-[1200px]:flex"
           aria-label="Navigation principale"
         >
           {LIENS.map((lien) => (
@@ -172,7 +189,7 @@ export default function EnTetePublic() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1320px]:flex">
+        <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
           <button
             type="button"
             onClick={() => definirRechercheOuverte(true)}
@@ -196,14 +213,19 @@ export default function EnTetePublic() {
           </Link>
         </div>
 
-        {/* Sous 1200 px : le logo, l'accès au compte dès que la place le
+        {/* Sous 1200 px : le logo, l'appel à l'action dès que la place le
             permet, et un bouton de menu de 48 px — la taille d'un doigt, et
             non les 36 px de la version précédente. */}
-        <div className="ml-auto flex items-center gap-2 min-[1320px]:hidden">
+        <div className="ml-auto flex items-center gap-2 min-[1200px]:hidden">
           <Link
             to={ACTION.vers}
             onClick={fermer}
-            className="hidden h-11 items-center rounded-[4px] bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 min-[460px]:flex"
+            /* Visible dès 375 px, la largeur d'un iPhone SE ou mini. Mesuré au
+               navigateur : à 375 px le contenu de la barre occupe 299 px pour
+               351 disponibles, à 360 px il déborde. Le seuil valait 460 px, ce
+               qui privait du seul appel à l'action tous les téléphones
+               courants — la charte le veut atteignable en permanence. */
+            className="hidden h-11 items-center rounded-[4px] bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 min-[375px]:flex"
           >
             {ACTION.libelle}
           </Link>
@@ -238,7 +260,7 @@ export default function EnTetePublic() {
             // moitié vide n'apprend rien. Au-delà, il défile.
             'max-h-[calc(100svh-5.5rem)] rounded-b-[14px] border-t border-ink-200 bg-surface/90 backdrop-blur-xl',
             'shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
-            'motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1320px]:hidden'
+            'motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1200px]:hidden'
           )}
         >
         <nav className="flex flex-col px-5 pb-6 pt-1" aria-label="Navigation principale">
