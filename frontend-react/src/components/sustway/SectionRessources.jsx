@@ -1,72 +1,73 @@
-import { ArrowRight, BookOpen, FileText, GraduationCap, HelpCircle, LineChart, Newspaper } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, HelpCircle, Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Badge from './Badge';
 import { Apparition, Section } from './Section';
-import { SMARTEX } from '../../config/smartex';
 
 /*
- * Corps de la page « Ressources ».
+ * Corps de la page « Ressources » : quatre rubriques, chacune avec son ancre.
  *
- * Deux rubriques sur quatre n'ont pas encore de contenu. Elles sont nommées et
- * décrites plutôt que masquées : la barre de navigation les promet, et une
- * page qui tient moins que le menu n'annonce est plus déroutante qu'une
- * rubrique qui dit franchement qu'elle arrive. Aucun article fictif n'est
- * affiché pour faire nombre, et aucun bouton ne mène à une page vide — la
- * charte écarte explicitement les contenus inventés.
+ * Trois d'entre elles n'ont pas encore de contenu. Elles sont nommées,
+ * décrites, et marquées comme telles plutôt que masquées : le menu de la barre
+ * les annonce, et une page qui tient moins que le menu ne promet est plus
+ * déroutante qu'une rubrique qui dit franchement qu'elle arrive. Aucun article
+ * n'est inventé pour faire nombre, et aucun bouton ne mène à une page vide —
+ * un bouton grisé ferait espérer un clic.
+ *
+ * La FAQ, elle, existe : ses questions vivent sur la page Méthodologie, et le
+ * bouton y mène.
  *
  * Les vignettes sont dessinées, pas photographiées. Une banque d'images
  * donnerait ici des feuilles et des planètes, qui rangeraient le produit du
- * côté du discours militant plutôt que du côté de l'outil de pilotage. Chaque
- * vignette reprend donc le langage graphique du produit : une trajectoire.
+ * côté du discours militant plutôt que du côté de l'outil de pilotage.
  */
-const DISPONIBLES = [
+const RUBRIQUES = [
   {
-    titre: 'Formations',
-    texte: `Des parcours pratiques animés par les consultants ${SMARTEX.editeur}, avec des cas concrets tirés de votre secteur et une attestation à l’issue.`,
-    action: 'Voir les formations',
-    vers: '/formation',
-    icone: GraduationCap,
+    ancre: 'articles',
+    surTitre: 'Articles',
+    titre: 'Comprendre les évolutions de la RSE et de l’ESG',
+    texte:
+      'Retrouvez nos analyses et actualités sur les tendances RSE, les critères ESG et les stratégies de développement durable en entreprise.',
+    action: 'Voir les articles',
+    icone: Newspaper,
   },
   {
-    titre: 'La méthodologie',
-    texte: 'Les référentiels retenus, les critères évalués et la façon dont le score est construit, étape par étape.',
-    action: 'Consulter',
-    vers: '/methodologie',
+    ancre: 'guides',
+    surTitre: 'Guides & bonnes pratiques',
+    titre: 'Passer de la stratégie à l’action',
+    texte:
+      'Des méthodes pratiques pour structurer votre démarche pas à pas et embarquer l’ensemble de vos équipes dans une dynamique d’amélioration continue.',
+    action: 'Consulter les guides',
     icone: BookOpen,
   },
   {
-    titre: 'FAQ',
-    texte: 'Les questions posées avant, pendant et après une première évaluation.',
-    action: 'Voir les questions',
+    ancre: 'documentation',
+    surTitre: 'Documentation',
+    titre: 'Comprendre SMARTEX SustWay',
+    texte:
+      'Tout savoir sur l’utilisation de la plateforme SMARTEX SustWay, ses concepts, ses référentiels et sa mise en œuvre technique.',
+    action: 'Consulter la documentation',
+    icone: FileText,
+  },
+  {
+    ancre: 'faq',
+    surTitre: 'FAQ',
+    titre: 'Les réponses à vos questions',
+    texte:
+      'Les réponses aux questions les plus fréquentes concernant le déploiement de la solution et son adéquation avec vos objectifs stratégiques.',
+    action: 'Consulter la FAQ',
     vers: '/methodologie#questions',
     icone: HelpCircle,
   },
 ];
 
-const A_VENIR = [
-  {
-    titre: 'Articles & analyses',
-    texte: 'Des repères pour comprendre les référentiels, les critères et ce que recouvre une démarche RSE et ESG.',
-    icone: LineChart,
-  },
-  {
-    titre: 'Actualités',
-    texte: 'L’évolution des standards, des obligations et des attentes des partenaires techniques et financiers.',
-    icone: Newspaper,
-  },
-  {
-    titre: 'Documentation produit',
-    texte: 'Le fonctionnement de la plateforme, écran par écran, pour les équipes qui la déploient.',
-    icone: FileText,
-  },
-];
-
-/* Aplat vert traversé de deux courbes, commun à toutes les vignettes. */
-function Vignette({ Icone, attenuee = false }) {
+/* Aplat traversé de deux courbes, reprises du langage graphique du produit. */
+function Vignette({ Icone, attenuee }) {
   return (
     <div
       aria-hidden
-      className={`relative mb-5 flex h-24 items-end overflow-hidden rounded-xl ${attenuee ? 'bg-ink-100' : 'bg-brand-50'}`}
+      className={`relative flex h-40 items-end overflow-hidden rounded-2xl sm:h-48 ${
+        attenuee ? 'bg-ink-100' : 'bg-brand-50'
+      }`}
     >
       <svg viewBox="0 0 200 96" className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
         <path
@@ -85,11 +86,11 @@ function Vignette({ Icone, attenuee = false }) {
         />
       </svg>
       <span
-        className={`absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-xl bg-surface shadow-sm ${
+        className={`absolute left-5 top-5 flex h-12 w-12 items-center justify-center rounded-xl bg-surface shadow-sm ${
           attenuee ? 'text-ink-500' : 'text-brand-600'
         }`}
       >
-        <Icone className="h-[18px] w-[18px]" strokeWidth={1.75} />
+        <Icone className="h-[22px] w-[22px]" strokeWidth={1.75} />
       </span>
     </div>
   );
@@ -98,65 +99,58 @@ function Vignette({ Icone, attenuee = false }) {
 export default function SectionRessources() {
   return (
     <>
-      <Section fond="blanc">
-        <h2 className="mb-10 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
-          Disponible dès maintenant
-        </h2>
+      {RUBRIQUES.map((rubrique, index) => {
+        const Icone = rubrique.icone;
+        const inverse = index % 2 === 1;
+        const aVenir = !rubrique.vers;
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {DISPONIBLES.map((ressource, index) => (
-            <Apparition key={ressource.titre} delai={index * 90} className="h-full">
-              {/*
-               * La carte entière est cliquable via un lien étendu
-               * (`after:absolute after:inset-0`) : cibler seulement l'intitulé
-               * du bas obligerait à viser un texte de 15 px. Le lien reste un
-               * vrai lien, donc atteignable au clavier et annoncé une fois.
-               */}
-              <article className="group relative flex h-full flex-col rounded-2xl border border-ink-200 bg-surface p-6 transition-all duration-200 hover:border-brand-200 hover:shadow-soft focus-within:border-brand-300">
-                <Vignette Icone={ressource.icone} />
-                <h3 className="text-[18px] font-semibold text-forest">{ressource.titre}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-ink-600">{ressource.texte}</p>
-                <Link
-                  to={ressource.vers}
-                  className="mt-auto inline-flex items-center gap-1.5 pt-5 text-[15px] font-semibold text-brand-700 transition-all duration-150 after:absolute after:inset-0 after:content-[''] group-hover:gap-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  {ressource.action}
-                  <ArrowRight className="h-4 w-4" strokeWidth={2} aria-hidden />
-                </Link>
+        return (
+          <Section key={rubrique.ancre} id={rubrique.ancre} fond={inverse ? 'mist' : 'blanc'}>
+            <Apparition>
+              <article className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+                <div className={`min-w-0 ${inverse ? 'lg:order-2' : ''}`}>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">
+                      {rubrique.surTitre}
+                    </p>
+                    {aVenir ? <Badge>À venir</Badge> : null}
+                  </div>
+
+                  <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
+                    {rubrique.titre}
+                  </h2>
+                  <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-600">{rubrique.texte}</p>
+
+                  {/* Un lien quand la rubrique existe, une phrase quand elle
+                      n'existe pas encore. Jamais un bouton inerte. */}
+                  {rubrique.vers ? (
+                    <Link
+                      to={rubrique.vers}
+                      className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
+                    >
+                      {rubrique.action}
+                      <ArrowRight
+                        className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
+                        strokeWidth={2}
+                        aria-hidden
+                      />
+                    </Link>
+                  ) : (
+                    <p className="mt-6 text-[14px] italic text-ink-500">
+                      Cette rubrique est en préparation. Nous préférons le dire plutôt que publier des contenus de
+                      remplissage.
+                    </p>
+                  )}
+                </div>
+
+                <div className={`min-w-0 ${inverse ? 'lg:order-1' : ''}`}>
+                  <Vignette Icone={Icone} attenuee={aVenir} />
+                </div>
               </article>
             </Apparition>
-          ))}
-        </div>
-      </Section>
-
-      <Section fond="mist">
-        <div className="mb-10 max-w-3xl">
-          <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
-            En préparation
-          </h2>
-          <p className="mt-3 text-[16px] leading-relaxed text-ink-600">
-            Ces rubriques sont annoncées ici sans être encore ouvertes. Nous préférons le dire plutôt que publier des
-            contenus de remplissage.
-          </p>
-        </div>
-
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {A_VENIR.map((ressource, index) => (
-            <Apparition key={ressource.titre} delai={index * 90} className="h-full">
-              {/* Ni lien ni bouton : rien n'est cliquable, parce qu'il n'y a
-                  rien à ouvrir. Un bouton grisé ferait espérer un clic. */}
-              <li className="flex h-full flex-col rounded-2xl border border-dashed border-ink-300 bg-surface p-6">
-                <Vignette Icone={ressource.icone} attenuee />
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="text-[18px] font-semibold text-ink-800">{ressource.titre}</h3>
-                  <Badge>À venir</Badge>
-                </div>
-                <p className="mt-2 text-[14px] leading-relaxed text-ink-600">{ressource.texte}</p>
-              </li>
-            </Apparition>
-          ))}
-        </ul>
-      </Section>
+          </Section>
+        );
+      })}
     </>
   );
 }

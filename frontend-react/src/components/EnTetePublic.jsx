@@ -20,7 +20,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
  *
  * Changer un libellé ou ajouter une entrée demande de refaire cette mesure.
  */
-import { Play } from 'lucide-react';
+import { ChevronDown, Play } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import logoEditeurBlanc from '../assets/smartex-expertises-blanc.png';
@@ -34,21 +34,50 @@ const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disab
 /*
  * Navigation principale — les cinq entrées de la charte SMARTEX SustWay.
  *
- * Ce sont cinq pages, une par entrée. Elles l'ont d'abord été en ancres d'une
- * page unique ; les séparer donne à chacune son adresse partageable, son titre
- * d'onglet et sa description — ce qu'une ancre ne peut pas avoir.
+ * Trois d'entre elles ouvrent un menu. Leurs sous-entrées ne sont pas des
+ * pages mais des ancres : Solution, Fonctionnalités et Ressources se lisent
+ * d'un seul tenant, et qui arrive par le menu atterrit à la bonne section sans
+ * perdre le fil de ce qui précède.
+ *
+ * Les liens sont écrits en absolu (`/solution#presentation`) plutôt qu'en
+ * relatif : depuis une autre page, un lien relatif viserait une ancre
+ * inexistante sur la page courante et ne ferait rien. La bascule de route puis
+ * le défilement vers l'ancre sont gérés par LayoutPublic.
  *
  * Les autres pages publiques — Méthodologie, Déploiement, Formules, Contact —
- * restent atteignables par le pied de page, par la recherche et par les
- * renvois des cinq pages. Les faire remonter ici porterait la barre à neuf
- * entrées, et diluerait les cinq que la charte veut voir.
+ * restent atteignables par le pied de page et par les renvois des cinq pages.
  */
 const LIENS = [
   { vers: '/', libelle: 'Accueil' },
-  { vers: '/solution', libelle: 'Solution' },
-  { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
+  {
+    vers: '/solution',
+    libelle: 'Solution',
+    sous: [
+      { vers: '/solution#presentation', libelle: 'Présentation' },
+      { vers: '/solution#notre-approche', libelle: 'Notre approche' },
+      { vers: '/solution#performance-durable', libelle: 'Performance durable' },
+    ],
+  },
+  {
+    vers: '/fonctionnalites',
+    libelle: 'Fonctionnalités',
+    sous: [
+      { vers: '/fonctionnalites#evaluations', libelle: 'Évaluations RSE & ESG' },
+      { vers: '/fonctionnalites#objectifs-actions', libelle: 'Objectifs & Actions' },
+      { vers: '/fonctionnalites#performance-reporting', libelle: 'Performance & Reporting' },
+    ],
+  },
   { vers: '/offres', libelle: 'Offres' },
-  { vers: '/ressources', libelle: 'Ressources' },
+  {
+    vers: '/ressources',
+    libelle: 'Ressources',
+    sous: [
+      { vers: '/ressources#articles', libelle: 'Articles' },
+      { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
+      { vers: '/ressources#documentation', libelle: 'Documentation' },
+      { vers: '/ressources#faq', libelle: 'FAQ' },
+    ],
+  },
 ];
 
 /*
@@ -92,6 +121,9 @@ function classeLien(surSombre) {
 export default function EnTetePublic({ surFondSombre = false }) {
   const [ouvert, setOuvert] = useState(false);
   const [defile, definirDefile] = useState(false);
+  /* Index de l'entrée dont le menu est déployé, ou `null`. Un seul à la fois :
+     deux panneaux ouverts se chevaucheraient. */
+  const [menuDeploye, definirMenuDeploye] = useState(null);
   const [videoOuverte, definirVideoOuverte] = useState(false);
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
@@ -102,7 +134,19 @@ export default function EnTetePublic({ surFondSombre = false }) {
   // navigateur, qui ne passe par aucun lien du menu.
   useEffect(() => {
     setOuvert(false);
+    definirMenuDeploye(null);
   }, [pathname]);
+
+  /* Échap referme le menu déployé. Le focus reste où il est : l'utilisateur
+     vient de refuser le panneau, pas de quitter l'entrée qui l'ouvre. */
+  useEffect(() => {
+    if (menuDeploye === null) return undefined;
+    const auClavier = (evenement) => {
+      if (evenement.key === 'Escape') definirMenuDeploye(null);
+    };
+    document.addEventListener('keydown', auClavier);
+    return () => document.removeEventListener('keydown', auClavier);
+  }, [menuDeploye]);
 
   /*
    * La barre devient opaque dès les premiers pixels de défilement.
@@ -239,11 +283,68 @@ export default function EnTetePublic({ surFondSombre = false }) {
           className="hidden flex-1 items-center justify-center whitespace-nowrap min-[1200px]:flex"
           aria-label="Navigation principale"
         >
-          {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className={classeLien(surSombre)}>
-              {lien.libelle}
-            </NavLink>
-          ))}
+          {LIENS.map((lien, index) =>
+            lien.sous ? (
+              /*
+               * Le menu s'ouvre au survol et à la mise au point, et se referme
+               * quand l'un et l'autre quittent le groupe. `onBlur` teste si la
+               * cible du focus est encore dans le conteneur : sans ce test, il
+               * se refermait entre deux sous-entrées, pendant la tabulation.
+               *
+               * L'entrée reste un lien vers la page entière : le menu propose
+               * des sections, il ne remplace pas la page qui les contient.
+               */
+              <div
+                key={lien.vers}
+                className="relative"
+                onMouseEnter={() => definirMenuDeploye(index)}
+                onMouseLeave={() => definirMenuDeploye((ouvert) => (ouvert === index ? null : ouvert))}
+                onFocus={() => definirMenuDeploye(index)}
+                onBlur={(evenement) => {
+                  if (!evenement.currentTarget.contains(evenement.relatedTarget)) definirMenuDeploye(null);
+                }}
+              >
+                <NavLink
+                  to={lien.vers}
+                  className={classeLien(surSombre)}
+                  aria-expanded={menuDeploye === index}
+                  aria-haspopup="true"
+                >
+                  {lien.libelle}
+                  <ChevronDown
+                    aria-hidden
+                    className={clsx(
+                      'ml-1 h-3.5 w-3.5 transition-transform duration-200 motion-reduce:transition-none',
+                      menuDeploye === index && 'rotate-180'
+                    )}
+                    strokeWidth={2.5}
+                  />
+                </NavLink>
+
+                {menuDeploye === index ? (
+                  <div className="absolute left-0 top-full z-50 pt-2">
+                    <ul className="min-w-[232px] overflow-hidden rounded-xl border border-ink-200 bg-surface py-2 shadow-[0_12px_32px_-12px_rgb(var(--marine)/0.28)]">
+                      {lien.sous.map((sous) => (
+                        <li key={sous.vers}>
+                          <Link
+                            to={sous.vers}
+                            onClick={() => definirMenuDeploye(null)}
+                            className="block px-4 py-2.5 text-[15px] text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-700"
+                          >
+                            {sous.libelle}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <NavLink key={lien.vers} to={lien.vers} className={classeLien(surSombre)}>
+                {lien.libelle}
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
@@ -387,20 +488,40 @@ export default function EnTetePublic({ surFondSombre = false }) {
           {/* Le panneau mobile occupe tout l'ecran : un second niveau repliable
               y ajouterait un geste sans rien reveler de plus. Le groupe est donc
               annonce par son intitule, ses pages listees en dessous. */}
+          {/* Le panneau mobile occupe tout l'écran : les sous-entrées y sont
+              dépliées d'emblée, en retrait sous leur rubrique. Un second niveau
+              repliable y ajouterait un geste sans rien révéler de plus. */}
           {LIENS.map((lien) => (
-            <NavLink
-              key={lien.vers}
-              to={lien.vers}
-              onClick={fermer}
-              className={({ isActive }) =>
-                clsx(
-                  'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                  isActive ? 'text-brand-700' : 'text-ink-900'
-                )
-              }
-            >
-              {lien.libelle}
-            </NavLink>
+            <div key={lien.vers} className="border-b border-ink-200">
+              <NavLink
+                to={lien.vers}
+                onClick={fermer}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex min-h-12 items-center text-lg font-medium transition-colors',
+                    isActive ? 'text-brand-700' : 'text-ink-900'
+                  )
+                }
+              >
+                {lien.libelle}
+              </NavLink>
+
+              {lien.sous ? (
+                <ul className="pb-3 pl-4">
+                  {lien.sous.map((sous) => (
+                    <li key={sous.vers}>
+                      <Link
+                        to={sous.vers}
+                        onClick={fermer}
+                        className="flex min-h-11 items-center border-l border-ink-200 pl-4 text-[15px] text-ink-600 transition-colors hover:text-brand-700"
+                      >
+                        {sous.libelle}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
           ))}
 
           <button

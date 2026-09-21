@@ -21,8 +21,8 @@ export default function Fonctionnalites() {
       <EnTetePage
         image={bandeau}
         fil="Fonctionnalités"
-        titre="Les outils pour piloter votre démarche"
-        sousTitre="SMARTEX SustWay centralise les informations nécessaires au pilotage de la performance durable : campagnes, données, preuves, scores, actions et reporting suivent le même fil."
+        titre="Les outils pour opérationnaliser votre démarche durable"
+        sousTitre="Évaluer, agir, mesurer : trois domaines qui se suivent, et les écrans qui les portent."
       />
       <SectionFonctionnalites />
       <SectionCtaFinal />
