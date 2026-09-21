@@ -19,9 +19,42 @@ const FONDS = {
   forest: 'bg-forest text-white',
 };
 
-export function Section({ id, fond = 'blanc', className, contenuClassName, children }) {
+/*
+ * `pleineHauteur` : la section occupe une fenetre entiere, son contenu centre.
+ *
+ * Les 88 px retires sont le `scroll-padding-top: 5.5rem` pose sur `html` dans
+ * `index.css` — la reserve qui empeche la barre fixe de recouvrir une cible
+ * d'ancre ou un element qui recoit le focus (WCAG 2.2, Focus Not Obscured).
+ * C'est donc lui, et non la hauteur de barre de 72 px, qui decide ou une
+ * ancre depose le haut de la section ; la hauteur doit se caler dessus.
+ *
+ * `scroll-mt-0` en consequence : la marge d'ancre de la section s'ajouterait
+ * a ce padding de racine. Avec les 96 px par defaut, une ancre deposait la
+ * section a 184 px du haut et sa fin passait 96 px sous la fenetre — mesure
+ * au navigateur avant correction.
+ *
+ * `min-height` et non `height` : sur une fenetre trop basse pour le contenu,
+ * le calcul donne moins que lui et reste sans effet — la section reprend sa
+ * hauteur naturelle au lieu d'ecraser ce qu'elle contient.
+ *
+ * A partir de 1024 px seulement : en dessous, les colonnes s'empilent et
+ * aucune de ces sections ne tient dans la hauteur d'un telephone.
+ *
+ * Meme motif que `SectionConfiance`, qui s'etire deja sur la fenetre moins la
+ * hauteur du pied.
+ */
+export function Section({ id, fond = 'blanc', pleineHauteur = false, className, contenuClassName, children }) {
   return (
-    <section id={id} className={clsx('scroll-mt-24', FONDS[fond], className)}>
+    <section
+      id={id}
+      className={clsx(
+        pleineHauteur
+          ? 'scroll-mt-0 lg:flex lg:min-h-[calc(100svh-88px)] lg:flex-col lg:justify-center'
+          : 'scroll-mt-24',
+        FONDS[fond],
+        className
+      )}
+    >
       <div className={clsx('mx-auto w-full max-w-[1200px] px-5 py-20 sm:px-8 lg:py-28', contenuClassName)}>
         {children}
       </div>

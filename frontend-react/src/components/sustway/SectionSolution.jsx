@@ -17,6 +17,12 @@ import SchemaPerformance from './SchemaPerformance';
  * suite, et le lecteur qui arrive par le menu atterrit au bon endroit sans
  * perdre le fil de ce qui precede.
  *
+ * Chacune occupe une fenetre entiere a partir de 1024 px, contenu centre —
+ * d'ou `pleineHauteur`. La page se lit donc en trois ecrans, un par entree du
+ * menu deroulant, et une ancre amene la section entiere sous la barre plutot
+ * que son seul debut. Le padding vertical descend de 112 a 48 px : a 112 px,
+ * la presentation depassait de 67 px la fenetre qu'elle doit tenir.
+ *
  * Presentation porte le `h1` de la page : le bandeau photo qui l'ouvrait a
  * ete retire, et c'est donc elle qui annonce desormais le sujet. Les deux
  * autres sections ouvrent en `h2`.
@@ -85,7 +91,7 @@ export default function SectionSolution() {
        * l'y recentre, ce qui repartit ce creux de 232 px de part et d'autre au
        * lieu de le laisser tomber entier sous le schema.
        */}
-      <Section id="presentation" fond="blanc">
+      <Section id="presentation" fond="blanc" pleineHauteur contenuClassName="lg:py-12">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
           <div className="min-w-0">
             <Apparition>
@@ -126,7 +132,7 @@ export default function SectionSolution() {
       </Section>
 
       {/* --- B. Notre approche ------------------------------------------ */}
-      <Section id="notre-approche" fond="mist">
+      <Section id="notre-approche" fond="mist" pleineHauteur contenuClassName="lg:py-12">
         <TitreBloc
           surTitre="Notre approche"
           sousTitre="Pour sortir de la stagnation, SMARTEX SustWay déploie une méthode progressive qui intègre les principes ESG au cœur des décisions stratégiques de croissance, tout en recherchant la création de valeur durable et la maîtrise des impacts de l’entreprise."
@@ -138,7 +144,7 @@ export default function SectionSolution() {
       </Section>
 
       {/* --- C. Performance durable -------------------------------------- */}
-      <Section id="performance-durable" fond="blanc">
+      <Section id="performance-durable" fond="blanc" pleineHauteur contenuClassName="lg:py-12">
         <TitreBloc
           surTitre="Performance durable"
           sousTitre="Maîtrisez vos impacts sociaux et environnementaux sans compromettre votre performance financière, grâce à un pilotage unifié, structuré et transparent."
