@@ -28,13 +28,35 @@ export default function SectionHero() {
     <section className="relative overflow-hidden bg-forest">
       <FondTech surSombre />
 
-      {/* `pt` large : la barre de navigation est en position fixe et passe
-          par-dessus le héros, qu'elle ne pousse donc plus vers le bas. */}
-      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-12 px-5 pb-16 pt-28 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14 lg:pb-24 lg:pt-32">
+      {/*
+       * Le héros tient dans une fenêtre, sans avoir à défiler.
+       *
+       * `min-h-svh` l'y étire quand il reste de la place, et les réglages
+       * ci-dessous l'empêchent de la dépasser quand il y en a peu. Mesuré sur
+       * un écran de 1366 × 768 — le plus répandu, soit 730 px de fenêtre
+       * utile : le héros occupait 860 px et ses boutons finissaient 50 px
+       * sous le bord.
+       *
+       * `svh` et non `vh` : sur téléphone, `vh` se rapporte à la fenêtre
+       * barres d'adresse rétractées, et le bas du bloc reste caché tant
+       * qu'on n'a pas fait défiler.
+       *
+       * `pt` large tout de même : la barre de navigation est en position fixe
+       * et passe par-dessus le héros, qu'elle ne pousse donc plus vers le bas.
+       *
+       * La colonne de texte est un peu plus large que celle de l'aperçu
+       * (1,05 contre 1) : c'est le titre qui dicte la hauteur, et chaque ligne
+       * qu'il gagne en largeur en fait une de moins en hauteur.
+       */}
+      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12 lg:pb-12 lg:pt-24">
         <Apparition>
           <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-growth">SMARTEX SustWay</p>
 
-          <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.025em] text-white sm:text-[44px] lg:text-[52px]">
+          {/* La taille du titre suit la hauteur de la fenêtre : 44 px sur un
+              écran de 730 px utiles, 52 px dès 900. C'est lui qui décide si le
+              héros tient ou non — cinq lignes à 52 px en occupent 286 à elles
+              seules. */}
+          <h1 className="mt-4 text-[34px] font-bold leading-[1.08] tracking-[-0.025em] text-white sm:text-[44px] lg:text-[clamp(2.75rem,0.6rem+4.7vh,3.25rem)]">
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
@@ -42,7 +64,7 @@ export default function SectionHero() {
               nomme les trois sigles. Sans équilibrage, la seconde ligne se
               réduisait à « mesurables. » — un reste de phrase là où l'œil
               attend la moitié d'une accroche. */}
-          <p className="mt-5 text-balance text-lg font-semibold text-growth sm:text-xl">
+          <p className="mt-4 text-balance text-lg font-semibold text-growth sm:text-xl">
             Transformez vos ambitions RSE, ESG et DD en actions mesurables.
           </p>
 
@@ -63,7 +85,7 @@ export default function SectionHero() {
            * comme il doit l'être. C'est déjà le parti pris de l'appel à
            * l'action final, sur le même fond.
            */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Bouton vers="/contact" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
               Demander une démo
             </Bouton>
