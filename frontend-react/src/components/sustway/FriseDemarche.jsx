@@ -200,6 +200,61 @@ export default function FriseDemarche() {
           );
         })}
       </ol>
+
+      {/*
+       * La boucle de retour, de la performance durable au diagnostic.
+       *
+       * Sans elle la frise dit cinq etapes puis une fin ; c'est le retour de
+       * la cinquieme vers la premiere qui en fait un cycle, et le sujet de la
+       * section est justement une demarche qui recommence sur des bases
+       * mesurees. Meme motif que `SchemaPiliers` — trace plus libelle — pour
+       * que les deux schemas de la page disent la boucle de la meme facon.
+       *
+       * Les abscisses sont celles des cercles : cinq colonnes de 20 %, donc un
+       * premier centre a 10 % (40/400) et un dernier a 90 % (360/400). Elles
+       * suivent `lg:grid-cols-5` et changeraient avec lui.
+       *
+       * Le trace est cache sous `lg`, ou le fil l'est deja et ou les etapes
+       * s'empilent : une boucle horizontale n'y aurait relie que du vide. Le
+       * libelle, lui, reste a toutes les largeurs.
+       */}
+      <div
+        aria-hidden
+        className={`mt-8 hidden transition-opacity duration-700 ease-out motion-reduce:transition-none lg:block ${
+          visible ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={sansAnimation ? undefined : { transitionDelay: '1800ms' }}
+      >
+        <svg viewBox="0 0 400 28" className="h-7 w-full" preserveAspectRatio="none">
+          <path
+            d="M 360 2 L 360 22 L 40 22 L 40 2"
+            fill="none"
+            stroke="rgb(var(--brand-300))"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d="M 36 8 L 40 2 L 44 8"
+            fill="none"
+            stroke="rgb(var(--brand-300))"
+            strokeWidth="1.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
+
+      {/* 1 900 ms : apres le trace, lui-meme pose une fois le fil rempli a
+          1 800 ms. La boucle se ferme donc en dernier, une fois les cinq
+          etapes parcourues. */}
+      <p
+        className={`mt-8 flex items-center justify-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-500 transition-opacity duration-700 ease-out motion-reduce:transition-none lg:mt-3 ${
+          visible ? 'opacity-100' : 'opacity-0'
+        }`}
+        style={sansAnimation ? undefined : { transitionDelay: '1900ms' }}
+      >
+        <RefreshCw className="h-3.5 w-3.5 text-brand-600" strokeWidth={2} aria-hidden />
+        Amélioration continue
+      </p>
     </div>
   );
 }
