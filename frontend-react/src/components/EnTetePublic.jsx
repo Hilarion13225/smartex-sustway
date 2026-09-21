@@ -20,13 +20,12 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
  *
  * Changer un libellé ou ajouter une entrée demande de refaire cette mesure.
  */
-import { Play, Search } from 'lucide-react';
+import { Play } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import logoEditeurBlanc from '../assets/smartex-expertises-blanc.png';
 import logoEditeurCouleur from '../assets/smartex-expertises.png';
 import { SMARTEX } from '../config/smartex';
-import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
 
@@ -55,11 +54,21 @@ const LIENS = [
   { vers: '/ressources', libelle: 'Ressources' },
 ];
 
-/* L'action principale du site. La charte n'en retient qu'une, « Demander une
-   démo », et elle mène au formulaire de contact — le seul endroit d'où une
-   demande part réellement. Le parcours d'inscription reste accessible depuis
-   les offres et le pied de page : il répond à une intention plus tardive. */
-const ACTION = { vers: '/contact', libelle: 'Demander une démo' };
+/*
+ * Les deux actions de la barre, dans l'ordre où elles s'y lisent.
+ *
+ * « Démo » est un lien, « Créer un compte » le bouton plein : l'inscription
+ * est l'action que le site cherche à provoquer, la démonstration celle qu'on
+ * demande quand on n'est pas prêt à s'inscrire. Le poids visuel suit cet
+ * ordre, pas l'inverse.
+ *
+ * « Démo » et non « Demander une démo » : à côté d'un second bouton, l'intitulé
+ * long déséquilibrait la paire et poussait la barre de trente pixels.
+ */
+const ACTIONS = [
+  { vers: '/contact', libelle: 'Démo', principale: false },
+  { vers: '/inscription', libelle: 'Créer un compte', principale: true },
+];
 
 /*
  * Lien de bureau. La page courante reçoit une pastille posée derrière le mot :
@@ -87,7 +96,6 @@ export default function EnTetePublic({ surFondSombre = false }) {
   const [ouvert, setOuvert] = useState(false);
   const [defile, definirDefile] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
-  const [rechercheOuverte, definirRechercheOuverte] = useState(false);
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
   const boutonMenu = useRef(null);
@@ -242,33 +250,28 @@ export default function EnTetePublic({ surFondSombre = false }) {
         </nav>
 
         <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
-          <button
-            type="button"
-            onClick={() => definirRechercheOuverte(true)}
-            aria-label="Rechercher dans le site"
-            className={clsx(
-              'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
-              surSombre ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
-            )}
-          >
-            <Search className="h-[18px] w-[18px]" aria-hidden />
-          </button>
-
-          <Link
-            to="/connexion"
-            className={clsx(
-              'flex h-10 items-center px-3 text-[15px] font-medium transition-colors',
-              surSombre ? 'text-white hover:text-growth' : 'text-ink-900 hover:text-brand-600'
-            )}
-          >
-            Se connecter
-          </Link>
-          <Link
-            to={ACTION.vers}
-            className="flex h-10 items-center rounded-lg bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            {ACTION.libelle}
-          </Link>
+          {ACTIONS.map((action) =>
+            action.principale ? (
+              <Link
+                key={action.vers}
+                to={action.vers}
+                className="flex h-10 items-center rounded-lg bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                {action.libelle}
+              </Link>
+            ) : (
+              <Link
+                key={action.vers}
+                to={action.vers}
+                className={clsx(
+                  'flex h-10 items-center px-3 text-[15px] font-medium transition-colors',
+                  surSombre ? 'text-white hover:text-growth' : 'text-ink-900 hover:text-brand-600'
+                )}
+              >
+                {action.libelle}
+              </Link>
+            )
+          )}
 
           {/*
            * Le logotype de l'éditeur, en deux versions, et cliquable.
@@ -335,16 +338,16 @@ export default function EnTetePublic({ surFondSombre = false }) {
             non les 36 px de la version précédente. */}
         <div className="ml-auto flex items-center gap-2 min-[1200px]:hidden">
           <Link
-            to={ACTION.vers}
+            to={ACTIONS.find((action) => action.principale).vers}
             onClick={fermer}
             /* Visible dès 375 px, la largeur d'un iPhone SE ou mini. Mesuré au
                navigateur : à 375 px le contenu de la barre occupe 299 px pour
                351 disponibles, à 360 px il déborde. Le seuil valait 460 px, ce
                qui privait du seul appel à l'action tous les téléphones
                courants — la charte le veut atteignable en permanence. */
-            className="hidden h-11 items-center rounded-[4px] bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 min-[375px]:flex"
+            className="hidden h-11 items-center rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700 min-[375px]:flex"
           >
-            {ACTION.libelle}
+            {ACTIONS.find((action) => action.principale).libelle}
           </Link>
           <button
             ref={boutonMenu}
@@ -407,17 +410,6 @@ export default function EnTetePublic({ surFondSombre = false }) {
             type="button"
             onClick={() => {
               fermer();
-              definirRechercheOuverte(true);
-            }}
-            className="flex min-h-12 items-center gap-3 border-b border-ink-200 text-left text-lg font-medium text-ink-900"
-          >
-            <Search className="h-5 w-5 text-ink-500" aria-hidden />
-            Rechercher
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              fermer();
               definirVideoOuverte(true);
             }}
             className="flex min-h-12 items-center gap-3 border-b border-ink-200 text-left text-lg font-medium text-ink-900"
@@ -427,27 +419,26 @@ export default function EnTetePublic({ surFondSombre = false }) {
           </button>
 
           <div className="mt-6 grid gap-3 min-[420px]:grid-cols-2">
-            <Link
-              to="/connexion"
-              onClick={fermer}
-              className="flex min-h-12 items-center justify-center rounded-[4px] border border-ink-300 text-base font-semibold text-ink-900"
-            >
-              Se connecter
-            </Link>
-            <Link
-              to={ACTION.vers}
-              onClick={fermer}
-              className="flex min-h-12 items-center justify-center rounded-[4px] bg-brand-600 text-base font-semibold text-white"
-            >
-              {ACTION.libelle}
-            </Link>
+            {ACTIONS.map((action) => (
+              <Link
+                key={action.vers}
+                to={action.vers}
+                onClick={fermer}
+                className={clsx(
+                  'flex min-h-12 items-center justify-center rounded-lg text-base font-semibold',
+                  action.principale
+                    ? 'bg-brand-600 text-white'
+                    : 'border border-ink-300 text-ink-900'
+                )}
+              >
+                {action.libelle}
+              </Link>
+            ))}
           </div>
 
         </nav>
         </div>
       ) : null}
-
-      {rechercheOuverte ? <RechercheVitrine surFermeture={() => definirRechercheOuverte(false)} /> : null}
 
       {videoOuverte ? (
         <ModaleVideo
