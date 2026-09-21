@@ -57,6 +57,21 @@ export default {
         // surface légèrement plus claire que le fond de page en sombre —
         // remplace les `bg-white` littéraux, qui eux ne s'inversent jamais.
         surface: 'rgb(var(--surface) / <alpha-value>)',
+        // --- Charte SMARTEX SustWay (vitrine) ---
+        // Couleurs nommees de la charte qui n'entrent dans aucune echelle.
+        // Definies sous `.vitrine` uniquement (voir index.css) : hors de la
+        // vitrine elles ne resolvent rien, ce qui est voulu — l'espace
+        // connecte n'a pas a les employer.
+        forest: 'rgb(var(--forest) / <alpha-value>)',
+        sable: 'rgb(var(--sable) / <alpha-value>)',
+        mist: 'rgb(var(--mist) / <alpha-value>)',
+        growth: 'rgb(var(--growth) / <alpha-value>)',
+        // Fonctionnelles. Le succes n'a pas de token propre : c'est
+        // `brand-600`, le vert du produit, la charte ne distinguant pas les
+        // deux.
+        attention: 'rgb(var(--attention) / <alpha-value>)',
+        risque: 'rgb(var(--risque) / <alpha-value>)',
+        information: 'rgb(var(--information) / <alpha-value>)',
       },
       fontFamily: {
         // Deux familles suffisent quand l'une des deux tient le rôle
@@ -144,6 +159,20 @@ export default {
           '85%': { opacity: '0.85' },
           '100%': { transform: 'translateY(-125vh) translateX(var(--dx, 60px)) rotate(200deg)', opacity: '0' },
         },
+        // --- Vitrine SMARTEX SustWay ---
+        // Trace d'une courbe SVG (trajectoire de performance du dashboard) :
+        // le trait se dessine de gauche a droite. `stroke-dashoffset` plutot
+        // qu'une largeur animee — seul moyen de faire apparaitre un trace
+        // courbe dans son propre sens de lecture.
+        'trace-courbe': {
+          '0%': { strokeDashoffset: 'var(--longueur, 1000)' },
+          '100%': { strokeDashoffset: '0' },
+        },
+        // Montee d'une barre de graphique depuis sa base.
+        'monte-barre': {
+          '0%': { transform: 'scaleY(0)' },
+          '100%': { transform: 'scaleY(1)' },
+        },
         // --- Fond « tech / IA » de la page d'entrée ---
         // Impulsion qui parcourt une arête du réseau neuronal : le tiret court
         // défile le long du tracé (dasharray posé côté composant).
@@ -186,6 +215,8 @@ export default {
         'rotation-inverse': 'rotation 120s linear infinite reverse',
         'apparition-tick': 'apparition-tick 0.5s ease-out both',
         'zoom-lent': 'zoom-lent 24s ease-out both',
+        'trace-courbe': 'trace-courbe 1.8s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'monte-barre': 'monte-barre 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
         'flux-arete': 'flux-arete 4s linear infinite',
         'activation-noeud': 'activation-noeud 3.5s ease-in-out infinite',
         balayage: 'balayage 9s ease-in-out infinite',

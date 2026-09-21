@@ -78,46 +78,90 @@
   }
 
   /*
-   * Palette de la vitrine — « Registre de preuves » (voir DESIGN-VITRINE.md).
+   * Palette de la vitrine — SMARTEX SustWay.
    *
    * Posée sur l'enveloppe de LayoutPublic : les variables redéfinies ici ne
    * valent que pour les pages publiques, leur en-tête et leur pied. L'espace
-   * connecté, hors de cette enveloppe, garde les valeurs de :root.
+   * connecté, hors de cette enveloppe, garde le bordeaux de `:root`. C'est ce
+   * qui permet à la vitrine de changer entièrement de charte sans qu'aucune
+   * des ~40 pages de l'application ne bouge d'un pixel.
    *
-   * Encre #14234B, Bordeaux #8F1D17, Feuille #067A55, Papier #F4F5F1,
-   * Craie #FFFFFF, Ardoise #4A5366.
+   * L'échelle `brand` porte le vert du produit, dont deux crans sont des
+   * couleurs nommées de la charte : `brand-600` est Sustainable Green
+   * #2E7D5B (boutons, éléments interactifs, indicateurs positifs) et
+   * `brand-800` Forest #164A3A (titres forts, sections premium, CTA final).
+   * Les redéfinir ici suffit à reteinter tout ce que la vitrine avait déjà
+   * écrit en `bg-brand-600` ou `text-brand-700`.
+   *
+   * Forest #164A3A, Sustainable Green #2E7D5B, Growth #8BC9A5,
+   * Sand #F2EFE6, Mist #F5F7F5, Slate #34413B, Secondary #718078.
+   *
+   * Deux enveloppes partagent ces valeurs. `vitrine` est celle des pages
+   * héritées, qui portent en plus les règles de forme du design « Registre de
+   * preuves » (plus bas dans ce fichier) ; `sustway` est celle de la page
+   * d'accueil, qui suit la charte SMARTEX SustWay et ne doit surtout pas les
+   * recevoir — ces règles annulent les ombres, ramènent les rayons à 4-12 px
+   * et retirent les capitales espacées, soit trois points sur lesquels les
+   * deux chartes disent le contraire. La palette, elle, est commune : c'est
+   * le même produit.
    */
-  .vitrine {
-    --ink-50: 244 245 241;
-    --ink-100: 232 234 229;
-    --ink-200: 213 217 210;
-    --ink-300: 176 183 180;
-    --ink-400: 127 135 148;
-    --ink-500: 96 105 122;
-    --ink-600: 74 83 102;
-    --ink-700: 52 61 82;
-    --ink-800: 34 44 68;
-    --ink-900: 20 35 75;
-    --marine: 20 35 75;
+  .vitrine,
+  .sustway {
+    /* Mist en fond de page, Slate en texte principal : l'échelle `ink` garde
+       ses rôles (50-100 surfaces, 200-300 bordures, 400-500 texte atténué,
+       900 texte principal), seules les teintes changent — le gris neutre
+       devient un gris légèrement vert, accordé au produit. */
+    --ink-50: 245 247 245;
+    --ink-100: 234 238 234;
+    /* #E3E9E4 : la bordure de carte imposée par la charte. */
+    --ink-200: 227 233 228;
+    --ink-300: 196 205 199;
+    --ink-400: 154 166 159;
+    /* Secondary #718078. Réservé aux labels et mentions courtes : à 4,2:1 sur
+       blanc il ne passe pas le seuil AA du texte courant, qui prend `ink-600`
+       (5,7:1) — la charte est respectée sans sacrifier la lisibilité. */
+    --ink-500: 113 128 120;
+    --ink-600: 92 106 99;
+    --ink-700: 72 86 79;
+    --ink-800: 60 74 67;
+    /* Slate #34413B. */
+    --ink-900: 52 65 59;
+    /* `marine` porte la titraille de la vitrine : Forest plutôt que le bleu
+       nuit, sans quoi chaque titre déjà écrit `text-marine` resterait bleu. */
+    --marine: 22 74 58;
     --surface: 255 255 255;
-    --brand-50: 249 237 236;
-    --brand-100: 241 214 212;
-    --brand-200: 226 172 168;
-    --brand-300: 203 121 115;
-    --brand-400: 176 70 62;
-    --brand-500: 158 42 34;
-    --brand-600: 143 29 23;
-    --brand-700: 118 22 17;
-    --brand-800: 90 16 12;
-    --brand-900: 62 11 8;
-    --feuille: 6 122 85;
-    /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
-       servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
-       derivent — l'une tres sombre pour la section pleine, l'autre tres
-       claire pour les cartes posees dessus — et ne portent aucun verdict. */
-    --vert-profond: 12 50 39;
-    --vert-clair: 214 240 224;
+    /* Échelle verte. brand-300 est Growth #8BC9A5, brand-600 Sustainable
+       Green #2E7D5B (5,0:1 sur blanc, donc du texte blanc tient dessus),
+       brand-700 #24634A (7,1:1, pour les liens sur fond clair), brand-800
+       Forest #164A3A et brand-900 le fond du pied de page #102F26. */
+    --brand-50: 234 243 238;
+    --brand-100: 211 231 220;
+    --brand-200: 178 215 194;
+    --brand-300: 139 201 165;
+    --brand-400: 90 163 125;
+    --brand-500: 58 142 104;
+    --brand-600: 46 125 91;
+    --brand-700: 36 99 74;
+    --brand-800: 22 74 58;
+    --brand-900: 16 47 38;
+    /* `feuille` disait « conforme » dans l'espace connecté ; sur la vitrine,
+       le vert du produit et le vert du succès sont la même couleur — la
+       charte n'en prévoit qu'une (Succès #2E7D5B). */
+    --feuille: 46 125 91;
+    --vert-profond: 22 74 58;
+    --vert-clair: 211 231 220;
+    /* Couleurs nommées de la charte qui n'entrent dans aucune échelle. */
+    --forest: 22 74 58;
+    --sable: 242 239 230;
+    --mist: 245 247 245;
+    --growth: 139 201 165;
+    /* Fonctionnelles. Le succès reprend Sustainable Green : un indicateur
+       positif et l'identité du produit disent la même chose ici. */
+    --attention: 217 154 43;
+    --risque: 200 92 74;
+    --information: 79 127 163;
   }
+
   /*
    * En-tete toujours clair, meme sur une page qui impose le sombre.
    *
@@ -223,6 +267,23 @@
   h3,
   h4 {
     @apply font-display tracking-tight;
+  }
+
+  /*
+   * La vitrine SMARTEX SustWay n'emploie qu'une famille.
+   *
+   * La regle ci-dessus pose Satoshi sur toute la titraille du projet. La
+   * charte de la vitrine ne prevoit qu'Inter, du titre de 52 px au libelle de
+   * 11 px : deux familles y donneraient deux voix la ou la charte n'en veut
+   * qu'une. Ce selecteur est plus specifique que le precedent, il le reprend
+   * donc sans qu'aucune page ait a ecrire `font-sans` sur chacun de ses
+   * titres -- et sans toucher a l'espace connecte, rendu hors de `sustway`.
+   */
+  .sustway h1,
+  .sustway h2,
+  .sustway h3,
+  .sustway h4 {
+    @apply font-sans;
   }
 }
 
@@ -675,11 +736,18 @@ input.border-none:focus-visible {
 }
 
 /* --- Mise au point clavier visible ------------------------------------- */
+/* Reprise pour `sustway` : c'est une règle d'accessibilité, pas un parti pris
+   de forme, et elle doit valoir partout sur le site public. */
 .vitrine a:focus-visible,
 .vitrine button:focus-visible,
 .vitrine input:focus-visible,
 .vitrine select:focus-visible,
-.vitrine textarea:focus-visible {
+.vitrine textarea:focus-visible,
+.sustway a:focus-visible,
+.sustway button:focus-visible,
+.sustway input:focus-visible,
+.sustway select:focus-visible,
+.sustway textarea:focus-visible {
   outline: 2px solid rgb(var(--brand-600));
   outline-offset: 2px;
 }

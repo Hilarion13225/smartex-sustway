@@ -4,37 +4,53 @@ import Logo from './Logo';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
- * Colonnes de liens du pied de page. Toutes les destinations sont des pages
- * réellement déclarées dans App.jsx : la route attrape-tout redirigeant vers
- * l'accueil, un libellé sans page renverrait le visiteur à la case départ sans
- * message d'erreur. « Confidentialité » et « Cookies » pointent donc sur les
- * sections correspondantes des mentions légales.
+ * Colonnes de liens du pied de page — les quatre de la charte.
+ *
+ * Toutes les destinations sont des pages réellement déclarées dans App.jsx :
+ * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
+ * renverrait le visiteur à la case départ sans message d'erreur.
+ *
+ * Le pied porte ici plus que les cinq entrées de la barre de navigation, et
+ * c'est sa fonction : Méthodologie, Déploiement et Se former sont des pages à
+ * part entière, que la barre laisse de côté pour rester lisible. Sans cette
+ * reprise, elles ne seraient plus atteignables que par la recherche.
  */
 const COLONNES = [
   {
-    titre: 'La solution',
+    titre: 'Solution',
     liens: [
-      { vers: '/services', libelle: 'Solution' },
+      { vers: '/#solution', libelle: 'Solution' },
+      { vers: '/#fonctionnalites', libelle: 'Fonctionnalités' },
+      { vers: '/#offres', libelle: 'Offres' },
       { vers: '/methodologie', libelle: 'Méthodologie' },
-      { vers: '/formules', libelle: 'Formules' },
+      { vers: '/deploiement', libelle: 'Déploiement' },
     ],
   },
   {
-    titre: 'SMARTEX Expertises',
+    titre: 'Ressources',
     liens: [
-      { vers: '/contact', libelle: 'Contact' },
+      { vers: '/ressources', libelle: 'Articles & analyses' },
+      { vers: '/ressources#guides', libelle: 'Guides' },
+      { vers: '/ressources#documentation', libelle: 'Documentation' },
+      { vers: '/methodologie#questions', libelle: 'FAQ' },
       { vers: '/formation', libelle: 'Se former' },
+    ],
+  },
+  {
+    titre: 'SMARTEX',
+    liens: [
+      { vers: '/services#smartex', libelle: 'À propos' },
+      { vers: '/contact', libelle: 'Contact' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },
   {
-    titre: 'Informations légales',
+    titre: 'Légal',
     liens: [
       { vers: '/mentions-legales', libelle: 'Mentions légales' },
-      { vers: '/mentions-legales#donnees-personnelles', libelle: 'Confidentialité' },
+      { vers: '/mentions-legales#donnees-personnelles', libelle: 'Politique de confidentialité' },
       { vers: '/mentions-legales#cookies', libelle: 'Cookies' },
       { vers: '/mentions-legales#propriete-intellectuelle', libelle: 'Propriété intellectuelle' },
-      { vers: '/mentions-legales#limites-interpretation', libelle: 'Limites d’usage' },
     ],
   },
 ];
@@ -79,17 +95,26 @@ export default function PiedPublic() {
   };
 
   return (
-    <footer className="bg-[#0B1633] text-white">
+    // #102F26 : le vert le plus profond de la charte, un cran sous le Forest
+    // de l'appel à l'action qui précède. Les deux plages se distinguent sans
+    // filet entre elles. Couleur écrite en dur plutôt qu'en token : le pied
+    // reste sombre quel que soit le thème actif.
+    <footer className="bg-[#102F26] text-white">
       <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-16">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-10">
+        <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr] lg:gap-14">
           {/* Marque et lettre d'information */}
           <div className="max-w-sm">
-            <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
+            <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’accueil">
               <Logo taille="sm" variante="clair" />
             </Link>
-            <p className="mt-4 text-base leading-relaxed text-white/70">
-              Une solution de {SMARTEX.editeur} pour évaluer, prioriser et améliorer la performance RSE et ESG
-              des organisations.
+            {/* Signature de la charte. Les quatre verbes disent la démarche dans
+                son ordre, et reprennent celui des sections de la page. */}
+            <p className="mt-4 text-[15px] font-semibold tracking-wide text-growth">
+              Structurer · Piloter · Mesurer · Progresser
+            </p>
+            <p className="mt-3 text-base leading-relaxed text-white/70">
+              Une solution de {SMARTEX.editeur} pour structurer, piloter et mesurer la performance RSE, ESG et
+              développement durable des organisations.
             </p>
 
             <form className="mt-8" onSubmit={surInscription}>
@@ -111,7 +136,7 @@ export default function PiedPublic() {
                 />
                 <button
                   type="submit"
-                  className="min-h-12 shrink-0 rounded-[4px] bg-white px-5 text-base font-semibold text-[#0B1633] transition-colors hover:bg-[#E8EAF2]"
+                  className="min-h-12 shrink-0 rounded-[4px] bg-white px-5 text-base font-semibold text-[#102F26] transition-colors hover:bg-brand-50"
                 >
                   S’inscrire
                 </button>
@@ -120,7 +145,10 @@ export default function PiedPublic() {
           </div>
 
           {/* Colonnes de liens */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:col-span-3">
+          {/* Deux colonnes sur téléphone, quatre à partir de 640 px : à quatre
+              de front sur un écran de 360 px, « Politique de confidentialité »
+              passerait sur quatre lignes. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:col-span-3">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
                 <h2 className="text-sm font-semibold text-white/55">{colonne.titre}</h2>
@@ -158,7 +186,7 @@ export default function PiedPublic() {
         {/* Barre inférieure */}
         <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-white/55 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {SMARTEX.produit}, une solution de {SMARTEX.editeur}.
+            © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
           </p>
           <ul className="flex items-center gap-2">
             {RESEAUX_SOCIAUX.map((reseau) => (

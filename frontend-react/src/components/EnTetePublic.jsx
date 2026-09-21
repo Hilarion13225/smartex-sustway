@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 /*
  * Largeur a partir de laquelle la barre complete tient sans deborder.
@@ -16,44 +16,53 @@ import Logo from './Logo';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
-import { SMARTEX } from '../config/smartex';
+import { useSectionActive } from './sustway/useSectionActive';
 
 const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea';
 
 /*
- * Navigation principale : les pages de l'offre, plus Se former, que SMARTEX
- * Expertises veut rendre visible dès l'en-tête. La FAQ reste atteignable par
- * le pied de page et par la recherche : elle répond à des questions plus
- * tardives.
+ * Navigation principale — les cinq entrées de la charte SMARTEX SustWay.
+ *
+ * Ce sont des ancres de la page d'accueil et non des routes : le parcours de
+ * découverte tient sur une seule page, et un visiteur qui vient de lire
+ * « Solution » doit pouvoir continuer vers « Fonctionnalités » sans rechargement
+ * ni retour en haut.
+ *
+ * Les liens sont écrits en absolu (`/#solution`) plutôt qu'en relatif
+ * (`#solution`) : depuis Contact ou Mentions légales, un lien relatif viserait
+ * une ancre inexistante sur la page courante et ne ferait rien. La bascule de
+ * route puis le défilement vers l'ancre sont gérés par LayoutPublic.
+ *
+ * Les autres pages publiques — Méthodologie, Déploiement, Contact — restent
+ * atteignables par le pied de page et par la recherche. Les faire remonter ici
+ * porterait la barre à neuf entrées, et diluerait les cinq que la charte veut
+ * voir.
  */
 const LIENS = [
-  // Les six entrées du document SMARTEX, dans son ordre. « Accueil » mène à la
-  // page qui présente la plateforme et la solution — c'est ce que le document
-  // attend de cette entrée, et `/accueil` y redirigeait déjà. La page d'entrée
-  // du site reste atteinte par le logo.
-  { vers: '/services', libelle: 'Accueil' },
-  { vers: '/methodologie', libelle: 'Méthodologie' },
-  { vers: '/deploiement', libelle: 'Déploiement' },
-  { vers: '/formules', libelle: 'Lancer une évaluation' },
-  { vers: '/ressources', libelle: 'Ressources' },
-  { vers: '/contact', libelle: 'Contact' },
+  { ancre: 'accueil', vers: '/', libelle: 'Accueil' },
+  { ancre: 'solution', vers: '/#solution', libelle: 'Solution' },
+  { ancre: 'fonctionnalites', vers: '/#fonctionnalites', libelle: 'Fonctionnalités' },
+  { ancre: 'offres', vers: '/#offres', libelle: 'Offres' },
+  { ancre: 'ressources', vers: '/#ressources', libelle: 'Ressources' },
 ];
 
-/* L'action principale de la vitrine. Elle menait à la grille des formules ;
-   elle ouvre désormais le parcours d'inscription, dont la première étape est
-   précisément le choix de la formule — un bouton « Créer un compte » qui
-   déposerait le visiteur sur une page de prix ne tiendrait pas sa promesse. */
-const ACTION = { vers: '/inscription', libelle: 'Créer un compte' };
+const ANCRES = LIENS.map((lien) => lien.ancre);
+
+/* L'action principale du site. La charte n'en retient qu'une, « Demander une
+   démo », et elle mène au formulaire de contact — le seul endroit d'où une
+   demande part réellement. Le parcours d'inscription reste accessible depuis
+   les offres et le pied de page : il répond à une intention plus tardive. */
+const ACTION = { vers: '/contact', libelle: 'Demander une démo' };
 
 /*
- * Lien de bureau. La page active est marquée par une pastille bordeaux très
- * claire, posée derrière le mot : sur une barre arrondie et détachée, un trait
- * collé à la bordure basse n'avait plus de bordure où se poser.
+ * Lien de bureau. L'entrée correspondant à la section lue reçoit une pastille
+ * vert très clair posée derrière le mot : sur une barre arrondie et détachée,
+ * un trait collé à la bordure basse n'aurait plus de bordure où se poser.
  */
-function classeLien({ isActive }) {
+function classeLien(actif) {
   return clsx(
     'flex min-h-10 items-center rounded-[8px] px-2.5 text-[15px] font-medium transition-colors',
-    isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+    actif ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
   );
 }
 
@@ -64,6 +73,14 @@ export default function EnTetePublic() {
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
+  // Le repérage ne tourne que sur la page d'accueil, seule à porter ces
+  // ancres. Ailleurs, aucune entrée n'est marquée : la barre y sert de
+  // chemin de retour, pas d'indicateur de position.
+  const surAccueil = pathname === '/';
+  const sectionActive = useSectionActive(ANCRES, { actif: surAccueil });
+  // En haut de page, aucune section n'a encore traversé la bande de
+  // détection ; « Accueil » est alors l'entrée juste.
+  const estActif = (lien) => surAccueil && (sectionActive ?? 'accueil') === lien.ancre;
   const boutonMenu = useRef(null);
   const panneauMenu = useRef(null);
 
@@ -154,7 +171,7 @@ export default function EnTetePublic() {
           ouvert ? 'rounded-t-[14px]' : 'rounded-[14px]'
         )}
       >
-        <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
+        <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’accueil">
           <Logo taille="sm" />
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
@@ -164,9 +181,14 @@ export default function EnTetePublic() {
           aria-label="Navigation principale"
         >
           {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
+            <Link
+              key={lien.vers}
+              to={lien.vers}
+              className={classeLien(estActif(lien))}
+              aria-current={estActif(lien) ? 'true' : undefined}
+            >
               {lien.libelle}
-            </NavLink>
+            </Link>
           ))}
         </nav>
 
@@ -244,19 +266,18 @@ export default function EnTetePublic() {
               y ajouterait un geste sans rien reveler de plus. Le groupe est donc
               annonce par son intitule, ses pages listees en dessous. */}
           {LIENS.map((lien) => (
-              <NavLink
+            <Link
               key={lien.vers}
               to={lien.vers}
               onClick={fermer}
-              className={({ isActive }) =>
-                clsx(
-                  'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                  isActive ? 'text-brand-600 dark:text-brand-400' : 'text-ink-900'
-                )
-              }
+              aria-current={estActif(lien) ? 'true' : undefined}
+              className={clsx(
+                'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
+                estActif(lien) ? 'text-brand-700' : 'text-ink-900'
+              )}
             >
               {lien.libelle}
-            </NavLink>
+            </Link>
           ))}
 
           <button

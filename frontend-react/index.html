@@ -19,21 +19,56 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <title>SMARTEX SustWay — Évaluation RSE intelligente</title>
+    <title>SMARTEX SustWay — Plateforme SaaS de pilotage RSE, ESG et développement durable</title>
+    <meta
+      name="description"
+      content="SMARTEX SustWay est la plateforme SaaS qui permet de structurer, piloter et mesurer la performance RSE, ESG et développement durable : évaluations, indicateurs extra-financiers, preuves, tableaux de bord, plans d'action et reporting de durabilité."
+    />
+    <meta name="theme-color" content="#164A3A" />
+    <link rel="canonical" href="https://www.smartex-expertises.com/" />
+
+    <!-- Aperçu au partage. `og:image` reste à renseigner : une balise pointant
+         vers un fichier absent vaut moins qu'une balise absente, le partage
+         retombant alors sur le titre et la description ci-dessus. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SMARTEX SustWay" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta
+      property="og:title"
+      content="SMARTEX SustWay — Plateforme SaaS de pilotage RSE, ESG et développement durable"
+    />
+    <meta
+      property="og:description"
+      content="Structurer, piloter et mesurer votre performance durable : évaluations, indicateurs ESG, preuves, tableaux de bord, plans d'action et reporting."
+    />
+    <meta property="og:url" content="https://www.smartex-expertises.com/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Données structurées : le produit et son éditeur. Aucune note, aucun
+         prix, aucun avis n'y figure — ces champs ne se remplissent qu'avec des
+         données réelles, et un balisage inventé est sanctionné par les moteurs
+         autant qu'il trompe le lecteur. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "SMARTEX SustWay",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "fr",
+        "description": "Plateforme SaaS de structuration, de pilotage et de mesure de la performance RSE, ESG et développement durable.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "SMARTEX Expertises",
+          "url": "https://www.smartex-expertises.com"
+        }
+      }
+    </script>
     <script>
       // Applique le thème AVANT le premier rendu React (évite un flash de
       // thème clair au chargement si l'utilisateur a choisi sombre/système).
       // Miroir exact de la logique de src/theme/ThemeContext.jsx.
       (function () {
-        // La page d'entrée impose le sombre (voir useSombreForce dans
-        // ThemeContext) : sans ce cas particulier, un visiteur en préférence
-        // claire verrait un flash blanc avant que React ne force le sombre.
-        if (window.location.pathname === '/') {
-          // `dark-force` distingue ce sombre impose du sombre choisi : la
-          // vitrine ne suit plus le second, mais garde le premier.
-          document.documentElement.classList.add('dark', 'dark-force');
-          return;
-        }
         try {
           var preference = localStorage.getItem('smartex.theme') || 'systeme';
           var sombre =

@@ -5,7 +5,7 @@ import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
-import Landing from './pages/Landing';
+import SustWay from './pages/SustWay';
 import Services from './pages/Services';
 import Formules from './pages/Formules';
 import Methodologie from './pages/Methodologie';
@@ -45,6 +45,7 @@ import Documents from './pages/Documents';
 import Questionnaire from './pages/Questionnaire';
 import Abonnement from './pages/Abonnement';
 import Utilisateurs from './pages/Utilisateurs';
+import UtilisateursPlateforme from './pages/UtilisateursPlateforme';
 import Journal from './pages/Journal';
 import PlanActions from './pages/PlanActions';
 import PlansAmelioration from './pages/PlansAmelioration';
@@ -66,7 +67,10 @@ export default function App() {
       <Router>
         <Routes>
           <Route element={<LayoutPublic />}>
-            <Route path="/" element={<Landing />} />
+            {/* Page d'accueil SMARTEX SustWay : un parcours d'une seule page,
+                dont les cinq sections portent les ancres que suit la barre de
+                navigation (#solution, #fonctionnalites, #offres, #ressources). */}
+            <Route path="/" element={<SustWay />} />
             {/* Pages retirées de la vitrine recentrée sur la solution : leurs
                 adresses redirigent, pour qu'aucun lien déjà partagé ne casse. */}
             <Route path="/accueil" element={<Navigate to="/services" replace />} />
@@ -92,6 +96,10 @@ export default function App() {
             <Route path="/app" element={<Layout />}>
               <Route index element={<TableauDeBord />} />
               <Route path="entreprises" element={<Entreprises />} />
+              {/* Vue plateforme, distincte de `:entrepriseId/utilisateurs` qui
+                  gère les membres d'une organisation : celle-ci recense, celle-là
+                  administre. Pas de doublon, deux portées. */}
+              <Route path="utilisateurs" element={<UtilisateursPlateforme />} />
               <Route path=":entrepriseId" element={<EntrepriseDetail />} />
               <Route path=":entrepriseId/documents" element={<Documents />} />
               <Route path=":entrepriseId/questionnaire" element={<Questionnaire />} />
