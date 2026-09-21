@@ -1,29 +1,4 @@
-import logoSifca from '../../assets/SIFCA.png';
-import logoCgeci from '../../assets/CGECI.png';
-import logoSolibra from '../../assets/SOLIBRA.png';
-import logoEranove from '../../assets/ERANOVE.svg';
-import logoCie from '../../assets/CIE.png';
-
-/*
- * Logotypes officiels, récupérés sur les sites des organisations elles-mêmes.
- * `hauteur` est réglée logo par logo : à hauteur égale, un logotype large
- * paraît deux fois plus imposant qu'un logo compact. Seule la hauteur est
- * contrainte, jamais la largeur — les proportions d'origine sont préservées.
- *
- * `taille` reprend les dimensions du fichier, relevées dans le navigateur.
- * Elles ne changent pas le rendu, qui reste réglé par la hauteur CSS : elles
- * donnent au navigateur le rapport d'image avant que le fichier n'arrive, de
- * sorte que la largeur est réservée dès le premier tracé. Sans elles, et
- * comme le chargement est différé, ces cinq logos occupaient zéro pixel de
- * large puis s'étalaient d'un coup, en déplaçant leurs voisins sur la ligne.
- */
-const ORGANISATIONS = [
-  { nom: 'Groupe SIFCA', logo: logoSifca, hauteur: 'h-10', taille: [313, 146] },
-  { nom: 'CGECI — Le Patronat Ivoirien', logo: logoCgeci, hauteur: 'h-8', taille: [380, 90] },
-  { nom: 'SOLIBRA', logo: logoSolibra, hauteur: 'h-9', taille: [425, 424] },
-  { nom: 'Eranove', logo: logoEranove, hauteur: 'h-9', taille: [300, 129] },
-  { nom: 'CIE — Compagnie Ivoirienne d’Électricité', logo: logoCie, hauteur: 'h-10', taille: [500, 270] },
-];
+import { ORGANISATIONS } from '../../config/organisations';
 
 /**
  * Bandeau « Ils nous font confiance », partagé par la page d'accueil et la

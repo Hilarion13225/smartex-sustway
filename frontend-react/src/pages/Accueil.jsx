@@ -1,4 +1,5 @@
 import SectionHero from '../components/sustway/SectionHero';
+import SectionConfiance from '../components/sustway/SectionConfiance';
 import SectionParcours from '../components/sustway/SectionParcours';
 import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
@@ -7,7 +8,8 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
  * Page d'accueil de la vitrine SMARTEX SustWay.
  *
  * Elle vend la vision et rien d'autre : ce qu'est la plateforme, la
- * trajectoire qu'elle fait suivre, puis les quatre portes vers le détail.
+ * trajectoire qu'elle fait suivre, les organisations qui l'utilisent, puis
+ * les quatre portes vers le détail.
  * Solution, Fonctionnalités, Offres et Ressources ont chacune leur page ;
  * l'accueil les annonce et y renvoie, sans reprendre leur contenu — le
  * visiteur qui suit le parcours dans l'ordre ne doit rien lire deux fois.
@@ -21,6 +23,10 @@ export default function Accueil() {
   return (
     <>
       <SectionHero />
+      {/* Les références viennent juste après le héros : c'est la question que
+          se pose un visiteur une fois la promesse lue, et avant d'aller voir
+          le détail des quatre pages. */}
+      <SectionConfiance />
       <SectionParcours />
       <SectionCtaFinal />
     </>
