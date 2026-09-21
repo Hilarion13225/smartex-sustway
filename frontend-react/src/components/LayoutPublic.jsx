@@ -4,6 +4,15 @@ import EnTetePublic from './EnTetePublic';
 import PiedPublic from './PiedPublic';
 import BandeauReferentiels from './vitrine/BandeauReferentiels';
 
+/*
+ * Les cinq pages de la charte SMARTEX SustWay.
+ *
+ * Elles portent leurs propres fonds et se terminent toutes par un appel à
+ * l'action : le bandeau des référentiels viendrait s'ajouter juste en dessous,
+ * et répéterait un appel là où il y en a déjà un.
+ */
+const PAGES_SUSTWAY = ['/', '/solution', '/fonctionnalites', '/offres', '/ressources'];
+
 /** Mise en page commune des pages publiques (vitrine) : en-tête, contenu, pied de page. */
 export default function LayoutPublic() {
   const { pathname, hash } = useLocation();
@@ -22,10 +31,7 @@ export default function LayoutPublic() {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, [pathname, hash]);
 
-  // La page d'accueil est un parcours d'une seule page, dont les sections
-  // portent leurs propres fonds : elle n'affiche pas le bandeau des
-  // référentiels, qui viendrait s'ajouter sous son appel à l'action final.
-  const estAccueil = pathname === '/';
+  const estSustWay = PAGES_SUSTWAY.includes(pathname);
 
   return (
     /*
@@ -42,7 +48,7 @@ export default function LayoutPublic() {
      * pied — partagés par toutes les pages publiques — suivent la charte de la
      * page qu'ils encadrent.
      */
-    <div className={`${estAccueil ? 'sustway' : 'vitrine'} flex min-h-full flex-col bg-ink-50 text-ink-600`}>
+    <div className={`${estSustWay ? 'sustway' : 'vitrine'} flex min-h-full flex-col bg-ink-50 text-ink-600`}>
       <EnTetePublic />
       <main className="flex-1">
         <Outlet />
@@ -51,7 +57,7 @@ export default function LayoutPublic() {
       {/* Le bandeau des référentiels est la contrepartie basse de la barre de
           navigation : il est donc rendu ici, une fois pour toute la vitrine,
           plutôt que répété page par page. */}
-      {estAccueil ? null : <BandeauReferentiels />}
+      {estSustWay ? null : <BandeauReferentiels />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { BarChart3, ClipboardList, Database, FileText, Paperclip, Target } from 'lucide-react';
-import { Apparition, Section, TitreSection } from './Section';
+import { Apparition, Section } from './Section';
 import {
   ApercuCampagnes,
   ApercuDonnees,
@@ -10,11 +10,14 @@ import {
 } from './ApercusFonctionnalites';
 
 /*
- * « Fonctionnalités » : six écrans, six phrases.
+ * Corps de la page « Fonctionnalités » : six écrans, six phrases.
  *
  * Chaque entrée porte son aperçu produit plutôt qu'une illustration : c'est la
- * section où le visiteur doit cesser de lire une promesse et commencer à voir
- * un logiciel. Le texte y est donc court — l'écran dit le reste.
+ * page où le visiteur doit cesser de lire une promesse et commencer à voir un
+ * logiciel. Le texte y est donc court — l'écran dit le reste.
+ *
+ * Les six entrées ouvrent en `h2` : ce sont les sections de la page, dont le
+ * `h1` est porté par le bandeau de titre.
  */
 const FONCTIONNALITES = [
   {
@@ -63,16 +66,10 @@ const FONCTIONNALITES = [
 
 export default function SectionFonctionnalites() {
   return (
-    <Section id="fonctionnalites" fond="blanc">
-      <TitreSection
-        surTitre="Fonctionnalités"
-        titre="Les outils pour piloter votre démarche"
-        sousTitre="SMARTEX SustWay centralise les informations nécessaires au pilotage de la performance durable : campagnes, données, preuves, scores, actions et reporting suivent le même fil."
-      />
-
+    <Section fond="blanc">
       {/* Deux colonnes seulement, et non trois : chaque carte contient un
           aperçu d'interface, qui devient illisible sous 380 px de large. */}
-      <div className="mt-14 grid items-start gap-5 lg:grid-cols-2">
+      <div className="grid items-start gap-5 lg:grid-cols-2">
         {FONCTIONNALITES.map((fonctionnalite, index) => {
           const Icone = fonctionnalite.icone;
           const { Apercu } = fonctionnalite;
@@ -90,7 +87,7 @@ export default function SectionFonctionnalites() {
                     <p className="text-[12px] font-semibold tabular-nums tracking-wide text-ink-400">
                       {fonctionnalite.numero}
                     </p>
-                    <h3 className="mt-0.5 text-[21px] font-semibold leading-snug text-forest">{fonctionnalite.titre}</h3>
+                    <h2 className="mt-0.5 text-[21px] font-semibold leading-snug text-forest">{fonctionnalite.titre}</h2>
                   </div>
                 </div>
                 <p className="mt-4 text-[15px] leading-relaxed text-ink-600">{fonctionnalite.texte}</p>

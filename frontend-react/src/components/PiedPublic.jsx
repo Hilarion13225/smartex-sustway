@@ -19,9 +19,10 @@ const COLONNES = [
   {
     titre: 'Solution',
     liens: [
-      { vers: '/#solution', libelle: 'Solution' },
-      { vers: '/#fonctionnalites', libelle: 'Fonctionnalités' },
-      { vers: '/#offres', libelle: 'Offres' },
+      { vers: '/solution', libelle: 'Solution' },
+      { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
+      { vers: '/offres', libelle: 'Offres' },
+      { vers: '/formules', libelle: 'Formules et tarifs' },
       { vers: '/methodologie', libelle: 'Méthodologie' },
       { vers: '/deploiement', libelle: 'Déploiement' },
     ],
@@ -29,11 +30,9 @@ const COLONNES = [
   {
     titre: 'Ressources',
     liens: [
-      { vers: '/ressources', libelle: 'Articles & analyses' },
-      { vers: '/ressources#guides', libelle: 'Guides' },
-      { vers: '/ressources#documentation', libelle: 'Documentation' },
+      { vers: '/ressources', libelle: 'Toutes les ressources' },
+      { vers: '/formation', libelle: 'Formations' },
       { vers: '/methodologie#questions', libelle: 'FAQ' },
-      { vers: '/formation', libelle: 'Se former' },
     ],
   },
   {

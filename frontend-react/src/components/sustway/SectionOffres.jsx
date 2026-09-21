@@ -1,16 +1,20 @@
 import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import Bouton from './Bouton';
 import Badge from './Badge';
-import { Apparition, Section, TitreSection } from './Section';
+import { Apparition, Section } from './Section';
 
 /*
- * « Offres » : trois niveaux de service, aucun prix.
+ * Corps de la page « Offres » : trois niveaux de service, aucun prix.
  *
  * Aucun montant n'est affiché parce qu'aucun ne nous a été communiqué. Une
  * grille tarifaire inventée serait la seule chose de cette page qu'un
  * prospect pourrait nous opposer ; à la place, chaque carte mène à la page
  * qui permet d'aller plus loin — c'est ce que la charte demande explicitement.
+ * Les montants réels vivent sur la page « Formules », vers laquelle le bas de
+ * page renvoie : ils y sont tenus à jour, et les dupliquer ici garantirait
+ * qu'un des deux endroits finisse par mentir.
  *
  * Les trois cartes gardent la même structure et la même hauteur. Seule
  * « Business » se détache, par sa bordure et son ombre plutôt que par un
@@ -45,14 +49,8 @@ const OFFRES = [
 
 export default function SectionOffres() {
   return (
-    <Section id="offres" fond="sable">
-      <TitreSection
-        surTitre="Offres"
-        titre="Une approche adaptée à chaque organisation"
-        sousTitre="Trois niveaux de service, du cadrage d’une première démarche au déploiement multi-entités."
-      />
-
-      <div className="mt-14 grid items-stretch gap-5 lg:grid-cols-3">
+    <Section fond="sable">
+      <div className="grid items-stretch gap-5 lg:grid-cols-3">
         {OFFRES.map((offre, index) => (
           <Apparition key={offre.nom} delai={index * 110} className="h-full">
             <article
@@ -65,7 +63,7 @@ export default function SectionOffres() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-[22px] font-semibold text-forest">{offre.nom}</h3>
+                  <h2 className="text-[22px] font-semibold text-forest">{offre.nom}</h2>
                   <p className="mt-1 text-[13px] font-semibold uppercase tracking-[0.1em] text-brand-600">
                     {offre.promesse}
                   </p>
@@ -99,6 +97,22 @@ export default function SectionOffres() {
           </Apparition>
         ))}
       </div>
+
+      {/* Renvoi vers les tarifs. Il est posé sous les cartes et non dans
+          chacune : c'est une information qui vaut pour les trois, et la
+          répéter trois fois donnerait à croire qu'elle diffère. */}
+      <Apparition className="mt-8">
+        <p className="text-[15px] text-ink-600">
+          Les montants et les conditions de chaque formule sont détaillés sur la page{' '}
+          <Link
+            to="/formules"
+            className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 transition-colors hover:text-brand-800 hover:decoration-brand-600"
+          >
+            Formules
+          </Link>
+          .
+        </p>
+      </Apparition>
     </Section>
   );
 }

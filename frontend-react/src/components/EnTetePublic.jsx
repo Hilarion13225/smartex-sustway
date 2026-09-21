@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 
 /*
  * Largeur a partir de laquelle la barre complete tient sans deborder.
@@ -16,37 +16,28 @@ import Logo from './Logo';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
-import { useSectionActive } from './sustway/useSectionActive';
 
 const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea';
 
 /*
  * Navigation principale — les cinq entrées de la charte SMARTEX SustWay.
  *
- * Ce sont des ancres de la page d'accueil et non des routes : le parcours de
- * découverte tient sur une seule page, et un visiteur qui vient de lire
- * « Solution » doit pouvoir continuer vers « Fonctionnalités » sans rechargement
- * ni retour en haut.
+ * Ce sont cinq pages, une par entrée. Elles l'ont d'abord été en ancres d'une
+ * page unique ; les séparer donne à chacune son adresse partageable, son titre
+ * d'onglet et sa description — ce qu'une ancre ne peut pas avoir.
  *
- * Les liens sont écrits en absolu (`/#solution`) plutôt qu'en relatif
- * (`#solution`) : depuis Contact ou Mentions légales, un lien relatif viserait
- * une ancre inexistante sur la page courante et ne ferait rien. La bascule de
- * route puis le défilement vers l'ancre sont gérés par LayoutPublic.
- *
- * Les autres pages publiques — Méthodologie, Déploiement, Contact — restent
- * atteignables par le pied de page et par la recherche. Les faire remonter ici
- * porterait la barre à neuf entrées, et diluerait les cinq que la charte veut
- * voir.
+ * Les autres pages publiques — Méthodologie, Déploiement, Formules, Contact —
+ * restent atteignables par le pied de page, par la recherche et par les
+ * renvois des cinq pages. Les faire remonter ici porterait la barre à neuf
+ * entrées, et diluerait les cinq que la charte veut voir.
  */
 const LIENS = [
-  { ancre: 'accueil', vers: '/', libelle: 'Accueil' },
-  { ancre: 'solution', vers: '/#solution', libelle: 'Solution' },
-  { ancre: 'fonctionnalites', vers: '/#fonctionnalites', libelle: 'Fonctionnalités' },
-  { ancre: 'offres', vers: '/#offres', libelle: 'Offres' },
-  { ancre: 'ressources', vers: '/#ressources', libelle: 'Ressources' },
+  { vers: '/', libelle: 'Accueil' },
+  { vers: '/solution', libelle: 'Solution' },
+  { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
+  { vers: '/offres', libelle: 'Offres' },
+  { vers: '/ressources', libelle: 'Ressources' },
 ];
-
-const ANCRES = LIENS.map((lien) => lien.ancre);
 
 /* L'action principale du site. La charte n'en retient qu'une, « Demander une
    démo », et elle mène au formulaire de contact — le seul endroit d'où une
@@ -55,14 +46,14 @@ const ANCRES = LIENS.map((lien) => lien.ancre);
 const ACTION = { vers: '/contact', libelle: 'Demander une démo' };
 
 /*
- * Lien de bureau. L'entrée correspondant à la section lue reçoit une pastille
- * vert très clair posée derrière le mot : sur une barre arrondie et détachée,
- * un trait collé à la bordure basse n'aurait plus de bordure où se poser.
+ * Lien de bureau. La page courante reçoit une pastille vert très clair posée
+ * derrière le mot : sur une barre arrondie et détachée, un trait collé à la
+ * bordure basse n'aurait plus de bordure où se poser.
  */
-function classeLien(actif) {
+function classeLien({ isActive }) {
   return clsx(
     'flex min-h-10 items-center rounded-[8px] px-2.5 text-[15px] font-medium transition-colors',
-    actif ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+    isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
   );
 }
 
@@ -73,14 +64,6 @@ export default function EnTetePublic() {
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
   const fermer = () => setOuvert(false);
   const { pathname } = useLocation();
-  // Le repérage ne tourne que sur la page d'accueil, seule à porter ces
-  // ancres. Ailleurs, aucune entrée n'est marquée : la barre y sert de
-  // chemin de retour, pas d'indicateur de position.
-  const surAccueil = pathname === '/';
-  const sectionActive = useSectionActive(ANCRES, { actif: surAccueil });
-  // En haut de page, aucune section n'a encore traversé la bande de
-  // détection ; « Accueil » est alors l'entrée juste.
-  const estActif = (lien) => surAccueil && (sectionActive ?? 'accueil') === lien.ancre;
   const boutonMenu = useRef(null);
   const panneauMenu = useRef(null);
 
@@ -181,14 +164,11 @@ export default function EnTetePublic() {
           aria-label="Navigation principale"
         >
           {LIENS.map((lien) => (
-            <Link
-              key={lien.vers}
-              to={lien.vers}
-              className={classeLien(estActif(lien))}
-              aria-current={estActif(lien) ? 'true' : undefined}
-            >
+            // `end` sur l'accueil seul : sans lui, « / » étant le préfixe de
+            // toutes les routes, l'entrée resterait marquée sur les cinq pages.
+            <NavLink key={lien.vers} to={lien.vers} end={lien.vers === '/'} className={classeLien}>
               {lien.libelle}
-            </Link>
+            </NavLink>
           ))}
         </nav>
 
@@ -266,18 +246,20 @@ export default function EnTetePublic() {
               y ajouterait un geste sans rien reveler de plus. Le groupe est donc
               annonce par son intitule, ses pages listees en dessous. */}
           {LIENS.map((lien) => (
-            <Link
+            <NavLink
               key={lien.vers}
               to={lien.vers}
+              end={lien.vers === '/'}
               onClick={fermer}
-              aria-current={estActif(lien) ? 'true' : undefined}
-              className={clsx(
-                'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
-                estActif(lien) ? 'text-brand-700' : 'text-ink-900'
-              )}
+              className={({ isActive }) =>
+                clsx(
+                  'flex min-h-12 items-center border-b border-ink-200 text-lg font-medium transition-colors',
+                  isActive ? 'text-brand-700' : 'text-ink-900'
+                )
+              }
             >
               {lien.libelle}
-            </Link>
+            </NavLink>
           ))}
 
           <button

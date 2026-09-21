@@ -18,7 +18,7 @@ const ETAPES = ['Diagnostic', 'Structuration', 'Pilotage', 'Optimisation', 'Perf
 
 export default function SectionHero() {
   return (
-    <section id="accueil" className="relative overflow-hidden bg-ink-50 scroll-mt-24">
+    <section className="relative overflow-hidden bg-ink-50">
       {/* Halo vert très dilué en haut de page. Il remplace l'aplat de couleur
           qu'on met d'ordinaire derrière un héros : assez présent pour que la
           page ne démarre pas sur du blanc plat, assez faible pour que le
@@ -52,7 +52,7 @@ export default function SectionHero() {
             <Bouton vers="/contact" taille="lg" className="w-full sm:w-auto">
               Demander une démo
             </Bouton>
-            <Bouton href="#solution" niveau="secondaire" taille="lg" className="w-full sm:w-auto">
+            <Bouton vers="/solution" niveau="secondaire" taille="lg" className="w-full sm:w-auto">
               Découvrir la solution
             </Bouton>
           </div>

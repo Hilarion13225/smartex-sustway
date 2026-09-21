@@ -5,7 +5,10 @@ import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
-import SustWay from './pages/SustWay';
+import Accueil from './pages/Accueil';
+import Solution from './pages/Solution';
+import Fonctionnalites from './pages/Fonctionnalites';
+import Offres from './pages/Offres';
 import Services from './pages/Services';
 import Formules from './pages/Formules';
 import Methodologie from './pages/Methodologie';
@@ -67,13 +70,18 @@ export default function App() {
       <Router>
         <Routes>
           <Route element={<LayoutPublic />}>
-            {/* Page d'accueil SMARTEX SustWay : un parcours d'une seule page,
-                dont les cinq sections portent les ancres que suit la barre de
-                navigation (#solution, #fonctionnalites, #offres, #ressources). */}
-            <Route path="/" element={<SustWay />} />
+            {/* Les cinq pages de la charte SMARTEX SustWay. Elles partagent
+                l'enveloppe `sustway` (voir LayoutPublic), qui porte leur
+                palette et leur typographie. */}
+            <Route path="/" element={<Accueil />} />
+            <Route path="/solution" element={<Solution />} />
+            <Route path="/fonctionnalites" element={<Fonctionnalites />} />
+            <Route path="/offres" element={<Offres />} />
             {/* Pages retirées de la vitrine recentrée sur la solution : leurs
-                adresses redirigent, pour qu'aucun lien déjà partagé ne casse. */}
-            <Route path="/accueil" element={<Navigate to="/services" replace />} />
+                adresses redirigent, pour qu'aucun lien déjà partagé ne casse.
+                « Accueil » mène désormais à la page d'accueil elle-même, et
+                non plus à `/services`, qui en tenait lieu avant. */}
+            <Route path="/accueil" element={<Navigate to="/" replace />} />
             <Route path="/services" element={<Services />} />
             <Route path="/formules" element={<Formules />} />
             <Route path="/a-propos" element={<Navigate to="/services#smartex" replace />} />

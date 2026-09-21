@@ -8,11 +8,44 @@
  * ici, sinon elle reste introuvable par la recherche.
  */
 export const PAGES_PUBLIQUES = [
+  // --- Les cinq pages de la charte SMARTEX SustWay ---
+  {
+    chemin: '/',
+    titre: 'Accueil',
+    description: 'Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.',
+    motsCles: ['accueil', 'sustway', 'smartex', 'plateforme', 'saas', 'rse', 'esg', 'developpement durable', 'performance durable', 'tableau de bord', 'demo', 'demonstration'],
+  },
+  {
+    chemin: '/solution',
+    titre: 'La solution',
+    description: 'La démarche en cinq temps, les trois domaines couverts et ce qu’elle produit.',
+    motsCles: ['solution', 'demarche', 'operationnalisation', 'diagnostiquer', 'structurer', 'piloter', 'optimiser', 'mesurer', 'livrables', 'rapport de durabilite', 'analyse d impact'],
+  },
+  {
+    chemin: '/fonctionnalites',
+    titre: 'Fonctionnalités',
+    description: 'Campagnes, données et indicateurs ESG, preuves, tableaux de bord, plans d’action et reporting.',
+    motsCles: ['fonctionnalites', 'outils', 'campagnes', 'evaluations', 'indicateurs', 'donnees', 'preuves', 'tracabilite', 'justificatifs', 'tableaux de bord', 'plans d action', 'reporting', 'extra-financier'],
+  },
+  {
+    chemin: '/offres',
+    titre: 'Offres',
+    description: 'Essential, Business et Enterprise : trois niveaux de service selon la taille de l’organisation.',
+    motsCles: ['offres', 'essential', 'business', 'enterprise', 'niveaux', 'multi-perimetre', 'multi-entites', 'multi-pays', 'api', 'support', 'consolidation'],
+  },
+  {
+    chemin: '/ressources',
+    titre: 'Ressources',
+    description: 'Formations, méthodologie d’évaluation et questions fréquentes.',
+    motsCles: ['ressources', 'expertise', 'articles', 'analyses', 'guides', 'documentation', 'actualites', 'faq', 'questions', 'formations'],
+  },
+
+  // --- Pages antérieures, conservées et toujours atteignables ---
   {
     chemin: '/services',
-    titre: 'Solution',
+    titre: 'Services',
     description: 'La plateforme d’évaluation RSE et ESG : comment elle marche, pour qui, à quel prix.',
-    motsCles: ['solution', 'accueil', 'presentation', 'plateforme', 'services', 'fonctionnalites', 'diagnostic', 'audit', 'perimetre', 'rse', 'esg', 'intelligence artificielle', 'ia'],
+    motsCles: ['services', 'presentation', 'plateforme', 'diagnostic', 'audit', 'perimetre', 'rse', 'esg', 'intelligence artificielle', 'ia'],
   },
   {
     chemin: '/methodologie',
@@ -22,8 +55,8 @@ export const PAGES_PUBLIQUES = [
   },
   {
     chemin: '/formules',
-    titre: 'Formules',
-    description: 'Standard, Avancées et Entreprise : ce que chaque formule ouvre.',
+    titre: 'Formules et tarifs',
+    description: 'Standard, Avancées et Entreprise : ce que chaque formule ouvre, et à quel prix.',
     motsCles: ['formules', 'tarifs', 'prix', 'abonnement', 'combien', 'cout', 'standard', 'avancees', 'entreprise', 'devis'],
   },
   {
