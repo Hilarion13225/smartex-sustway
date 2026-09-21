@@ -23,6 +23,8 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
+import logoEditeurBlanc from '../assets/smartex-expertises-blanc.png';
+import logoEditeurEncre from '../assets/smartex-expertises-encre.png';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
@@ -217,14 +219,51 @@ export default function EnTetePublic({ surFondSombre = false }) {
       <div className="mx-auto flex h-[72px] max-w-[90rem] items-center gap-4 px-5 sm:px-8">
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" variante={surSombre ? 'clair' : 'sombre'} />
-          <p
-            className={clsx(
-              'mt-0.5 hidden whitespace-nowrap text-xs transition-colors md:block',
-              surSombre ? 'text-white/70' : 'text-ink-500'
-            )}
-          >
-            By SMARTEX Expertises
-          </p>
+          {/*
+           * Le logotype de l'éditeur, en deux versions.
+           *
+           * Le fichier fourni porte un lettrage blanc : il ne se lit que sur
+           * un fond sombre, et disparaissait entièrement dès que la barre
+           * prenait son fond blanc. La seconde version n'en change que le
+           * lettrage, passé à l'encre ; l'emblème garde ses rouges et ses
+           * bleus, qui se lisent sur les deux fonds.
+           *
+           * Les deux sont posées l'une sur l'autre et se croisent en opacité,
+           * plutôt qu'une seule dont on changerait la source : mesuré au
+           * navigateur, une bascule de `src` relançait un chargement à chaque
+           * passage, et le logotype disparaissait le temps qu'il aboutisse.
+           * Superposées, elles sont toutes deux déjà là — douze kilo-octets à
+           * elles deux — et le passage de l'une à l'autre est instantané.
+           *
+           * `alt` vide : le lien qui les entoure porte déjà son propre libellé,
+           * qui décrit la destination. Un texte de remplacement ici ferait
+           * entendre deux noms pour un seul lien.
+           *
+           * `width` et `height` déclarés : la place est réservée avant que les
+           * fichiers n'arrivent, sinon le logotype au-dessus sursaute au
+           * premier affichage.
+           */}
+          {/* 22 px de haut, soit 129 de large. Le lettrage n'occupe qu'un
+              tiers de la hauteur du fichier : à 15 px, il tombait sous six
+              pixels et n'était plus lisible. */}
+          <span className="relative mt-1.5 hidden h-[22px] w-[129px] md:block">
+            {[
+              { src: logoEditeurEncre, actif: !surSombre },
+              { src: logoEditeurBlanc, actif: surSombre },
+            ].map((version) => (
+              <img
+                key={version.src}
+                src={version.src}
+                alt=""
+                width={300}
+                height={51}
+                className={clsx(
+                  'absolute inset-0 h-full w-auto transition-opacity duration-300 motion-reduce:transition-none',
+                  version.actif ? 'opacity-100' : 'opacity-0'
+                )}
+              />
+            ))}
+          </span>
         </Link>
 
         <nav
