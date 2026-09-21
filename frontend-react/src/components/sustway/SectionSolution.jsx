@@ -70,48 +70,58 @@ export default function SectionSolution() {
     <>
       {/* --- A. Presentation -------------------------------------------- */}
       {/*
-       * Le titre et le paragraphe tiennent la colonne de gauche, le schema
-       * celle de droite, et les trois piliers se deploient en cartes sous les
-       * deux. C'est la disposition demandee : l'introduction se lit d'abord,
-       * le schema la resume, les cartes la detaillent.
+       * La colonne de gauche porte le titre, le paragraphe puis les trois
+       * piliers ; celle de droite le schema. Les cartes etaient auparavant en
+       * rang sous les deux colonnes, ce qui laissait un vide sous le
+       * paragraphe : elles remplissent desormais ce vide.
        *
-       * `items-start` : la colonne de texte est plus courte que le schema, et
-       * un alignement centre l'aurait fait flotter au milieu de sa colonne au
-       * lieu de commencer en haut de la page.
+       * Empilees dans une seule colonne, elles passent en format horizontal —
+       * icone a gauche, titre et texte a droite. Trois cartes verticales
+       * cote a cote y seraient trop etroites, et empilees en format vertical
+       * elles depasseraient de loin la hauteur du schema.
+       *
+       * `items-start` cale les deux colonnes en haut, mais le schema fait
+       * 489 px contre 721 px pour le texte et ses cartes : `lg:self-center`
+       * l'y recentre, ce qui repartit ce creux de 232 px de part et d'autre au
+       * lieu de le laisser tomber entier sous le schema.
        */}
       <Section id="presentation" fond="blanc">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
-          <Apparition>
-            <TitreBloc
-              niveau={1}
-              surTitre="Présentation"
-              className="mb-0"
-              sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
-            >
-              L’opérationnalisation de la RSE au service de la performance
-            </TitreBloc>
-          </Apparition>
+          <div className="min-w-0">
+            <Apparition>
+              <TitreBloc
+                niveau={1}
+                surTitre="Présentation"
+                className="mb-0"
+                sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
+              >
+                L’opérationnalisation de la RSE au service de la performance
+              </TitreBloc>
+            </Apparition>
 
-          <Apparition delai={120} className="min-w-0">
+            <div className="mt-10 space-y-4">
+              {DOMAINES.map((domaine, index) => {
+                const Icone = domaine.icone;
+                return (
+                  <Apparition key={domaine.titre} delai={index * 110}>
+                    <div className="flex items-start gap-4 rounded-2xl border border-ink-200 bg-surface p-5">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                        <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="text-[19px] font-semibold text-forest">{domaine.titre}</h3>
+                        <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
+                      </div>
+                    </div>
+                  </Apparition>
+                );
+              })}
+            </div>
+          </div>
+
+          <Apparition delai={120} className="min-w-0 lg:self-center">
             <SchemaPiliers />
           </Apparition>
-        </div>
-
-        <div className="mt-12 grid gap-5 md:grid-cols-3 lg:mt-16">
-          {DOMAINES.map((domaine, index) => {
-            const Icone = domaine.icone;
-            return (
-              <Apparition key={domaine.titre} delai={index * 110}>
-                <div className="h-full rounded-2xl border border-ink-200 bg-surface p-6">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                    <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <h3 className="mt-4 text-[20px] font-semibold text-forest">{domaine.titre}</h3>
-                  <p className="mt-3 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
-                </div>
-              </Apparition>
-            );
-          })}
         </div>
       </Section>
 
