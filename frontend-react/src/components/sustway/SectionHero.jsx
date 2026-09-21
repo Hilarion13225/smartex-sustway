@@ -113,9 +113,9 @@ export default function SectionHero() {
               trois sigles, et le paragraphe qui suit dit ce que la plateforme
               en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
           <p className="mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px] xl:max-w-2xl xl:text-[16px] 2xl:max-w-3xl 2xl:text-[18px] 3xl:text-[20px]">
-            SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
-            aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
-            leurs données et améliorer continuellement leur performance durable.
+            SMARTEX SustWay est une démarche d’opérationnalisation de la RSE et du Développement Durable qui aide les
+            entreprises à sortir de la stagnation. Elle vise l’amélioration continue de leur fonctionnement opérationnel
+            et extra-financier.
           </p>
 
           {/*

@@ -1,41 +1,64 @@
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
-import { LineChart } from 'lucide-react';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
- * Colonnes de liens du pied de page — trois, allégées.
+ * Colonnes de liens du pied de page — cinq, calquées sur la barre de
+ * navigation.
+ *
+ * Le pied reprend maintenant le même découpage que le menu, sous-entrées
+ * comprises : un visiteur arrivé en bas de page doit y retrouver le plan qu'il
+ * a vu en haut, et non un second classement qui l'obligerait à réapprendre où
+ * sont les choses. Les ancres sont celles des sections, pas de nouvelles
+ * pages.
  *
  * Toutes les destinations sont des pages réellement déclarées dans App.jsx :
  * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
  * renverrait le visiteur à la case départ sans message d'erreur.
  *
- * Le pied ne reprend plus que l'essentiel. Formules, Méthodologie et
- * Déploiement en sont sortis : les deux premières restent atteignables depuis
- * les pages Offres et Ressources, qui y mènent en contexte.
+ * « Formations » reste sous Ressources bien que le menu ne la porte pas : la
+ * page existe, et le pied de page est le seul endroit commun à tout le site
+ * d'où elle soit atteignable autrement que depuis la page Contact.
  */
 const COLONNES = [
   {
     titre: 'Solution',
     liens: [
-      { vers: '/', libelle: 'Accueil' },
-      { vers: '/solution', libelle: 'Solution' },
-      { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
-      { vers: '/offres', libelle: 'Offres' },
+      { vers: '/solution#presentation', libelle: 'Présentation' },
+      { vers: '/solution#notre-approche', libelle: 'Notre approche' },
+      { vers: '/solution#performance-durable', libelle: 'Performance durable' },
+    ],
+  },
+  {
+    titre: 'Fonctionnalités',
+    liens: [
+      { vers: '/fonctionnalites#evaluations', libelle: 'Évaluations RSE & ESG' },
+      { vers: '/fonctionnalites#objectifs-actions', libelle: 'Objectifs & Actions' },
+      { vers: '/fonctionnalites#performance-reporting', libelle: 'Performance & Reporting' },
+    ],
+  },
+  {
+    titre: 'Offres',
+    liens: [
+      { vers: '/offres', libelle: 'Les trois offres' },
+      { vers: '/formules', libelle: 'Formules de collaboration' },
     ],
   },
   {
     titre: 'Ressources',
     liens: [
-      { vers: '/ressources', libelle: 'Toutes les ressources' },
-      { vers: '/formation', libelle: 'Formations' },
+      { vers: '/ressources#articles', libelle: 'Articles' },
+      { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
+      { vers: '/ressources#documentation', libelle: 'Documentation' },
       { vers: '/methodologie#questions', libelle: 'FAQ' },
+      { vers: '/formation', libelle: 'Formations' },
     ],
   },
   {
-    titre: 'SMARTEX',
+    titre: 'Contact',
     liens: [
-      { vers: '/contact', libelle: 'Contact' },
+      { vers: '/contact', libelle: 'Demander une démo' },
+      { vers: '/inscription', libelle: 'Créer un compte' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },
@@ -86,9 +109,17 @@ export default function PiedPublic() {
     // reste sombre quel que soit le thème actif.
     <footer className="bg-[#102F26] text-white">
       <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-16">
-        <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr] lg:gap-14">
+        {/*
+         * La marque est passée au-dessus des colonnes, sur toute la largeur.
+         *
+         * Les colonnes sont maintenant cinq : serrées dans la moitié droite
+         * comme elles l'étaient à trois, chaque intitulé passait sur deux
+         * lignes et la lecture verticale se perdait. En pleine largeur, elles
+         * disposent chacune d'environ 270 px.
+         */}
+        <div className="grid gap-12 lg:gap-14">
           {/* Marque */}
-          <div className="max-w-sm">
+          <div className="max-w-2xl">
             <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
               <Logo taille="sm" variante="clair" />
             </Link>
@@ -99,22 +130,18 @@ export default function PiedPublic() {
                 différence, pas la taille. */}
             <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-growth">
               Structurer <span aria-hidden className="text-growth/50">•</span> Piloter{' '}
-              <span aria-hidden className="text-growth/50">•</span> Mesurer{' '}
-              <span aria-hidden className="text-growth/50">•</span> Progresser
+              <span aria-hidden className="text-growth/50">•</span> Optimiser{' '}
+              <span aria-hidden className="text-growth/50">•</span> Mesurer
             </p>
             <p className="mt-3 text-base leading-relaxed text-white/70">
-              Une solution de {SMARTEX.editeur} pour structurer, piloter et mesurer la performance RSE, ESG et
-              développement durable des organisations.
+              Une solution de {SMARTEX.editeur} pour structurer, piloter, optimiser et mesurer la performance RSE, ESG
+              et développement durable des organisations.
             </p>
           </div>
 
-          {/* Deux colonnes sur téléphone, trois à partir de 640 px. */}
-          {/* Pas de `col-span` ici : la grille parente n'a que deux colonnes —
-              le bloc de marque et celui-ci. Un `lg:col-span-3` hérité de la
-              grille à quatre colonnes précédente débordait, ce qui renvoyait
-              tout le bloc à la ligne suivante et laissait la moitié droite du
-              pied de page vide. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
+          {/* Deux colonnes sur téléphone, trois à partir de 640 px, les cinq à
+              partir de 1024 px. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
@@ -166,30 +193,11 @@ export default function PiedPublic() {
             ))}
           </p>
 
-          {/*
-           * La chaîne de valeur du produit, en clair.
-           *
-           * C'est la phrase que la charte pose comme critère final : données,
-           * mesure, objectifs, actions, progrès, impact. Le pied de page est le
-           * dernier endroit où elle peut être lue, et elle y résume en une
-           * ligne ce que les cinq pages ont détaillé.
-           *
-           * Les flèches sont masquées à l'assistance et remplacées par un
-           * libellé unique : entendre « flèche » cinq fois de suite n'apprend
-           * rien de la progression qu'elles dessinent.
-           */}
-          <p className="flex items-center gap-2 text-[13px] text-white/70">
-            <LineChart className="h-4 w-4 shrink-0 text-growth" strokeWidth={1.75} aria-hidden />
-            <span className="sr-only">Chaîne de valeur : des données à l’impact, par la mesure, les objectifs, les actions et les progrès.</span>
-            <span aria-hidden className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
-              {['Données', 'Mesure', 'Objectifs', 'Actions', 'Progrès', 'Impact'].map((etape, index) => (
-                <span key={etape} className="flex items-center gap-1.5">
-                  {index > 0 ? <span className="text-white/35">→</span> : null}
-                  {etape}
-                </span>
-              ))}
-            </span>
-          </p>
+          {/* La chaîne de valeur qui tenait ici — données, mesure, objectifs,
+              actions, progrès, impact — est retirée : l'appel à l'action qui
+              précède immédiatement le pied de page la porte désormais en
+              grand, et la lire deux fois à trois centimètres d'intervalle ne
+              l'imprimait pas davantage. */}
           <ul className="flex items-center gap-2">
             {RESEAUX_SOCIAUX.map((reseau) => (
               <li key={reseau.code}>
