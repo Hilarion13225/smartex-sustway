@@ -88,7 +88,7 @@ export default function FondTech({ surSombre = false }) {
         className="absolute -inset-24 motion-safe:animate-derive-grille"
         style={{
           backgroundImage:
-            'linear-gradient(to right, rgba(16,130,74,0.30) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,130,74,0.30) 1px, transparent 1px)',
+            'linear-gradient(to right, rgb(var(--brand-500) / 0.30) 1px, transparent 1px), linear-gradient(to bottom, rgb(var(--brand-500) / 0.30) 1px, transparent 1px)',
           backgroundSize: '52px 52px',
           maskImage: 'radial-gradient(85% 75% at 50% 42%, black 20%, transparent 100%)',
           WebkitMaskImage: 'radial-gradient(85% 75% at 50% 42%, black 20%, transparent 100%)',
@@ -127,7 +127,7 @@ export default function FondTech({ surSombre = false }) {
             y1={arete.a.y}
             x2={arete.b.x}
             y2={arete.b.y}
-            className={surSombre ? 'stroke-emerald-400' : 'stroke-emerald-600 dark:stroke-emerald-400'}
+            className={surSombre ? 'stroke-brand-400' : 'stroke-brand-600 dark:stroke-brand-400'}
             strokeOpacity={arete.opacite}
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
@@ -168,11 +168,11 @@ export default function FondTech({ surSombre = false }) {
             className={
               noeud.majeur
                 ? surSombre
-                  ? 'fill-emerald-400 opacity-80 motion-safe:animate-activation-noeud'
-                  : 'fill-emerald-500 opacity-80 motion-safe:animate-activation-noeud dark:fill-emerald-400'
+                  ? 'fill-brand-300 opacity-80 motion-safe:animate-activation-noeud'
+                  : 'fill-brand-500 opacity-80 motion-safe:animate-activation-noeud dark:fill-brand-300'
                 : surSombre
-                  ? 'fill-emerald-400/60'
-                  : 'fill-emerald-600/70 dark:fill-emerald-400/60'
+                  ? 'fill-brand-400/60'
+                  : 'fill-brand-600/70 dark:fill-brand-400/60'
             }
             style={noeud.majeur ? { animationDelay: `${noeud.delai}s` } : undefined}
           />
@@ -184,19 +184,19 @@ export default function FondTech({ surSombre = false }) {
         className="absolute inset-x-0 top-0 h-40 opacity-0 motion-safe:animate-balayage"
         style={{
           background:
-            'linear-gradient(to bottom, transparent, rgba(46,158,75,0.10) 45%, rgba(95,189,114,0.16) 55%, transparent)',
+            'linear-gradient(to bottom, transparent, rgb(var(--brand-500) / 0.10) 45%, rgb(var(--brand-400) / 0.16) 55%, transparent)',
         }}
       />
 
       {/* Halos d'ambiance, conservés de la version précédente du héros. */}
       <span
         className={`absolute -left-32 top-24 h-80 w-80 rounded-full blur-3xl motion-safe:animate-respiration ${
-          surSombre ? 'bg-emerald-800/40' : 'bg-emerald-200/40 dark:bg-emerald-800/40'
+          surSombre ? 'bg-brand-800/50' : 'bg-brand-200/40 dark:bg-brand-800/50'
         }`}
       />
       <span
         className={`absolute -right-24 top-0 h-80 w-80 rounded-full blur-3xl motion-safe:animate-respiration [animation-delay:2s] ${
-          surSombre ? 'bg-emerald-900/50' : 'bg-emerald-100/50 dark:bg-emerald-900/50'
+          surSombre ? 'bg-brand-700/40' : 'bg-brand-100/50 dark:bg-brand-700/40'
         }`}
       />
     </div>

@@ -82,81 +82,79 @@
    *
    * Posée sur l'enveloppe de LayoutPublic : les variables redéfinies ici ne
    * valent que pour les pages publiques, leur en-tête et leur pied. L'espace
-   * connecté, hors de cette enveloppe, garde le bordeaux de `:root`. C'est ce
+   * connecté, hors de ces enveloppes, garde le bordeaux de `:root`. C'est ce
    * qui permet à la vitrine de changer entièrement de charte sans qu'aucune
    * des ~40 pages de l'application ne bouge d'un pixel.
    *
-   * L'échelle `brand` porte le vert du produit, dont deux crans sont des
-   * couleurs nommées de la charte : `brand-600` est Sustainable Green
-   * #2E7D5B (boutons, éléments interactifs, indicateurs positifs) et
-   * `brand-800` Forest #164A3A (titres forts, sections premium, CTA final).
-   * Les redéfinir ici suffit à reteinter tout ce que la vitrine avait déjà
-   * écrit en `bg-brand-600` ou `text-brand-700`.
+   * Trois nuances Pantone fournies pour le site, relevées sur les pastilles
+   * elles-mêmes plutôt que converties de tête :
    *
-   * Forest #164A3A, Sustainable Green #2E7D5B, Growth #8BC9A5,
-   * Sand #F2EFE6, Mist #F5F7F5, Slate #34413B, Secondary #718078.
+   *   12-0322 TCX « Butterfly »    #CDDBA6
+   *   7491 C     « Moss Green »    #768D32
+   *   5605 C     « Deep Forest »   #193E2C
    *
-   * Deux enveloppes partagent ces valeurs. `vitrine` est celle des pages
-   * héritées, qui portent en plus les règles de forme du design « Registre de
-   * preuves » (plus bas dans ce fichier) ; `sustway` est celle de la page
-   * d'accueil, qui suit la charte SMARTEX SustWay et ne doit surtout pas les
-   * recevoir — ces règles annulent les ombres, ramènent les rayons à 4-12 px
-   * et retirent les capitales espacées, soit trois points sur lesquels les
-   * deux chartes disent le contraire. La palette, elle, est commune : c'est
-   * le même produit.
+   * Elles occupent trois crans de l'échelle `brand`, et les autres crans sont
+   * interpolés entre elles : l'olive s'assombrit et vire au vert forêt, de
+   * sorte que `brand-900` tombe exactement sur Deep Forest.
+   *
+   * Moss Green ne porte aucun texte. Mesuré, il ne tient que 3,73:1 sur blanc
+   * — ni assez pour être lu sur une page claire, ni assez pour porter du texte
+   * blanc, là où le seuil est de 4,5. Il reste donc la couleur d'accent, au
+   * cran 500, tandis que les boutons et les liens prennent `brand-600`
+   * (5,14:1) et `brand-700` (7,08:1). La nuance de marque reste visible
+   * partout où elle n'a rien à faire lire.
    */
   .vitrine,
   .sustway {
-    /* Mist en fond de page, Slate en texte principal : l'échelle `ink` garde
-       ses rôles (50-100 surfaces, 200-300 bordures, 400-500 texte atténué,
-       900 texte principal), seules les teintes changent — le gris neutre
-       devient un gris légèrement vert, accordé au produit. */
+    /* L'échelle `ink` garde ses rôles — 50-100 surfaces, 200-300 bordures,
+       400-500 texte atténué, 900 texte principal — et sa teinte légèrement
+       verte, accordée au produit. */
     --ink-50: 245 247 245;
     --ink-100: 234 238 234;
     /* #E3E9E4 : la bordure de carte imposée par la charte. */
     --ink-200: 227 233 228;
     --ink-300: 196 205 199;
     --ink-400: 154 166 159;
-    /* Secondary #718078. Réservé aux labels et mentions courtes : à 4,2:1 sur
-       blanc il ne passe pas le seuil AA du texte courant, qui prend `ink-600`
-       (5,7:1) — la charte est respectée sans sacrifier la lisibilité. */
-    --ink-500: 113 128 120;
+    /* Assombri de neuf points par rapport au Secondary #718078 de la charte
+       d'origine, qui plafonnait à 4,2:1 sur blanc. Il porte en réalité du
+       texte — libellés de 11 px, descriptions de 14 — et non seulement des
+       mentions décoratives : à cette taille, le seuil est de 4,5. Il tient
+       désormais 4,7:1, et la teinte reste la même à l'œil. */
+    --ink-500: 104 119 111;
     --ink-600: 92 106 99;
     --ink-700: 72 86 79;
     --ink-800: 60 74 67;
-    /* Slate #34413B. */
     --ink-900: 52 65 59;
-    /* `marine` porte la titraille de la vitrine : Forest plutôt que le bleu
-       nuit, sans quoi chaque titre déjà écrit `text-marine` resterait bleu. */
-    --marine: 22 74 58;
+    /* `marine` porte la titraille de la vitrine : Deep Forest, sans quoi
+       chaque titre déjà écrit `text-marine` resterait bleu. */
+    --marine: 25 62 44;
     --surface: 255 255 255;
-    /* Échelle verte. brand-300 est Growth #8BC9A5, brand-600 Sustainable
-       Green #2E7D5B (5,0:1 sur blanc, donc du texte blanc tient dessus),
-       brand-700 #24634A (7,1:1, pour les liens sur fond clair), brand-800
-       Forest #164A3A et brand-900 le fond du pied de page #102F26. */
-    --brand-50: 234 243 238;
-    --brand-100: 211 231 220;
-    --brand-200: 178 215 194;
-    --brand-300: 139 201 165;
-    --brand-400: 90 163 125;
-    --brand-500: 58 142 104;
-    --brand-600: 46 125 91;
-    --brand-700: 36 99 74;
-    --brand-800: 22 74 58;
-    --brand-900: 16 47 38;
+    /* Échelle olive. brand-200 est Butterfly, brand-500 Moss Green,
+       brand-900 Deep Forest ; les crans 600 et 700 sont ceux qui portent du
+       texte. */
+    --brand-50: 244 247 234;
+    --brand-100: 231 239 210;
+    --brand-200: 205 219 166;
+    --brand-300: 180 200 127;
+    --brand-400: 150 174 86;
+    --brand-500: 118 141 50;
+    --brand-600: 97 117 42;
+    --brand-700: 74 95 44;
+    --brand-800: 50 80 46;
+    --brand-900: 25 62 44;
     /* `feuille` disait « conforme » dans l'espace connecté ; sur la vitrine,
-       le vert du produit et le vert du succès sont la même couleur — la
-       charte n'en prévoit qu'une (Succès #2E7D5B). */
-    --feuille: 46 125 91;
-    --vert-profond: 22 74 58;
-    --vert-clair: 211 231 220;
-    /* Couleurs nommées de la charte qui n'entrent dans aucune échelle. */
-    --forest: 22 74 58;
+       le vert du produit et le vert du succès sont la même couleur. Il prend
+       le cran qui peut porter du texte. */
+    --feuille: 97 117 42;
+    --vert-profond: 25 62 44;
+    --vert-clair: 231 239 210;
+    /* Les trois nuances nommées, telles quelles. */
+    --forest: 25 62 44;
+    --growth: 205 219 166;
     --sable: 242 239 230;
     --mist: 245 247 245;
-    --growth: 139 201 165;
-    /* Fonctionnelles. Le succès reprend Sustainable Green : un indicateur
-       positif et l'identité du produit disent la même chose ici. */
+    /* Fonctionnelles. Le succès reprend le vert du produit : un indicateur
+       positif et l'identité disent la même chose ici. */
     --attention: 217 154 43;
     --risque: 200 92 74;
     --information: 79 127 163;
