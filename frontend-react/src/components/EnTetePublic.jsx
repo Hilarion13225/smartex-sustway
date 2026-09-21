@@ -44,10 +44,7 @@ const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disab
  * entrées, et diluerait les cinq que la charte veut voir.
  */
 const LIENS = [
-  // `/accueil` et non `/` : la racine porte la page d'entrée, atteinte par le
-  // logo. L'entrée « Accueil » de la barre mène à la page d'accueil de la
-  // charte, qui ouvre le parcours des cinq pages.
-  { vers: '/accueil', libelle: 'Accueil' },
+  { vers: '/', libelle: 'Accueil' },
   { vers: '/solution', libelle: 'Solution' },
   { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
   { vers: '/offres', libelle: 'Offres' },

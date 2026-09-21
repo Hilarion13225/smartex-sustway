@@ -90,7 +90,7 @@ export default function EnTetePage({ titre, sousTitre, image, fil, children }) {
             <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-white/80">
               <li>
                 <Link
-                  to="/accueil"
+                  to="/"
                   className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest"
                 >
                   Accueil

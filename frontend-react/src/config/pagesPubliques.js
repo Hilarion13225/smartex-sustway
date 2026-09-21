@@ -11,12 +11,6 @@ export const PAGES_PUBLIQUES = [
   // --- Les cinq pages de la charte SMARTEX SustWay ---
   {
     chemin: '/',
-    titre: 'Page d’entrée',
-    description: 'L’entrée du site SMARTEX SustWay.',
-    motsCles: ['entree', 'page d entree', 'depart', 'racine', 'sustway', 'smartex'],
-  },
-  {
-    chemin: '/accueil',
     titre: 'Accueil',
     description: 'Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.',
     motsCles: ['accueil', 'sustway', 'smartex', 'plateforme', 'saas', 'rse', 'esg', 'developpement durable', 'performance durable', 'tableau de bord', 'demo', 'demonstration'],

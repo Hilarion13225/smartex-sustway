@@ -18,7 +18,7 @@ const COLONNES = [
   {
     titre: 'Solution',
     liens: [
-      { vers: '/accueil', libelle: 'Accueil' },
+      { vers: '/', libelle: 'Accueil' },
       { vers: '/solution', libelle: 'Solution' },
       { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
       { vers: '/offres', libelle: 'Offres' },
