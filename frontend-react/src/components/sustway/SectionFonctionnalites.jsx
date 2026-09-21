@@ -97,7 +97,11 @@ export default function SectionFonctionnalites() {
                  * capture d'écran qui arrive avant la phrase qui l'explique
                  * n'est qu'une image de plus à faire défiler.
                  */}
-                <div className={inverse ? 'lg:order-2' : undefined}>
+                {/* `min-w-0` sur les deux colonnes : en une seule colonne, la
+                    grille prend la largeur de son contenu le plus large, et
+                    l'aperçu imposait la sienne au texte — mesuré à 320 px de
+                    fenêtre, la colonne de texte occupait 370 px. */}
+                <div className={`min-w-0 ${inverse ? 'lg:order-2' : ''}`}>
                   <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                     <Icone className="h-[22px] w-[22px]" strokeWidth={1.75} aria-hidden />
                   </span>
@@ -131,7 +135,7 @@ export default function SectionFonctionnalites() {
                  * avec la page. Le dégradé donne au bloc une direction, qui
                  * suit celle de la lecture.
                  */}
-                <div className={inverse ? 'lg:order-1' : undefined}>
+                <div className={`min-w-0 ${inverse ? 'lg:order-1' : ''}`}>
                   <div className="rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50 to-growth/25 p-4 sm:p-6">
                     <Apercu />
                   </div>

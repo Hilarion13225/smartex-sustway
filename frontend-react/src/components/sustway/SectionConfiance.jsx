@@ -44,7 +44,12 @@ export default function SectionConfiance() {
                 width={organisation.taille[0]}
                 height={organisation.taille[1]}
                 loading="lazy"
-                className={`w-auto max-w-[170px] object-contain grayscale transition duration-300 hover:grayscale-0 motion-reduce:transition-none ${organisation.hauteurAccueil}`}
+                /* `max-w-full` d'abord, et la borne fixe seulement à partir de
+                   640 px : à 320 px de fenêtre, une colonne de la grille n'en
+                   fait que 124, et une largeur maximale de 170 px poussait la
+                   page à 323 px — un défilement horizontal de trois pixels,
+                   invisible à l'œil mais bien réel au doigt. */
+                className={`w-auto max-w-full object-contain grayscale transition duration-300 hover:grayscale-0 motion-reduce:transition-none sm:max-w-[170px] ${organisation.hauteurAccueil}`}
               />
             </li>
           </Apparition>

@@ -67,7 +67,16 @@ const RESEAU = (() => {
   return { noeuds, aretes };
 })();
 
-export default function FondTech() {
+/*
+ * `surSombre` force les teintes claires du réseau, celles que la page d'entrée
+ * obtient par la classe `dark` posée sur la racine.
+ *
+ * La page d'accueil, elle, pose un fond sombre sur son seul héros : y activer
+ * `dark` basculerait aussi la palette de tout ce que le héros contient, à
+ * commencer par l'aperçu du tableau de bord, qui doit rester clair. Une prop
+ * dit donc au décor sur quoi il est posé, sans toucher au thème.
+ */
+export default function FondTech({ surSombre = false }) {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
       {/* Halo émeraude de base, repris de l'identité de la page. */}
@@ -118,7 +127,7 @@ export default function FondTech() {
             y1={arete.a.y}
             x2={arete.b.x}
             y2={arete.b.y}
-            className="stroke-emerald-600 dark:stroke-emerald-400"
+            className={surSombre ? 'stroke-emerald-400' : 'stroke-emerald-600 dark:stroke-emerald-400'}
             strokeOpacity={arete.opacite}
             strokeWidth="1"
             vectorEffect="non-scaling-stroke"
@@ -158,8 +167,12 @@ export default function FondTech() {
             r={noeud.majeur ? 2.6 : 1.6}
             className={
               noeud.majeur
-                ? 'fill-emerald-500 opacity-80 motion-safe:animate-activation-noeud dark:fill-emerald-400'
-                : 'fill-emerald-600/70 dark:fill-emerald-400/60'
+                ? surSombre
+                  ? 'fill-emerald-400 opacity-80 motion-safe:animate-activation-noeud'
+                  : 'fill-emerald-500 opacity-80 motion-safe:animate-activation-noeud dark:fill-emerald-400'
+                : surSombre
+                  ? 'fill-emerald-400/60'
+                  : 'fill-emerald-600/70 dark:fill-emerald-400/60'
             }
             style={noeud.majeur ? { animationDelay: `${noeud.delai}s` } : undefined}
           />
@@ -176,8 +189,16 @@ export default function FondTech() {
       />
 
       {/* Halos d'ambiance, conservés de la version précédente du héros. */}
-      <span className="absolute -left-32 top-24 h-80 w-80 rounded-full bg-emerald-200/40 blur-3xl motion-safe:animate-respiration dark:bg-emerald-800/40" />
-      <span className="absolute -right-24 top-0 h-80 w-80 rounded-full bg-emerald-100/50 blur-3xl motion-safe:animate-respiration [animation-delay:2s] dark:bg-emerald-900/50" />
+      <span
+        className={`absolute -left-32 top-24 h-80 w-80 rounded-full blur-3xl motion-safe:animate-respiration ${
+          surSombre ? 'bg-emerald-800/40' : 'bg-emerald-200/40 dark:bg-emerald-800/40'
+        }`}
+      />
+      <span
+        className={`absolute -right-24 top-0 h-80 w-80 rounded-full blur-3xl motion-safe:animate-respiration [animation-delay:2s] ${
+          surSombre ? 'bg-emerald-900/50' : 'bg-emerald-100/50 dark:bg-emerald-900/50'
+        }`}
+      />
     </div>
   );
 }

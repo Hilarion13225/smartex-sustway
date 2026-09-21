@@ -31,6 +31,7 @@ const PAGES_SUSTWAY = ['/accueil', '/solution', '/fonctionnalites', '/offres', '
  */
 const PAGES_EN_TETE_SOMBRE = [
   '/',
+  '/accueil',
   '/solution',
   '/fonctionnalites',
   '/offres',

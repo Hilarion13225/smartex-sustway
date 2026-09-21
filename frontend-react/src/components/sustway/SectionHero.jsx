@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react';
+import FondTech from '../FondTech';
 import Bouton from './Bouton';
 import ApercuDashboard from './ApercuDashboard';
 import { Apparition } from './Section';
@@ -13,26 +14,27 @@ import { Apparition } from './Section';
  * L'aperçu déborde légèrement à droite sur grand écran (`lg:-mr-6`) : un
  * tableau de bord qui s'arrête pile sur la marge se lit comme une image
  * collée, alors qu'un écran qui sort du cadre suggère qu'il continue.
+ *
+ * Le héros est posé sur le décor « tech » de la page d'entrée, sur un fond
+ * Forest. Le fond sombre ne descend pas plus bas : la frise du sous-héros et
+ * tout ce qui suit restent clairs, et la coupure franche entre les deux marque
+ * l'entrée dans le contenu. Seul l'aperçu du tableau de bord garde sa surface
+ * blanche — c'est un écran de logiciel, il ne s'assombrit pas avec la page.
  */
 const ETAPES = ['Diagnostic', 'Structuration', 'Pilotage', 'Optimisation', 'Performance durable'];
 
 export default function SectionHero() {
   return (
-    <section className="relative overflow-hidden bg-ink-50">
-      {/* Halo vert très dilué en haut de page. Il remplace l'aplat de couleur
-          qu'on met d'ordinaire derrière un héros : assez présent pour que la
-          page ne démarre pas sur du blanc plat, assez faible pour que le
-          tableau de bord garde le premier plan. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[560px] bg-[radial-gradient(70%_100%_at_50%_0%,rgba(46,125,91,0.10),transparent_72%)]"
-      />
+    <section className="relative overflow-hidden bg-forest">
+      <FondTech surSombre />
 
-      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-12 px-5 pb-16 pt-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14 lg:pb-24 lg:pt-20">
+      {/* `pt` large : la barre de navigation est en position fixe et passe
+          par-dessus le héros, qu'elle ne pousse donc plus vers le bas. */}
+      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-12 px-5 pb-16 pt-28 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14 lg:pb-24 lg:pt-32">
         <Apparition>
-          <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-600">SMARTEX SustWay</p>
+          <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-growth">SMARTEX SustWay</p>
 
-          <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.025em] text-forest sm:text-[44px] lg:text-[52px]">
+          <h1 className="mt-5 text-[34px] font-bold leading-[1.1] tracking-[-0.025em] text-white sm:text-[44px] lg:text-[52px]">
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
@@ -40,23 +42,32 @@ export default function SectionHero() {
               nomme les trois sigles. Sans équilibrage, la seconde ligne se
               réduisait à « mesurables. » — un reste de phrase là où l'œil
               attend la moitié d'une accroche. */}
-          <p className="mt-5 text-balance text-lg font-semibold text-brand-700 sm:text-xl">
+          <p className="mt-5 text-balance text-lg font-semibold text-growth sm:text-xl">
             Transformez vos ambitions RSE, ESG et DD en actions mesurables.
           </p>
 
-          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-600 sm:text-[17px]">
+          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/75 sm:text-[17px]">
             SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
             aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
             leurs données et améliorer continuellement leur performance durable.
           </p>
 
-          {/* Boutons pleine largeur sous 640 px : à deux de front sur un écran
-              de 360 px, chaque intitulé passerait sur trois lignes. */}
+          {/*
+           * Boutons pleine largeur sous 640 px : à deux de front sur un écran
+           * de 360 px, chaque intitulé passerait sur trois lignes.
+           *
+           * Le bouton principal est blanc et non vert depuis que le héros est
+           * sombre : le vert de marque ne se détache du fond Forest qu'à
+           * 2,03:1, là où un composant d'interface en demande 3. Blanc, il
+           * tient 16:1 et redevient l'élément le plus visible de la page,
+           * comme il doit l'être. C'est déjà le parti pris de l'appel à
+           * l'action final, sur le même fond.
+           */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Bouton vers="/contact" taille="lg" className="w-full sm:w-auto">
+            <Bouton vers="/contact" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
               Demander une démo
             </Bouton>
-            <Bouton vers="/solution" niveau="secondaire" taille="lg" className="w-full sm:w-auto">
+            <Bouton vers="/solution" niveau="secondaire-sombre" taille="lg" className="w-full sm:w-auto">
               Découvrir la solution
             </Bouton>
           </div>
