@@ -78,8 +78,7 @@ export default function SchemaPerformance() {
               visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0 motion-reduce:scale-100 motion-reduce:opacity-100'
             }`}
           >
-            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-growth">Au centre</p>
-            <p className="mt-3 text-[24px] font-semibold leading-tight sm:text-[28px]">Performance durable</p>
+            <p className="text-[24px] font-semibold leading-tight sm:text-[28px]">Performance durable</p>
             <p className="mt-4 max-w-xs text-[14px] leading-relaxed text-white/75">
               Ce que produit la conciliation des quatre, et non l’une d’elles prise à part.
             </p>
