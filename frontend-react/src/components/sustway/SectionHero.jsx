@@ -19,6 +19,11 @@ import { Apparition } from './Section';
  * Le bloc est centré, et sa largeur de lecture bornée à 768 px : une ligne de
  * texte courant qui traverserait les 1200 px de la page serait illisible.
  *
+ * La largeur de lecture et les corps de texte suivent la fenêtre par paliers
+ * au-delà de 1280 px : figés, ils laissaient le contenu occuper 56 % de
+ * l'écran à 1366 px mais seulement 30 % à 2560, où le héros se réduisait à
+ * une bande étroite au milieu du vide.
+ *
  * Centré en entier, et non la seule marque : posée seule au centre d'un bloc
  * aligné à gauche, elle ne se lisait ni comme centrée — le bloc ne fait pas
  * la largeur de la page — ni comme alignée, et paraissait simplement
@@ -55,7 +60,7 @@ export default function SectionHero() {
         aria-hidden
         className="pointer-events-none absolute inset-0 flex select-none items-center justify-center opacity-[0.18]"
       >
-        <Embleme largeur="max-w-lg sm:max-w-2xl lg:max-w-3xl" />
+        <Embleme largeur="max-w-lg sm:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl" />
       </div>
 
       {/*
@@ -76,7 +81,7 @@ export default function SectionHero() {
        *
        */}
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
-        <Apparition className="mx-auto max-w-3xl text-center">
+        <Apparition className="mx-auto max-w-3xl text-center xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl">
           {/*
            * La marque est le logotype lui-même, et non un texte qui l'imite.
            *
@@ -86,7 +91,13 @@ export default function SectionHero() {
            * reconnaît à ce qu'il ne varie pas ; le composant `Logo` est donc
            * appelé, avec sa variante claire, celle des fonds sombres.
            */}
-          <Logo taille="lg" variante="clair" className="justify-center" />
+          {/* `heritee` : le logotype prend la taille de ce conteneur, et non
+              une échelle figée. C'est le seul moyen de le faire grandir avec
+              la fenêtre sans toucher au composant, que l'espace connecté
+              partage. */}
+          <div className="text-[30px] sm:text-[44px] lg:text-[60px] xl:text-[68px] 2xl:text-[78px] 3xl:text-[92px]">
+            <Logo taille="heritee" variante="clair" className="justify-center" />
+          </div>
 
           {/*
            * Le titre passe au second rang visuel, derrière la marque. Il reste
@@ -96,14 +107,14 @@ export default function SectionHero() {
            * Sa taille ne dépend plus de la hauteur de la fenêtre : à ce corps,
            * le héros tient partout sans avoir à s'ajuster.
            */}
-          <h1 className="mt-5 text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white sm:text-[23px] lg:text-[26px]">
+          <h1 className="mt-5 text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white sm:text-[23px] lg:text-[26px] xl:text-[30px] 2xl:text-[34px] 3xl:text-[40px]">
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
           {/* L'accroche qui tenait ici est retirée : le titre nomme déjà les
               trois sigles, et le paragraphe qui suit dit ce que la plateforme
               en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
-          <p className="mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px]">
+          <p className="mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px] xl:max-w-2xl xl:text-[16px] 2xl:max-w-3xl 2xl:text-[18px] 3xl:text-[20px]">
             SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
             aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
             leurs données et améliorer continuellement leur performance durable.

@@ -18,6 +18,16 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
+      /*
+       * Un cran au-dela de `2xl`, qui s'arrete a 1536 px.
+       *
+       * Les ecrans de 1920 px et plus sont courants sur poste de bureau, et
+       * sans ce palier le heros y gardait les corps de texte de 1536 : mesure,
+       * son contenu tombait a 30 % de la largeur de la fenetre en 2560 px.
+       */
+      screens: {
+        '3xl': '1920px',
+      },
       colors: {
         // Rouge brique/carmin délibérément distinct du rouge d'alerte (rose-*,
         // utilisé pour les erreurs et la criticité CRITIQUE) : plus profond et
