@@ -57,15 +57,10 @@ export default function SectionHero() {
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
-          {/* `text-balance` : l'accroche tient sur deux lignes depuis qu'elle
-              nomme les trois sigles. Sans équilibrage, la seconde ligne se
-              réduisait à « mesurables. » — un reste de phrase là où l'œil
-              attend la moitié d'une accroche. */}
-          <p className="mt-4 text-balance text-lg font-semibold text-growth sm:text-xl">
-            Transformez vos ambitions RSE, ESG et DD en actions mesurables.
-          </p>
-
-          <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-white/75 sm:text-[17px]">
+          {/* L'accroche qui tenait ici est retirée : le titre nomme déjà les
+              trois sigles, et le paragraphe qui suit dit ce que la plateforme
+              en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
+          <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/75 sm:text-[17px]">
             SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
             aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
             leurs données et améliorer continuellement leur performance durable.
