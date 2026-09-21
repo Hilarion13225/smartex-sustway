@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { BadgeCheck, Building2, Cpu, FileText, ListChecks, Target, Users } from 'lucide-react';
 import EtapesMission from '../components/vitrine/EtapesMission';
 import ChaineEtapes from '../components/vitrine/ChaineEtapes';
@@ -115,19 +114,6 @@ export default function Deploiement() {
         <div className="relative mx-auto max-w-[90rem] px-5 py-20 text-center sm:py-28">
           <h1 className="text-white">Déploiement de la solution</h1>
 
-          <nav aria-label="Fil d’Ariane" className="mt-4">
-            <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-white/80">
-              <li>
-                <Link to="/services" viewTransition className="underline-offset-4 hover:underline">
-                  Accueil
-                </Link>
-              </li>
-              <li aria-hidden className="text-white/45">—</li>
-              <li aria-current="page" className="font-semibold text-white">
-                Déploiement
-              </li>
-            </ol>
-          </nav>
         </div>
       </section>
 

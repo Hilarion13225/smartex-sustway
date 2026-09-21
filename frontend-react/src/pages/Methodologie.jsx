@@ -3,7 +3,6 @@ import { Briefcase, FileCheck2, GraduationCap, Route, Scale, ShieldCheck } from 
 import Revele from '../components/Revele';
 import RoueDeming from '../components/vitrine/RoueDeming';
 import CarrouselReferentiels from '../components/vitrine/CarrouselReferentiels';
-import BandeauReferentiels from '../components/vitrine/BandeauReferentiels';
 import BlocMedia from '../components/vitrine/BlocMedia';
 import { FONDEMENTS, REFERENCES_METHODOLOGIQUES, REFERENTIEL_SMARTEX, SMARTEX } from '../config/smartex';
 import photoHero from '../assets/methodologie/banniere.jpg';
@@ -49,23 +48,6 @@ export default function Methodologie() {
         <div className="relative mx-auto max-w-[90rem] px-5 py-20 text-center sm:py-28">
           <h1 className="text-white">Méthodologie</h1>
 
-          {/* Un vrai fil d'Ariane, et non deux mots posés : la maquette montrait
-              « Accueil — Nos approche », qui nomme les pages d'un autre site.
-              Ici le fil dit où l'on est dans celui-ci, et « Accueil » est le
-              lien que la barre de navigation désigne ainsi. */}
-          <nav aria-label="Fil d’Ariane" className="mt-4">
-            <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-white/80">
-              <li>
-                <Link to="/services" viewTransition className="underline-offset-4 hover:underline">
-                  Accueil
-                </Link>
-              </li>
-              <li aria-hidden className="text-white/45">—</li>
-              <li aria-current="page" className="font-semibold text-white">
-                Méthodologie
-              </li>
-            </ol>
-          </nav>
         </div>
       </section>
 
@@ -177,11 +159,6 @@ export default function Methodologie() {
         </div>
       </section>
 
-      {/* Fixé au bas de la fenêtre, donc sa place dans le JSX ne décide plus de
-          son affichage — seulement de l'ordre où un lecteur d'écran le
-          rencontre. Il vient en dernier : c'est un rappel des standards, pas
-          une entrée en matière. */}
-      <BandeauReferentiels />
     </div>
   );
 }

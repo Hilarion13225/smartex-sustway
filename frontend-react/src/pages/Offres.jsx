@@ -21,7 +21,6 @@ export default function Offres() {
     <>
       <EnTetePage
         image={bandeau}
-        fil="Offres"
         titre="Une solution adaptée à votre niveau de déploiement"
         sousTitre="SMARTEX SustWay s’adapte à la taille et à la complexité de votre organisation. Choisissez le niveau de déploiement qui correspond à vos besoins."
       />

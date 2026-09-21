@@ -22,7 +22,6 @@ export default function Ressources() {
     <>
       <EnTetePage
         image={bandeau}
-        fil="Ressources"
         titre="Ressources & expertise"
         sousTitre="Ce qui aide à comprendre la démarche RSE et ESG, à s’y former et à s’y préparer."
       />

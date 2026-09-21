@@ -21,7 +21,6 @@ export default function Solution() {
     <>
       <EnTetePage
         image={bandeau}
-        fil="La solution"
         titre="L’opérationnalisation de la RSE au service de la performance"
         sousTitre="Concilier performance économique et maîtrise des impacts durables."
       />

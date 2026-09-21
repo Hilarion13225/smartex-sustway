@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import AppelAction from '../components/AppelAction';
 import GrilleFormules from '../components/vitrine/GrilleFormules';
 import photoBandeau from '../assets/methodologie/engagement-banniere.jpg';
@@ -47,19 +46,6 @@ export default function Formules() {
         <div className="relative mx-auto max-w-[90rem] px-5 py-20 text-center sm:py-28">
           <h1 className="text-white">Engageons-nous ensemble</h1>
 
-          <nav aria-label="Fil d’Ariane" className="mt-4">
-            <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-white/80">
-              <li>
-                <Link to="/services" viewTransition className="underline-offset-4 hover:underline">
-                  Accueil
-                </Link>
-              </li>
-              <li aria-hidden className="text-white/45">—</li>
-              <li aria-current="page" className="font-semibold text-white">
-                Formule de collaboration
-              </li>
-            </ol>
-          </nav>
         </div>
       </section>
 
