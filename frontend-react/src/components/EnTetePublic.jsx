@@ -24,7 +24,8 @@ import { Play, Search } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import logoEditeurBlanc from '../assets/smartex-expertises-blanc.png';
-import logoEditeurEncre from '../assets/smartex-expertises-encre.png';
+import logoEditeurCouleur from '../assets/smartex-expertises.png';
+import { SMARTEX } from '../config/smartex';
 import RechercheVitrine from './RechercheVitrine';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
@@ -270,49 +271,54 @@ export default function EnTetePublic({ surFondSombre = false }) {
           </Link>
 
           {/*
-           * Le logotype de l'éditeur, en deux versions.
+           * Le logotype de l'éditeur, en deux versions, et cliquable.
            *
-           * Le fichier fourni porte un lettrage blanc : il ne se lit que sur un
-           * fond sombre, et disparaissait dès que la barre prenait son fond
-           * blanc. La seconde version n'en change que le lettrage, passé à
-           * l'encre ; l'emblème garde ses rouges et ses bleus, qui se lisent
-           * sur les deux fonds.
+           * Le fichier fourni porte un lettrage bleu marine : il se lit sur la
+           * barre blanche, et disparaîtrait sur un bandeau sombre. La seconde
+           * version en dérive, et n'en change que le lettrage — l'emblème
+           * garde ses bleus et ses rouges, qui tiennent sur les deux fonds.
+           * Les deux partagent donc le même cadrage et se superposent au
+           * pixel près, ce qui ne serait pas le cas de deux fichiers
+           * d'origines différentes.
            *
-           * Les deux sont posées l'une sur l'autre et se croisent en opacité,
-           * plutôt qu'une seule dont on changerait la source : mesuré au
-           * navigateur, une bascule de `src` relançait un chargement à chaque
-           * passage, et le logotype disparaissait le temps qu'il aboutisse.
+           * Elles se croisent en opacité plutôt que par un changement de
+           * source : mesuré au navigateur, une bascule de `src` relançait un
+           * chargement à chaque passage, et le logotype disparaissait le temps
+           * qu'il aboutisse.
            *
-           * `alt` renseigné, contrairement à la version précédente : posé ici,
-           * le logotype n'est plus dans le lien de la marque et porte seul son
-           * information — le site est édité par SMARTEX Expertises.
+           * Le lien mène au site de l'éditeur, dans un nouvel onglet — quitter
+           * la plateforme d'un clic sur une signature de bas de barre serait
+           * une perte de contexte que le visiteur n'a pas demandée. Le `rel`
+           * empêche la page ouverte d'accéder à celle-ci.
            *
            * Un filet le sépare des actions : sans lui, il se lisait comme un
            * quatrième bouton de la barre.
+           *
+           * Seuil à 1250 px, mesuré avec le logotype affiché : la barre tient
+           * à 1250 et déborde à 1200, la navigation centrale passant sous sa
+           * largeur minimale. Il valait 1300 px du temps du logotype
+           * précédent, qui occupait 165 px de large contre 118 pour
+           * celui-ci — filet et retrait compris.
            */}
-          {/*
-           * Seuil mesuré, et non estimé : avec le logotype affiché, la barre
-           * demande 1226 px de contenu. À 1300 px de fenêtre il lui reste
-           * 74 px de marge ; à 1280 elle déborde, la navigation centrale
-           * passant sous sa largeur minimale. Le seuil valait 1380 px, posé
-           * par prudence : il privait du logotype les écrans de 1366 px, les
-           * plus répandus sur les portables.
-           */}
-          <span className="ml-1 hidden h-9 border-l border-current/15 pl-4 min-[1300px]:flex min-[1300px]:items-center">
-            {/* 28 px de haut, soit 165 de large. Le lettrage n'occupe qu'un
-                tiers de la hauteur du fichier : à 22 px il tombait sous sept
-                pixels, et dix-huit caractères s'y écrasaient. */}
-            <span className="relative block h-[28px] w-[165px]">
+          <a
+            href={SMARTEX.siteWeb}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="ml-1 hidden h-11 items-center rounded-lg border-l border-current/15 pl-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 min-[1250px]:flex"
+          >
+            {/* 40 px de haut, soit 101 de large. Le lettrage n'occupe que le
+                tiers bas du fichier : à 28 px il tombait sous neuf pixels. */}
+            <span className="relative block h-[40px] w-[101px]">
               {[
-                { src: logoEditeurEncre, actif: !surSombre },
+                { src: logoEditeurCouleur, actif: !surSombre },
                 { src: logoEditeurBlanc, actif: surSombre },
               ].map((version) => (
                 <img
                   key={version.src}
                   src={version.src}
-                  alt={version.actif ? 'Édité par SMARTEX Expertises' : ''}
-                  width={300}
-                  height={51}
+                  alt={version.actif ? 'SMARTEX Expertises, éditeur de la plateforme' : ''}
+                  width={180}
+                  height={71}
                   className={clsx(
                     'absolute inset-0 h-full w-auto transition-opacity duration-300 motion-reduce:transition-none',
                     version.actif ? 'opacity-100' : 'opacity-0'
@@ -320,7 +326,8 @@ export default function EnTetePublic({ surFondSombre = false }) {
                 />
               ))}
             </span>
-          </span>
+            <span className="sr-only"> (nouvel onglet)</span>
+          </a>
         </div>
 
         {/* Sous 1200 px : le logo, l'appel à l'action dès que la place le
