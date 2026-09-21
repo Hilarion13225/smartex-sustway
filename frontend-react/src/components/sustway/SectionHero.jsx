@@ -1,19 +1,19 @@
 import { ArrowRight } from 'lucide-react';
 import FondTech from '../FondTech';
 import Bouton from './Bouton';
-import ApercuDashboard from './ApercuDashboard';
 import { Apparition } from './Section';
 
 /*
  * Héros de la page d'accueil.
  *
- * Deux colonnes à partir de 1024 px, une seule en dessous, et dans cet ordre :
- * le discours d'abord, l'aperçu ensuite. L'inverse mettrait un visiteur mobile
- * devant une capture d'écran avant de lui avoir dit de quel produit il s'agit.
+ * Une seule colonne : le héros ne porte que le discours. L'aperçu du tableau
+ * de bord qui l'accompagnait a été retiré — les six écrans du produit sont
+ * montrés en grand sur la page « Fonctionnalités », et un septième posé ici
+ * demandait la moitié de la page pour redire la même chose.
  *
- * L'aperçu déborde légèrement à droite sur grand écran (`lg:-mr-6`) : un
- * tableau de bord qui s'arrête pile sur la marge se lit comme une image
- * collée, alors qu'un écran qui sort du cadre suggère qu'il continue.
+ * Le texte garde l'alignement à gauche et une largeur de lecture bornée :
+ * le décor occupe la moitié droite, qui n'est donc pas vide, et une ligne de
+ * texte courant qui traverserait les 1200 px de la page serait illisible.
  *
  * Le héros est posé sur le décor « tech » de la page d'entrée, sur un fond
  * Forest. Le fond sombre ne descend pas plus bas : la frise du sous-héros et
@@ -44,12 +44,9 @@ export default function SectionHero() {
        * `pt` large tout de même : la barre de navigation est en position fixe
        * et passe par-dessus le héros, qu'elle ne pousse donc plus vers le bas.
        *
-       * La colonne de texte est un peu plus large que celle de l'aperçu
-       * (1,05 contre 1) : c'est le titre qui dicte la hauteur, et chaque ligne
-       * qu'il gagne en largeur en fait une de moins en hauteur.
        */}
-      <div className="relative mx-auto grid w-full max-w-[1200px] items-center gap-10 px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-12 lg:pb-12 lg:pt-24">
-        <Apparition>
+      <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
+        <Apparition className="max-w-3xl">
           <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-growth">SMARTEX SustWay</p>
 
           {/* La taille du titre suit la hauteur de la fenêtre : 44 px sur un
@@ -93,10 +90,6 @@ export default function SectionHero() {
               Découvrir la solution
             </Bouton>
           </div>
-        </Apparition>
-
-        <Apparition delai={140} className="lg:-mr-6">
-          <ApercuDashboard />
         </Apparition>
       </div>
 
