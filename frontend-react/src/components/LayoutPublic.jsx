@@ -7,9 +7,9 @@ import BandeauReferentiels from './vitrine/BandeauReferentiels';
 /*
  * Les cinq pages de la charte SMARTEX SustWay.
  *
- * Elles portent leurs propres fonds et se terminent toutes par un appel à
- * l'action : le bandeau des référentiels viendrait s'ajouter juste en dessous,
- * et répéterait un appel là où il y en a déjà un.
+ * Elles portent leurs propres fonds, leur palette et leur typographie. Le
+ * bandeau des référentiels, lui, n'est plus réservé aux pages héritées : il
+ * court désormais sous toutes les pages publiques.
  */
 const PAGES_SUSTWAY = ['/', '/solution', '/fonctionnalites', '/offres', '/ressources'];
 
@@ -65,9 +65,8 @@ export default function LayoutPublic() {
   /*
    * Deux régimes de mise en page.
    *
-   * Les cinq pages de la charte prennent `sustway` : leur palette, leur
-   * typographie à une seule famille, et pas de bandeau des référentiels — le
-   * pied de page porte les appels à l'action de fin de lecture.
+   * Les cinq pages de la charte prennent `sustway` : leur palette et leur
+   * typographie à une seule famille.
    *
    * Les autres pages publiques gardent `vitrine`, qui porte en plus les règles
    * de forme du design « Registre de preuves » (voir index.css) : rayons
@@ -79,6 +78,42 @@ export default function LayoutPublic() {
    * pied — partagés par toutes les pages publiques — suivent la charte de la
    * page qu'ils encadrent.
    */
+  /*
+   * La hauteur du bandeau, publiée en `--hauteur-bandeau`.
+   *
+   * Le bandeau est une barre fixe au bas de la fenêtre : il prend une
+   * soixantaine de pixels à toutes les pages, et les sections qui doivent
+   * tenir dans un écran doivent les retrancher, sans quoi leur bas passe
+   * dessous. Voir `pleineHauteur` dans `sustway/Section.jsx`.
+   *
+   * La mesure est prise ici plutôt que dans le bandeau lui-même, qui rend déjà
+   * au document la hauteur qu'il lui prend et n'a pas à connaître ses
+   * lecteurs. Même motif que `--hauteur-pied`, publiée par le pied.
+   *
+   * L'élément est cherché par sa classe : il est rendu par un enfant, et un
+   * élément en position fixe ne donne pas sa hauteur à l'enveloppe qui le
+   * contient.
+   */
+  useEffect(() => {
+    const bandeau = document.querySelector('.bandeau-arret');
+    if (!bandeau) return undefined;
+
+    const publier = () => {
+      document.documentElement.style.setProperty('--hauteur-bandeau', `${bandeau.offsetHeight}px`);
+    };
+    publier();
+
+    const observateur = typeof ResizeObserver === 'function' ? new ResizeObserver(publier) : null;
+    if (observateur) observateur.observe(bandeau);
+    else window.addEventListener('resize', publier);
+
+    return () => {
+      document.documentElement.style.removeProperty('--hauteur-bandeau');
+      if (observateur) observateur.disconnect();
+      else window.removeEventListener('resize', publier);
+    };
+  }, []);
+
   const estSustWay = PAGES_SUSTWAY.includes(pathname);
   const enTeteSombre = PAGES_EN_TETE_SOMBRE.includes(pathname);
 
@@ -94,8 +129,8 @@ export default function LayoutPublic() {
 
       {/* Le bandeau des référentiels est la contrepartie basse de la barre de
           navigation : il est donc rendu ici, une fois pour toutes les pages
-          héritées, plutôt que répété page par page. */}
-      {estSustWay ? null : <BandeauReferentiels />}
+          publiques, plutôt que répété page par page. */}
+      <BandeauReferentiels />
     </div>
   );
 }

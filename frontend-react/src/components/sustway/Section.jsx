@@ -37,6 +37,11 @@ const FONDS = {
  * le calcul donne moins que lui et reste sans effet — la section reprend sa
  * hauteur naturelle au lieu d'ecraser ce qu'elle contient.
  *
+ * `--hauteur-bandeau` se retranche en plus : le bandeau des referentiels est
+ * une barre fixe au bas de la fenetre, et sans elle le bas de chaque section
+ * passerait dessous. La variable est publiee par `LayoutPublic`, qui mesure le
+ * bandeau ; le repli a zero vaut le temps du premier rendu.
+ *
  * A partir de 1024 px seulement : en dessous, les colonnes s'empilent et
  * aucune de ces sections ne tient dans la hauteur d'un telephone.
  *
@@ -49,7 +54,7 @@ export function Section({ id, fond = 'blanc', pleineHauteur = false, className, 
       id={id}
       className={clsx(
         pleineHauteur
-          ? 'scroll-mt-0 lg:flex lg:min-h-[calc(100svh-88px)] lg:flex-col lg:justify-center'
+          ? 'scroll-mt-0 lg:flex lg:min-h-[calc(100svh-88px-var(--hauteur-bandeau,0px))] lg:flex-col lg:justify-center'
           : 'scroll-mt-24',
         FONDS[fond],
         className

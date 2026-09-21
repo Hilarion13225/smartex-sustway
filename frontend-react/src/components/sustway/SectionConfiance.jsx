@@ -29,6 +29,10 @@ export default function SectionConfiance() {
      * lui-même, qui se mesure ; la valeur de repli ne sert que le temps du
      * premier rendu.
      *
+     * `--hauteur-bandeau` se retranche en plus depuis que le bandeau des
+     * référentiels court aussi sous les pages de la charte : c'est une barre
+     * fixe au bas de la fenêtre, et sans elle le pied passait dessous.
+     *
      * `min-height` et non `height` : quand la fenêtre est trop basse pour que
      * les deux tiennent, le calcul donne moins que le contenu et reste donc
      * sans effet — la section garde sa hauteur naturelle plutôt que d'écraser
@@ -46,7 +50,7 @@ export default function SectionConfiance() {
      */
     <Section
       fond="blanc"
-      className="lg:flex lg:min-h-[max(0px,calc(100svh-var(--hauteur-pied,340px)))] lg:flex-col lg:justify-center lg:pt-[72px]"
+      className="lg:flex lg:min-h-[max(0px,calc(100svh-var(--hauteur-pied,340px)-var(--hauteur-bandeau,0px)))] lg:flex-col lg:justify-center lg:pt-[72px]"
       contenuClassName="py-14 lg:py-6"
     >
       <TitreSection

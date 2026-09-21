@@ -125,7 +125,7 @@ export default function SectionSolution() {
       </Section>
 
       {/* --- B. Notre approche ------------------------------------------ */}
-      <Section id="notre-approche" fond="mist" pleineHauteur contenuClassName="lg:py-12">
+      <Section id="notre-approche" fond="mist" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Notre approche"
           sousTitre="Pour sortir de la stagnation, SMARTEX SustWay déploie une méthode progressive qui intègre les principes ESG au cœur des décisions stratégiques de croissance, tout en recherchant la création de valeur durable et la maîtrise des impacts de l’entreprise."
@@ -137,7 +137,7 @@ export default function SectionSolution() {
       </Section>
 
       {/* --- C. Performance durable -------------------------------------- */}
-      <Section id="performance-durable" fond="blanc" pleineHauteur contenuClassName="lg:py-12">
+      <Section id="performance-durable" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Performance durable"
           sousTitre="Maîtrisez vos impacts sociaux et environnementaux sans compromettre votre performance financière, grâce à un pilotage unifié, structuré et transparent."

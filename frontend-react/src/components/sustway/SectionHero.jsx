@@ -74,11 +74,16 @@ export default function SectionHero() {
        * barres d'adresse rétractées, et le bas du bloc reste caché tant
        * qu'on n'a pas fait défiler.
        *
+       * `--hauteur-bandeau` se retranche depuis que le bandeau des
+       * référentiels court aussi sous les pages de la charte : c'est une barre
+       * fixe au bas de la fenêtre, et à `100svh` pleins les boutons du héros
+       * finissaient dessous. La variable est publiée par `LayoutPublic`.
+       *
        * `pt` large tout de même : la barre de navigation est en position fixe
        * et passe par-dessus le héros, qu'elle ne pousse donc plus vers le bas.
        *
        */}
-      <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
+      <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-[calc(100svh-var(--hauteur-bandeau,0px))] lg:pb-12 lg:pt-24">
         <Apparition className="mx-auto max-w-3xl text-center xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl">
           {/*
            * La marque est le logotype lui-même, et non un texte qui l'imite.
