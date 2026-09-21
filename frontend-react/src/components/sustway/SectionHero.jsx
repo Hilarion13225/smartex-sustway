@@ -36,8 +36,12 @@ export default function SectionHero() {
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
-          <p className="mt-5 text-lg font-semibold text-brand-700 sm:text-xl">
-            Transformez vos ambitions RSE en actions mesurables.
+          {/* `text-balance` : l'accroche tient sur deux lignes depuis qu'elle
+              nomme les trois sigles. Sans équilibrage, la seconde ligne se
+              réduisait à « mesurables. » — un reste de phrase là où l'œil
+              attend la moitié d'une accroche. */}
+          <p className="mt-5 text-balance text-lg font-semibold text-brand-700 sm:text-xl">
+            Transformez vos ambitions RSE, ESG et DD en actions mesurables.
           </p>
 
           <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-600 sm:text-[17px]">
