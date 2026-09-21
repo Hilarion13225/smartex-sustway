@@ -21,7 +21,11 @@ import { Link } from 'react-router-dom';
 export default function EnTetePage({ titre, sousTitre, image, fil, children }) {
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-forest text-white">
+      {/* `min-h` plutôt qu'un simple remplissage : la hauteur ne dépend plus
+          de la longueur du titre, et les quatre pages s'ouvrent de la même
+          façon. Elle allait de 236 à 370 px selon que le titre tenait sur une
+          ou deux lignes — assez peu pour que la photographie ne se lise pas. */}
+      <section className="relative isolate flex min-h-[340px] items-center overflow-hidden bg-forest text-white sm:min-h-[420px] lg:min-h-[480px]">
         {/*
          * `alt` vide et `aria-hidden` sur le voile : la photographie illustre,
          * elle n'informe pas. La décrire ferait entendre « poignée de main »
@@ -39,12 +43,31 @@ export default function EnTetePage({ titre, sousTitre, image, fil, children }) {
           loading="eager"
           fetchPriority="high"
         />
-        {/* Voile à 76 % : mesuré, le texte blanc y garde plus de 10:1 sur les
-            zones claires des photographies employées. En dessous, une zone de
-            ciel ou de mur blanc faisait tomber le titre sous le seuil. */}
-        <div aria-hidden className="absolute inset-0 bg-forest/[0.76]" />
+        {/*
+         * Deux voiles plutôt qu'un seul, parce qu'ils ne servent pas la même
+         * chose.
+         *
+         * Le premier, uniforme à 55 %, teinte la photographie sans l'effacer :
+         * à 76 % elle n'était plus qu'une texture, et on ne distinguait ni le
+         * mur de post-it ni la poignée de main.
+         *
+         * Le second est un halo concentré au centre, là où tombent le titre et
+         * le fil d'Ariane, et transparent sur les bords. C'est lui qui tient
+         * le contraste : les deux se composent à environ 75 % sous le texte,
+         * pendant que les bords restent à 55 % et laissent voir l'image.
+         *
+         * La couleur est écrite en clair et non en variable : les valeurs
+         * arbitraires de Tailwind coupent sur la barre oblique de `rgb(... /
+         * alpha)`, et le dégradé se perdait silencieusement. #164A3A est
+         * Forest, la même teinte que le voile uniforme au-dessus.
+         */}
+        <div aria-hidden className="absolute inset-0 bg-forest/[0.55]" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(62%_72%_at_50%_50%,rgba(22,74,58,0.45),transparent_78%)]"
+        />
 
-        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-20 text-center sm:px-8 sm:py-28">
+        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 text-center sm:px-8 sm:py-20">
           {/* `hyphens-auto` : « L'opérationnalisation » dépasse à lui seul la
               largeur d'un écran de 320 px. */}
           <h1 className="mx-auto max-w-4xl text-balance hyphens-auto break-words text-[30px] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-[40px] lg:text-[46px]">
