@@ -1,13 +1,15 @@
 import { ArrowRight } from 'lucide-react';
 import FondTech from '../FondTech';
 import Embleme from '../Embleme';
+import Logo from '../Logo';
 import Bouton from './Bouton';
 import { Apparition } from './Section';
 
 /*
  * Héros de la page d'accueil.
  *
- * Une seule colonne : le héros ne porte que le discours. L'aperçu du tableau
+ * Une seule colonne : le héros ne porte que le discours, posé sur l'emblème
+ * de la marque en fond et le décor « tech ». L'aperçu du tableau
  * de bord qui l'accompagnait a été retiré — les six écrans du produit sont
  * montrés en grand sur la page « Fonctionnalités », et un septième posé ici
  * demandait la moitié de la page pour redire la même chose.
@@ -34,6 +36,25 @@ export default function SectionHero() {
       <FondTech surSombre />
 
       {/*
+       * L'emblème passe derrière le texte, au centre du héros.
+       *
+       * Il n'y est plus un élément à lire mais une texture : d'où l'opacité
+       * réduite, sans laquelle ses pastilles blanches passaient sous les
+       * lettres blanches du titre et les rendaient illisibles.
+       *
+       * `aria-hidden` sur l'enveloppe : les quatre libellés qu'il porte —
+       * Documents, Preuves, Conformité, Scoring — étaient lus à leur place
+       * quand l'emblème ouvrait le héros ; posés en fond, ils n'apportent
+       * plus rien qu'un lecteur d'écran doive entendre avant le titre.
+       */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex select-none items-center justify-center opacity-[0.18]"
+      >
+        <Embleme largeur="max-w-lg sm:max-w-2xl lg:max-w-3xl" />
+      </div>
+
+      {/*
        * Le héros tient dans une fenêtre, sans avoir à défiler.
        *
        * `min-h-svh` l'y étire quand il reste de la place, et les réglages
@@ -52,22 +73,16 @@ export default function SectionHero() {
        */}
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
         <Apparition className="mx-auto max-w-3xl text-center">
-          {/* L'emblème, repris de la page d'entrée. Bien plus petit qu'elle ne
-              l'affiche : posé au-dessus du titre, il doit laisser la place au
-              texte et aux boutons dans une fenêtre. */}
-          <Embleme compact largeur="max-w-[210px] sm:max-w-[260px] lg:max-w-[300px]" />
-
           {/*
-           * La marque passe devant, en plus grand que le titre.
+           * La marque est le logotype lui-même, et non un texte qui l'imite.
            *
-           * L'espacement des lettres tombe de 0,16 em à 0,06 : à cette taille,
-           * le premier écartait les mots au point de les disjoindre — un
-           * interlettrage large se règle pour un texte de treize pixels, pas
-           * de quarante.
+           * Elle était composée ici en capitales vertes : même mots, autre
+           * dessin — casse, couleurs et emblème différaient de ce que la barre
+           * de navigation affiche à trois cents pixels de là. Un logotype se
+           * reconnaît à ce qu'il ne varie pas ; le composant `Logo` est donc
+           * appelé, avec sa variante claire, celle des fonds sombres.
            */}
-          <p className="mt-2 text-[30px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[38px] lg:text-[46px]">
-            SMARTEX SustWay
-          </p>
+          <Logo taille="lg" variante="clair" className="justify-center" />
 
           {/*
            * Le titre passe au second rang visuel, derrière la marque. Il reste
