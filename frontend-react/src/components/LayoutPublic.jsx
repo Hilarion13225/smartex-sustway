@@ -28,10 +28,13 @@ const PAGES_SUSTWAY = ['/', '/solution', '/fonctionnalites', '/offres', '/ressou
  * bandeau ajoutée plus tard doit être inscrite ici, faute de quoi sa barre
  * restera en texte sombre sur un fond sombre. Le défaut est volontairement de
  * ce côté : une page sans bandeau oubliée garde un texte lisible.
+ *
+ * « /solution » n'y figure plus : son bandeau photographique a été retiré, la
+ * page s'ouvre sur un fond blanc, et sa barre doit donc revenir au texte
+ * sombre — sinon du blanc sur du blanc.
  */
 const PAGES_EN_TETE_SOMBRE = [
   '/',
-  '/solution',
   '/fonctionnalites',
   '/offres',
   '/ressources',

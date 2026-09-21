@@ -1,5 +1,3 @@
-import EnTetePage from '../components/sustway/EnTetePage';
-import bandeau from '../assets/methodologie/avantages-banniere.jpg';
 import SectionSolution from '../components/sustway/SectionSolution';
 import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
@@ -10,6 +8,12 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
  * Elle traite de la démarche — les cinq temps, les trois domaines, les
  * livrables — et renvoie aux écrans qui l'exécutent sans les montrer : c'est
  * le sujet de la page « Fonctionnalités ».
+ *
+ * Elle s'ouvre sans bandeau photographique. L'image de fond a été retirée, et
+ * avec elle le bandeau qui la portait : la section « Présentation » commence
+ * désormais la page et porte son `h1`, ce qui donne au titre et à son
+ * paragraphe la colonne de gauche et au schéma celle de droite — la
+ * disposition demandée, qu'un bandeau centré au-dessus aurait redoublée.
  */
 export default function Solution() {
   useMetaPage(
@@ -19,11 +23,6 @@ export default function Solution() {
 
   return (
     <>
-      <EnTetePage
-        image={bandeau}
-        titre="L’opérationnalisation de la RSE au service de la performance"
-        sousTitre="Concilier performance économique et maîtrise des impacts durables."
-      />
       <SectionSolution />
       <SectionCtaFinal />
     </>

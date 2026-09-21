@@ -1,6 +1,8 @@
+import clsx from 'clsx';
 import { Gauge, Layers, TrendingUp } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
+import SchemaPiliers from './SchemaPiliers';
 import SchemaPerformance from './SchemaPerformance';
 
 /*
@@ -15,7 +17,9 @@ import SchemaPerformance from './SchemaPerformance';
  * suite, et le lecteur qui arrive par le menu atterrit au bon endroit sans
  * perdre le fil de ce qui precede.
  *
- * Le titre de la page porte le `h1` ; ces trois-la ouvrent donc en `h2`.
+ * Presentation porte le `h1` de la page : le bandeau photo qui l'ouvrait a
+ * ete retire, et c'est donc elle qui annonce desormais le sujet. Les deux
+ * autres sections ouvrent en `h2`.
  */
 const DOMAINES = [
   {
@@ -35,16 +39,28 @@ const DOMAINES = [
   },
 ];
 
-function TitreBloc({ surTitre, children, sousTitre }) {
+/*
+ * `niveau` : la premiere section porte le `h1`, les suivantes des `h2`. Le
+ * corps ne suit pas ce niveau — le titre de la page est plus grand que ceux
+ * des sections, mais la hierarchie du document ne se lit pas a la taille des
+ * lettres.
+ */
+function TitreBloc({ surTitre, children, sousTitre, niveau = 2, className }) {
+  const Titre = niveau === 1 ? 'h1' : 'h2';
   return (
-    <div className="mb-10 max-w-3xl">
+    <div className={clsx('max-w-3xl', className ?? 'mb-10')}>
       {surTitre ? (
         <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">{surTitre}</p>
       ) : null}
-      <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
+      <Titre
+        className={clsx(
+          'font-semibold leading-tight tracking-[-0.02em] text-forest',
+          niveau === 1 ? 'text-[30px] sm:text-[38px] lg:text-[42px]' : 'text-[26px] sm:text-[30px]'
+        )}
+      >
         {children}
-      </h2>
-      {sousTitre ? <p className="mt-4 text-[16px] leading-relaxed text-ink-600">{sousTitre}</p> : null}
+      </Titre>
+      {sousTitre ? <p className="mt-5 text-[17px] leading-relaxed text-ink-600">{sousTitre}</p> : null}
     </div>
   );
 }
@@ -53,15 +69,35 @@ export default function SectionSolution() {
   return (
     <>
       {/* --- A. Presentation -------------------------------------------- */}
+      {/*
+       * Le titre et le paragraphe tiennent la colonne de gauche, le schema
+       * celle de droite, et les trois piliers se deploient en cartes sous les
+       * deux. C'est la disposition demandee : l'introduction se lit d'abord,
+       * le schema la resume, les cartes la detaillent.
+       *
+       * `items-start` : la colonne de texte est plus courte que le schema, et
+       * un alignement centre l'aurait fait flotter au milieu de sa colonne au
+       * lieu de commencer en haut de la page.
+       */}
       <Section id="presentation" fond="blanc">
-        <TitreBloc
-          surTitre="Présentation"
-          sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
-        >
-          Trois mouvements, une même démarche
-        </TitreBloc>
+        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
+          <Apparition>
+            <TitreBloc
+              niveau={1}
+              surTitre="Présentation"
+              className="mb-0"
+              sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
+            >
+              L’opérationnalisation de la RSE au service de la performance
+            </TitreBloc>
+          </Apparition>
 
-        <div className="grid gap-5 md:grid-cols-3">
+          <Apparition delai={120} className="min-w-0">
+            <SchemaPiliers />
+          </Apparition>
+        </div>
+
+        <div className="mt-12 grid gap-5 md:grid-cols-3 lg:mt-16">
           {DOMAINES.map((domaine, index) => {
             const Icone = domaine.icone;
             return (
