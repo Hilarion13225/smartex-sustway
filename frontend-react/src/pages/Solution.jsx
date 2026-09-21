@@ -1,4 +1,5 @@
 import EnTetePage from '../components/sustway/EnTetePage';
+import bandeau from '../assets/methodologie/avantages-banniere.jpg';
 import SectionSolution from '../components/sustway/SectionSolution';
 import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
@@ -19,7 +20,8 @@ export default function Solution() {
   return (
     <>
       <EnTetePage
-        surTitre="La solution"
+        image={bandeau}
+        fil="La solution"
         titre="L’opérationnalisation de la RSE au service de la performance"
         sousTitre="Concilier performance économique et maîtrise des impacts durables."
       />

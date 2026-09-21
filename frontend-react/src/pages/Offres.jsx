@@ -1,4 +1,5 @@
 import EnTetePage from '../components/sustway/EnTetePage';
+import bandeau from '../assets/methodologie/engagement-illustration.jpg';
 import SectionOffres from '../components/sustway/SectionOffres';
 import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
@@ -19,8 +20,8 @@ export default function Offres() {
   return (
     <>
       <EnTetePage
-        fond="sable"
-        surTitre="Offres"
+        image={bandeau}
+        fil="Offres"
         titre="Une approche adaptée à chaque organisation"
         sousTitre="Trois niveaux de service, du cadrage d’une première démarche au déploiement multi-entités."
       />

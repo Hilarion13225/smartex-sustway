@@ -1,44 +1,89 @@
-import clsx from 'clsx';
+import { Link } from 'react-router-dom';
 
 /*
- * Bandeau de titre des pages intérieures.
+ * Bandeau de titre des pages intérieures : photographie en fond, voile Forest,
+ * titre centré et fil d'Ariane.
  *
- * Il porte le seul `h1` de la page. Les sections qui suivent ouvrent donc en
- * `h2` : deux titres de niveau 1 sur une même page désorientent un lecteur
+ * Même forme que les bandeaux des pages antérieures (Méthodologie, Formules,
+ * Déploiement), pour que le site n'ouvre pas ses pages de deux façons selon
+ * l'époque à laquelle elles ont été écrites. Seule la teinte du voile change :
+ * elle suit la palette de l'enveloppe, donc le vert de la charte ici.
+ *
+ * Le bandeau porte le seul `h1` de la page. Les sections qui suivent ouvrent
+ * en `h2` : deux titres de niveau 1 sur une même page désorientent un lecteur
  * d'écran, qui s'en sert pour savoir de quoi la page parle.
  *
- * Pas d'image de fond, pas de fil d'Ariane : la barre de navigation marque
- * déjà la page courante, et une photographie posée derrière le titre ferait
- * exactement ce que la charte écarte — décorer au lieu de situer. Le bandeau
- * se distingue du contenu par sa seule plage de couleur.
+ * Le sous-titre est posé sous le bandeau, sur fond clair, et non par-dessus la
+ * photographie : trois niveaux de texte empilés sur une image deviennent
+ * illisibles dès que celle-ci est chargée, et le voile devrait être assombri
+ * au point de rendre la photographie inutile.
  */
-export default function EnTetePage({ surTitre, titre, sousTitre, fond = 'mist', children }) {
+export default function EnTetePage({ titre, sousTitre, image, fil, children }) {
   return (
-    <section
-      className={clsx(
-        'border-b border-ink-200',
-        fond === 'sable' ? 'bg-sable' : 'bg-ink-50'
-      )}
-    >
-      <div className="mx-auto w-full max-w-[1200px] px-5 py-16 sm:px-8 lg:py-20">
-        <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-600">{surTitre}</p>
+    <>
+      <section className="relative isolate overflow-hidden bg-forest text-white">
         {/*
-         * `text-balance` : sur un titre de deux lignes, il évite le mot seul
-         * abandonné sur la seconde.
+         * `alt` vide et `aria-hidden` sur le voile : la photographie illustre,
+         * elle n'informe pas. La décrire ferait entendre « poignée de main »
+         * avant le titre de la page, ce qui retarde l'information utile.
          *
-         * `hyphens-auto` : « L'opérationnalisation » dépasse à lui seul la
-         * largeur d'un écran de 320 px, et poussait la page à 329 px — mesuré
-         * au navigateur. La césure automatique le coupe proprement ; elle
-         * suppose la langue déclarée, ce que fait `<html lang="fr">`.
+         * `eager` et `fetchPriority="high"` : c'est le plus grand élément
+         * visible à l'ouverture, donc celui que mesure le navigateur pour le
+         * temps d'affichage du contenu principal. Le charger paresseusement
+         * le retarderait au lieu de l'accélérer.
          */}
-        <h1 className="mt-5 max-w-4xl text-balance hyphens-auto break-words text-[32px] font-bold leading-[1.12] tracking-[-0.025em] text-forest sm:text-[42px] lg:text-[48px]">
-          {titre}
-        </h1>
-        {sousTitre ? (
-          <p className="mt-5 max-w-3xl text-[17px] leading-relaxed text-ink-600 sm:text-lg">{sousTitre}</p>
-        ) : null}
-        {children}
-      </div>
-    </section>
+        <img
+          src={image}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
+        {/* Voile à 76 % : mesuré, le texte blanc y garde plus de 10:1 sur les
+            zones claires des photographies employées. En dessous, une zone de
+            ciel ou de mur blanc faisait tomber le titre sous le seuil. */}
+        <div aria-hidden className="absolute inset-0 bg-forest/[0.76]" />
+
+        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-20 text-center sm:px-8 sm:py-28">
+          {/* `hyphens-auto` : « L'opérationnalisation » dépasse à lui seul la
+              largeur d'un écran de 320 px. */}
+          <h1 className="mx-auto max-w-4xl text-balance hyphens-auto break-words text-[30px] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-[40px] lg:text-[46px]">
+            {titre}
+          </h1>
+
+          <nav aria-label="Fil d’Ariane" className="mt-5">
+            <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[15px] text-white/80">
+              <li>
+                <Link
+                  to="/accueil"
+                  className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest"
+                >
+                  Accueil
+                </Link>
+              </li>
+              <li aria-hidden className="text-white/45">
+                —
+              </li>
+              <li aria-current="page" className="font-semibold text-white">
+                {fil ?? titre}
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </section>
+
+      {sousTitre ? (
+        <section className="border-b border-ink-200 bg-surface">
+          <div className="mx-auto w-full max-w-[1200px] px-5 py-10 text-center sm:px-8 lg:py-12">
+            <p className="mx-auto max-w-3xl text-balance text-[17px] leading-relaxed text-ink-600 sm:text-lg">
+              {sousTitre}
+            </p>
+            {children}
+          </div>
+        </section>
+      ) : (
+        children
+      )}
+    </>
   );
 }
