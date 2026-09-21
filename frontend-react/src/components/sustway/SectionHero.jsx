@@ -92,7 +92,7 @@ export default function SectionHero() {
            * Sa taille ne dépend plus de la hauteur de la fenêtre : à ce corps,
            * le héros tient partout sans avoir à s'ajuster.
            */}
-          <h1 className="mt-5 text-[22px] font-semibold leading-[1.25] tracking-[-0.015em] text-white sm:text-[27px] lg:text-[30px]">
+          <h1 className="mt-5 text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white sm:text-[23px] lg:text-[26px]">
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
