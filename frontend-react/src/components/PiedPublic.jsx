@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
+import { LineChart } from 'lucide-react';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
@@ -108,9 +109,14 @@ export default function PiedPublic() {
               <Logo taille="sm" variante="clair" />
             </Link>
             {/* Signature de la charte. Les quatre verbes disent la démarche dans
-                son ordre, et reprennent celui des sections de la page. */}
-            <p className="mt-4 text-[15px] font-semibold tracking-wide text-growth">
-              Structurer · Piloter · Mesurer · Progresser
+                son ordre, et reprennent celui des sections de la page. Posés en
+                petites capitales très espacées, ils se lisent comme une devise
+                plutôt que comme une phrase — c'est l'espacement qui fait la
+                différence, pas la taille. */}
+            <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-growth">
+              Structurer <span aria-hidden className="text-growth/50">•</span> Piloter{' '}
+              <span aria-hidden className="text-growth/50">•</span> Mesurer{' '}
+              <span aria-hidden className="text-growth/50">•</span> Progresser
             </p>
             <p className="mt-3 text-base leading-relaxed text-white/70">
               Une solution de {SMARTEX.editeur} pour structurer, piloter et mesurer la performance RSE, ESG et
@@ -148,11 +154,16 @@ export default function PiedPublic() {
           {/* Deux colonnes sur téléphone, quatre à partir de 640 px : à quatre
               de front sur un écran de 360 px, « Politique de confidentialité »
               passerait sur quatre lignes. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:col-span-3">
+          {/* Pas de `col-span` ici : la grille parente n'a que deux colonnes —
+              le bloc de marque et celui-ci. Un `lg:col-span-3` hérité de la
+              grille à quatre colonnes précédente débordait, ce qui renvoyait
+              tout le bloc à la ligne suivante et laissait la moitié droite du
+              pied de page vide. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
-                <h2 className="text-sm font-semibold text-white/55">{colonne.titre}</h2>
-                <ul className="mt-3">
+                <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
+                <ul className="mt-4">
                   {colonne.liens.map((lien) => (
                     <li key={lien.vers ?? lien.href}>
                       {/* 44 px de haut sur téléphone : une liste de liens serrés
@@ -184,9 +195,34 @@ export default function PiedPublic() {
         </div>
 
         {/* Barre inférieure */}
-        <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-white/55 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 lg:flex-row lg:items-center lg:justify-between">
           <p>
             © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
+          </p>
+
+          {/*
+           * La chaîne de valeur du produit, en clair.
+           *
+           * C'est la phrase que la charte pose comme critère final : données,
+           * mesure, objectifs, actions, progrès, impact. Le pied de page est le
+           * dernier endroit où elle peut être lue, et elle y résume en une
+           * ligne ce que les cinq pages ont détaillé.
+           *
+           * Les flèches sont masquées à l'assistance et remplacées par un
+           * libellé unique : entendre « flèche » cinq fois de suite n'apprend
+           * rien de la progression qu'elles dessinent.
+           */}
+          <p className="flex items-center gap-2 text-[13px] text-white/70">
+            <LineChart className="h-4 w-4 shrink-0 text-growth" strokeWidth={1.75} aria-hidden />
+            <span className="sr-only">Chaîne de valeur : des données à l’impact, par la mesure, les objectifs, les actions et les progrès.</span>
+            <span aria-hidden className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+              {['Données', 'Mesure', 'Objectifs', 'Actions', 'Progrès', 'Impact'].map((etape, index) => (
+                <span key={etape} className="flex items-center gap-1.5">
+                  {index > 0 ? <span className="text-white/35">→</span> : null}
+                  {etape}
+                </span>
+              ))}
+            </span>
           </p>
           <ul className="flex items-center gap-2">
             {RESEAUX_SOCIAUX.map((reseau) => (
