@@ -219,51 +219,14 @@ export default function EnTetePublic({ surFondSombre = false }) {
       <div className="mx-auto flex h-[72px] max-w-[90rem] items-center gap-4 px-5 sm:px-8">
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" variante={surSombre ? 'clair' : 'sombre'} />
-          {/*
-           * Le logotype de l'éditeur, en deux versions.
-           *
-           * Le fichier fourni porte un lettrage blanc : il ne se lit que sur
-           * un fond sombre, et disparaissait entièrement dès que la barre
-           * prenait son fond blanc. La seconde version n'en change que le
-           * lettrage, passé à l'encre ; l'emblème garde ses rouges et ses
-           * bleus, qui se lisent sur les deux fonds.
-           *
-           * Les deux sont posées l'une sur l'autre et se croisent en opacité,
-           * plutôt qu'une seule dont on changerait la source : mesuré au
-           * navigateur, une bascule de `src` relançait un chargement à chaque
-           * passage, et le logotype disparaissait le temps qu'il aboutisse.
-           * Superposées, elles sont toutes deux déjà là — douze kilo-octets à
-           * elles deux — et le passage de l'une à l'autre est instantané.
-           *
-           * `alt` vide : le lien qui les entoure porte déjà son propre libellé,
-           * qui décrit la destination. Un texte de remplacement ici ferait
-           * entendre deux noms pour un seul lien.
-           *
-           * `width` et `height` déclarés : la place est réservée avant que les
-           * fichiers n'arrivent, sinon le logotype au-dessus sursaute au
-           * premier affichage.
-           */}
-          {/* 22 px de haut, soit 129 de large. Le lettrage n'occupe qu'un
-              tiers de la hauteur du fichier : à 15 px, il tombait sous six
-              pixels et n'était plus lisible. */}
-          <span className="relative mt-1.5 hidden h-[22px] w-[129px] md:block">
-            {[
-              { src: logoEditeurEncre, actif: !surSombre },
-              { src: logoEditeurBlanc, actif: surSombre },
-            ].map((version) => (
-              <img
-                key={version.src}
-                src={version.src}
-                alt=""
-                width={300}
-                height={51}
-                className={clsx(
-                  'absolute inset-0 h-full w-auto transition-opacity duration-300 motion-reduce:transition-none',
-                  version.actif ? 'opacity-100' : 'opacity-0'
-                )}
-              />
-            ))}
-          </span>
+          <p
+            className={clsx(
+              'mt-0.5 hidden whitespace-nowrap text-xs transition-colors md:block',
+              surSombre ? 'text-white/70' : 'text-ink-500'
+            )}
+          >
+            By SMARTEX Expertises
+          </p>
         </Link>
 
         <nav
@@ -301,10 +264,55 @@ export default function EnTetePublic({ surFondSombre = false }) {
           </Link>
           <Link
             to={ACTION.vers}
-            className="flex h-10 items-center rounded-[4px] bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
+            className="flex h-10 items-center rounded-lg bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
           >
             {ACTION.libelle}
           </Link>
+
+          {/*
+           * Le logotype de l'éditeur, en deux versions.
+           *
+           * Le fichier fourni porte un lettrage blanc : il ne se lit que sur un
+           * fond sombre, et disparaissait dès que la barre prenait son fond
+           * blanc. La seconde version n'en change que le lettrage, passé à
+           * l'encre ; l'emblème garde ses rouges et ses bleus, qui se lisent
+           * sur les deux fonds.
+           *
+           * Les deux sont posées l'une sur l'autre et se croisent en opacité,
+           * plutôt qu'une seule dont on changerait la source : mesuré au
+           * navigateur, une bascule de `src` relançait un chargement à chaque
+           * passage, et le logotype disparaissait le temps qu'il aboutisse.
+           *
+           * `alt` renseigné, contrairement à la version précédente : posé ici,
+           * le logotype n'est plus dans le lien de la marque et porte seul son
+           * information — le site est édité par SMARTEX Expertises.
+           *
+           * Un filet le sépare des actions : sans lui, il se lisait comme un
+           * quatrième bouton de la barre.
+           */}
+          <span className="ml-1 hidden h-9 border-l border-current/15 pl-4 min-[1380px]:flex min-[1380px]:items-center">
+            {/* 28 px de haut, soit 165 de large. Le lettrage n'occupe qu'un
+                tiers de la hauteur du fichier : à 22 px il tombait sous sept
+                pixels, et dix-huit caractères s'y écrasaient. */}
+            <span className="relative block h-[28px] w-[165px]">
+              {[
+                { src: logoEditeurEncre, actif: !surSombre },
+                { src: logoEditeurBlanc, actif: surSombre },
+              ].map((version) => (
+                <img
+                  key={version.src}
+                  src={version.src}
+                  alt={version.actif ? 'Édité par SMARTEX Expertises' : ''}
+                  width={300}
+                  height={51}
+                  className={clsx(
+                    'absolute inset-0 h-full w-auto transition-opacity duration-300 motion-reduce:transition-none',
+                    version.actif ? 'opacity-100' : 'opacity-0'
+                  )}
+                />
+              ))}
+            </span>
+          </span>
         </div>
 
         {/* Sous 1200 px : le logo, l'appel à l'action dès que la place le
