@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import FondTech from '../FondTech';
+import Embleme from '../Embleme';
 import Bouton from './Bouton';
 import { Apparition } from './Section';
 
@@ -51,6 +52,11 @@ export default function SectionHero() {
        */}
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
         <Apparition className="mx-auto max-w-3xl text-center">
+          {/* L'emblème, repris de la page d'entrée. Bien plus petit qu'elle ne
+              l'affiche : posé au-dessus du titre, il doit laisser la place au
+              texte et aux boutons dans une fenêtre. */}
+          <Embleme compact largeur="max-w-[210px] sm:max-w-[260px] lg:max-w-[300px]" />
+
           {/*
            * La marque passe devant, en plus grand que le titre.
            *
@@ -59,7 +65,7 @@ export default function SectionHero() {
            * interlettrage large se règle pour un texte de treize pixels, pas
            * de quarante.
            */}
-          <p className="text-[30px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[38px] lg:text-[46px]">
+          <p className="mt-2 text-[30px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[38px] lg:text-[46px]">
             SMARTEX SustWay
           </p>
 
