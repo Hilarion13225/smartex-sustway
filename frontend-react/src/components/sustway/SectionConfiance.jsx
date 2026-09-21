@@ -10,14 +10,13 @@ import { ORGANISATIONS } from '../../config/organisations';
  * partenaires inventés, et cinq références vraies valent mieux que vingt dont
  * on ne pourrait produire aucune.
  *
- * Les logos sont en gris au repos et reprennent leurs couleurs au survol :
- * cinq logotypes de cinq marques différentes apportent cinq palettes qui se
- * disputeraient la page entre le héros et le parcours.
+ * Les logos gardent leurs couleurs au repos et passent en niveaux de gris au
+ * survol. Une référence se lit d'abord telle que la marque se présente ; le
+ * gris marque alors le passage du pointeur sans rien ajouter à la page.
  *
- * En gris, mais à pleine opacité. Le voile de 30 % que portait la première
- * version les effaçait : un logotype déjà clair en niveaux de gris, comme
- * celui de SIFCA, devenait un fantôme, et une référence qu'on ne lit pas ne
- * sert à rien. Le survol ne rend donc que la couleur, pas la densité.
+ * L'opacité, elle, ne bouge pas. Le voile de 30 % que portait la première
+ * version effaçait un logotype déjà clair comme celui de SIFCA, et une
+ * référence qu'on ne lit pas ne sert à rien.
  */
 export default function SectionConfiance() {
   return (
@@ -49,7 +48,7 @@ export default function SectionConfiance() {
                    fait que 124, et une largeur maximale de 170 px poussait la
                    page à 323 px — un défilement horizontal de trois pixels,
                    invisible à l'œil mais bien réel au doigt. */
-                className={`w-auto max-w-full object-contain grayscale transition duration-300 hover:grayscale-0 motion-reduce:transition-none sm:max-w-[170px] ${organisation.hauteurAccueil}`}
+                className={`w-auto max-w-full object-contain transition duration-300 hover:grayscale motion-reduce:transition-none sm:max-w-[170px] ${organisation.hauteurAccueil}`}
               />
             </li>
           </Apparition>
