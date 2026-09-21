@@ -66,8 +66,8 @@ export default function LayoutPublic() {
    * Deux régimes de mise en page.
    *
    * Les cinq pages de la charte prennent `sustway` : leur palette, leur
-   * typographie à une seule famille, et pas de bandeau des référentiels,
-   * chacune finissant déjà par un appel à l'action.
+   * typographie à une seule famille, et pas de bandeau des référentiels — le
+   * pied de page porte les appels à l'action de fin de lecture.
    *
    * Les autres pages publiques gardent `vitrine`, qui porte en plus les règles
    * de forme du design « Registre de preuves » (voir index.css) : rayons

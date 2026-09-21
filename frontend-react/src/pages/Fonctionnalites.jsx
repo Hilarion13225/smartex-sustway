@@ -1,7 +1,6 @@
 import EnTetePage from '../components/sustway/EnTetePage';
 import bandeau from '../assets/methodologie/avantages-illustration.jpg';
 import SectionFonctionnalites from '../components/sustway/SectionFonctionnalites';
-import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -24,7 +23,6 @@ export default function Fonctionnalites() {
         sousTitre="Évaluer, agir, mesurer : trois domaines qui se suivent, et les écrans qui les portent."
       />
       <SectionFonctionnalites />
-      <SectionCtaFinal />
     </>
   );
 }

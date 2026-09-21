@@ -82,7 +82,7 @@ export default function BandeauReferentiels() {
   return (
     <div
       ref={cadre}
-      className="bandeau-arret fixed inset-x-0 bottom-0 z-40 flex items-center overflow-hidden bg-vert-profond py-3.5"
+      className="bandeau-arret fixed inset-x-0 bottom-0 z-30 flex items-center overflow-hidden bg-vert-profond py-3.5"
     >
       <div className="bandeau-defile flex min-w-max" data-pause={enPause ? 'true' : 'false'}>
         <Suite />

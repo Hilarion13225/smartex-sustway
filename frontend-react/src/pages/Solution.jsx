@@ -1,5 +1,4 @@
 import SectionSolution from '../components/sustway/SectionSolution';
-import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -21,10 +20,5 @@ export default function Solution() {
     'L’opérationnalisation de la RSE au service de la performance : diagnostiquer, structurer, piloter, optimiser et mesurer votre démarche RSE, ESG et développement durable.'
   );
 
-  return (
-    <>
-      <SectionSolution />
-      <SectionCtaFinal />
-    </>
-  );
+  return <SectionSolution />;
 }

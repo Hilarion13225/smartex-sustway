@@ -11,9 +11,6 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
  * Elle s'arrête là. Les quatre parties du site sont atteintes par la barre de
  * navigation, présente en permanence, et les trois actions du héros ouvrent
  * déjà les chemins qui comptent — la solution, les formules, la démonstration.
- * L'appel à l'action final reste en bas des quatre pages intérieures, où il
- * conclut une lecture ; ici, il aurait suivi un héros qui vient de proposer la
- * même chose.
  * Solution, Fonctionnalités, Offres et Ressources ont chacune leur page ;
  * l'accueil les annonce et y renvoie, sans reprendre leur contenu — le
  * visiteur qui suit le parcours dans l'ordre ne doit rien lire deux fois.

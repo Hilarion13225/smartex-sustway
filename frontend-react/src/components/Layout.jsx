@@ -14,6 +14,7 @@ import {
   Target,
   Trophy,
   UserCog,
+  Users,
   X,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -64,13 +65,25 @@ const GROUPES_AUDIT = [
     ],
   },
   {
-    titre: 'Parcours d’audit',
+    // « Supervision » plutôt que « Parcours d'audit » : ce groupe réunit
+    // désormais les deux entrées de portée plateforme — les organisations et
+    // les comptes — là où le nom précédent n'annonçait qu'un parcours.
+    titre: 'Supervision',
     liens: [
       {
         vers: '/app/entreprises',
         libelle: 'Organisations',
         icone: Building2,
         description: 'Le portefeuille. Tout ce qui concerne une organisation s’ouvre depuis sa fiche.',
+      },
+      {
+        // Recense les comptes de toutes les organisations. Distincte de
+        // `:entrepriseId/utilisateurs`, qui administre les membres d'une
+        // organisation : deux portées, pas un doublon.
+        vers: '/app/utilisateurs',
+        libelle: 'Utilisateurs',
+        icone: Users,
+        description: 'Tous les comptes de la plateforme, leur organisation et leur rôle.',
       },
       {
         // Un projet traverse les organisations : il n'a pas d'entreprise de

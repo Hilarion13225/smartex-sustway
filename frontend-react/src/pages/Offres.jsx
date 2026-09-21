@@ -1,7 +1,6 @@
 import EnTetePage from '../components/sustway/EnTetePage';
 import bandeau from '../assets/methodologie/engagement-illustration.jpg';
 import SectionOffres from '../components/sustway/SectionOffres';
-import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -25,7 +24,6 @@ export default function Offres() {
         sousTitre="SMARTEX SustWay s’adapte à la taille et à la complexité de votre organisation. Choisissez le niveau de déploiement qui correspond à vos besoins."
       />
       <SectionOffres />
-      <SectionCtaFinal />
     </>
   );
 }

@@ -1,7 +1,6 @@
 import EnTetePage from '../components/sustway/EnTetePage';
 import bandeau from '../assets/methodologie/engagement-diagnostic.jpg';
 import SectionRessources from '../components/sustway/SectionRessources';
-import SectionCtaFinal from '../components/sustway/SectionCtaFinal';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -26,7 +25,6 @@ export default function Ressources() {
         sousTitre="Ce qui aide à comprendre la démarche RSE et ESG, à s’y former et à s’y préparer."
       />
       <SectionRessources />
-      <SectionCtaFinal />
     </>
   );
 }

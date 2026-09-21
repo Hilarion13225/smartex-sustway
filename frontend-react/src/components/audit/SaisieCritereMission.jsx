@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Landmark, ListChecks } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Landmark } from 'lucide-react';
 import EnTeteDomaine from './EnTeteDomaine';
 import ListeCriteres from './ListeCriteres';
 import NavigationCritere from './NavigationCritere';
@@ -368,25 +367,11 @@ export default function SaisieCritereMission({
             surSuivant={() => allerA(indice + 1)}
           />
 
-          {/* La saisie va vite d'un critère au suivant ; la fiche détaillée
-              dit ce que l'IA a relevé pièce par pièce — éléments observés,
-              manquants, non vérifiables — et l'historique des évaluations.
-              Elle n'était atteignable que depuis l'onglet des analyses, où
-              personne ne la cherchait. Le critère courant est passé dans
-              l'état de navigation : la fiche s'ouvre sans attendre un
-              rechargement. */}
-          {critere ? (
-            <div className="flex justify-end">
-              <Link
-                to={`/app/${entrepriseId}/audits/${auditId}/criteres/${critere.id}`}
-                state={{ critere }}
-                className="btn-ghost text-sm"
-              >
-                <ListChecks className="h-4 w-4" aria-hidden />
-                Ouvrir la fiche détaillée de {critere.critereCode}
-              </Link>
-            </div>
-          ) : null}
+          {/* Le raccourci « Ouvrir la fiche détaillée » a été retiré à votre
+              demande. La fiche existe toujours, à la même adresse, mais elle
+              n'est plus atteignable que depuis l'onglet « Analyses IA »
+              (VoletAnalysesIa) — c'était déjà son seul accès avant qu'on
+              ajoute ce raccourci ici. */}
 
           {exclusion ? (
             <Alerte ton="neutre">

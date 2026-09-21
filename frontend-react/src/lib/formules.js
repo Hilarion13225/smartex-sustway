@@ -76,9 +76,13 @@ export const POINTS_CLAIRS = {
     'L’IA lit vos documents et note chaque critère',
     'Un rapport clair de vos résultats',
   ],
+  // « Un expert vérifie vos résultats » a été retiré : le produit ne le fait
+  // pas. Aucun mécanisme n'achemine un critère vers un évaluateur Smartex, et
+  // la permission de valider une évaluation ne distingue pas les formules —
+  // en Standard comme en Avancées, c'est le responsable de l'organisation
+  // auditée qui entérine ses propres résultats (migration V72).
   AVANCEES: [
     'L’IA repère aussi vos risques et vous conseille',
-    'Un expert vérifie vos résultats',
     'Un rapport détaillé, domaine par domaine',
     'Votre niveau de préparation aux financements verts',
   ],
@@ -130,9 +134,12 @@ export const FORMULE_ENTREPRISE = {
 
 /**
  * Comparatif. Les lignes s'appuient sur les descriptions réelles des formules
- * (pipeline IA, revue experte, rapport, indice financements verts) — voir le
- * document de cadrage et la table `formule_abonnement`. Les deux dernières
- * lignes relèvent de l'offre sur mesure et n'ont pas d'équivalent en base.
+ * (pipeline IA, rapport, indice financements verts) — voir le document de
+ * cadrage et la table `formule_abonnement`. Les deux dernières lignes
+ * relèvent de l'offre sur mesure et n'ont pas d'équivalent en base.
+ *
+ * Ces données ne sont plus affichées : la section « Les formules, ligne par
+ * ligne » a été retirée de la page. Elles restent ici, prêtes à se rebrancher.
  */
 export const COMPARATIF = [
   { libelle: 'Questionnaire RSE & ESG adapté au secteur', STANDARD: true, AVANCEES: true, ENTREPRISE: true },
@@ -142,7 +149,11 @@ export const COMPARATIF = [
     AVANCEES: 'Complète (+ Risque, Recommandation)',
     ENTREPRISE: 'Sur mesure',
   },
-  { libelle: 'Revue experte', STANDARD: false, AVANCEES: true, ENTREPRISE: true },
+  // La ligne « Revue experte » a été retirée avec la mention « Un expert
+  // vérifie vos résultats » : le produit ne relit pas les verdicts de l'IA.
+  // La permission de valider une évaluation ne distingue pas les formules, et
+  // c'est le responsable de l'organisation auditée qui entérine ses propres
+  // résultats, en Standard comme en Avancées (migration V72).
   { libelle: 'Rapport d’évaluation', STANDARD: 'Simple', AVANCEES: 'Détaillé', ENTREPRISE: 'Détaillé' },
   { libelle: 'Indice de préparation aux financements verts', STANDARD: false, AVANCEES: true, ENTREPRISE: true },
   { libelle: 'Accompagnement et formation des équipes', STANDARD: false, AVANCEES: false, ENTREPRISE: true },
