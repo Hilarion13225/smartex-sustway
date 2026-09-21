@@ -34,15 +34,15 @@ function Carte({ pilier, visible, delai }) {
   return (
     <div
       style={visible ? { transitionDelay: `${delai}ms` } : undefined}
-      className={`flex h-full flex-col justify-center rounded-2xl border border-ink-200 bg-surface px-4 py-4 text-center transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
+      className={`flex h-full flex-col justify-center rounded-2xl border border-ink-200 bg-surface px-4 py-3 text-center transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0 motion-reduce:translate-y-0 motion-reduce:opacity-100'
       }`}
     >
       <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
         <Icone className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
       </span>
-      <p className="mt-3 text-[13px] font-bold uppercase tracking-[0.1em] text-forest">{pilier.titre}</p>
-      <p className="mt-1.5 text-[13px] leading-snug text-ink-500">{pilier.detail}</p>
+      <p className="mt-2 text-[13px] font-bold uppercase tracking-[0.1em] text-forest">{pilier.titre}</p>
+      <p className="mt-1 text-[13px] leading-snug text-ink-500">{pilier.detail}</p>
     </div>
   );
 }
@@ -51,13 +51,13 @@ export default function SchemaPiliers() {
   const { reference, visible } = useApparition({ seuil: 0.2 });
 
   return (
-    <div ref={reference} className="rounded-2xl bg-ink-50 p-5 sm:p-7">
+    <div ref={reference} className="rounded-2xl bg-ink-50 p-5 sm:p-6">
       {/*
        * Placement explicite en colonnes et lignes, et non par remplissage
        * automatique : le centre doit tomber entre Piloter et Optimiser, sur la
        * ligne du milieu, ce que l'ordre du DOM seul ne garantit pas.
        */}
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-stretch md:gap-x-4">
+      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] md:items-stretch md:gap-x-4">
         {/* Structurer, en haut, au-dessus du centre. */}
         <div className="md:col-start-2 md:row-start-1 md:w-[190px]">
           <Carte pilier={PILIERS.structurer} visible={visible} delai={0} />
@@ -83,7 +83,7 @@ export default function SchemaPiliers() {
         <div className="md:col-start-2 md:row-start-3 md:w-[190px]">
           <div
             style={visible ? { transitionDelay: '220ms' } : undefined}
-            className={`flex h-full flex-col items-center justify-center rounded-2xl bg-forest px-4 py-5 text-center text-white transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
+            className={`flex h-full flex-col items-center justify-center rounded-2xl bg-forest px-4 py-4 text-center text-white transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none ${
               visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0 motion-reduce:scale-100 motion-reduce:opacity-100'
             }`}
           >
@@ -106,7 +106,7 @@ export default function SchemaPiliers() {
        */}
       <div
         aria-hidden
-        className={`mt-5 hidden transition-opacity duration-700 md:block ${visible ? 'opacity-100' : 'opacity-0'}`}
+        className={`mt-4 hidden transition-opacity duration-700 md:block ${visible ? 'opacity-100' : 'opacity-0'}`}
       >
         <svg viewBox="0 0 400 24" className="h-6 w-full" preserveAspectRatio="none">
           <path
@@ -120,7 +120,7 @@ export default function SchemaPiliers() {
         </svg>
       </div>
 
-      <p className="mt-3 flex items-center justify-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+      <p className="mt-2 flex items-center justify-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-500">
         <RefreshCw className="h-3.5 w-3.5 text-brand-600" strokeWidth={2} aria-hidden />
         Amélioration continue
       </p>

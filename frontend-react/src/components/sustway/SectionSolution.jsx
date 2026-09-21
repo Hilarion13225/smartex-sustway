@@ -76,58 +76,51 @@ export default function SectionSolution() {
     <>
       {/* --- A. Presentation -------------------------------------------- */}
       {/*
-       * La colonne de gauche porte le titre, le paragraphe puis les trois
-       * piliers ; celle de droite le schema. Les cartes etaient auparavant en
-       * rang sous les deux colonnes, ce qui laissait un vide sous le
-       * paragraphe : elles remplissent desormais ce vide.
+       * Titre et paragraphe a gauche, schema a droite, les trois piliers en
+       * rang sous les deux.
        *
-       * Empilees dans une seule colonne, elles passent en format horizontal —
-       * icone a gauche, titre et texte a droite. Trois cartes verticales
-       * cote a cote y seraient trop etroites, et empilees en format vertical
-       * elles depasseraient de loin la hauteur du schema.
+       * Les cartes ont tenu un temps dans la colonne de gauche, empilees, pour
+       * combler le vide sous le paragraphe. Cette colonne montait alors a
+       * 721 px et la section ne tenait plus dans une fenetre — or c'est elle
+       * qui prime. En rang, chacune en format vertical, la section retombe
+       * sous la hauteur d'un ecran.
        *
-       * `items-start` cale les deux colonnes en haut, mais le schema fait
-       * 489 px contre 721 px pour le texte et ses cartes : `lg:self-center`
-       * l'y recentre, ce qui repartit ce creux de 232 px de part et d'autre au
-       * lieu de le laisser tomber entier sous le schema.
+       * `items-start`, et pas de recentrage vertical du schema : il se cale en
+       * haut, face au titre, ce qui raccourcit d'autant la section.
        */}
-      <Section id="presentation" fond="blanc" pleineHauteur contenuClassName="lg:py-12">
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
-          <div className="min-w-0">
-            <Apparition>
-              <TitreBloc
-                niveau={1}
-                surTitre="Présentation"
-                className="mb-0"
-                sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
-              >
-                L’opérationnalisation de la RSE au service de la performance
-              </TitreBloc>
-            </Apparition>
+      <Section id="presentation" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
+          <Apparition>
+            <TitreBloc
+              niveau={1}
+              surTitre="Présentation"
+              className="mb-0"
+              sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
+            >
+              L’opérationnalisation de la RSE au service de la performance
+            </TitreBloc>
+          </Apparition>
 
-            <div className="mt-10 space-y-4">
-              {DOMAINES.map((domaine, index) => {
-                const Icone = domaine.icone;
-                return (
-                  <Apparition key={domaine.titre} delai={index * 110}>
-                    <div className="flex items-start gap-4 rounded-2xl border border-ink-200 bg-surface p-5">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                        <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="text-[19px] font-semibold text-forest">{domaine.titre}</h3>
-                        <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
-                      </div>
-                    </div>
-                  </Apparition>
-                );
-              })}
-            </div>
-          </div>
-
-          <Apparition delai={120} className="min-w-0 lg:self-center">
+          <Apparition delai={120} className="min-w-0">
             <SchemaPiliers />
           </Apparition>
+        </div>
+
+        <div className="mt-6 grid gap-5 md:grid-cols-3">
+          {DOMAINES.map((domaine, index) => {
+            const Icone = domaine.icone;
+            return (
+              <Apparition key={domaine.titre} delai={index * 110}>
+                <div className="h-full rounded-2xl border border-ink-200 bg-surface p-4">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                    <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <h3 className="mt-3 text-[19px] font-semibold text-forest">{domaine.titre}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
+                </div>
+              </Apparition>
+            );
+          })}
         </div>
       </Section>
 
