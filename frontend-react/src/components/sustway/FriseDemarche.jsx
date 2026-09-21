@@ -21,11 +21,36 @@ import { useApparition } from './useApparition';
  * cascades selon la vitesse de défilement.
  */
 const ETAPES = [
-  { numero: '01', titre: 'Diagnostiquer', texte: 'Évaluer les écarts.', icone: Search },
-  { numero: '02', titre: 'Structurer', texte: 'Définir le cadre.', icone: Layers },
-  { numero: '03', titre: 'Piloter', texte: 'Suivre les données.', icone: LineChart },
-  { numero: '04', titre: 'Optimiser', texte: 'Améliorer les actions.', icone: RefreshCw },
-  { numero: '05', titre: 'Mesurer', texte: 'Mesurer les progrès.', icone: BarChart3 },
+  {
+    numero: '01',
+    titre: 'Diagnostic',
+    texte: 'Évaluer la situation actuelle et identifier les principaux enjeux et écarts.',
+    icone: Search,
+  },
+  {
+    numero: '02',
+    titre: 'Structuration',
+    texte: 'Organiser les données, définir les objectifs, les indicateurs et les priorités.',
+    icone: Layers,
+  },
+  {
+    numero: '03',
+    titre: 'Pilotage',
+    texte: 'Transformer les objectifs en actions et suivre leur réalisation.',
+    icone: LineChart,
+  },
+  {
+    numero: '04',
+    titre: 'Optimisation',
+    texte: 'Identifier les écarts, ajuster les actions et améliorer les pratiques.',
+    icone: RefreshCw,
+  },
+  {
+    numero: '05',
+    titre: 'Performance durable',
+    texte: 'Mesurer les progrès et inscrire l’amélioration dans la durée.',
+    icone: BarChart3,
+  },
 ];
 
 /*

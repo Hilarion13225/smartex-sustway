@@ -1,40 +1,50 @@
-import { BarChart3, ClipboardList, FileText, Gauge, Layers, LineChart, TrendingUp } from 'lucide-react';
+import { Gauge, Layers, TrendingUp } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
+import SchemaPerformance from './SchemaPerformance';
 
 /*
- * Corps de la page « Solution » : la méthodologie, en cinq temps puis en trois
- * domaines, et ce qu'elle produit.
+ * Corps de la page « Solution », en trois temps.
  *
- * La page répond à une question précise — comment le produit s'y prend — et
- * s'arrête là. Les écrans qui exécutent cette méthodologie sont le sujet de la
- * page « Fonctionnalités », vers laquelle celle-ci renvoie sans en montrer le
- * contenu.
+ * Presentation dit ce que fait la demarche, Notre approche comment elle s'y
+ * prend, Performance durable ce qu'elle concilie. Chacune porte une ancre —
+ * `#presentation`, `#notre-approche`, `#performance-durable` — que le menu
+ * deroulant de la barre de navigation vise directement.
  *
- * Le titre de la page est porté par son bandeau ; les trois blocs ci-dessous
- * ouvrent donc en `h2`, et leurs entrées en `h3`.
+ * Trois sections d'une meme page plutot que trois pages : elles se lisent a la
+ * suite, et le lecteur qui arrive par le menu atterrit au bon endroit sans
+ * perdre le fil de ce qui precede.
+ *
+ * Le titre de la page porte le `h1` ; ces trois-la ouvrent donc en `h2`.
  */
 const DOMAINES = [
-  { titre: 'Structurer', icone: Layers, elements: ['Référentiels', 'Objectifs', 'Indicateurs'] },
-  { titre: 'Piloter', icone: Gauge, elements: ['Indicateurs ESG', 'Données', 'Tableaux de bord'] },
-  { titre: 'Optimiser', icone: TrendingUp, elements: ['Plans d’action', 'Écarts', 'Amélioration'] },
+  {
+    titre: 'Structurer',
+    texte: 'Poser un cadre méthodologique clair, adapté à l’organisation et déployé en 5 étapes.',
+    icone: Layers,
+  },
+  {
+    titre: 'Piloter',
+    texte: 'Assurer un suivi dynamique des indicateurs clés sociaux, environnementaux et de gouvernance.',
+    icone: Gauge,
+  },
+  {
+    titre: 'Optimiser',
+    texte: 'Transformer les constats et les écarts en actions concrètes et en création de valeur à long terme.',
+    icone: TrendingUp,
+  },
 ];
 
-const LIVRABLES = [
-  { titre: 'Tableau de bord ESG', icone: BarChart3 },
-  { titre: 'Rapport de durabilité', icone: FileText },
-  { titre: 'Analyse d’impact', icone: LineChart },
-  { titre: 'Plan d’action', icone: ClipboardList },
-  { titre: 'Suivi de progression', icone: TrendingUp },
-];
-
-function TitreBloc({ children, sousTitre }) {
+function TitreBloc({ surTitre, children, sousTitre }) {
   return (
     <div className="mb-10 max-w-3xl">
+      {surTitre ? (
+        <p className="mb-4 text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">{surTitre}</p>
+      ) : null}
       <h2 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
         {children}
       </h2>
-      {sousTitre ? <p className="mt-3 text-[16px] leading-relaxed text-ink-600">{sousTitre}</p> : null}
+      {sousTitre ? <p className="mt-4 text-[16px] leading-relaxed text-ink-600">{sousTitre}</p> : null}
     </div>
   );
 }
@@ -42,20 +52,16 @@ function TitreBloc({ children, sousTitre }) {
 export default function SectionSolution() {
   return (
     <>
-      <Section fond="blanc">
-        <TitreBloc sousTitre="Cinq temps qui s’enchaînent, du constat initial à la mesure des progrès.">
-          La démarche en cinq temps
+      {/* --- A. Presentation -------------------------------------------- */}
+      <Section id="presentation" fond="blanc">
+        <TitreBloc
+          surTitre="Présentation"
+          sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
+        >
+          Trois mouvements, une même démarche
         </TitreBloc>
 
-        <FriseDemarche />
-      </Section>
-
-      <Section fond="mist">
-        <TitreBloc sousTitre="Ce que la plateforme couvre, du cadre de référence jusqu’à l’action corrective.">
-          Trois domaines couverts
-        </TitreBloc>
-
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {DOMAINES.map((domaine, index) => {
             const Icone = domaine.icone;
             return (
@@ -65,14 +71,7 @@ export default function SectionSolution() {
                     <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
                   </span>
                   <h3 className="mt-4 text-[20px] font-semibold text-forest">{domaine.titre}</h3>
-                  <ul className="mt-4 space-y-2.5">
-                    {domaine.elements.map((element) => (
-                      <li key={element} className="flex items-center gap-2.5 text-[15px] text-ink-700">
-                        <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-growth" />
-                        {element}
-                      </li>
-                    ))}
-                  </ul>
+                  <p className="mt-3 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
                 </div>
               </Apparition>
             );
@@ -80,26 +79,28 @@ export default function SectionSolution() {
         </div>
       </Section>
 
-      {/* Les livrables, sur le sable de la charte : le changement de fond
-          marque la bascule du discours de méthodologie au discours de résultat. */}
-      <Section fond="sable">
-        <TitreBloc sousTitre="Les productions de la démarche, disponibles à mesure que les données sont saisies.">
-          Ce que vous obtenez
+      {/* --- B. Notre approche ------------------------------------------ */}
+      <Section id="notre-approche" fond="mist">
+        <TitreBloc
+          surTitre="Notre approche"
+          sousTitre="Pour sortir de la stagnation, SMARTEX SustWay déploie une méthode progressive qui intègre les principes ESG au cœur des décisions stratégiques de croissance, tout en recherchant la création de valeur durable et la maîtrise des impacts de l’entreprise."
+        >
+          Une démarche structurée en 5 étapes
         </TitreBloc>
 
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {LIVRABLES.map((livrable, index) => {
-            const Icone = livrable.icone;
-            return (
-              <Apparition key={livrable.titre} delai={index * 70}>
-                <li className="flex h-full items-center gap-3 rounded-xl border border-ink-200 bg-surface px-4 py-4 lg:flex-col lg:items-start lg:gap-3">
-                  <Icone className="h-[18px] w-[18px] shrink-0 text-brand-600" strokeWidth={1.75} aria-hidden />
-                  <span className="text-[14px] font-medium leading-snug text-ink-800">{livrable.titre}</span>
-                </li>
-              </Apparition>
-            );
-          })}
-        </ul>
+        <FriseDemarche />
+      </Section>
+
+      {/* --- C. Performance durable -------------------------------------- */}
+      <Section id="performance-durable" fond="blanc">
+        <TitreBloc
+          surTitre="Performance durable"
+          sousTitre="Maîtrisez vos impacts sociaux et environnementaux sans compromettre votre performance financière, grâce à un pilotage unifié, structuré et transparent."
+        >
+          Concilier rentabilité et responsabilité
+        </TitreBloc>
+
+        <SchemaPerformance />
       </Section>
     </>
   );
