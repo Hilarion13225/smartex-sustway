@@ -192,16 +192,39 @@ export default {
           '0%': { strokeDashoffset: 'var(--longueur, 1000)' },
           '100%': { strokeDashoffset: '0' },
         },
-        // Point qui parcourt le fil de la frise « demarche », de gauche a
-        // droite, puis recommence. `left` plutot que `translateX` : la course
-        // se mesure en pourcentage du fil, or `translateX(100%)` vaut 100 % de
-        // la largeur du point lui-meme, soit dix pixels. Un seul element de
-        // dix pixels est anime ainsi, le cout de mise en page est negligeable.
-        'point-frise': {
+        // Le point qui tourne sur le circuit de la frise « demarche ».
+        //
+        // Deux moities d'un meme tour, sur un cycle identique : l'aller suit le
+        // fil des cinq etapes, le retour suit la boucle de l'amelioration
+        // continue. Chaque moitie est portee par son propre element, le fil et
+        // la boucle n'etant pas le meme trait ; l'une s'efface quand l'autre
+        // s'allume, et l'oeil suit un point unique qui fait le tour.
+        //
+        // Les creux — 48 a 54 % et 98 a 100 % — sont les deux raccords
+        // verticaux du circuit, a droite et a gauche. Le point s'y eteint le
+        // temps de changer de trait, ce qui se lit comme la descente et la
+        // remontee.
+        //
+        // `left` plutot que `translateX` : la course se mesure en pourcentage
+        // du trait, or `translateX(100%)` vaut 100 % de la largeur du point
+        // lui-meme, soit dix pixels. Deux elements de dix pixels sont animes
+        // ainsi, le cout de mise en page est negligeable.
+        'circuit-fil': {
           '0%': { left: '0%', opacity: '0' },
-          '12%': { opacity: '1' },
-          '88%': { opacity: '1' },
+          '4%': { opacity: '1' },
+          '44%': { left: '100%', opacity: '1' },
+          '48%': { left: '100%', opacity: '0' },
           '100%': { left: '100%', opacity: '0' },
+        },
+        // De 90 a 10 % : les abscisses des deux bouts du trace de la boucle,
+        // qui sont les centres du dernier et du premier cercle.
+        'circuit-boucle': {
+          '0%': { left: '90%', opacity: '0' },
+          '50%': { left: '90%', opacity: '0' },
+          '54%': { left: '90%', opacity: '1' },
+          '94%': { left: '10%', opacity: '1' },
+          '98%': { left: '10%', opacity: '0' },
+          '100%': { left: '10%', opacity: '0' },
         },
         // Montee d'une barre de graphique depuis sa base.
         'monte-barre': {
@@ -256,7 +279,11 @@ export default {
         // lire les cinq etapes. Plus court, il agite ; plus long, on ne le voit
         // plus bouger. La courbe est symetrique — il part et s'arrete
         // doucement, sans a-coup au demi-tour de la boucle.
-        'point-frise': 'point-frise 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite',
+        // `linear` et une meme duree pour les deux : un tour regulier. Une
+        // courbe d'acceleration ferait ralentir le point au milieu de chaque
+        // moitie et repartir a chaque raccord, ce qui casse la rotation.
+        'circuit-fil': 'circuit-fil 7s linear infinite',
+        'circuit-boucle': 'circuit-boucle 7s linear infinite',
         'flux-arete': 'flux-arete 4s linear infinite',
         'activation-noeud': 'activation-noeud 3.5s ease-in-out infinite',
         balayage: 'balayage 9s ease-in-out infinite',

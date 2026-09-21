@@ -6,8 +6,9 @@ import { useApparition } from './useApparition';
  *
  * Cinq cartes juxtaposées disaient cinq blocs ; un fil qui se remplit dit un
  * enchaînement, ce qui est le sujet de la section. Les jalons s'allument l'un
- * après l'autre, du gris au vert, le fil se colore de gauche à droite, et un
- * point doré le parcourt ensuite en boucle.
+ * après l'autre, du gris au vert, le fil se colore de gauche à droite, puis un
+ * point doré tourne sans fin sur le circuit : le fil à l'aller, la boucle de
+ * l'amélioration continue au retour.
  *
  * Les trois réglages qui font l'effet de progression sont liés entre eux : le
  * décalage de 140 ms entre deux jalons, les 80 ms de plus avant qu'un cercle
@@ -102,11 +103,12 @@ export default function FriseDemarche() {
           style={{ width: visible ? '100%' : '0%' }}
         />
 
-        {/* Point voyageur. Il ne part qu'une fois le fil rempli : lancé avant,
-            il aurait couru sur du gris. */}
+        {/* Aller du point, sur le fil. Il ne part qu'une fois le fil rempli :
+            lancé avant, il aurait couru sur du gris. Le retour est porté par
+            la boucle, plus bas, sur le même cycle et le même retard. */}
         {visible ? (
           <span
-            className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-attention opacity-0 motion-safe:animate-point-frise"
+            className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-attention opacity-0 motion-safe:animate-circuit-fil"
             style={{ animationDelay: '1800ms' }}
           />
         ) : null}
@@ -220,7 +222,7 @@ export default function FriseDemarche() {
        */}
       <div
         aria-hidden
-        className={`mt-8 hidden transition-opacity duration-700 ease-out motion-reduce:transition-none lg:block ${
+        className={`relative mt-8 hidden transition-opacity duration-700 ease-out motion-reduce:transition-none lg:block ${
           visible ? 'opacity-100' : 'opacity-0'
         }`}
         style={sansAnimation ? undefined : { transitionDelay: '1800ms' }}
@@ -241,6 +243,16 @@ export default function FriseDemarche() {
             vectorEffect="non-scaling-stroke"
           />
         </svg>
+
+        {/* Retour du point, sur la boucle. `bottom-[1px]` le pose sur le trait
+            horizontal du trace, qui court a 22 des 28 unites de hauteur du
+            SVG — soit six pixels du bas, moins les cinq du rayon du point. */}
+        {visible ? (
+          <span
+            className="absolute bottom-[1px] h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-attention opacity-0 motion-safe:animate-circuit-boucle"
+            style={{ animationDelay: '1800ms' }}
+          />
+        ) : null}
       </div>
 
       {/* 1 900 ms : apres le trace, lui-meme pose une fois le fil rempli a
