@@ -19,6 +19,7 @@ const COLONNES = [
   {
     titre: 'Solution',
     liens: [
+      { vers: '/accueil', libelle: 'Accueil' },
       { vers: '/solution', libelle: 'Solution' },
       { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
       { vers: '/offres', libelle: 'Offres' },
@@ -103,7 +104,7 @@ export default function PiedPublic() {
         <div className="grid gap-12 lg:grid-cols-[1.15fr_2fr] lg:gap-14">
           {/* Marque et lettre d'information */}
           <div className="max-w-sm">
-            <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’accueil">
+            <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
               <Logo taille="sm" variante="clair" />
             </Link>
             {/* Signature de la charte. Les quatre verbes disent la démarche dans

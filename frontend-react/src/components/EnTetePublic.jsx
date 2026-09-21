@@ -42,7 +42,10 @@ const SELECTEUR_FOCALISABLE = 'a[href], button:not([disabled]), input:not([disab
  * entrées, et diluerait les cinq que la charte veut voir.
  */
 const LIENS = [
-  { vers: '/', libelle: 'Accueil' },
+  // `/accueil` et non `/` : la racine porte la page d'entrée, atteinte par le
+  // logo. L'entrée « Accueil » de la barre mène à la page d'accueil de la
+  // charte, qui ouvre le parcours des cinq pages.
+  { vers: '/accueil', libelle: 'Accueil' },
   { vers: '/solution', libelle: 'Solution' },
   { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
   { vers: '/offres', libelle: 'Offres' },
@@ -171,7 +174,7 @@ export default function EnTetePublic() {
           ouvert ? 'rounded-t-[14px]' : 'rounded-[14px]'
         )}
       >
-        <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’accueil">
+        <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" />
           <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
         </Link>
@@ -181,9 +184,7 @@ export default function EnTetePublic() {
           aria-label="Navigation principale"
         >
           {LIENS.map((lien) => (
-            // `end` sur l'accueil seul : sans lui, « / » étant le préfixe de
-            // toutes les routes, l'entrée resterait marquée sur les cinq pages.
-            <NavLink key={lien.vers} to={lien.vers} end={lien.vers === '/'} className={classeLien}>
+            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
               {lien.libelle}
             </NavLink>
           ))}
@@ -271,7 +272,6 @@ export default function EnTetePublic() {
             <NavLink
               key={lien.vers}
               to={lien.vers}
-              end={lien.vers === '/'}
               onClick={fermer}
               className={({ isActive }) =>
                 clsx(
