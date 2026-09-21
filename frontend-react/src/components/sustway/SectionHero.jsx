@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Layers, PlayCircle } from 'lucide-react';
+import { Layers, PlayCircle } from 'lucide-react';
 import FondTech from '../FondTech';
 import ModaleVideo from '../ModaleVideo';
 import Embleme from '../Embleme';
@@ -35,8 +35,6 @@ import { Apparition } from './Section';
  * l'entrée dans le contenu. Seul l'aperçu du tableau de bord garde sa surface
  * blanche — c'est un écran de logiciel, il ne s'assombrit pas avec la page.
  */
-const ETAPES = ['Diagnostic', 'Structuration', 'Pilotage', 'Optimisation', 'Performance durable'];
-
 export default function SectionHero() {
   const [videoOuverte, definirVideoOuverte] = useState(false);
 
@@ -167,49 +165,6 @@ export default function SectionHero() {
             </Bouton>
           </div>
         </Apparition>
-      </div>
-
-      {/*
-       * Sous-héros : la trajectoire du produit en cinq temps.
-       *
-       * Les étapes sont reliées par un filet continu sur grand écran, et
-       * empilées en colonne sous 1024 px — une frise horizontale à cinq
-       * entrées y deviendrait soit illisible, soit source de défilement
-       * latéral, que la charte interdit.
-       */}
-      <div className="relative border-t border-ink-200 bg-surface">
-        <div className="mx-auto w-full max-w-[1200px] px-5 py-10 sm:px-8 lg:py-12">
-          <ol className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-0">
-            {ETAPES.map((etape, index) => (
-              <li key={etape} className="flex flex-1 items-center gap-3 lg:flex-col lg:gap-2.5 lg:text-center">
-                <span className="flex items-center lg:w-full">
-                  {/* Demi-filet gauche, absent sur la première étape : c'est
-                      ce qui donne une ligne continue sans la faire dépasser
-                      aux deux bouts de la frise. */}
-                  <span aria-hidden className={`hidden h-px flex-1 lg:block ${index === 0 ? 'bg-transparent' : 'bg-ink-200'}`} />
-                  <span
-                    aria-hidden
-                    className="flex h-2.5 w-2.5 shrink-0 items-center justify-center rounded-full bg-brand-600 lg:mx-2"
-                  />
-                  <span
-                    aria-hidden
-                    className={`hidden h-px flex-1 lg:block ${index === ETAPES.length - 1 ? 'bg-transparent' : 'bg-ink-200'}`}
-                  />
-                </span>
-                <span className="text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-700 lg:text-[12px]">
-                  {etape}
-                </span>
-                {index < ETAPES.length - 1 ? (
-                  <ArrowRight aria-hidden className="ml-auto h-4 w-4 shrink-0 text-ink-300 lg:hidden" strokeWidth={2} />
-                ) : null}
-              </li>
-            ))}
-          </ol>
-
-          <p className="mt-8 border-t border-ink-100 pt-7 text-center text-[17px] font-medium text-forest sm:text-lg">
-            Une plateforme pour structurer, piloter et améliorer votre performance extra-financière.
-          </p>
-        </div>
       </div>
 
       {/* La modale n'est montée qu'à l'ouverture : elle charge une vidéo de
