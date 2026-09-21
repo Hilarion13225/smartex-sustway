@@ -28,9 +28,24 @@ const ETAPES = [
   { numero: '05', titre: 'Mesurer', texte: 'Mesurer les progrès.', icone: BarChart3 },
 ];
 
-/* Décalage d'une étape à la suivante, et retard supplémentaire de l'allumage. */
+/*
+ * Décalage d'une étape à la suivante, et retard supplémentaire de l'allumage.
+ *
+ * 140 ms est le cœur de l'effet « parcours qui se construit » : sous 80 ms les
+ * cinq étapes arrivent en bloc, au-delà de 250 ms la dernière se joue quand on
+ * a déjà défilé plus loin.
+ *
+ * Les 80 ms de retard du cercle sur son étape sont ce qui donne l'impression
+ * que le texte se pose puis que le cercle s'allume, plutôt que les deux
+ * exactement ensemble.
+ */
 const CASCADE = 140;
 const RETARD_ALLUMAGE = 80;
+const DUREE_ALLUMAGE = 700;
+const DUREE_SURVOL = 300;
+/* La courbe « ease-out » de Tailwind, reprise telle quelle pour les styles en
+   ligne — qui ne peuvent pas emprunter la classe. */
+const EASE_OUT = 'cubic-bezier(0, 0, 0.2, 1)';
 
 export default function FriseDemarche() {
   /*
@@ -39,7 +54,7 @@ export default function FriseDemarche() {
    * sur un écran court, les deux dernières étapes s'allumaient hors champ et
    * le visiteur n'arrivait que sur un résultat déjà joué.
    */
-  const { reference, visible } = useApparition({ seuil: 0.25, marge: '0px 0px -80px 0px' });
+  const { reference, visible, sansAnimation } = useApparition({ seuil: 0.25, marge: '0px 0px -80px 0px' });
 
   return (
     <div ref={reference} className="relative">
@@ -99,14 +114,47 @@ export default function FriseDemarche() {
               }`}
             >
               <div className="relative">
+                {/*
+                 * Deux durées sur le même élément : 700 ms pour l'allumage
+                 * (bordure et halo), 300 ms pour le soulèvement au survol. Une
+                 * classe `duration-*` n'en donne qu'une, et le survol héritait
+                 * de la durée de l'allumage — un cercle qui met sept dixièmes
+                 * de seconde à réagir au pointeur ne réagit plus, il traîne.
+                 *
+                 * D'où le style en ligne, et d'où la garde `sansAnimation` :
+                 * un style en ligne l'emporte sur `motion-reduce:`, il faut
+                 * donc ne pas l'écrire du tout quand les animations sont
+                 * refusées.
+                 */}
                 <span
-                  style={{ transitionDelay: `${index * CASCADE + RETARD_ALLUMAGE}ms` }}
-                  className={`flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 bg-surface transition-all duration-500 ease-out motion-safe:group-hover:-translate-y-1 motion-reduce:transition-none ${
+                  style={
+                    sansAnimation
+                      ? undefined
+                      : {
+                          transitionProperty: 'border-color, box-shadow, transform',
+                          transitionDuration: `${DUREE_ALLUMAGE}ms, ${DUREE_ALLUMAGE}ms, ${DUREE_SURVOL}ms`,
+                          transitionTimingFunction: EASE_OUT,
+                          transitionDelay: `${index * CASCADE + RETARD_ALLUMAGE}ms, ${
+                            index * CASCADE + RETARD_ALLUMAGE
+                          }ms, 0ms`,
+                        }
+                  }
+                  className={`flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 bg-surface motion-safe:group-hover:-translate-y-1 ${
                     visible ? 'border-brand-600 ring-4 ring-brand-50' : 'border-ink-200 ring-0 ring-transparent'
                   }`}
                 >
                   <Icone
-                    className={`h-7 w-7 transition-[color,transform] duration-500 motion-safe:group-hover:scale-110 motion-reduce:transition-none ${
+                    style={
+                      sansAnimation
+                        ? undefined
+                        : {
+                            transitionProperty: 'color, transform',
+                            transitionDuration: `${DUREE_ALLUMAGE}ms, ${DUREE_SURVOL}ms`,
+                            transitionTimingFunction: EASE_OUT,
+                            transitionDelay: `${index * CASCADE + RETARD_ALLUMAGE}ms, 0ms`,
+                          }
+                    }
+                    className={`h-7 w-7 motion-safe:group-hover:scale-110 ${
                       visible ? 'text-brand-700' : 'text-ink-400'
                     }`}
                     strokeWidth={1.5}

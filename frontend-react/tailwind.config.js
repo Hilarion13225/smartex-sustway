@@ -1,3 +1,17 @@
+/*
+ * Attention : ce fichier n'est relu qu'au demarrage du serveur.
+ *
+ * PostCSS charge la configuration Tailwind une fois, a l'ouverture. Modifier
+ * une couleur ou une animation ici pendant que le serveur tourne ne produit
+ * rien : le module se recharge a chaud, mais la classe correspondante n'est
+ * jamais generee, et l'element vise garde silencieusement son etat par defaut
+ * — une animation ajoutee ainsi rendait `animation-duration: 0s`, sans
+ * la moindre erreur en console.
+ *
+ * Apres une modification de ce fichier, redemarrer le serveur :
+ * `docker compose restart frontend-react`, ou relancer `npm run dev`.
+ */
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: 'class',
@@ -175,7 +189,7 @@ export default {
         // dix pixels est anime ainsi, le cout de mise en page est negligeable.
         'point-frise': {
           '0%': { left: '0%', opacity: '0' },
-          '8%': { opacity: '1' },
+          '12%': { opacity: '1' },
           '88%': { opacity: '1' },
           '100%': { left: '100%', opacity: '0' },
         },
@@ -230,8 +244,9 @@ export default {
         'monte-barre': 'monte-barre 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
         // 5,5 s : le point met le meme temps a parcourir le fil qu'un regard a
         // lire les cinq etapes. Plus court, il agite ; plus long, on ne le voit
-        // plus bouger.
-        'point-frise': 'point-frise 5.5s ease-in-out infinite',
+        // plus bouger. La courbe est symetrique — il part et s'arrete
+        // doucement, sans a-coup au demi-tour de la boucle.
+        'point-frise': 'point-frise 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite',
         'flux-arete': 'flux-arete 4s linear infinite',
         'activation-noeud': 'activation-noeud 3.5s ease-in-out infinite',
         balayage: 'balayage 9s ease-in-out infinite',

@@ -18,14 +18,29 @@ import { useEffect, useRef, useState } from 'react';
 export function useApparition({ seuil = 0.15, marge = '0px 0px -10% 0px' } = {}) {
   const reference = useRef(null);
   const [visible, definirVisible] = useState(false);
+  /*
+   * La préférence est aussi renvoyée à l'appelant, et lue dès le premier
+   * rendu plutôt que dans l'effet.
+   *
+   * Les classes `motion-reduce:` suffisent tant que la transition est écrite
+   * en classes ; elles ne peuvent rien contre un style en ligne, qui les
+   * emporte toutes. Un composant qui doit donner deux durées différentes à
+   * deux propriétés du même élément n'a pas d'autre choix que le style en
+   * ligne, et doit donc savoir s'il a le droit d'animer.
+   */
+  const [sansAnimation] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 
   useEffect(() => {
     const element = reference.current;
     if (!element) return undefined;
 
-    const sansAnimation =
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // La préférence est déjà lue plus haut ; la relire ici masquerait l'état
+    // du même nom et ferait diverger les deux si l'un venait à changer.
     // Même garde-fou côté capacités : sans IntersectionObserver, le contenu
     // s'affiche plutôt que de rester invisible pour toujours.
     if (sansAnimation || typeof IntersectionObserver === 'undefined') {
@@ -43,9 +58,9 @@ export function useApparition({ seuil = 0.15, marge = '0px 0px -10% 0px' } = {})
     );
     observateur.observe(element);
     return () => observateur.disconnect();
-  }, [seuil, marge]);
+  }, [seuil, marge, sansAnimation]);
 
-  return { reference, visible };
+  return { reference, visible, sansAnimation };
 }
 
 /*
