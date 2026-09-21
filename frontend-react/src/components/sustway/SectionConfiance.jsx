@@ -20,9 +20,40 @@ import { ORGANISATIONS } from '../../config/organisations';
  */
 export default function SectionConfiance() {
   return (
-    <Section fond="blanc" contenuClassName="py-16 lg:py-20">
+    /*
+     * La section s'étire jusqu'à ce qu'elle et le pied de page remplissent
+     * exactement une fenêtre.
+     *
+     * C'est la dernière section de l'accueil, qui se lit alors en deux écrans :
+     * le héros, puis celui-ci. `--hauteur-pied` est publiée par le pied
+     * lui-même, qui se mesure ; la valeur de repli ne sert que le temps du
+     * premier rendu.
+     *
+     * `min-height` et non `height` : quand la fenêtre est trop basse pour que
+     * les deux tiennent, le calcul donne moins que le contenu et reste donc
+     * sans effet — la section garde sa hauteur naturelle plutôt que d'écraser
+     * ses logos. `max()` avec zéro pour la même raison, un calcul négatif
+     * étant invalide.
+     *
+     * À partir de 1024 px seulement : en dessous, le pied passe à deux
+     * colonnes et dépasse à lui seul la hauteur d'un téléphone.
+     *
+     * `pt-[72px]` réserve la hauteur de la barre de navigation. Elle est en
+     * position fixe et redevient opaque dès que la page a défilé : sans cette
+     * réserve, elle recouvrait le sur-titre de la section, qu'on ne pouvait
+     * plus lire une fois arrivé en bas. Le padding est compris dans la hauteur
+     * calculée au-dessus, il ne repousse donc pas le pied hors de la fenêtre.
+     */
+    <Section
+      fond="blanc"
+      className="lg:flex lg:min-h-[max(0px,calc(100svh-var(--hauteur-pied,340px)))] lg:flex-col lg:justify-center lg:pt-[72px]"
+      contenuClassName="py-14 lg:py-6"
+    >
       <TitreSection
         centre
+        /* Le titre passe de 40 a 32 px sur grand ecran : c'est la seule
+           section du site tenue a une hauteur, et dix-huit pixels y comptent. */
+        titreClassName="lg:text-[32px]"
         surTitre="Ils nous font confiance"
         titre="Des organisations qui pilotent déjà leur performance durable"
         sousTitre="Groupes industriels, énergéticiens, agro-industrie et organisation patronale : des structures de tailles et de secteurs différents, engagées dans une démarche RSE et ESG."
@@ -33,7 +64,7 @@ export default function SectionConfiance() {
        * Jamais cinq en dessous de 1024 px : un logotype large descendrait sous
        * 60 px et deviendrait illisible bien avant d'être petit.
        */}
-      <ul className="mt-14 grid grid-cols-2 items-center gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+      <ul className="mt-12 grid grid-cols-2 items-center gap-x-8 gap-y-10 sm:grid-cols-3 lg:mt-6 lg:grid-cols-5">
         {ORGANISATIONS.map((organisation, index) => (
           <Apparition key={organisation.nom} delai={index * 90}>
             <li className="flex items-center justify-center">

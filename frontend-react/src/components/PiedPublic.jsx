@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
@@ -102,24 +103,59 @@ const TRACES_RESEAUX = {
  * rien dire.
  */
 export default function PiedPublic() {
+  const pied = useRef(null);
+
+  /*
+   * Le pied publie sa propre hauteur dans `--hauteur-pied`.
+   *
+   * La page d'accueil s'en sert pour étirer sa dernière section jusqu'à ce que
+   * cette section et le pied remplissent exactement une fenêtre : sans cette
+   * mesure, il faudrait figer la hauteur du pied dans une constante, et toute
+   * colonne ajoutée ou tout intitulé passant sur deux lignes la démentirait
+   * sans que rien ne le signale.
+   *
+   * `ResizeObserver` et non une mesure au montage : la hauteur change quand la
+   * fenêtre est redimensionnée — deux colonnes sur téléphone, cinq au-delà de
+   * 1024 px — et une valeur prise une fois vaudrait pour la seule largeur de
+   * départ.
+   */
+  useEffect(() => {
+    const element = pied.current;
+    if (!element || typeof ResizeObserver === 'undefined') return undefined;
+
+    const observateur = new ResizeObserver(([entree]) => {
+      const hauteur = Math.round(entree.contentRect.height);
+      document.documentElement.style.setProperty('--hauteur-pied', `${hauteur}px`);
+    });
+    observateur.observe(element);
+
+    return () => {
+      observateur.disconnect();
+      document.documentElement.style.removeProperty('--hauteur-pied');
+    };
+  }, []);
+
   return (
     // #102F26 : le vert le plus profond de la charte, un cran sous le Forest
     // de l'appel à l'action qui précède. Les deux plages se distinguent sans
     // filet entre elles. Couleur écrite en dur plutôt qu'en token : le pied
     // reste sombre quel que soit le thème actif.
-    <footer className="bg-[#102F26] text-white">
-      <div className="mx-auto max-w-[90rem] px-5 pb-10 pt-16">
+    <footer ref={pied} className="bg-[#102F26] text-white">
+      <div className="mx-auto max-w-[90rem] px-5 pb-8 pt-12 lg:pb-5 lg:pt-6">
         {/*
-         * La marque est passée au-dessus des colonnes, sur toute la largeur.
+         * La marque tient la colonne de gauche, les cinq colonnes de liens la
+         * droite.
          *
-         * Les colonnes sont maintenant cinq : serrées dans la moitié droite
-         * comme elles l'étaient à trois, chaque intitulé passait sur deux
-         * lignes et la lecture verticale se perdait. En pleine largeur, elles
-         * disposent chacune d'environ 270 px.
+         * Elle était passée au-dessus, sur toute la largeur, pour desserrer
+         * les cinq colonnes ; cela coûtait cent soixante-dix pixels de hauteur,
+         * qui manquaient à l'accueil pour que sa dernière section et le pied
+         * tiennent dans une même fenêtre. Les colonnes disposent ainsi d'un peu
+         * plus de deux cents pixels chacune, et seuls deux intitulés passent
+         * sur deux lignes.
          */}
-        <div className="grid gap-12 lg:gap-14">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,3.1fr)] lg:gap-12">
           {/* Marque */}
-          <div className="max-w-2xl">
+          <div className="max-w-sm">
             <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
               <Logo taille="sm" variante="clair" />
             </Link>
@@ -128,12 +164,12 @@ export default function PiedPublic() {
                 petites capitales très espacées, ils se lisent comme une devise
                 plutôt que comme une phrase — c'est l'espacement qui fait la
                 différence, pas la taille. */}
-            <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-growth">
+            <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-growth lg:mt-3">
               Structurer <span aria-hidden className="text-growth/50">•</span> Piloter{' '}
               <span aria-hidden className="text-growth/50">•</span> Optimiser{' '}
               <span aria-hidden className="text-growth/50">•</span> Mesurer
             </p>
-            <p className="mt-3 text-base leading-relaxed text-white/70">
+            <p className="mt-3 text-[15px] leading-snug text-white/70 lg:mt-2">
               Une solution de {SMARTEX.editeur} pour structurer, piloter, optimiser et mesurer la performance RSE, ESG
               et développement durable des organisations.
             </p>
@@ -141,11 +177,11 @@ export default function PiedPublic() {
 
           {/* Deux colonnes sur téléphone, trois à partir de 640 px, les cinq à
               partir de 1024 px. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-5">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
-                <ul className="mt-4">
+                <ul className="mt-4 lg:mt-3">
                   {colonne.liens.map((lien) => (
                     <li key={lien.vers ?? lien.href}>
                       {/* 44 px de haut sur téléphone : une liste de liens serrés
@@ -155,7 +191,7 @@ export default function PiedPublic() {
                           href={lien.href}
                           target="_blank"
                           rel="noreferrer noopener"
-                          className="flex min-h-11 items-center text-[15px] text-white/85 transition-colors hover:text-white sm:min-h-9"
+                          className="flex min-h-11 items-center text-[15px] text-white/85 transition-colors hover:text-white sm:min-h-8 lg:min-h-7"
                         >
                           {lien.libelle}
                           <span className="sr-only"> (nouvel onglet)</span>
@@ -163,7 +199,7 @@ export default function PiedPublic() {
                       ) : (
                         <Link
                           to={lien.vers}
-                          className="flex min-h-11 items-center text-[15px] text-white/85 transition-colors hover:text-white sm:min-h-9"
+                          className="flex min-h-11 items-center text-[15px] text-white/85 transition-colors hover:text-white sm:min-h-8 lg:min-h-7"
                         >
                           {lien.libelle}
                         </Link>
@@ -177,7 +213,7 @@ export default function PiedPublic() {
         </div>
 
         {/* Barre inférieure */}
-        <div className="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-10 flex flex-col gap-5 border-t border-white/10 pt-5 lg:mt-5 lg:pt-4 text-sm text-white/55 lg:flex-row lg:items-center lg:justify-between">
           <p className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span>
               © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.

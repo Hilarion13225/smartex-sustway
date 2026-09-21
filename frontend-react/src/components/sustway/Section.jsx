@@ -36,7 +36,20 @@ export function Section({ id, fond = 'blanc', className, contenuClassName, child
  * l'œil perd le début de la ligne suivante. La largeur du bloc de titre est
  * donc plus étroite que celle de la section qui le contient.
  */
-export function TitreSection({ surTitre, titre, sousTitre, centre = false, sombre = false, className }) {
+/*
+ * `titreClassName` sert aux sections qui doivent tenir dans une hauteur
+ * donnée : elle permet d'y réduire le corps du titre sans toucher à celui des
+ * autres pages, qui partagent ce composant.
+ */
+export function TitreSection({
+  surTitre,
+  titre,
+  sousTitre,
+  centre = false,
+  sombre = false,
+  className,
+  titreClassName,
+}) {
   return (
     <div className={clsx(centre && 'mx-auto text-center', 'max-w-3xl', className)}>
       {surTitre ? (
@@ -52,7 +65,8 @@ export function TitreSection({ surTitre, titre, sousTitre, centre = false, sombr
       <h2
         className={clsx(
           'text-[32px] font-semibold leading-[1.15] tracking-[-0.02em] sm:text-[40px]',
-          sombre ? 'text-white' : 'text-forest'
+          sombre ? 'text-white' : 'text-forest',
+          titreClassName
         )}
       >
         {titre}

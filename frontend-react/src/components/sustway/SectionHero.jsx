@@ -140,7 +140,10 @@ export default function SectionHero() {
               Découvrir la solution
             </Bouton>
 
-            <Bouton vers="/formules" niveau="secondaire-sombre" taille="lg" forme="pilule" className="group w-full sm:w-auto">
+            {/* « Formule de collaboration » mène à la page Offres, celle que
+                la barre de navigation désigne : les deux intitulés parlaient
+                du même choix et menaient à deux pages différentes. */}
+            <Bouton vers="/offres" niveau="secondaire-sombre" taille="lg" forme="pilule" className="group w-full sm:w-auto">
               <Layers
                 className="h-5 w-5 transition-transform duration-300 motion-safe:group-hover:scale-110"
                 strokeWidth={1.6}

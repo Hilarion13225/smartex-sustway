@@ -91,8 +91,15 @@ const LIENS = [
  * « Démo » et non « Demander une démo » : à côté d'un second bouton, l'intitulé
  * long déséquilibrait la paire et poussait la barre de trente pixels.
  */
+/*
+ * « Démo » n'est pas un lien mais un déclencheur : il ouvre la vidéo de
+ * démonstration, là où il menait au formulaire de contact. Un visiteur qui
+ * clique sur « Démo » veut voir le produit, pas remplir un champ ; la demande
+ * de démonstration personnalisée reste portée par l'appel à l'action de fin de
+ * page, qui la nomme en toutes lettres.
+ */
 const ACTIONS = [
-  { vers: '/contact', libelle: 'Démo', principale: false },
+  { action: 'video', libelle: 'Démo', principale: false },
   { vers: '/inscription', libelle: 'Créer un compte', principale: true },
 ];
 
@@ -348,28 +355,26 @@ export default function EnTetePublic({ surFondSombre = false }) {
         </nav>
 
         <div className="hidden items-center gap-1.5 whitespace-nowrap min-[1200px]:flex">
-          {ACTIONS.map((action) =>
-            action.principale ? (
-              <Link
-                key={action.vers}
-                to={action.vers}
-                className="flex h-10 items-center rounded-lg bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
-              >
-                {action.libelle}
-              </Link>
-            ) : (
-              <Link
-                key={action.vers}
-                to={action.vers}
-                className={clsx(
+          {ACTIONS.map((action) => {
+            const classe = action.principale
+              ? 'flex h-10 items-center rounded-lg bg-brand-600 px-4 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700'
+              : clsx(
                   'flex h-10 items-center px-3 text-[15px] font-medium transition-colors',
                   surSombre ? 'text-white hover:text-growth' : 'text-ink-900 hover:text-brand-600'
-                )}
-              >
+                );
+
+            // Un bouton, et non un lien déguisé : l'action n'amène nulle part,
+            // elle ouvre une vidéo par-dessus la page courante.
+            return action.action === 'video' ? (
+              <button key={action.libelle} type="button" onClick={() => definirVideoOuverte(true)} className={classe}>
+                {action.libelle}
+              </button>
+            ) : (
+              <Link key={action.libelle} to={action.vers} className={classe}>
                 {action.libelle}
               </Link>
-            )
-          )}
+            );
+          })}
 
           {/*
            * Le logotype de l'éditeur, en deux versions, et cliquable.
@@ -524,34 +529,34 @@ export default function EnTetePublic({ surFondSombre = false }) {
             </div>
           ))}
 
-          <button
-            type="button"
-            onClick={() => {
-              fermer();
-              definirVideoOuverte(true);
-            }}
-            className="flex min-h-12 items-center gap-3 border-b border-ink-200 text-left text-lg font-medium text-ink-900"
-          >
-            <Play className="h-5 w-5 text-ink-500" aria-hidden />
-            Voir la démonstration
-          </button>
-
+          {/* L'entrée « Voir la démonstration » qui figurait ici est retirée :
+              « Démo », juste en dessous, ouvre désormais la même vidéo. */}
           <div className="mt-6 grid gap-3 min-[420px]:grid-cols-2">
-            {ACTIONS.map((action) => (
-              <Link
-                key={action.vers}
-                to={action.vers}
-                onClick={fermer}
-                className={clsx(
-                  'flex min-h-12 items-center justify-center rounded-lg text-base font-semibold',
-                  action.principale
-                    ? 'bg-brand-600 text-white'
-                    : 'border border-ink-300 text-ink-900'
-                )}
-              >
-                {action.libelle}
-              </Link>
-            ))}
+            {ACTIONS.map((action) => {
+              const classe = clsx(
+                'flex min-h-12 items-center justify-center gap-2 rounded-lg text-base font-semibold',
+                action.principale ? 'bg-brand-600 text-white' : 'border border-ink-300 text-ink-900'
+              );
+
+              return action.action === 'video' ? (
+                <button
+                  key={action.libelle}
+                  type="button"
+                  onClick={() => {
+                    fermer();
+                    definirVideoOuverte(true);
+                  }}
+                  className={classe}
+                >
+                  <Play className="h-[18px] w-[18px]" aria-hidden />
+                  {action.libelle}
+                </button>
+              ) : (
+                <Link key={action.libelle} to={action.vers} onClick={fermer} className={classe}>
+                  {action.libelle}
+                </Link>
+              );
+            })}
           </div>
 
         </nav>
