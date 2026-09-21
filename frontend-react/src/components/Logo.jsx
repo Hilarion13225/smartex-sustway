@@ -46,9 +46,12 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
        * de couleur d'une page à l'autre. Or c'est une marque — elle se
        * reconnaît à ce qu'elle ne bouge pas. #921F18 est la valeur qu'avait
        * `brand-600` à la racine, donc exactement la teinte déjà en place dans
-       * l'application ; #E28D84 en est le cran clair, pour les panneaux
-       * sombres où le bordeaux plein ne contrasterait plus (5,8:1 sur le vert
-       * profond du pied de page, contre 1,6:1 pour le bordeaux plein).
+       * l'application.
+       *
+       * La même teinte sur fond sombre comme sur fond clair : seul « SMARTEX »
+       * change, blanc sur les panneaux sombres et encre ailleurs. Le cran
+       * clair employé auparavant sur fond sombre donnait deux logotypes
+       * visiblement différents selon la page.
        *
        * L'espace entre les deux mots est posé en marge et non par l'espace
        * typographique du JSX : le conteneur est en `inline-flex`, et la
@@ -57,7 +60,7 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
        * est en `em`, donc l'espace suit la taille du logotype, du logotype de
        * 11 px du rail de navigation au titre de 60 px.
        */}
-      <span className={clsx('relative ml-[0.25em] mr-[0.55em]', clair ? 'text-[#E28D84]' : 'text-[#921F18]')}>
+      <span className="relative ml-[0.25em] mr-[0.55em] text-[#921F18]">
         SustWay
         <Leaf
           className={clsx(
