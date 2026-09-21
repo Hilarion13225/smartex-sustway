@@ -219,6 +219,11 @@ services:
       # Cible du proxy Vite : l'API se joint par son nom de service
       # dans le réseau Docker, pas par localhost qui désignerait le conteneur front.
       SMARTEX_API_PROXY: http://api-quarkus:8080
+      # Detection des fichiers par scrutation : les volumes montes depuis
+      # Windows ne transmettent pas les evenements inotify au conteneur, et
+      # Vite servait indefiniment l'etat qu'il avait au demarrage malgre des
+      # sources a jour. Voir le commentaire dans vite.config.js.
+      SMARTEX_WATCH_POLLING: '1'
     ports:
       # Hôte 5175 : 5173 et 5174 sont déjà occupés par des processus Node
       # natifs hors Docker (autres projets sur cette machine) — voir README.

@@ -17,6 +17,27 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
+    /*
+     * Détection des changements de fichiers par scrutation, dans le conteneur
+     * seulement.
+     *
+     * Les volumes montés depuis Windows vers un conteneur Linux ne
+     * transmettent pas les événements `inotify` : Vite ne voit alors jamais
+     * un fichier modifié, et sert indéfiniment l'état qu'il avait au
+     * démarrage. Le symptôme trompe, parce que le fichier est bien à jour
+     * dans le conteneur — c'est Vite qui ne l'a pas relu. Constaté ici : des
+     * routes ajoutées restaient introuvables une heure après, alors que
+     * `docker exec grep` les trouvait dans le fichier servi.
+     *
+     * La scrutation coûte du temps processeur en continu, elle est donc
+     * conditionnée à une variable d'environnement que seul Docker Compose
+     * pose : un `npm run dev` natif, où `inotify` fonctionne, garde le
+     * comportement par défaut.
+     */
+    watch:
+      process.env.SMARTEX_WATCH_POLLING === '1'
+        ? { usePolling: true, interval: 300 }
+        : undefined,
     proxy: {
       '/api': {
         target: process.env.SMARTEX_API_PROXY || 'http://localhost:8090',
