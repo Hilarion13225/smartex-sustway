@@ -1,3 +1,4 @@
+import { Leaf } from 'lucide-react';
 import clsx from 'clsx';
 
 const TAILLES = {
@@ -36,37 +37,16 @@ export default function Logo({ taille = 'md', variante = 'sombre', className }) 
       )}
     >
       <span className={clair ? 'text-white' : 'text-ink-900'}>SMARTEX</span>{' '}
-      <span className={clsx('relative ml-[-0.12em] mr-[0.62em]', clair ? 'text-brand-300' : 'text-brand-600')}>
+      <span className={clsx('relative ml-[-0.12em] mr-[0.55em]', clair ? 'text-brand-300' : 'text-brand-600')}>
         SustWay
-        {/*
-         * Emblème : une trajectoire montante refermée par un point.
-         *
-         * La feuille qui occupait cette place disait « environnement » et rien
-         * d'autre ; ce que le produit mesure, c'est une progression. Le signe
-         * reprend donc le langage graphique de la plateforme — la courbe que
-         * l'on retrouve dans chaque tableau de bord — plutôt qu'un symbole
-         * végétal qui rangerait l'outil du côté du discours militant.
-         *
-         * Dimensionné en `em` : le signe suit la taille du logotype, du
-         * logotype de 11 px du rail de navigation au titre de 60 px.
-         */}
-        <svg
-          viewBox="0 0 24 24"
-          className="absolute -right-[0.72em] -top-[0.2em] h-[0.6em] w-[0.6em]"
-          fill="none"
+        <Leaf
+          className={clsx(
+            'absolute -right-[0.65em] -top-[0.15em] h-[0.55em] w-[0.55em] rotate-[18deg]',
+            clair ? 'text-emerald-400' : 'text-emerald-500'
+          )}
+          strokeWidth={2.5}
           aria-hidden
-        >
-          <path
-            d="M2 19 C 7 19, 9 11, 14 8 S 20 5, 22 4"
-            stroke="currentColor"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-          />
-          {/* Monochrome, en `currentColor` : le logotype est posé aussi bien
-              dans la vitrine que dans l'espace connecté, dont les palettes
-              diffèrent. Une seconde teinte devrait exister dans les deux. */}
-          <circle cx="21" cy="4" r="3" fill="currentColor" />
-        </svg>
+        />
       </span>
     </span>
   );
