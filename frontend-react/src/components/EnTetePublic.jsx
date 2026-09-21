@@ -290,7 +290,15 @@ export default function EnTetePublic({ surFondSombre = false }) {
            * Un filet le sépare des actions : sans lui, il se lisait comme un
            * quatrième bouton de la barre.
            */}
-          <span className="ml-1 hidden h-9 border-l border-current/15 pl-4 min-[1380px]:flex min-[1380px]:items-center">
+          {/*
+           * Seuil mesuré, et non estimé : avec le logotype affiché, la barre
+           * demande 1226 px de contenu. À 1300 px de fenêtre il lui reste
+           * 74 px de marge ; à 1280 elle déborde, la navigation centrale
+           * passant sous sa largeur minimale. Le seuil valait 1380 px, posé
+           * par prudence : il privait du logotype les écrans de 1366 px, les
+           * plus répandus sur les portables.
+           */}
+          <span className="ml-1 hidden h-9 border-l border-current/15 pl-4 min-[1300px]:flex min-[1300px]:items-center">
             {/* 28 px de haut, soit 165 de large. Le lettrage n'occupe qu'un
                 tiers de la hauteur du fichier : à 22 px il tombait sous sept
                 pixels, et dix-huit caractères s'y écrasaient. */}
