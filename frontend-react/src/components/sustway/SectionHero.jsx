@@ -47,20 +47,34 @@ export default function SectionHero() {
        */}
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
         <Apparition className="max-w-3xl">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.16em] text-growth">SMARTEX SustWay</p>
+          {/*
+           * La marque passe devant, en plus grand que le titre.
+           *
+           * L'espacement des lettres tombe de 0,16 em à 0,06 : à cette taille,
+           * le premier écartait les mots au point de les disjoindre — un
+           * interlettrage large se règle pour un texte de treize pixels, pas
+           * de quarante.
+           */}
+          <p className="text-[26px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[34px] lg:text-[40px]">
+            SMARTEX SustWay
+          </p>
 
-          {/* La taille du titre suit la hauteur de la fenêtre : 44 px sur un
-              écran de 730 px utiles, 52 px dès 900. C'est lui qui décide si le
-              héros tient ou non — cinq lignes à 52 px en occupent 286 à elles
-              seules. */}
-          <h1 className="mt-4 text-[34px] font-bold leading-[1.08] tracking-[-0.025em] text-white sm:text-[44px] lg:text-[clamp(2.75rem,0.6rem+4.7vh,3.25rem)]">
+          {/*
+           * Le titre passe au second rang visuel, derrière la marque. Il reste
+           * le `h1` de la page : c'est lui qui dit de quoi elle parle, et la
+           * hiérarchie du document ne suit pas celle des corps de texte.
+           *
+           * Sa taille ne dépend plus de la hauteur de la fenêtre : à ce corps,
+           * le héros tient partout sans avoir à s'ajuster.
+           */}
+          <h1 className="mt-5 text-[22px] font-semibold leading-[1.25] tracking-[-0.015em] text-white sm:text-[27px] lg:text-[30px]">
             Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
           </h1>
 
           {/* L'accroche qui tenait ici est retirée : le titre nomme déjà les
               trois sigles, et le paragraphe qui suit dit ce que la plateforme
               en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
-          <p className="mt-5 max-w-xl text-[16px] leading-relaxed text-white/75 sm:text-[17px]">
+          <p className="mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px]">
             SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
             aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
             leurs données et améliorer continuellement leur performance durable.
