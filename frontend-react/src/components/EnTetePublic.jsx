@@ -59,20 +59,30 @@ const LIENS = [
 const ACTION = { vers: '/contact', libelle: 'Demander une démo' };
 
 /*
- * Lien de bureau. La page courante reçoit une pastille vert très clair posée
- * derrière le mot : sur une barre arrondie et détachée, un trait collé à la
- * bordure basse n'aurait plus de bordure où se poser.
+ * Lien de bureau. La page courante reçoit une pastille posée derrière le mot :
+ * sur une barre sans bordure, un trait collé au bas n'aurait rien où se poser.
+ *
+ * Deux jeux de teintes, selon que la barre est transparente sur un fond sombre
+ * ou posée sur son fond blanc.
  */
-function classeLien({ isActive }) {
-  return clsx(
-    'flex min-h-10 items-center rounded-[8px] px-2.5 text-[15px] font-medium transition-colors',
-    isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
-  );
+function classeLien(surSombre) {
+  return ({ isActive }) =>
+    clsx(
+      'flex min-h-10 items-center rounded-[8px] px-2.5 text-[15px] font-medium transition-colors',
+      surSombre
+        ? isActive
+          ? 'bg-white/15 text-white'
+          : 'text-white/80 hover:bg-white/10 hover:text-white'
+        : isActive
+          ? 'bg-brand-50 text-brand-700'
+          : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+    );
 }
 
 /** En-tête de la partie publique : marque, navigation, recherche, thème et accès au compte. */
-export default function EnTetePublic() {
+export default function EnTetePublic({ surFondSombre = false }) {
   const [ouvert, setOuvert] = useState(false);
+  const [defile, definirDefile] = useState(false);
   const [videoOuverte, definirVideoOuverte] = useState(false);
   const [rechercheOuverte, definirRechercheOuverte] = useState(false);
   const fermer = () => setOuvert(false);
@@ -85,6 +95,35 @@ export default function EnTetePublic() {
   useEffect(() => {
     setOuvert(false);
   }, [pathname]);
+
+  /*
+   * La barre devient opaque dès les premiers pixels de défilement.
+   *
+   * Seuil à 24 px : assez pour qu'un frôlement de molette ne la fasse pas
+   * clignoter, assez peu pour qu'elle ait pris son fond avant que le contenu
+   * ne commence à passer dessous.
+   *
+   * `passive: true` : l'écouteur ne bloque jamais le défilement, que le
+   * navigateur peut alors traiter sans attendre le script.
+   *
+   * L'état est relu à chaque changement de page : revenir d'une page où l'on
+   * avait défilé laissait la barre opaque en haut de la suivante.
+   */
+  useEffect(() => {
+    const surDefilement = () => definirDefile(window.scrollY > 24);
+    surDefilement();
+    window.addEventListener('scroll', surDefilement, { passive: true });
+    return () => window.removeEventListener('scroll', surDefilement);
+  }, [pathname]);
+
+  /*
+   * Trois états, et non deux : la barre n'est claire que posée sur un fond
+   * sombre et non défilée. Dès qu'elle prend son fond blanc — au défilement,
+   * ou quand le menu s'ouvre et qu'elle doit porter le panneau — elle repasse
+   * au texte sombre.
+   */
+  const surSombre = surFondSombre && !defile && !ouvert;
+  const posee = defile || ouvert;
 
   /*
    * Menu mobile ouvert. Repris du composant « Header 3 » de 21st.dev pour le
@@ -150,33 +189,42 @@ export default function EnTetePublic() {
   }, [ouvert]);
 
   return (
-    // Barre posée sur la page plutôt que collée à son bord : une carte
-    // translucide aux angles arrondis, détachée des bords par une marge.
-    //
-    // Le fond n'est plus plein : ce qui défile dessous transparaît, flouté.
-    // L'opacité reste haute — 80 % — parce qu'en dessous se succèdent un héros
-    // sombre, des plages papier et des photographies : trop transparente, la
-    // barre verrait la lisibilité de ses liens dépendre de l'endroit où l'on
-    // se trouve dans la page.
-    //
-    // L'en-tête lui-même n'a pas de fond. C'est ce qui fait que la marge prend
-    // la couleur de la page quelle qu'elle soit : papier sur la vitrine, décor
-    // sombre sur la page d'entrée. Un fond clair posé là dessinait un cadre
-    // pâle autour de la carte, visible dès que la page en dessous était
-    // sombre. La carte, elle, reste pleine et opaque : les liens ne sont
-    // jamais brouillés par ce qui défile derrière.
-    <header className="sticky top-0 z-40 px-3 pb-2 pt-2.5 sm:px-5">
-      {/* Espacements serrés au plus juste : voir la mesure en tête de fichier
-          pour la largeur dont la barre complète a besoin. */}
-      <div
-        className={clsx(
-          'mx-auto flex h-16 max-w-[90rem] items-center gap-4 bg-surface/80 px-5 backdrop-blur-xl shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
-          ouvert ? 'rounded-t-[14px]' : 'rounded-[14px]'
-        )}
-      >
+    /*
+     * La barre ne se pose qu'au défilement.
+     *
+     * En haut de page elle est transparente et pleine largeur : sur les pages
+     * qui ouvrent par un bandeau, elle se fond dans l'image au lieu de la
+     * couper d'un rectangle blanc. Dès que le contenu commence à passer
+     * dessous, elle prend un fond, un flou et une ombre — sans quoi les liens
+     * se liraient sur ce qui défile.
+     *
+     * La carte arrondie et détachée des bords qu'elle formait auparavant est
+     * abandonnée : elle supposait un fond de page derrière elle, qu'un bandeau
+     * photo ne lui donne pas.
+     */
+    <header
+      className={clsx(
+        /* `fixed` et non `sticky` : un en-tête collant occupe sa place dans
+           le flux, et le bandeau des pages intérieures aurait commencé sous
+           lui au lieu de passer dessous. Les pages qui n'ont pas de bandeau
+           compensent la hauteur par un retrait haut (voir LayoutPublic). */
+        'fixed inset-x-0 top-0 z-40 transition-[background-color,box-shadow,backdrop-filter] duration-300 motion-reduce:transition-none',
+        posee
+          ? 'bg-surface/90 backdrop-blur-xl shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]'
+          : 'bg-transparent'
+      )}
+    >
+      <div className="mx-auto flex h-[72px] max-w-[90rem] items-center gap-4 px-5 sm:px-8">
         <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
-          <Logo taille="sm" />
-          <p className="mt-0.5 hidden whitespace-nowrap text-xs text-ink-500 md:block">By SMARTEX Expertises</p>
+          <Logo taille="sm" variante={surSombre ? 'clair' : 'sombre'} />
+          <p
+            className={clsx(
+              'mt-0.5 hidden whitespace-nowrap text-xs transition-colors md:block',
+              surSombre ? 'text-white/70' : 'text-ink-500'
+            )}
+          >
+            By SMARTEX Expertises
+          </p>
         </Link>
 
         <nav
@@ -184,7 +232,7 @@ export default function EnTetePublic() {
           aria-label="Navigation principale"
         >
           {LIENS.map((lien) => (
-            <NavLink key={lien.vers} to={lien.vers} className={classeLien}>
+            <NavLink key={lien.vers} to={lien.vers} className={classeLien(surSombre)}>
               {lien.libelle}
             </NavLink>
           ))}
@@ -195,14 +243,20 @@ export default function EnTetePublic() {
             type="button"
             onClick={() => definirRechercheOuverte(true)}
             aria-label="Rechercher dans le site"
-            className="flex h-10 w-10 items-center justify-center rounded-[4px] text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
+            className={clsx(
+              'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+              surSombre ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-ink-600 hover:bg-ink-100 hover:text-ink-900'
+            )}
           >
             <Search className="h-[18px] w-[18px]" aria-hidden />
           </button>
 
           <Link
             to="/connexion"
-            className="flex h-10 items-center px-3 text-[15px] font-medium text-ink-900 transition-colors hover:text-brand-600"
+            className={clsx(
+              'flex h-10 items-center px-3 text-[15px] font-medium transition-colors',
+              surSombre ? 'text-white hover:text-growth' : 'text-ink-900 hover:text-brand-600'
+            )}
           >
             Se connecter
           </Link>
@@ -233,7 +287,10 @@ export default function EnTetePublic() {
           <button
             ref={boutonMenu}
             type="button"
-            className="-mr-2 flex h-12 w-12 items-center justify-center rounded-[4px] text-ink-900 transition-colors hover:bg-ink-100"
+            className={clsx(
+              '-mr-2 flex h-12 w-12 items-center justify-center rounded-lg transition-colors',
+              surSombre ? 'text-white hover:bg-white/10' : 'text-ink-900 hover:bg-ink-100'
+            )}
             onClick={() => setOuvert((valeur) => !valeur)}
             aria-label={ouvert ? 'Fermer le menu' : 'Ouvrir le menu'}
             aria-expanded={ouvert}
@@ -255,11 +312,11 @@ export default function EnTetePublic() {
           id="menu-mobile"
           ref={panneauMenu}
           className={clsx(
-            'fixed inset-x-3 top-[74px] z-40 overflow-y-auto overscroll-contain sm:inset-x-5',
+            'fixed inset-x-0 top-[72px] z-40 overflow-y-auto overscroll-contain',
             // Il descend jusqu'au contenu, pas jusqu'au bas de la fenêtre : six
             // liens ne remplissent pas un écran, et un grand rectangle blanc à
             // moitié vide n'apprend rien. Au-delà, il défile.
-            'max-h-[calc(100svh-5.5rem)] rounded-b-[14px] border-t border-ink-200 bg-surface/90 backdrop-blur-xl',
+            'max-h-[calc(100svh-4.5rem)] border-t border-ink-200 bg-surface/95 backdrop-blur-xl',
             'shadow-[0_1px_2px_rgb(var(--marine)/0.05),0_10px_24px_-14px_rgb(var(--marine)/0.22)]',
             'motion-safe:animate-[fondu-entree_180ms_cubic-bezier(0.2,0.7,0.2,1)_both] min-[1200px]:hidden'
           )}

@@ -13,6 +13,34 @@ import BandeauReferentiels from './vitrine/BandeauReferentiels';
  */
 const PAGES_SUSTWAY = ['/accueil', '/solution', '/fonctionnalites', '/offres', '/ressources'];
 
+/*
+ * Pages dont le haut est sombre, et sur lesquelles la barre de navigation se
+ * pose en transparent avec un texte clair.
+ *
+ * Ce sont celles qui ouvrent sur un bandeau — les quatre pages intérieures de
+ * la charte, les bandeaux photo des pages antérieures, et le décor de la page
+ * d'entrée. Luminances relevées au navigateur juste sous la barre : 0,054 pour
+ * le vert Forest des bandeaux, 0,007 pour le décor de la page d'entrée, contre
+ * 0,925 pour le fond Mist des pages qui n'en ont pas.
+ *
+ * Une liste plutôt qu'une mesure au chargement : le résultat est le même et il
+ * ne dépend pas de l'instant où l'on regarde. En contrepartie, une page à
+ * bandeau ajoutée plus tard doit être inscrite ici, faute de quoi sa barre
+ * restera en texte sombre sur un fond sombre. Le défaut est volontairement de
+ * ce côté : une page sans bandeau oubliée garde un texte lisible.
+ */
+const PAGES_EN_TETE_SOMBRE = [
+  '/',
+  '/solution',
+  '/fonctionnalites',
+  '/offres',
+  '/ressources',
+  '/services',
+  '/methodologie',
+  '/formules',
+  '/deploiement',
+];
+
 /** Mise en page commune des pages publiques (vitrine) : en-tête, contenu, pied de page. */
 export default function LayoutPublic() {
   const { pathname, hash } = useLocation();
@@ -56,22 +84,19 @@ export default function LayoutPublic() {
   const estEntree = pathname === '/';
   const estSustWay = PAGES_SUSTWAY.includes(pathname);
   const enveloppe = estEntree ? '' : estSustWay ? 'sustway ' : 'vitrine ';
+  const enTeteSombre = PAGES_EN_TETE_SOMBRE.includes(pathname);
 
   return (
     <div className={`${enveloppe}flex min-h-full flex-col bg-ink-50 text-ink-600`}>
-      {estEntree ? (
-        // Sur la page d'entrée, le décor impose le sombre à toute la page.
-        // `entete-clair` repose la palette claire sur ce seul bloc : la barre
-        // reste blanche au-dessus du héros sombre. `contents` ne crée pas de
-        // boîte, l'en-tête reste donc collant.
-        <div className="entete-clair contents">
-          <EnTetePublic />
-        </div>
-      ) : (
-        <EnTetePublic />
-      )}
+      <EnTetePublic surFondSombre={enTeteSombre} />
 
-      <main className="flex-1">
+      {/*
+        * La barre étant en position fixe, elle ne réserve plus sa hauteur.
+        * Les pages qui ouvrent sur un bandeau n'ont rien à compenser : leur
+        * bandeau passe volontairement dessous, et son titre est assez bas pour
+        * n'être jamais couvert. Les autres démarreraient sinon sous la barre.
+        */}
+      <main className={`flex-1 ${enTeteSombre ? '' : 'pt-[72px]'}`}>
         <Outlet />
       </main>
 
