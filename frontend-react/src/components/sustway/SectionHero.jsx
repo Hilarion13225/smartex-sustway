@@ -11,9 +11,13 @@ import { Apparition } from './Section';
  * montrés en grand sur la page « Fonctionnalités », et un septième posé ici
  * demandait la moitié de la page pour redire la même chose.
  *
- * Le texte garde l'alignement à gauche et une largeur de lecture bornée :
- * le décor occupe la moitié droite, qui n'est donc pas vide, et une ligne de
+ * Le bloc est centré, et sa largeur de lecture bornée à 768 px : une ligne de
  * texte courant qui traverserait les 1200 px de la page serait illisible.
+ *
+ * Centré en entier, et non la seule marque : posée seule au centre d'un bloc
+ * aligné à gauche, elle ne se lisait ni comme centrée — le bloc ne fait pas
+ * la largeur de la page — ni comme alignée, et paraissait simplement
+ * décalée.
  *
  * Le héros est posé sur le décor « tech » de la page d'entrée, sur un fond
  * Forest. Le fond sombre ne descend pas plus bas : la frise du sous-héros et
@@ -46,7 +50,7 @@ export default function SectionHero() {
        *
        */}
       <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-svh lg:pb-12 lg:pt-24">
-        <Apparition className="max-w-3xl">
+        <Apparition className="mx-auto max-w-3xl text-center">
           {/*
            * La marque passe devant, en plus grand que le titre.
            *
@@ -55,7 +59,7 @@ export default function SectionHero() {
            * interlettrage large se règle pour un texte de treize pixels, pas
            * de quarante.
            */}
-          <p className="text-[26px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[34px] lg:text-[40px]">
+          <p className="text-[30px] font-bold uppercase leading-none tracking-[0.06em] text-growth sm:text-[38px] lg:text-[46px]">
             SMARTEX SustWay
           </p>
 
@@ -74,7 +78,7 @@ export default function SectionHero() {
           {/* L'accroche qui tenait ici est retirée : le titre nomme déjà les
               trois sigles, et le paragraphe qui suit dit ce que la plateforme
               en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
-          <p className="mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px]">
+          <p className="mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px]">
             SMARTEX SustWay est la solution d’opérationnalisation dédiée à la Responsabilité Sociétale des Entreprises,
             aux critères ESG et au Développement Durable. Elle aide les organisations à structurer leur démarche, piloter
             leurs données et améliorer continuellement leur performance durable.
@@ -91,7 +95,7 @@ export default function SectionHero() {
            * comme il doit l'être. C'est déjà le parti pris de l'appel à
            * l'action final, sur le même fond.
            */}
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Bouton vers="/contact" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
               Demander une démo
             </Bouton>
