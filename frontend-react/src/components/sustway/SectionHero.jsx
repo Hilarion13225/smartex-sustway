@@ -1,5 +1,7 @@
-import { ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowRight, Layers, PlayCircle } from 'lucide-react';
 import FondTech from '../FondTech';
+import ModaleVideo from '../ModaleVideo';
 import Embleme from '../Embleme';
 import Logo from '../Logo';
 import Bouton from './Bouton';
@@ -31,6 +33,8 @@ import { Apparition } from './Section';
 const ETAPES = ['Diagnostic', 'Structuration', 'Pilotage', 'Optimisation', 'Performance durable'];
 
 export default function SectionHero() {
+  const [videoOuverte, definirVideoOuverte] = useState(false);
+
   return (
     <section className="relative overflow-hidden bg-forest">
       <FondTech surSombre />
@@ -106,22 +110,48 @@ export default function SectionHero() {
           </p>
 
           {/*
-           * Boutons pleine largeur sous 640 px : à deux de front sur un écran
-           * de 360 px, chaque intitulé passerait sur trois lignes.
+           * Les trois entrées de la page d'entrée, reprises ici : découvrir,
+           * choisir une formule, voir la démonstration.
            *
-           * Le bouton principal est blanc et non vert depuis que le héros est
-           * sombre : le vert de marque ne se détache du fond Forest qu'à
-           * 2,03:1, là où un composant d'interface en demande 3. Blanc, il
-           * tient 16:1 et redevient l'élément le plus visible de la page,
-           * comme il doit l'être. C'est déjà le parti pris de l'appel à
-           * l'action final, sur le même fond.
+           * Le bouton principal est blanc et non vert : sur le fond Forest, le
+           * vert de marque ne se détache qu'à 2,03:1, là où un composant
+           * d'interface en demande 3. Blanc, il tient 10:1 et redevient
+           * l'élément le plus visible de la page.
+           *
+           * « Demander une démo » n'est pas repris : il est déjà dans la barre
+           * de navigation, visible en permanence, et referme l'appel à
+           * l'action final. Trois fois la même demande sur une page n'en rend
+           * aucune plus pressante.
+           *
+           * Pleine largeur sous 640 px : à trois de front sur un écran de
+           * 360 px, chaque intitulé passerait sur trois lignes.
            */}
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <Bouton vers="/contact" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
-              Demander une démo
-            </Bouton>
-            <Bouton vers="/solution" niveau="secondaire-sombre" taille="lg" className="w-full sm:w-auto">
+          <div className="mt-7 flex flex-col flex-wrap gap-3 sm:flex-row sm:justify-center">
+            <Bouton vers="/solution" niveau="principal-sombre" taille="lg" className="w-full sm:w-auto">
               Découvrir la solution
+            </Bouton>
+
+            <Bouton vers="/formules" niveau="secondaire-sombre" taille="lg" className="group w-full sm:w-auto">
+              <Layers
+                className="h-5 w-5 transition-transform duration-300 motion-safe:group-hover:scale-110"
+                strokeWidth={1.6}
+                aria-hidden
+              />
+              Formule de collaboration
+            </Bouton>
+
+            <Bouton
+              niveau="secondaire-sombre"
+              taille="lg"
+              className="group w-full sm:w-auto"
+              onClick={() => definirVideoOuverte(true)}
+            >
+              <PlayCircle
+                className="h-5 w-5 transition-transform duration-300 motion-safe:group-hover:scale-110"
+                strokeWidth={1.6}
+                aria-hidden
+              />
+              Lire la vidéo
             </Bouton>
           </div>
         </Apparition>
@@ -169,6 +199,17 @@ export default function SectionHero() {
           </p>
         </div>
       </div>
+
+      {/* La modale n'est montée qu'à l'ouverture : elle charge une vidéo de
+          soixante-seize mégaoctets, que personne ne doit payer pour avoir
+          seulement vu la page. */}
+      {videoOuverte ? (
+        <ModaleVideo
+          source="/videos/methodologie-overview.mp4"
+          titre="Vidéo de présentation SMARTEX SustWay"
+          surFermeture={() => definirVideoOuverte(false)}
+        />
+      ) : null}
     </section>
   );
 }
