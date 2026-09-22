@@ -111,7 +111,7 @@ export default function Services() {
 
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              to="/formules#grille-formules"
+              to="/offres"
               className="inline-flex min-h-12 items-center justify-center rounded-[4px] bg-brand-600 px-6 text-base font-semibold text-white transition-colors hover:bg-brand-700"
             >
               Choisir une formule

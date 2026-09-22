@@ -53,7 +53,6 @@ const PAGES_EN_TETE_SOMBRE = [
   '/ressources',
   '/services',
   '/methodologie',
-  '/formules',
   '/deploiement',
 ];
 

@@ -10,7 +10,6 @@ import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
 import Services from './pages/Services';
-import Formules from './pages/Formules';
 import Methodologie from './pages/Methodologie';
 import Deploiement from './pages/Deploiement';
 import Ressources from './pages/Ressources';
@@ -84,11 +83,13 @@ export default function App() {
                 racine. */}
             <Route path="/accueil" element={<Navigate to="/" replace />} />
             <Route path="/services" element={<Services />} />
-            <Route path="/formules" element={<Formules />} />
             <Route path="/a-propos" element={<Navigate to="/services#smartex" replace />} />
             <Route path="/methodologie" element={<Methodologie />} />
             <Route path="/avantages" element={<Navigate to="/services" replace />} />
-            <Route path="/engagement" element={<Navigate to="/formules" replace />} />
+            <Route path="/engagement" element={<Navigate to="/offres" replace />} />
+            {/* La page Formules a ete supprimee : ses anciens liens menent aux offres,
+                qui portent desormais les trois niveaux de service. */}
+            <Route path="/formules" element={<Navigate to="/offres" replace />} />
             <Route path="/deploiement" element={<Deploiement />} />
             <Route path="/ressources" element={<Ressources />} />
             <Route path="/formation" element={<Formation />} />

@@ -216,14 +216,17 @@ export default function SectionOffres() {
           })}
         </div>
 
+        {/* Le renvoi vers la page « Formules » est retiré : cette page a été
+            supprimée, et les conditions de chaque offre se lisent désormais
+            ici même. Un contact reste le chemin pour les détailler. */}
         <Apparition className="mt-8">
           <p className="text-[15px] text-ink-600">
-            Les montants et les conditions de chaque formule sont détaillés sur la page{' '}
+            Les montants et les conditions de chaque offre se précisent avec vous.{' '}
             <Link
-              to="/formules"
+              to="/contact"
               className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 transition-colors hover:text-brand-800 hover:decoration-brand-600"
             >
-              Formules
+              Parlons de votre projet
             </Link>
             .
           </p>

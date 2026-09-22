@@ -44,7 +44,6 @@ const COLONNES = [
     titre: 'Offres',
     liens: [
       { vers: '/offres', libelle: 'Les trois offres' },
-      { vers: '/formules', libelle: 'Formules de collaboration' },
     ],
   },
   {

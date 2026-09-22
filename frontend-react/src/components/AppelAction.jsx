@@ -16,7 +16,7 @@ import { typoFr } from '../lib/typographie';
 export default function AppelAction({
   titre = 'Prêt à évaluer votre démarche RSE, ESG et DD ?',
   texte = 'Choisissez votre formule et commencez aujourd’hui. Accès à la plateforme dès le paiement validé.',
-  action = { libelle: 'Choisir une formule', vers: '/formules#grille-formules' },
+  action = { libelle: 'Voir les offres', vers: '/offres' },
   secondaire = { libelle: 'Demander une démonstration', vers: '/contact' },
   // Bord oblique : éteint par défaut, parce que ce bandeau ferme sept pages et
   // qu'une pente sur toutes ferait du procédé un tic plutôt qu'un accent.
