@@ -29,10 +29,18 @@ export default function EnTetePage({ titre, sousTitre, image, children }) {
   return (
     <>
       {/* `min-h` plutôt qu'un simple remplissage : la hauteur ne dépend plus
-          de la longueur du titre, et les quatre pages s'ouvrent de la même
-          façon. Elle allait de 236 à 370 px selon que le titre tenait sur une
-          ou deux lignes — assez peu pour que la photographie ne se lise pas. */}
-      <section className="relative isolate flex min-h-[340px] items-center overflow-hidden bg-forest text-white sm:min-h-[420px] lg:min-h-[480px]">
+          de la longueur du titre, et les pages s'ouvrent de la même façon.
+          Elle allait de 236 à 370 px selon que le titre tenait sur une ou deux
+          lignes — assez peu pour que la photographie ne se lise pas.
+
+          `items-start` et non `items-center` : la barre de navigation est en
+          position fixe et recouvre les 72 premiers pixels du bandeau. Centré,
+          le bloc laissait 60 px au-dessus du titre contre 132 en dessous —
+          mesure au navigateur — et paraissait bas. Il est desormais pose sous
+          la barre, avec 44 px de respiration, et la hauteur minimale est
+          reduite d'autant : le bandeau se resserre au lieu de garder un vide
+          en bas. */}
+      <section className="relative isolate flex min-h-[300px] items-start overflow-hidden bg-forest text-white sm:min-h-[360px] lg:min-h-[400px]">
         {/*
          * `alt` vide et `aria-hidden` sur le voile : la photographie illustre,
          * elle n'informe pas. La décrire ferait entendre « poignée de main »
@@ -82,7 +90,7 @@ export default function EnTetePage({ titre, sousTitre, image, children }) {
           className="absolute inset-0 bg-[radial-gradient(120%_110%_at_50%_50%,rgba(22,74,58,0.46)_0%,rgba(22,74,58,0.42)_55%,transparent_100%)]"
         />
 
-        <div className="relative mx-auto w-full max-w-[1200px] px-5 py-16 text-center sm:px-8 sm:py-20">
+        <div className="relative mx-auto w-full max-w-[1200px] px-5 pb-16 pt-[116px] text-center sm:px-8 sm:pb-20">
           {/* `hyphens-auto` : « L'opérationnalisation » dépasse à lui seul la
               largeur d'un écran de 320 px. */}
           <h1 className="mx-auto max-w-4xl text-balance hyphens-auto break-words text-[30px] font-bold leading-[1.12] tracking-[-0.025em] text-white sm:text-[40px] lg:text-[46px]">
