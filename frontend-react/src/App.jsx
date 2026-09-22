@@ -11,7 +11,6 @@ import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
 import Ressources from './pages/Ressources';
 import Contact from './pages/Contact';
-import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import AccepterInvitation from './pages/AccepterInvitation';
@@ -106,7 +105,11 @@ export default function App() {
                 qu'on visait ici n'existait pas. La rubrique FAQ de la page
                 Ressources dit franchement qu'elle est en preparation. */}
             <Route path="/faq" element={<Navigate to="/ressources#faq" replace />} />
-            <Route path="/mentions-legales" element={<MentionsLegales />} />
+            {/* La page des mentions legales a ete supprimee sur demande. Ses
+                anciens liens menent a l'accueil, faute de page equivalente.
+                A remettre si le site doit publier ses mentions et sa
+                politique de confidentialite. */}
+            <Route path="/mentions-legales" element={<Navigate to="/" replace />} />
           </Route>
           <Route path="/connexion" element={<ConnexionReelle />} />
           <Route path="/inscription" element={<Inscription />} />

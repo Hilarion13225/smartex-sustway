@@ -66,21 +66,6 @@ const COLONNES = [
 ];
 
 /**
- * Mentions obligatoires, reprises dans la barre inférieure.
- *
- * La colonne « Légal » a été retirée du pied de page, mais ces deux liens n'en
- * disparaissent pas pour autant : un site doit rendre ses mentions légales et
- * sa politique de confidentialité atteignables depuis chaque page, et le pied
- * en est le seul endroit commun. Posés sur la ligne du copyright, ils ne
- * pèsent plus sur la grille. Cookies et propriété intellectuelle sont deux
- * sections de la page des mentions légales, qui les porte déjà.
- */
-const MENTIONS = [
-  { vers: '/mentions-legales', libelle: 'Mentions légales' },
-  { vers: '/mentions-legales#donnees-personnelles', libelle: 'Politique de confidentialité' },
-];
-
-/**
  * Tracés de marque des réseaux sociaux. lucide-react a retiré ses icônes de
  * marque, les logos officiels sont donc posés ici en tracé SVG.
  */
@@ -218,15 +203,6 @@ export default function PiedPublic() {
             <span>
               © {new Date().getFullYear()} {SMARTEX.editeur} — Tous droits réservés.
             </span>
-            {MENTIONS.map((mention) => (
-              <Link
-                key={mention.vers}
-                to={mention.vers}
-                className="underline-offset-4 transition-colors hover:text-white hover:underline"
-              >
-                {mention.libelle}
-              </Link>
-            ))}
           </p>
 
           {/* La chaîne de valeur qui tenait ici — données, mesure, objectifs,
