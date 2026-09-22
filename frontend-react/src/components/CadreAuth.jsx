@@ -27,7 +27,7 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
           <Link to="/" className="shrink-0" aria-label="SMARTEX SustWay, retour au site">
             <Logo taille="sm" />
           </Link>
-          <Link to="/services" className="lien-trait text-[15px]">
+          <Link to="/" className="lien-trait text-[15px]">
             Retour au site
           </Link>
         </div>

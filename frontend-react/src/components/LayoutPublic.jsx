@@ -51,7 +51,6 @@ const PAGES_EN_TETE_SOMBRE = [
   '/fonctionnalites',
   '/offres',
   '/ressources',
-  '/services',
   '/methodologie',
   '/deploiement',
 ];

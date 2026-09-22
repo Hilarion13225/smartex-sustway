@@ -9,7 +9,6 @@ import Accueil from './pages/Accueil';
 import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
-import Services from './pages/Services';
 import Methodologie from './pages/Methodologie';
 import Deploiement from './pages/Deploiement';
 import Ressources from './pages/Ressources';
@@ -82,10 +81,13 @@ export default function App() {
                 `/accueil` en fait désormais partie : la page a rejoint la
                 racine. */}
             <Route path="/accueil" element={<Navigate to="/" replace />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/a-propos" element={<Navigate to="/services#smartex" replace />} />
+            {/* La page Services a ete supprimee. Elle etait l'ancienne page
+                d'accueil, et les cinq pages de la charte couvrent son propos ;
+                ses anciens liens menent donc a la Solution. */}
+            <Route path="/services" element={<Navigate to="/solution" replace />} />
+            <Route path="/a-propos" element={<Navigate to="/solution" replace />} />
             <Route path="/methodologie" element={<Methodologie />} />
-            <Route path="/avantages" element={<Navigate to="/services" replace />} />
+            <Route path="/avantages" element={<Navigate to="/solution" replace />} />
             <Route path="/engagement" element={<Navigate to="/offres" replace />} />
             {/* La page Formules a ete supprimee : ses anciens liens menent aux offres,
                 qui portent desormais les trois niveaux de service. */}

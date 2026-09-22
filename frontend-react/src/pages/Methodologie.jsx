@@ -138,7 +138,7 @@ export default function Methodologie() {
         <div className="mx-auto max-w-[90rem] px-5 py-16 sm:py-20">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <h2 className={`max-w-2xl ${classeTitreSection}`}>Référentiels et standards mobilisés.</h2>
-            <Link to="/services" viewTransition className="lien-trait text-base">
+            <Link to="/solution" viewTransition className="lien-trait text-base">
               Voir la solution
             </Link>
           </div>
