@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Card, Loader } from '../components/ui';
-import { COULEURS, GraphiqueAnneau, GraphiqueLigne } from '../components/charts';
+import { COULEURS, GraphiqueAnneau, GraphiqueLigne, useCouleursRisque } from '../components/charts';
 import CarteKpi from '../components/tableau-bord/CarteKpi';
 import TableMissions from '../components/tableau-bord/TableMissions';
 import PanneauAlertes from '../components/tableau-bord/PanneauAlertes';
@@ -90,6 +90,7 @@ function couleurAction(action) {
  */
 export default function TableauDeBord() {
   const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
+  const couleursRisque = useCouleursRisque();
   // Même permission que la page des missions : proposer une création à qui
   // ne peut pas créer donne un raccourci qui mène à une impasse.
   //
@@ -499,11 +500,16 @@ export default function TableauDeBord() {
             libelle="À risque"
             precision="Au moins un écart critique"
           />
+          {/* Les deux seuls indicateurs qui soient une part d'un tout
+              portent une jauge : un pourcentage se situe mieux sur sa
+              piste que seul. Les trois autres comptent des objets, dont
+              le maximum n'est pas connu. */}
           <CarteKpi
             icone={Gauge}
             ton="succes"
             valeur={`${kpis.completion}%`}
             libelle="Taux de complétion"
+            ratio={kpis.completion}
             precision={`${kpis.totalEvalues} critères évalués`}
           />
           <CarteKpi
@@ -511,6 +517,7 @@ export default function TableauDeBord() {
             ton="neutre"
             valeur={syntheseePlans.total}
             libelle="Plans d’amélioration"
+            ratio={syntheseePlans.total === 0 ? null : syntheseePlans.avancement}
             precision={
               syntheseePlans.total === 0
                 ? 'Aucun plan en cours'
@@ -595,7 +602,12 @@ export default function TableauDeBord() {
                   repartitionRisques.FAIBLE,
                   repartitionRisques.NON_EVALUE,
                 ]}
-                couleurs={[COULEURS.rouge, COULEURS.ambre, COULEURS.vert, COULEURS.gris]}
+                couleurs={[
+                  couleursRisque.eleve,
+                  couleursRisque.moyen,
+                  couleursRisque.faible,
+                  couleursRisque.nonEvalue,
+                ]}
               />
             </div>
           </Card>

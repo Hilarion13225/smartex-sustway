@@ -28,17 +28,55 @@ ChartJS.register(
   Tooltip
 );
 
+/*
+ * Palette des graphiques, verifiee plutot que choisie a l'oeil.
+ *
+ * Les six teintes categorielles passent les controles de separation pour
+ * les trois formes de daltonisme : ecart minimal de 13,8 en protanopie,
+ * 28,8 en vision normale (OKLab x100), contraste superieur a 3:1 sur la
+ * surface claire.
+ *
+ * L'ancienne palette echouait ce controle. Le rouge #e11d48 et le vert
+ * #059669 n'y etaient separes que de 5,8 en deuteranopie — soit
+ * indistinguables — alors qu'ils portaient « risque eleve » et « risque
+ * faible » dans la repartition des risques du tableau de bord. Le vert de
+ * conformite devient donc un teal, et le rouge un rose profond.
+ *
+ * `brand` suit la charte Pantone : le bordeaux #921f18 etait le dernier
+ * reste de l'ancienne identite dans les graphiques.
+ */
 export const COULEURS = {
-  brand: '#921f18',
-  brandClair: 'rgba(146, 31, 24, 0.18)',
+  brand: '#61752a',
+  brandClair: 'rgba(97, 117, 42, 0.18)',
   bleu: '#2563eb',
   bleuClair: 'rgba(37, 99, 235, 0.18)',
-  ambre: '#d97706',
-  vert: '#059669',
-  rouge: '#e11d48',
+  ambre: '#ea580c',
+  vert: '#0d9488',
+  rouge: '#9f1239',
   violet: '#7c3aed',
   gris: '#94a3b8',
 };
+
+/*
+ * Les trois etats de risque, en clair et en sombre.
+ *
+ * Deux jeux distincts, et non un jeu unique eclairci : la bande de
+ * clarte acceptable sur fond sombre est plus etroite (L 0,48–0,67 contre
+ * 0,43–0,77), et le rose profond du mode clair y tombe trop bas. Chaque
+ * jeu a ete verifie contre sa propre surface.
+ *
+ * Le gris de « non evalue » ne fait pas partie de la palette : c'est une
+ * absence de donnee, volontairement desaturee, et il n'a pas a tenir le
+ * plancher de saturation des teintes qui portent un sens.
+ */
+const RISQUES_CLAIR = { eleve: '#9f1239', moyen: '#ea580c', faible: '#0d9488', nonEvalue: '#94a3b8' };
+const RISQUES_SOMBRE = { eleve: '#e0435f', moyen: '#b8860b', faible: '#0fa896', nonEvalue: '#64748b' };
+
+/** Les couleurs de risque du theme actif. */
+export function useCouleursRisque() {
+  const { estSombre } = useTheme();
+  return estSombre ? RISQUES_SOMBRE : RISQUES_CLAIR;
+}
 
 /**
  * Infobulle d'une série déclarée `format: 'score'` (V74-C3-B5) : le score sur 5
