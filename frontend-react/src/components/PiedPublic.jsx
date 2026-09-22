@@ -52,7 +52,7 @@ const COLONNES = [
       { vers: '/ressources#articles', libelle: 'Articles' },
       { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
       { vers: '/ressources#documentation', libelle: 'Documentation' },
-      { vers: '/methodologie#questions', libelle: 'FAQ' },
+      { vers: '/ressources#faq', libelle: 'FAQ' },
       { vers: '/formation', libelle: 'Formations' },
     ],
   },

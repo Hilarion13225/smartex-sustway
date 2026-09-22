@@ -9,7 +9,6 @@ import Accueil from './pages/Accueil';
 import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
-import Methodologie from './pages/Methodologie';
 import Deploiement from './pages/Deploiement';
 import Ressources from './pages/Ressources';
 import Formation from './pages/Formation';
@@ -86,7 +85,10 @@ export default function App() {
                 ses anciens liens menent donc a la Solution. */}
             <Route path="/services" element={<Navigate to="/solution" replace />} />
             <Route path="/a-propos" element={<Navigate to="/solution" replace />} />
-            <Route path="/methodologie" element={<Methodologie />} />
+            {/* La page Methodologie a ete supprimee. La demarche en cinq etapes
+                qu'elle exposait vit desormais dans la section « Methodologie »
+                de la page Solution, ou ses anciens liens aboutissent. */}
+            <Route path="/methodologie" element={<Navigate to="/solution#methodologie" replace />} />
             <Route path="/avantages" element={<Navigate to="/solution" replace />} />
             <Route path="/engagement" element={<Navigate to="/offres" replace />} />
             {/* La page Formules a ete supprimee : ses anciens liens menent aux offres,
@@ -96,7 +98,10 @@ export default function App() {
             <Route path="/ressources" element={<Ressources />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<Navigate to="/methodologie#questions" replace />} />
+            {/* La page Methodologie ne portait aucune FAQ : l'ancre #questions
+                qu'on visait ici n'existait pas. La rubrique FAQ de la page
+                Ressources dit franchement qu'elle est en preparation. */}
+            <Route path="/faq" element={<Navigate to="/ressources#faq" replace />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
           </Route>
           <Route path="/connexion" element={<ConnexionReelle />} />

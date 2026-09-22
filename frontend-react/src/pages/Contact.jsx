@@ -55,9 +55,9 @@ function cadreOsm(portee) {
  */
 const RENVOIS = [
   {
-    titre: 'Votre question est peut-être déjà posée.',
-    texte: `Notation, référentiels, justification des écarts : les réponses les plus demandées sur ${SMARTEX.produit}.`,
-    lien: { vers: '/methodologie#questions', libelle: 'Lire les questions fréquentes' },
+    titre: 'Articles, guides et documentation.',
+    texte: `Les ressources publiées autour de ${SMARTEX.produit} : analyses, méthodes et documentation.`,
+    lien: { vers: '/ressources#faq', libelle: 'Voir les ressources' },
   },
   {
     titre: 'Former vos équipes à la RSE et à l’ESG.',

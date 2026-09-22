@@ -13,8 +13,11 @@ import { Apparition, Section } from './Section';
  * n'est inventé pour faire nombre, et aucun bouton ne mène à une page vide —
  * un bouton grisé ferait espérer un clic.
  *
- * La FAQ, elle, existe : ses questions vivent sur la page Méthodologie, et le
- * bouton y mène.
+ * La FAQ non plus n'existe pas encore. Le bouton qui menait vers elle visait
+ * `/methodologie#questions`, une ancre que la page Méthodologie n'a jamais
+ * portée : le lien était mort sans que rien ne le signale. Les quatre
+ * rubriques sont donc annoncées de la même façon, et aucune ne promet un
+ * contenu qui n'est pas là.
  *
  * Les vignettes sont dessinées, pas photographiées. Une banque d'images
  * donnerait ici des feuilles et des planètes, qui rangeraient le produit du
@@ -55,7 +58,6 @@ const RUBRIQUES = [
     texte:
       'Les réponses aux questions les plus fréquentes concernant le déploiement de la solution et son adéquation avec vos objectifs stratégiques.',
     action: 'Consulter la FAQ',
-    vers: '/methodologie#questions',
     icone: HelpCircle,
   },
 ];
