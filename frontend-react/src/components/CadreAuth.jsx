@@ -38,11 +38,11 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
             large ? 'lg:grid-cols-[22rem_1fr]' : 'lg:grid-cols-[0.9fr_1.1fr]'
           )}
         >
-          {/* Panneau de marque : plage encre pleine, couleur écrite en dur
+          {/* Panneau de marque : plage Deep Forest pleine, couleur écrite en dur
               comme le bandeau d'appel des pages publiques — il reste sombre
               dans les deux thèmes. Masqué sous `lg`, où le formulaire passe
               seul en premier écran. */}
-          <aside className="relative hidden flex-col rounded-[12px] bg-[#14234B] p-8 text-white lg:flex">
+          <aside className="relative hidden flex-col rounded-[12px] bg-[#193E2C] p-8 text-white lg:flex">
             <p className="text-sm text-white/70">Par {SMARTEX.editeur}</p>
             <p className="mt-6 font-display text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-white [text-wrap:balance]">
               Votre démarche RSE, ESG et DD, notée sur vos preuves.

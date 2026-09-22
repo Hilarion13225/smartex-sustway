@@ -41,26 +41,48 @@
     --ink-700: 63 73 94;
     --ink-800: 55 63 80;
     --ink-900: 31 37 51;
-    --marine: 26 42 99;
+    /* Deep Forest, comme sur la vitrine : les bandeaux sombres de
+       l'application etaient bleu nuit, seule trace de l'ancienne charte
+       sur des aplats pleine largeur. */
+    --marine: 25 62 44;
     --surface: 255 255 255;
     /* Bordeaux historique, identique à l'ancien hexadécimal du thème. */
-    --brand-50: 253 242 241;
-    --brand-100: 249 220 218;
-    --brand-200: 240 184 179;
-    --brand-300: 226 141 132;
-    --brand-400: 207 92 80;
-    --brand-500: 179 39 30;
-    --brand-600: 146 31 24;
-    --brand-700: 119 26 21;
-    --brand-800: 92 19 16;
-    --brand-900: 67 14 12;
+    /*
+     * Les nuances Pantone du produit, etendues a toute la plateforme.
+     *
+     * Elles ne vivaient que sous `.vitrine` et `.sustway` ; l'espace
+     * connecte gardait le bordeaux SMARTEX. Une meme application ne peut
+     * pas changer d'identite quand on s'y connecte, d'ou ce report ici.
+     *
+     * Moss Green (cran 500) ne porte aucun texte : mesure a 3,73:1 sur
+     * blanc, ni assez pour etre lu, ni assez pour porter du blanc. Les
+     * boutons et les liens prennent donc 600 (5,14:1) ou 700 (7,08:1).
+     * Le cran 500 reste l'accent, et les fonds dilues qui l'emploient
+     * — `bg-brand-500/10` et voisins — ne font rien lire.
+     *
+     * Le bordeaux ne disparait pas pour autant : le logotype porte son
+     * #921F18 en dur, la marque ne suit pas la palette.
+     */
+    --brand-50: 244 247 234;
+    --brand-100: 231 239 210;
+    /* Butterfly */
+    --brand-200: 205 219 166;
+    --brand-300: 180 200 127;
+    --brand-400: 150 174 86;
+    /* Moss Green — accent seul */
+    --brand-500: 118 141 50;
+    --brand-600: 97 117 42;
+    --brand-700: 74 95 44;
+    --brand-800: 50 80 46;
+    /* Deep Forest */
+    --brand-900: 25 62 44;
     --feuille: 5 150 105;
     /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
        servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en
        derivent — l'une tres sombre pour la section pleine, l'autre tres
        claire pour les cartes posees dessus — et ne portent aucun verdict. */
-    --vert-profond: 12 50 39;
-    --vert-clair: 214 240 224;
+    --vert-profond: 25 62 44;
+    --vert-clair: 231 239 210;
   }
   .dark {
     --ink-50: 16 20 28;
@@ -184,18 +206,18 @@
     --ink-700: 63 73 94;
     --ink-800: 55 63 80;
     --ink-900: 31 37 51;
-    --marine: 26 42 99;
+    --marine: 25 62 44;
     --surface: 255 255 255;
-    --brand-50: 253 242 241;
-    --brand-100: 249 220 218;
-    --brand-200: 240 184 179;
-    --brand-300: 226 141 132;
-    --brand-400: 207 92 80;
-    --brand-500: 179 39 30;
-    --brand-600: 146 31 24;
-    --brand-700: 119 26 21;
-    --brand-800: 92 19 16;
-    --brand-900: 67 14 12;
+    --brand-50: 244 247 234;
+    --brand-100: 231 239 210;
+    --brand-200: 205 219 166;
+    --brand-300: 180 200 127;
+    --brand-400: 150 174 86;
+    --brand-500: 118 141 50;
+    --brand-600: 97 117 42;
+    --brand-700: 74 95 44;
+    --brand-800: 50 80 46;
+    --brand-900: 25 62 44;
     --feuille: 5 150 105;
     /* Fonds seulement : le vert de Feuille dit « conforme » et ne peut pas
        servir d'aplat decoratif sans perdre ce sens. Ces deux nuances en

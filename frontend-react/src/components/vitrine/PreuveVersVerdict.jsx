@@ -50,14 +50,14 @@ export default function PreuveVersVerdict({
   return (
     <figure className={clsx('specimen', className)}>
       <div
-        className="rounded-[12px] bg-[#14234B] p-4 text-white ring-1 ring-white/10 sm:p-6"
+        className="rounded-[12px] bg-[#193E2C] p-4 text-white ring-1 ring-white/10 sm:p-6"
         role="img"
         aria-label={`Exemple : un extrait de « ${preuve.document} », retenu par l’analyse, conduit au verdict « ${
           preuve.conforme ? 'conforme' : 'non conforme'
         } » sur le critère « ${preuve.critere} » du référentiel SMARTEX SustWay, avec une probabilité de conformité de ${chiffre}.`}
       >
         {/* ---- La pièce justificative ---- */}
-        <div className="rounded-[8px] bg-white p-4 text-[#14234B] sm:p-5" aria-hidden>
+        <div className="rounded-[8px] bg-white p-4 text-[#193E2C] sm:p-5" aria-hidden>
           <div className="flex items-center gap-3 border-b border-[#E8EAE5] pb-3">
             <FileText className="h-5 w-5 shrink-0 text-[#60697A]" strokeWidth={1.75} />
             <p className="min-w-0 flex-1 truncate text-sm font-semibold">{preuve.document}</p>
@@ -70,7 +70,7 @@ export default function PreuveVersVerdict({
             <p
               className={clsx(
                 mouvement('specimen-passage'),
-                '-mx-1 rounded-[3px] px-1 py-0.5 text-[13px] leading-snug text-[#14234B] sm:text-sm',
+                '-mx-1 rounded-[3px] px-1 py-0.5 text-[13px] leading-snug text-[#193E2C] sm:text-sm',
                 !anime && 'bg-[#067A55]/20'
               )}
             >

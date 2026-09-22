@@ -118,7 +118,7 @@ export default function EssaiPreuve({ className = '', surSombre = false }) {
             className={`min-h-10 flex-1 rounded-[5px] px-3 text-[15px] font-semibold transition-colors ${
               index === choisi
                 ? surSombre
-                  ? 'bg-white text-[#14234B]'
+                  ? 'bg-white text-[#193E2C]'
                   : 'bg-surface text-ink-900 shadow-sm'
                 : surSombre
                   ? 'text-white/75 hover:text-white'

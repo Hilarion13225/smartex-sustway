@@ -23,7 +23,7 @@ export default function AppelAction({
   diagonale = false,
 }) {
   return (
-    <section className={`bg-[#14234B] text-white${diagonale ? ' bord-diagonal' : ''}`}>
+    <section className={`bg-[#193E2C] text-white${diagonale ? ' bord-diagonal' : ''}`}>
       <div className="mx-auto grid max-w-[90rem] gap-8 px-5 py-16 sm:py-20 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
         <div className="max-w-2xl">
           <h2 className="titre-section text-white">
@@ -36,7 +36,7 @@ export default function AppelAction({
           <Link
             to={action.vers}
             viewTransition
-            className="inline-flex min-h-12 items-center justify-center btn-presse rounded-[4px] bg-white px-6 text-base font-semibold text-[#14234B] transition-colors hover:bg-[#E8EAF2]"
+            className="inline-flex min-h-12 items-center justify-center btn-presse rounded-[4px] bg-white px-6 text-base font-semibold text-[#193E2C] transition-colors hover:bg-[#E7EFD2]"
           >
             {action.libelle}
           </Link>
