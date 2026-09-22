@@ -83,7 +83,7 @@ export default function SectionHero() {
        * et passe par-dessus le héros, qu'elle ne pousse donc plus vers le bas.
        *
        */}
-      <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-[calc(100svh-var(--hauteur-bandeau,0px))] lg:pb-12 lg:pt-24">
+      <div className="relative mx-auto flex w-full max-w-[1200px] items-center px-5 pb-14 pt-24 sm:px-8 lg:min-h-[calc(100svh-var(--hauteur-bandeau,0px))] lg:pb-6 lg:pt-32">
         <Apparition className="mx-auto max-w-3xl text-center xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-6xl">
           {/*
            * La marque est le logotype lui-même, et non un texte qui l'imite.
@@ -140,7 +140,10 @@ export default function SectionHero() {
            * Pleine largeur sous 640 px : à trois de front sur un écran de
            * 360 px, chaque intitulé passerait sur trois lignes.
            */}
-          <div className="mt-7 flex flex-col flex-wrap gap-3 sm:flex-row sm:justify-center">
+          {/* Les boutons se detachent du paragraphe : a mt-7 ils formaient un
+              seul bloc avec lui, alors qu il restait deux cents pixels de vide
+              sous eux. L ecart grandit avec la fenetre, ou ce vide grandit aussi. */}
+          <div className="mt-7 flex flex-col flex-wrap gap-3 sm:mt-10 sm:flex-row sm:justify-center lg:mt-16 xl:mt-20">
             <Bouton vers="/solution" niveau="principal-sombre" taille="lg" forme="pilule" className="w-full sm:w-auto">
               Découvrir la solution
             </Bouton>
