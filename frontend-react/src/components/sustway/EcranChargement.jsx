@@ -33,23 +33,53 @@ import Logo from '../Logo';
  * mouvement n'a pas à regarder une barre traverser son écran.
  */
 
-/** Durée maximale du voile, sécurité comprise. Au-delà, il se retire. */
-const DELAI_MAXIMAL = 9000;
-
 /**
- * Temps que met la barre à finir sa course une fois la page prête.
+ * Temps que met la barre à parcourir la page.
  *
- * La page est presque toujours prête avant que la barre n'arrive au bout :
- * sans cette attente, le voile passait en deux secondes et l'animation se
- * voyait à peine. Elle est ce qui fixe la durée réelle du voile.
+ * C'est le seul nombre à changer pour régler la durée du voile : tout le
+ * reste en découle, y compris le pas de progression et le délai de sécurité.
+ *
+ * Une minute, à la demande. À noter pour plus tard : c'est très long pour
+ * un visiteur qui arrive sur le site et veut le lire — quelques secondes
+ * suffisent à faire voir l'animation. Remettre 2600 y revient.
  */
-const DUREE_COURSE = 2600;
+const DUREE_COURSE = 57000;
 
 /** Temps pendant lequel 100 % reste lisible avant que le voile ne parte. */
 const PALIER_FINAL = 650;
 
 /** Durée du glissement vers le haut. Doit suivre la classe `duration-[1100ms]`. */
 const DUREE_SORTIE = 1100;
+
+/** Intervalle entre deux avancées de la barre. Assez court pour qu'elle
+    paraisse couler et non sauter, quelle que soit la durée totale. */
+const INTERVALLE = 110;
+
+/** Palier que la barre atteint avant que la course ne s'achève. */
+const PALIER_AVANT_FIN = 90;
+
+/**
+ * Amortissement de la montée, déduit de la durée plutôt que choisi.
+ *
+ * La barre avance de `(PALIER_AVANT_FIN - p) / AMORTI` à chaque pas : une
+ * approche exponentielle, qui ralentit près du but. Après n pas, elle a
+ * parcouru `1 - (1 - 1/AMORTI)^n` du palier ; on veut qu'elle en ait fait
+ * 85 % quand la course se termine, d'où `n / -ln(0,15)`.
+ *
+ * Déduit, et non écrit en dur, parce qu'un amortissement figé ne vaut que
+ * pour une durée : réglé pour 2,6 s, il faisait sauter la barre de 55 à
+ * 100 % — mesuré — et pour une minute il l'aurait collée à 90 % pendant
+ * cinquante secondes.
+ */
+const AMORTI = Math.max(2, DUREE_COURSE / INTERVALLE / 1.897);
+
+/** Plus petit pas : sans lui, la barre n'avance plus visiblement près du
+    palier. Proportionnel lui aussi, pour ne pas dominer sur une longue
+    course. */
+const PAS_MINIMAL = Math.min(0.6, (PALIER_AVANT_FIN * INTERVALLE) / DUREE_COURSE / 3);
+
+/** Sécurité : au-delà, le voile se retire quoi qu'il arrive. */
+const DELAI_MAXIMAL = DUREE_COURSE + PALIER_FINAL + DUREE_SORTIE + 3000;
 
 export default function EcranChargement() {
   /*
@@ -97,13 +127,14 @@ export default function EcranChargement() {
      * progression linéaire donne l'impression d'un compteur, une progression
      * qui ralentit donne celle d'un travail en cours.
      *
-     * Le diviseur est calé sur DUREE_COURSE : à 110 ms par pas, la barre doit
-     * approcher 85 % au moment où la course se termine. Trop lent, elle sautait
-     * de 55 à 100 % — mesuré au navigateur — et le saut se voyait.
+     * L'amortissement vient de DUREE_COURSE : voir AMORTI plus haut. La barre
+     * approche ainsi 85 % à la fin de la course, quelle que soit sa durée.
      */
     const battement = setInterval(() => {
-      definirProgression((p) => (p >= 90 ? p : p + Math.max(0.6, (90 - p) / 14)));
-    }, 110);
+      definirProgression((p) =>
+        p >= PALIER_AVANT_FIN ? p : p + Math.max(PAS_MINIMAL, (PALIER_AVANT_FIN - p) / AMORTI)
+      );
+    }, INTERVALLE);
     minuteries.current.push(battement);
 
     const terminer = () => {
