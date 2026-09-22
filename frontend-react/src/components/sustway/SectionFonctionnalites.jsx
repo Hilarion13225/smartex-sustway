@@ -1,6 +1,6 @@
-import { ArrowRight, BarChart3, Database, FolderCheck, ListChecks } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { BarChart3, Database, FolderCheck, ListChecks } from 'lucide-react';
 import { Apparition, Section } from './Section';
+import BoutonDemo from './BoutonDemo';
 import {
   ApercuDonnees,
   ApercuPlansAction,
@@ -97,23 +97,6 @@ const DOMAINES = [
   },
 ];
 
-/* Bouton plein, repris à l'identique en haut et en bas de page. */
-function BoutonDemo({ className = '' }) {
-  return (
-    <Link
-      to="/contact"
-      className={`group inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700 ${className}`}
-    >
-      Demander une démo
-      <ArrowRight
-        className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
-        strokeWidth={2}
-        aria-hidden
-      />
-    </Link>
-  );
-}
-
 export default function SectionFonctionnalites() {
   return (
     <>
@@ -128,7 +111,11 @@ export default function SectionFonctionnalites() {
        * ne doit pas avoir a parcourir les quatre temps pour trouver comment
        * demander une demonstration.
        */}
-      <Section fond="blanc" contenuClassName="lg:py-20">
+      {/* `lg:py-8` et non `lg:py-20` : Section pose deja `lg:py-28`, et
+          Tailwind trie ses utilitaires par nom — « 20 » precede « 28 » et
+          perd, « 8 » lui succede et gagne. Mesure avant correction : 112 px
+          de padding la ou 80 etaient demandes. */}
+      <Section fond="blanc" contenuClassName="py-12 lg:py-8">
         <Apparition className="max-w-3xl">
           <p className="text-[17px] leading-relaxed text-ink-700">
             SMARTEX SustWay réunit les outils nécessaires pour simplifier le travail des équipes et donner aux
@@ -223,20 +210,9 @@ export default function SectionFonctionnalites() {
             Demandez une démonstration et découvrez comment la plateforme peut s’intégrer à votre processus de pilotage
             RSE, ESG & DD.
           </p>
-          {/* Le bouton reste blanc sur le fond Forest : le vert de marque ne
-              s'y détache qu'à 2,03:1, là où un composant d'interface en demande
-              trois. */}
-          <Link
-            to="/contact"
-            className="group mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[15px] font-semibold text-forest transition-colors hover:bg-brand-100"
-          >
-            Demander une démo
-            <ArrowRight
-              className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
-              strokeWidth={2}
-              aria-hidden
-            />
-          </Link>
+          {/* Blanc sur le fond Forest : le vert de marque ne s'y détache qu'à
+              2,03:1, là où un composant d'interface en demande trois. */}
+          <BoutonDemo variante="clair" className="mt-8" />
         </Apparition>
       </Section>
     </>

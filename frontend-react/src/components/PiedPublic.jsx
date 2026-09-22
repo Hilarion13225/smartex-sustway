@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
+import BoutonDemo from './sustway/BoutonDemo';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
@@ -45,7 +46,7 @@ const COLONNES = [
     liens: [
       { vers: '/connexion', libelle: 'Se connecter' },
       { vers: '/inscription', libelle: 'S’inscrire' },
-      { vers: '/contact', libelle: 'Demander une démo' },
+      { demo: true, libelle: 'Demander une démo' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },
@@ -154,10 +155,20 @@ export default function PiedPublic() {
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
                 <ul className="mt-4 lg:mt-3">
                   {colonne.liens.map((lien) => (
-                    <li key={lien.vers ?? lien.href}>
+                    <li key={lien.vers ?? lien.href ?? lien.libelle}>
                       {/* 44 px de haut sur téléphone : une liste de liens serrés
                           est la zone où le doigt se trompe le plus. */}
-                      {lien.href ? (
+                      {/* « Demander une démo » ouvre la vidéo, comme partout
+                          ailleurs sur le site : le composant porte sa propre
+                          modale, le pied n'a rien à en savoir. */}
+                      {lien.demo ? (
+                        <BoutonDemo
+                          variante="discret"
+                          avecIcone={false}
+                          libelle={lien.libelle}
+                          className="flex items-center text-[15px] font-normal text-white/85"
+                        />
+                      ) : lien.href ? (
                         <a
                           href={lien.href}
                           target="_blank"
