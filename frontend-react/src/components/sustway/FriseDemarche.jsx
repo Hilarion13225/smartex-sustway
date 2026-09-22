@@ -1,4 +1,4 @@
-import { BarChart3, ChevronRight, Layers, LineChart, RefreshCw, Search } from 'lucide-react';
+import { BarChart3, ChevronRight, ClipboardList, Gauge, RefreshCw, Search } from 'lucide-react';
 import { useApparition } from './useApparition';
 
 /*
@@ -21,36 +21,44 @@ import { useApparition } from './useApparition';
  * posé sur la frise : cinq observateurs indépendants auraient donné cinq
  * cascades selon la vitesse de défilement.
  */
+/*
+ * Les cinq etapes du cycle, telles que la methodologie les enonce.
+ *
+ * Elles ont remplace un premier jeu — Diagnostic, Structuration, Pilotage,
+ * Optimisation, Performance durable — qui nommait des intentions ; celles-ci
+ * nomment ce qui se fait, dans l'ordre ou cela se fait.
+ */
 const ETAPES = [
   {
     numero: '01',
-    titre: 'Diagnostic',
-    texte: 'Évaluer la situation actuelle et identifier les principaux enjeux et écarts.',
-    icone: Search,
+    titre: 'Collecte des données',
+    texte: 'Recueillir les réponses aux questionnaires et les pièces justificatives.',
+    icone: ClipboardList,
   },
   {
     numero: '02',
-    titre: 'Structuration',
-    texte: 'Organiser les données, définir les objectifs, les indicateurs et les priorités.',
-    icone: Layers,
+    titre: 'Analyse',
+    texte: 'Identifier les pratiques existantes et les écarts avec le référentiel.',
+    icone: Search,
   },
   {
     numero: '03',
-    titre: 'Pilotage',
-    texte: 'Transformer les objectifs en actions et suivre leur réalisation.',
-    icone: LineChart,
+    titre: 'Évaluation',
+    texte:
+      'Déterminer le niveau de maturité, enjeux environnementaux, sociaux et de gouvernance compris.',
+    icone: Gauge,
   },
   {
     numero: '04',
-    titre: 'Optimisation',
-    texte: 'Identifier les écarts, ajuster les actions et améliorer les pratiques.',
-    icone: RefreshCw,
+    titre: 'Restitution',
+    texte: 'Présenter les résultats en tableaux de bord et en recommandations aux décideurs.',
+    icone: BarChart3,
   },
   {
     numero: '05',
-    titre: 'Performance durable',
-    texte: 'Mesurer les progrès et inscrire l’amélioration dans la durée.',
-    icone: BarChart3,
+    titre: 'Suivi de la remédiation',
+    texte: 'Assurer la continuité des améliorations, et refermer le cycle sur une nouvelle collecte.',
+    icone: RefreshCw,
   },
 ];
 

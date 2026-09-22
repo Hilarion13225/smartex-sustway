@@ -1,8 +1,8 @@
 import clsx from 'clsx';
-import { Check, Gauge, Layers, ScrollText, TrendingUp } from 'lucide-react';
+import { Check, ScrollText } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
-import SchemaPiliers from './SchemaPiliers';
+import { ApercuTableauDeBord } from './ApercusFonctionnalites';
 import SchemaPerformance from './SchemaPerformance';
 import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
 
@@ -46,23 +46,6 @@ const LIVRABLES = [
   'Conformités et non-conformités, degré de maturité de la démarche',
   'Plans d’actions correctives, priorisés selon les risques identifiés',
   'Indice de préparation à l’éligibilité au financement vert des PTF',
-];
-const DOMAINES = [
-  {
-    titre: 'Structurer',
-    texte: 'Poser un cadre méthodologique clair, adapté à l’organisation et déployé en 5 étapes.',
-    icone: Layers,
-  },
-  {
-    titre: 'Piloter',
-    texte: 'Assurer un suivi dynamique des indicateurs clés sociaux, environnementaux et de gouvernance.',
-    icone: Gauge,
-  },
-  {
-    titre: 'Optimiser',
-    texte: 'Transformer les constats et les écarts en actions concrètes et en création de valeur à long terme.',
-    icone: TrendingUp,
-  },
 ];
 
 /*
@@ -108,52 +91,57 @@ export default function SectionSolution() {
        * `items-start`, et pas de recentrage vertical du schema : il se cale en
        * haut, face au titre, ce qui raccourcit d'autant la section.
        */}
+      {/*
+       * Le texte a gauche, un ecran du produit a droite.
+       *
+       * Le schema des trois piliers qui tenait la colonne de droite a cede la
+       * place a une capture du tableau de bord : la disposition demandee montre
+       * la solution elle-meme des la premiere section, plutot qu'un dessin de
+       * ce qu'elle fait. Les trois cartes qui suivaient sont parties avec lui.
+       *
+       * `items-center` : la colonne de texte est plus courte que l'ecran, et
+       * cale en haut elle laissait un vide sous elle.
+       */}
       <Section id="presentation" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:gap-16">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
           <Apparition>
             <TitreBloc
               niveau={1}
               surTitre="Présentation"
               className="mb-0"
-              sousTitre="SMARTEX SustWay instaure une dynamique d’amélioration continue pour transformer vos obligations en réels leviers de croissance."
             >
               L’opérationnalisation de la RSE au service de la performance
             </TitreBloc>
+
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-ink-600">
+              SMARTEX SustWay est une solution dédiée à l’accompagnement des organisations dans la structuration,
+              l’évaluation et le pilotage de leurs démarches RSE, ESG et de développement durable.
+            </p>
+            <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink-600">
+              Elle permet aux organisations de passer d’une démarche souvent fragmentée à une approche structurée,
+              mesurable et orientée vers l’action, en intégrant les enjeux environnementaux, sociaux et de
+              gouvernance dans leurs pratiques et leurs décisions.
+            </p>
           </Apparition>
 
           <Apparition delai={120} className="min-w-0">
-            <SchemaPiliers />
+            <div className="rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50 to-growth/25 p-4 sm:p-6">
+              <ApercuTableauDeBord />
+            </div>
           </Apparition>
-        </div>
-
-        <div className="mt-6 grid gap-5 md:grid-cols-3">
-          {DOMAINES.map((domaine, index) => {
-            const Icone = domaine.icone;
-            return (
-              <Apparition key={domaine.titre} delai={index * 110}>
-                <div className="h-full rounded-2xl border border-ink-200 bg-surface p-4">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                    <Icone className="h-5 w-5" strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <h3 className="mt-3 text-[19px] font-semibold text-forest">{domaine.titre}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{domaine.texte}</p>
-                </div>
-              </Apparition>
-            );
-          })}
         </div>
       </Section>
 
       {/* --- B. Methodologie --------------------------------------------- */}
-      {/* Anciennement « Notre approche » : seuls le sur-titre et l'ancre
-          changent, la frise des cinq etapes et son texte restent. C'est bien
-          de la methodologie que la section parlait deja. */}
+      {/* La frise porte les cinq etapes du cycle ; le texte les enonce en
+          continu au-dessus. Les deux disent la meme chose, l'une pour l'oeil
+          qui parcourt, l'autre pour qui lit. */}
       <Section id="methodologie" fond="mist" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Méthodologie"
-          sousTitre="Pour sortir de la stagnation, SMARTEX SustWay déploie une méthodologie progressive qui intègre les principes ESG au cœur des décisions stratégiques de croissance, tout en recherchant la création de valeur durable et la maîtrise des impacts de l’entreprise."
+          sousTitre="La méthodologie de SMARTEX SustWay repose sur un cycle d’amélioration continue, comprenant cinq étapes. Elle commence par la collecte des données via des questionnaires et pièces justificatives, suivie par l’analyse pour identifier les pratiques existantes et les écarts. Ensuite, une évaluation détermine le niveau de maturité en tenant compte des enjeux environnementaux, sociaux et de gouvernance. Les résultats sont présentés sous forme de tableaux de bord et de recommandations pour les décideurs. Enfin, un suivi de la remédiation est mis en place pour assurer la continuité des améliorations."
         >
-          Une démarche structurée en 5 étapes
+          Un cycle d’amélioration continue en cinq étapes
         </TitreBloc>
 
         <FriseDemarche />
@@ -169,7 +157,7 @@ export default function SectionSolution() {
       <Section id="referentiels" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Référentiels"
-          sousTitre="Une évaluation ne vaut que par le cadre auquel elle se rapporte. Les critères de SMARTEX SustWay s’adossent à des références internationales reconnues, et chaque résultat peut être ramené à celle dont il relève."
+          sousTitre="Les référentiels constituent le cadre de référence. Ils permettent de définir les critères d’évaluation, de structurer la collecte des données, d’analyser les écarts et d’orienter les actions."
         >
           Des cadres reconnus, et non des critères maison
         </TitreBloc>
@@ -196,7 +184,7 @@ export default function SectionSolution() {
       <Section id="livrables" fond="mist" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Livrables"
-          sousTitre="Un rapport qui dit où vous en êtes, et ce qu’il reste à corriger. La démarche ne s’arrête pas à un score : elle rend des documents exploitables, que vos équipes et vos parties prenantes peuvent lire."
+          sousTitre="La démarche SMARTEX SustWay transforme les données et les analyses en livrables utiles à la décision et au pilotage."
         >
           Ce que la démarche vous remet
         </TitreBloc>
