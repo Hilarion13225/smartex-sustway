@@ -14,7 +14,7 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
 export default function Ressources() {
   useMetaPage(
     'Ressources — SMARTEX SustWay',
-    'Formations, méthodologie d’évaluation et questions fréquentes : ce qui aide à comprendre une démarche RSE et ESG et à s’y préparer.'
+    'Formations, méthodologie d’évaluation et questions fréquentes : ce qui aide à comprendre une démarche RSE, ESG & DD et à s’y préparer.'
   );
 
   return (
@@ -22,7 +22,7 @@ export default function Ressources() {
       <EnTetePage
         image={bandeau}
         titre="Ressources & expertise"
-        sousTitre="Ce qui aide à comprendre la démarche RSE et ESG, à s’y former et à s’y préparer."
+        sousTitre="Ce qui aide à comprendre la démarche RSE, ESG & DD, à s’y former et à s’y préparer."
       />
       <SectionRessources />
     </>

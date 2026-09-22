@@ -221,7 +221,7 @@ export default function SectionFonctionnalites() {
           </h2>
           <p className="mt-5 text-[17px] leading-relaxed text-white/75">
             Demandez une démonstration et découvrez comment la plateforme peut s’intégrer à votre processus de pilotage
-            RSE, ESG et Développement Durable.
+            RSE, ESG & DD.
           </p>
           {/* Le bouton reste blanc sur le fond Forest : le vert de marque ne
               s'y détache qu'à 2,03:1, là où un composant d'interface en demande

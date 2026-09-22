@@ -141,8 +141,8 @@ export default function PiedPublic() {
               <span aria-hidden className="text-growth/50">•</span> Mesurer
             </p>
             <p className="mt-3 text-[15px] leading-snug text-white/70 lg:mt-2">
-              Une solution de {SMARTEX.editeur} pour structurer, piloter, optimiser et mesurer la performance RSE, ESG
-              et développement durable des organisations.
+              Une solution de {SMARTEX.editeur} pour structurer, piloter, optimiser et mesurer la performance RSE, ESG & DD
+              des organisations.
             </p>
           </div>
 

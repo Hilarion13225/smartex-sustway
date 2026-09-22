@@ -115,7 +115,7 @@ export default function SectionSolution() {
 
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-ink-600">
               SMARTEX SustWay est une solution dédiée à l’accompagnement des organisations dans la structuration,
-              l’évaluation et le pilotage de leurs démarches RSE, ESG et de développement durable.
+              l’évaluation et le pilotage de leurs démarches RSE, ESG & DD.
             </p>
             <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink-600">
               Elle permet aux organisations de passer d’une démarche souvent fragmentée à une approche structurée,

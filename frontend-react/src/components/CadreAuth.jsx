@@ -45,7 +45,7 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
           <aside className="relative hidden flex-col rounded-[12px] bg-[#193E2C] p-8 text-white lg:flex">
             <p className="text-sm text-white/70">Par {SMARTEX.editeur}</p>
             <p className="mt-6 font-display text-[1.75rem] font-bold leading-[1.12] tracking-[-0.02em] text-white [text-wrap:balance]">
-              Votre démarche RSE, ESG et DD, notée sur vos preuves.
+              Votre démarche RSE, ESG & DD, notée sur vos preuves.
             </p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/75">{SMARTEX.baseline}</p>
 

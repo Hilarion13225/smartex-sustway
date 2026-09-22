@@ -60,7 +60,7 @@ export default function SectionConfiance() {
         titreClassName="lg:text-[32px]"
         surTitre="Ils nous font confiance"
         titre="Des organisations qui pilotent déjà leur performance durable"
-        sousTitre="Groupes industriels, énergéticiens, agro-industrie et organisation patronale : des structures de tailles et de secteurs différents, engagées dans une démarche RSE et ESG."
+        sousTitre="Groupes industriels, énergéticiens, agro-industrie et organisation patronale : des structures de tailles et de secteurs différents, engagées dans une démarche RSE, ESG & DD."
       />
 
       {/*

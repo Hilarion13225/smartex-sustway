@@ -9,7 +9,7 @@ export const SMARTEX = {
   accroche: 'Évaluation RSE intelligente',
   signature: 'Évaluer. Analyser. Progresser.',
   baseline: 'Conseil, audit et outillage numérique de la performance durable.',
-  mission: 'Mesurer la maturité et la performance de votre entreprise en matière de RSE et ESG.',
+  mission: 'Mesurer la maturité et la performance de votre entreprise en matière de RSE, ESG & DD.',
   promesseFinancement: 'Préparez votre éligibilité au financement durable et éthique.',
   email: 'contact@smartex-expertises.com',
   emailSupport: 'support@smartex-expertises.com',
@@ -81,7 +81,7 @@ export const FONDEMENTS = [
   {
     titre: 'Recherche académique',
     icone: 'GraduationCap',
-    texte: 'La méthodologie intègre les avancées de la recherche en RSE/ESG, pas seulement les pratiques du marché.',
+    texte: 'La méthodologie intègre les avancées de la recherche en RSE, ESG & DD, pas seulement les pratiques du marché.',
   },
   {
     titre: 'Pratiques professionnelles',

@@ -29,7 +29,7 @@ const OFFRES = [
     nom: 'Essential',
     promesse: 'Structurer',
     texte:
-      'Pour les organisations souhaitant poser les bases de leur démarche RSE et structurer leurs premiers indicateurs.',
+      'Pour les organisations souhaitant poser les bases de leur démarche RSE, ESG & DD et structurer leurs premiers indicateurs.',
     elements: [
       'Un périmètre d’évaluation',
       'Référentiels et critères ESG de base',
@@ -102,7 +102,7 @@ const OFFRES = [
  * « Fonctionnalités », et elles valent quelle que soit l'offre.
  */
 const SOCLE = [
-  { titre: 'Référentiels', texte: 'Critères RSE et ESG, socle unifié.', icone: ShieldCheck },
+  { titre: 'Référentiels', texte: 'Critères RSE, ESG & DD, socle unifié.', icone: ShieldCheck },
   { titre: 'Évaluations', texte: 'Campagnes, périmètres et questionnaires.', icone: ClipboardCheck },
   { titre: 'Preuves', texte: 'Collecte, centralisation et traçabilité.', icone: Layers },
   { titre: 'Analyse', texte: 'Scoring, écarts et niveaux de maturité.', icone: BarChart3 },

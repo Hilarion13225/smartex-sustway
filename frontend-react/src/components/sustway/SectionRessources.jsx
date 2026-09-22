@@ -27,7 +27,7 @@ const RUBRIQUES = [
   {
     ancre: 'articles',
     surTitre: 'Articles',
-    titre: 'Comprendre les évolutions de la RSE et de l’ESG',
+    titre: 'Comprendre les évolutions RSE, ESG & DD',
     texte:
       'Retrouvez nos analyses et actualités sur les tendances RSE, les critères ESG et les stratégies de développement durable en entreprise.',
     action: 'Voir les articles',

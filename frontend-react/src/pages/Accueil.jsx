@@ -21,8 +21,8 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
  */
 export default function Accueil() {
   useMetaPage(
-    'SMARTEX SustWay — Plateforme SaaS de pilotage RSE, ESG et développement durable',
-    'SMARTEX SustWay est la plateforme SaaS qui permet de structurer, piloter et mesurer la performance RSE, ESG et développement durable : évaluations, indicateurs extra-financiers, preuves, tableaux de bord, plans d’action et reporting de durabilité.'
+    'SMARTEX SustWay — Plateforme SaaS de pilotage RSE, ESG & DD',
+    'SMARTEX SustWay est la plateforme SaaS qui permet de structurer, piloter et mesurer la performance RSE, ESG & DD : évaluations, indicateurs extra-financiers, preuves, tableaux de bord, plans d’action et reporting de durabilité.'
   );
 
   return (

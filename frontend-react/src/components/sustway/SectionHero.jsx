@@ -111,14 +111,14 @@ export default function SectionHero() {
            * le héros tient partout sans avoir à s'ajuster.
            */}
           <h1 className="mt-5 text-[19px] font-semibold leading-[1.3] tracking-[-0.01em] text-white sm:text-[23px] lg:text-[26px] xl:text-[30px] 2xl:text-[34px] 3xl:text-[40px]">
-            Structurer, piloter et optimiser votre démarche RSE, ESG et Développement Durable.
+            Structurer, piloter et optimiser votre démarche RSE, ESG & DD.
           </h1>
 
           {/* L'accroche qui tenait ici est retirée : le titre nomme déjà les
               trois sigles, et le paragraphe qui suit dit ce que la plateforme
               en fait. Elle s'intercalait entre les deux sans rien ajouter. */}
           <p className="mx-auto mt-5 max-w-xl text-[14px] leading-relaxed text-white/70 sm:text-[15px] xl:max-w-2xl xl:text-[16px] 2xl:max-w-3xl 2xl:text-[18px] 3xl:text-[20px]">
-            SMARTEX SustWay est une démarche d’opérationnalisation de la RSE et du Développement Durable qui aide les
+            SMARTEX SustWay est une démarche d’opérationnalisation RSE, ESG & DD qui aide les
             entreprises à sortir de la stagnation. Elle vise l’amélioration continue de leur fonctionnement opérationnel
             et extra-financier.
           </p>

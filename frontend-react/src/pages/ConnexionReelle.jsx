@@ -82,7 +82,7 @@ export default function ConnexionReelle() {
       description={
         enDeuxFa
           ? 'Saisissez le code de sécurité pour finaliser la connexion.'
-          : 'Connectez-vous pour retrouver vos évaluations RSE et vos plans d’action.'
+          : 'Connectez-vous pour retrouver vos évaluations RSE, ESG & DD et vos plans d’action.'
       }
       atouts={ATOUTS}
     >
