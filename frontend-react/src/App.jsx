@@ -9,7 +9,6 @@ import Accueil from './pages/Accueil';
 import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
-import Deploiement from './pages/Deploiement';
 import Ressources from './pages/Ressources';
 import Formation from './pages/Formation';
 import Contact from './pages/Contact';
@@ -94,7 +93,10 @@ export default function App() {
             {/* La page Formules a ete supprimee : ses anciens liens menent aux offres,
                 qui portent desormais les trois niveaux de service. */}
             <Route path="/formules" element={<Navigate to="/offres" replace />} />
-            <Route path="/deploiement" element={<Deploiement />} />
+            {/* La page Deploiement a ete supprimee. Les etapes de mission qu'elle
+                detaillait rejoignent la demarche en cinq etapes de la page
+                Solution, ou ses anciens liens aboutissent. */}
+            <Route path="/deploiement" element={<Navigate to="/solution#methodologie" replace />} />
             <Route path="/ressources" element={<Ressources />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/contact" element={<Contact />} />

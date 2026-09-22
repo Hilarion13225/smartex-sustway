@@ -51,7 +51,6 @@ const PAGES_EN_TETE_SOMBRE = [
   '/fonctionnalites',
   '/offres',
   '/ressources',
-  '/deploiement',
 ];
 
 /** Mise en page commune des pages publiques (vitrine) : en-tête, contenu, pied de page. */

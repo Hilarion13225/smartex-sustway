@@ -35,12 +35,11 @@ import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
  */
 
 /*
- * Les livrables, repris mot pour mot de la page « Deploiement » (voir
- * `vitrine/EtapesMission.jsx`, entree « Les livrables »).
+ * Les livrables : les quatre documents que la mission produit reellement.
  *
- * Repris et non reformules : ce sont les quatre documents que la mission
- * produit reellement, et deux pages du site qui les enonceraient
- * differemment finiraient par se contredire.
+ * Ils venaient de la page « Deploiement », supprimee depuis ; cette liste
+ * en est desormais la seule source du site. Les intitules sont ceux qui y
+ * figuraient, non reformules.
  */
 const LIVRABLES = [
   'Rapport de synthèse : profil RSE global et profil par domaine évalué',
