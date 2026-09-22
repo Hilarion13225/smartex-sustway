@@ -1,76 +1,107 @@
-import { ClipboardCheck, Target, TrendingUp } from 'lucide-react';
+import { BarChart3, Database, FolderCheck, ListChecks } from 'lucide-react';
 import { Apparition, Section } from './Section';
-import { ApercuCampagnes, ApercuPlansAction, ApercuTableauDeBord } from './ApercusFonctionnalites';
+import {
+  ApercuDonnees,
+  ApercuPlansAction,
+  ApercuPreuves,
+  ApercuTableauDeBord,
+} from './ApercusFonctionnalites';
 
 /*
- * Corps de la page « Fonctionnalités » : trois domaines, trois écrans.
+ * Corps de la page « Fonctionnalités » : quatre temps, quatre écrans.
+ *
+ * Ils suivent l'ordre dans lequel une évaluation se déroule réellement —
+ * rassembler les données, les justifier, les lire, puis agir — et non un
+ * classement par famille de fonctionnalités. Un visiteur qui découvre la
+ * plateforme cherche à savoir ce qu'il aura à faire, dans quel ordre ; le
+ * classement par famille répond à une autre question, celle d'un utilisateur
+ * qui connaît déjà l'outil.
+ *
+ * Les quatre aperçus existaient déjà dans `ApercusFonctionnalites.jsx` : ce
+ * découpage est celui pour lequel ils avaient été dessinés.
  *
  * Ils alternent de part et d'autre de la page. Chaque aperçu dispose ainsi de
  * la moitié de la largeur plutôt que d'un quart, ce qui rend son interface
  * réellement lisible, et l'alternance donne un rythme de lecture là où des
  * cartes identiques donnaient un catalogue.
  *
- * Chaque domaine porte son ancre — `#evaluations`, `#objectifs-actions`,
- * `#performance-reporting` — que le menu déroulant de la barre vise
- * directement.
+ * Chaque temps porte son ancre — `#collecte-des-donnees`, `#documenter`,
+ * `#analyse-resultats`, `#remedier-piloter` — que le menu déroulant de la
+ * barre vise directement.
  *
  * Les capacités listées sous chaque description ne sont pas décoratives :
  * elles nomment ce que l'écran manipule, là où la phrase dit ce qu'il permet
  * de faire.
  *
- * Les trois entrées ouvrent en `h2` : ce sont les sections de la page, dont le
- * `h1` est porté par le bandeau de titre.
+ * Les quatre entrées ouvrent en `h2` : ce sont les sections de la page, dont
+ * le `h1` est porté par le bandeau de titre.
  */
 const DOMAINES = [
   {
-    ancre: 'evaluations',
+    ancre: 'collecte-des-donnees',
     numero: '01',
-    titre: 'Évaluations RSE & ESG',
+    titre: 'Collecte des données',
     texte:
-      'Organisez vos campagnes d’évaluation, définissez les périmètres et collectez l’ensemble des données extra-financières de l’organisation.',
+      'Organisez vos campagnes d’évaluation, définissez les périmètres et rassemblez en un seul endroit l’ensemble des données extra-financières de l’organisation.',
     capacites: [
       'Campagnes d’évaluation',
       'Définition des périmètres',
       'Critères RSE & ESG',
+      'Questionnaires',
       'Collecte des données',
-      'Suivi des résultats',
     ],
-    icone: ClipboardCheck,
-    Apercu: ApercuCampagnes,
+    icone: Database,
+    Apercu: ApercuDonnees,
   },
   {
-    ancre: 'objectifs-actions',
+    ancre: 'documenter',
     numero: '02',
-    titre: 'Objectifs & Actions',
+    titre: 'Documenter',
+    texte:
+      'Déposez les pièces qui justifient chaque réponse. Chaque preuve est rattachée au critère qu’elle sert et reste consultable, ce qui rend l’évaluation vérifiable plutôt que déclarative.',
+    capacites: [
+      'Preuves documentaires',
+      'Dépôt des pièces',
+      'Rattachement aux critères',
+      'Traçabilité',
+      'Historique des versions',
+    ],
+    icone: FolderCheck,
+    Apercu: ApercuPreuves,
+  },
+  {
+    ancre: 'analyse-resultats',
+    numero: '03',
+    titre: 'Analyse & Résultats',
+    texte:
+      'Vos données deviennent des résultats lisibles : scores par domaine, conformités et écarts, niveaux de maturité et progression dans le temps, réunis sur des tableaux de bord dynamiques.',
+    capacites: [
+      'Indicateurs de performance',
+      'Tableaux de bord',
+      'Conformités et écarts',
+      'Niveaux de maturité',
+      'Analyse de progression',
+      'Reporting extra-financier',
+    ],
+    icone: BarChart3,
+    Apercu: ApercuTableauDeBord,
+  },
+  {
+    ancre: 'remedier-piloter',
+    numero: '04',
+    titre: 'Remédier & Piloter',
     texte:
       'Transformez vos écarts en plans d’action concrets. Attribuez des responsabilités, fixez des échéances et suivez l’avancement de chaque initiative.',
     capacites: [
-      'Définition des objectifs',
       'Plans d’action',
+      'Objectifs',
       'Responsabilités',
       'Échéances',
       'Priorisation',
       'Suivi de l’avancement',
     ],
-    icone: Target,
+    icone: ListChecks,
     Apercu: ApercuPlansAction,
-  },
-  {
-    ancre: 'performance-reporting',
-    numero: '03',
-    titre: 'Performance & Reporting',
-    texte:
-      'Centralisez vos indicateurs à travers des tableaux de bord dynamiques et générez des rapports de durabilité clairs pour vos parties prenantes et régulateurs.',
-    capacites: [
-      'Indicateurs de performance',
-      'Tableaux de bord',
-      'Suivi des objectifs',
-      'Analyse de progression',
-      'Reporting extra-financier',
-      'Historique des performances',
-    ],
-    icone: TrendingUp,
-    Apercu: ApercuTableauDeBord,
   },
 ];
 

@@ -4,19 +4,19 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 /*
  * Largeur à partir de laquelle la barre complète tient sans déborder.
  *
- * Mesuré au navigateur sur la barre réelle : logo 222 px, les cinq liens
- * 451 px (Accueil 74, Solution 79, Fonctionnalités 129, Offres 65,
- * Ressources 104) et les actions 355 px, plus 40 px de marges internes,
- * 32 px d'écarts entre les trois groupes et 24 px de respiration autour de
- * la navigation — soit 1124 px, et 1164 px de fenêtre une fois retirées les
- * marges de l'en-tête. Le seuil est donc posé à 1200 px, qui laisse une
- * soixantaine de pixels.
+ * Remesuré au navigateur après le passage à trois actions : logo 231 px, la
+ * navigation 703 px (Accueil 69, Solution 95, Fonctionnalités 142, Offres 62,
+ * Ressources 112, plus les chevrons et les écarts), et les actions 410 px
+ * (Démo 65, S'inscrire 93, Se connecter 112, logo de l'éditeur 118).
  *
- * Il valait 1320 px, calibré pour les six entrées de la navigation
- * précédente, dont « Lancer une évaluation ». Les cinq entrées de la charte
- * SMARTEX SustWay sont plus courtes de près de 200 px : le seuil hérité
- * faisait basculer la barre en menu déroulant sur un portable de 1280 px
- * alors qu'elle y tenait largement.
+ * Le logo de l'éditeur ne paraît qu'à partir de 1280 px, ce qui rend 118 px
+ * au groupe d'actions en dessous. Vérifié par mesure à 1120, 1160, 1200,
+ * 1240, 1280, 1360 et 1440 px : aucun débordement à aucune de ces largeurs,
+ * et la navigation complète s'affiche dès 1200 px. Le seuil y reste donc.
+ *
+ * Il a tenu au passage de deux actions à trois parce que « Créer un compte »
+ * a cédé la place à « S'inscrire » : les deux nouveaux intitulés réunis
+ * coûtent moins que l'ancien seul.
  *
  * Changer un libellé ou ajouter une entrée demande de refaire cette mesure.
  */
@@ -54,17 +54,19 @@ const LIENS = [
     libelle: 'Solution',
     sous: [
       { vers: '/solution#presentation', libelle: 'Présentation' },
-      { vers: '/solution#notre-approche', libelle: 'Notre approche' },
-      { vers: '/solution#performance-durable', libelle: 'Performance durable' },
+      { vers: '/solution#methodologie', libelle: 'Méthodologie' },
+      { vers: '/solution#referentiels', libelle: 'Référentiels' },
+      { vers: '/solution#livrables', libelle: 'Livrables' },
     ],
   },
   {
     vers: '/fonctionnalites',
     libelle: 'Fonctionnalités',
     sous: [
-      { vers: '/fonctionnalites#evaluations', libelle: 'Évaluations RSE & ESG' },
-      { vers: '/fonctionnalites#objectifs-actions', libelle: 'Objectifs & Actions' },
-      { vers: '/fonctionnalites#performance-reporting', libelle: 'Performance & Reporting' },
+      { vers: '/fonctionnalites#collecte-des-donnees', libelle: 'Collecte des données' },
+      { vers: '/fonctionnalites#documenter', libelle: 'Documenter' },
+      { vers: '/fonctionnalites#analyse-resultats', libelle: 'Analyse & Résultats' },
+      { vers: '/fonctionnalites#remedier-piloter', libelle: 'Remédier & Piloter' },
     ],
   },
   { vers: '/offres', libelle: 'Offres' },
@@ -81,26 +83,27 @@ const LIENS = [
 ];
 
 /*
- * Les deux actions de la barre, dans l'ordre où elles s'y lisent.
+ * Les trois actions de la barre, dans l'ordre où elles s'y lisent.
  *
- * « Démo » est un lien, « Créer un compte » le bouton plein : l'inscription
- * est l'action que le site cherche à provoquer, la démonstration celle qu'on
- * demande quand on n'est pas prêt à s'inscrire. Le poids visuel suit cet
- * ordre, pas l'inverse.
+ * Elles vont du moins engageant au plus engageant : regarder, s'inscrire,
+ * entrer. Seule « S'inscrire » est un bouton plein, parce que c'est l'action
+ * que le site cherche à provoquer ; « Se connecter » s'adresse à qui a déjà
+ * un compte et sait donc où il va, et n'a pas besoin d'être criard pour être
+ * trouvé.
  *
- * « Démo » et non « Demander une démo » : à côté d'un second bouton, l'intitulé
- * long déséquilibrait la paire et poussait la barre de trente pixels.
- */
-/*
  * « Démo » n'est pas un lien mais un déclencheur : il ouvre la vidéo de
- * démonstration, là où il menait au formulaire de contact. Un visiteur qui
- * clique sur « Démo » veut voir le produit, pas remplir un champ ; la demande
- * de démonstration personnalisée reste portée par l'appel à l'action de fin de
- * page, qui la nomme en toutes lettres.
+ * démonstration. Un visiteur qui clique dessus veut voir le produit, pas
+ * remplir un champ ; la demande de démonstration personnalisée reste portée
+ * par la page Contact, que le pied de page désigne en toutes lettres.
+ *
+ * Les intitulés sont courts — « Démo » et non « Demander une démo » : à trois
+ * de front, les intitulés longs poussent la barre au-delà de sa largeur
+ * utile et font basculer la navigation en menu hamburger trop tôt.
  */
 const ACTIONS = [
   { action: 'video', libelle: 'Démo', principale: false },
-  { vers: '/inscription', libelle: 'Créer un compte', principale: true },
+  { vers: '/inscription', libelle: 'S’inscrire', principale: true },
+  { vers: '/connexion', libelle: 'Se connecter', principale: false },
 ];
 
 /*

@@ -26,16 +26,18 @@ const COLONNES = [
     titre: 'Solution',
     liens: [
       { vers: '/solution#presentation', libelle: 'Présentation' },
-      { vers: '/solution#notre-approche', libelle: 'Notre approche' },
-      { vers: '/solution#performance-durable', libelle: 'Performance durable' },
+      { vers: '/solution#methodologie', libelle: 'Méthodologie' },
+      { vers: '/solution#referentiels', libelle: 'Référentiels' },
+      { vers: '/solution#livrables', libelle: 'Livrables' },
     ],
   },
   {
     titre: 'Fonctionnalités',
     liens: [
-      { vers: '/fonctionnalites#evaluations', libelle: 'Évaluations RSE & ESG' },
-      { vers: '/fonctionnalites#objectifs-actions', libelle: 'Objectifs & Actions' },
-      { vers: '/fonctionnalites#performance-reporting', libelle: 'Performance & Reporting' },
+      { vers: '/fonctionnalites#collecte-des-donnees', libelle: 'Collecte des données' },
+      { vers: '/fonctionnalites#documenter', libelle: 'Documenter' },
+      { vers: '/fonctionnalites#analyse-resultats', libelle: 'Analyse & Résultats' },
+      { vers: '/fonctionnalites#remedier-piloter', libelle: 'Remédier & Piloter' },
     ],
   },
   {
@@ -59,7 +61,8 @@ const COLONNES = [
     titre: 'Contact',
     liens: [
       { vers: '/contact', libelle: 'Demander une démo' },
-      { vers: '/inscription', libelle: 'Créer un compte' },
+      { vers: '/inscription', libelle: 'S’inscrire' },
+      { vers: '/connexion', libelle: 'Se connecter' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },

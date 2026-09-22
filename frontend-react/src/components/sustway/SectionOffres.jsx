@@ -250,12 +250,15 @@ export default function SectionOffres() {
             {SOCLE.map((capacite, index) => {
               const Icone = capacite.icone;
               return (
-                <Apparition key={capacite.titre} delai={index * 70}>
-                  <li className="border-l border-ink-200 pl-4">
+                <Apparition
+                  key={capacite.titre}
+                  balise="li"
+                  delai={index * 70}
+                  className="border-l border-ink-200 pl-4"
+                >
                     <Icone className="h-5 w-5 text-brand-600" strokeWidth={1.75} aria-hidden />
                     <p className="mt-3 text-[15px] font-semibold text-forest">{capacite.titre}</p>
                     <p className="mt-1 text-[13px] leading-snug text-ink-500">{capacite.texte}</p>
-                  </li>
                 </Apparition>
               );
             })}

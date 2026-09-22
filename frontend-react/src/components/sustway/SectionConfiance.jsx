@@ -70,8 +70,12 @@ export default function SectionConfiance() {
        */}
       <ul className="mt-12 grid grid-cols-2 items-center gap-x-8 gap-y-10 sm:grid-cols-3 lg:mt-6 lg:grid-cols-5">
         {ORGANISATIONS.map((organisation, index) => (
-          <Apparition key={organisation.nom} delai={index * 90}>
-            <li className="flex items-center justify-center">
+          <Apparition
+            key={organisation.nom}
+            balise="li"
+            delai={index * 90}
+            className="flex items-center justify-center"
+          >
               <img
                 src={organisation.logo}
                 alt={organisation.nom}
@@ -85,7 +89,6 @@ export default function SectionConfiance() {
                    invisible à l'œil mais bien réel au doigt. */
                 className={`w-auto max-w-full object-contain transition duration-300 hover:grayscale motion-reduce:transition-none sm:max-w-[170px] ${organisation.hauteurAccueil}`}
               />
-            </li>
           </Apparition>
         ))}
       </ul>

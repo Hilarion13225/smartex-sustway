@@ -127,10 +127,23 @@ export function TitreSection({
  * style en ligne plutôt qu'en classe, le nombre de valeurs possibles étant
  * ouvert et Tailwind ne générant que celles qu'il lit dans le source.
  */
-export function Apparition({ delai = 0, className, children }) {
+/*
+ * `balise` : l'element rendu, `div` par defaut.
+ *
+ * Un `ul` ne peut contenir que des `li`. Enveloppe dans un `div`, chaque `li`
+ * sortait de sa liste a l'analyse du document : la grille perdait ses
+ * enfants directs, ses colonnes ne s'appliquaient plus, et une partie des
+ * cartes ne s'affichait pas. Mesure faite sur la section des referentiels,
+ * ou deux des cinq cartes manquaient a l'ecran.
+ *
+ * D'ou ce parametre plutot qu'un second composant d'apparition : la liste
+ * passe `balise="li"` et l'animation porte directement sur l'element de
+ * liste.
+ */
+export function Apparition({ delai = 0, balise: Balise = 'div', className, children }) {
   const { reference, visible } = useApparition();
   return (
-    <div
+    <Balise
       ref={reference}
       style={visible && delai ? { transitionDelay: `${delai}ms` } : undefined}
       className={clsx(
@@ -145,6 +158,6 @@ export function Apparition({ delai = 0, className, children }) {
       )}
     >
       {children}
-    </div>
+    </Balise>
   );
 }
