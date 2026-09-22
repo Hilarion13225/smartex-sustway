@@ -1,4 +1,5 @@
-import { BarChart3, Database, FolderCheck, ListChecks } from 'lucide-react';
+import { ArrowRight, BarChart3, Database, FolderCheck, ListChecks } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Apparition, Section } from './Section';
 import {
   ApercuDonnees,
@@ -8,9 +9,10 @@ import {
 } from './ApercusFonctionnalites';
 
 /*
- * Corps de la page « Fonctionnalités » : quatre temps, quatre écrans.
+ * Corps de la page « Fonctionnalités » : une introduction, quatre temps, un
+ * appel à l'action.
  *
- * Ils suivent l'ordre dans lequel une évaluation se déroule réellement —
+ * Les quatre temps suivent l'ordre dans lequel une évaluation se déroule —
  * rassembler les données, les justifier, les lire, puis agir — et non un
  * classement par famille de fonctionnalités. Un visiteur qui découvre la
  * plateforme cherche à savoir ce qu'il aura à faire, dans quel ordre ; le
@@ -25,31 +27,29 @@ import {
  * réellement lisible, et l'alternance donne un rythme de lecture là où des
  * cartes identiques donnaient un catalogue.
  *
- * Chaque temps porte son ancre — `#collecte-des-donnees`, `#documenter`,
+ * Chaque temps porte son ancre — `#collecter-les-donnees`, `#documenter`,
  * `#analyse-resultats`, `#remedier-piloter` — que le menu déroulant de la
  * barre vise directement.
  *
- * Les capacités listées sous chaque description ne sont pas décoratives :
- * elles nomment ce que l'écran manipule, là où la phrase dit ce qu'il permet
- * de faire.
+ * Le descriptif de chaque temps tient en trois phrases séparées, et non en un
+ * paragraphe : ce sont trois choses distinctes que la plateforme permet, et
+ * les enchaîner les ferait lire comme une seule.
  *
- * Les quatre entrées ouvrent en `h2` : ce sont les sections de la page, dont
- * le `h1` est porté par le bandeau de titre.
+ * Les mots-clés sous chaque descriptif nomment ce que l'écran manipule, là où
+ * les phrases disent ce qu'il permet de faire.
  */
 const DOMAINES = [
   {
-    ancre: 'collecte-des-donnees',
+    ancre: 'collecter-les-donnees',
     numero: '01',
-    titre: 'Collecte des données',
-    texte:
-      'Organisez vos campagnes d’évaluation, définissez les périmètres et rassemblez en un seul endroit l’ensemble des données extra-financières de l’organisation.',
-    capacites: [
-      'Campagnes d’évaluation',
-      'Définition des périmètres',
-      'Critères RSE & ESG',
-      'Questionnaires',
-      'Collecte des données',
+    titre: 'Collecter les données',
+    sousTitre: 'Organisez vos campagnes et collectez vos données RSE, ESG & DD',
+    phrases: [
+      'Créez vos campagnes d’évaluation en quelques clics et définissez précisément leurs périmètres.',
+      'Déployez des questionnaires ciblés auprès des bonnes parties prenantes : ressources humaines, achats, environnement, direction.',
+      'Collectez l’ensemble des données qualitatives et quantitatives nécessaires à votre démarche extra-financière, de manière centralisée.',
     ],
+    capacites: ['Créer', 'Planifier', 'Affecter', 'Collecter'],
     icone: Database,
     Apercu: ApercuDonnees,
   },
@@ -57,15 +57,13 @@ const DOMAINES = [
     ancre: 'documenter',
     numero: '02',
     titre: 'Documenter',
-    texte:
-      'Déposez les pièces qui justifient chaque réponse. Chaque preuve est rattachée au critère qu’elle sert et reste consultable, ce qui rend l’évaluation vérifiable plutôt que déclarative.',
-    capacites: [
-      'Preuves documentaires',
-      'Dépôt des pièces',
-      'Rattachement aux critères',
-      'Traçabilité',
-      'Historique des versions',
+    sousTitre: 'Gardez chaque élément justificatif sous contrôle',
+    phrases: [
+      'Centralisez et sécurisez l’ensemble de vos pièces justificatives : politiques RSE, chartes d’éthique, factures énergétiques, rapports d’audit.',
+      'Associez chaque preuve directement aux contrôles et aux critères évalués.',
+      'Garantissez une traçabilité irréprochable et un niveau de preuve prêt pour les audits externes et les exigences réglementaires.',
     ],
+    capacites: ['Preuves', 'Justificatifs', 'Traçabilité', 'Conformité'],
     icone: FolderCheck,
     Apercu: ApercuPreuves,
   },
@@ -73,16 +71,13 @@ const DOMAINES = [
     ancre: 'analyse-resultats',
     numero: '03',
     titre: 'Analyse & Résultats',
-    texte:
-      'Vos données deviennent des résultats lisibles : scores par domaine, conformités et écarts, niveaux de maturité et progression dans le temps, réunis sur des tableaux de bord dynamiques.',
-    capacites: [
-      'Indicateurs de performance',
-      'Tableaux de bord',
-      'Conformités et écarts',
-      'Niveaux de maturité',
-      'Analyse de progression',
-      'Reporting extra-financier',
+    sousTitre: 'Visualisez ce qui compte et transformez vos indicateurs',
+    phrases: [
+      'Analysez vos scores de maturité et vos niveaux de performance à travers des tableaux de bord dynamiques et visuels.',
+      'Restituez l’information clé sous forme de rapports de durabilité clairs, adaptés aux attentes des parties prenantes, des régulateurs et de la direction.',
+      'Identifiez instantanément les forces, les faiblesses et les zones de vulnérabilité extra-financière de l’organisation.',
     ],
+    capacites: ['Scores', 'Maturité', 'Indicateurs', 'Restitution', 'Reporting'],
     icone: BarChart3,
     Apercu: ApercuTableauDeBord,
   },
@@ -90,24 +85,59 @@ const DOMAINES = [
     ancre: 'remedier-piloter',
     numero: '04',
     titre: 'Remédier & Piloter',
-    texte:
-      'Transformez vos écarts en plans d’action concrets. Attribuez des responsabilités, fixez des échéances et suivez l’avancement de chaque initiative.',
-    capacites: [
-      'Plans d’action',
-      'Objectifs',
-      'Responsabilités',
-      'Échéances',
-      'Priorisation',
-      'Suivi de l’avancement',
+    sousTitre: 'Faites travailler les équipes ensemble et pilotez la trajectoire durable',
+    phrases: [
+      'Transformez les écarts et les axes d’amélioration identifiés en plans d’action concrets et assignables.',
+      'Désignez des responsables, fixez des échéances précises et suivez l’avancement de chaque initiative.',
+      'Pilotez l’amélioration continue de votre posture globale de développement durable sur le long terme.',
     ],
+    capacites: ['Plans d’action', 'Responsables', 'Échéances', 'Pilotage continu'],
     icone: ListChecks,
     Apercu: ApercuPlansAction,
   },
 ];
 
+/* Bouton plein, repris à l'identique en haut et en bas de page. */
+function BoutonDemo({ className = '' }) {
+  return (
+    <Link
+      to="/contact"
+      className={`group inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700 ${className}`}
+    >
+      Demander une démo
+      <ArrowRight
+        className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
+        strokeWidth={2}
+        aria-hidden
+      />
+    </Link>
+  );
+}
+
 export default function SectionFonctionnalites() {
   return (
     <>
+      {/*
+       * L'introduction de la page.
+       *
+       * Le titre et l'accroche de la specification sont portes par le bandeau
+       * de titre, juste au-dessus : les repeter ici aurait donne deux titres
+       * voisins disant la meme chose. Ne reste que le texte descriptif.
+       *
+       * L'appel a l'action y figure deja : un visiteur convaincu des l'accroche
+       * ne doit pas avoir a parcourir les quatre temps pour trouver comment
+       * demander une demonstration.
+       */}
+      <Section fond="blanc" contenuClassName="lg:py-20">
+        <Apparition className="max-w-3xl">
+          <p className="text-[17px] leading-relaxed text-ink-700">
+            SMARTEX SustWay réunit les outils nécessaires pour simplifier le travail des équipes et donner aux
+            responsables une vision claire de l’avancement et de la performance extra-financière.
+          </p>
+          <BoutonDemo className="mt-8" />
+        </Apparition>
+      </Section>
+
       {DOMAINES.map((domaine, index) => {
         const Icone = domaine.icone;
         const { Apercu } = domaine;
@@ -138,14 +168,19 @@ export default function SectionFonctionnalites() {
                   <h2 className="mt-1 text-[26px] font-semibold leading-snug tracking-[-0.02em] text-forest sm:text-[30px]">
                     {domaine.titre}
                   </h2>
-                  <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-600 sm:text-[17px]">
-                    {domaine.texte}
+                  <p className="mt-3 max-w-xl text-[17px] font-medium leading-snug text-brand-700">
+                    {domaine.sousTitre}
                   </p>
 
-                  <p className="mt-7 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                    Principales capacités
-                  </p>
-                  <ul className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-5 max-w-xl space-y-3">
+                    {domaine.phrases.map((phrase) => (
+                      <p key={phrase} className="text-[16px] leading-relaxed text-ink-600">
+                        {phrase}
+                      </p>
+                    ))}
+                  </div>
+
+                  <ul className="mt-7 flex flex-wrap gap-2">
                     {domaine.capacites.map((capacite) => (
                       <li
                         key={capacite}
@@ -172,6 +207,38 @@ export default function SectionFonctionnalites() {
           </Section>
         );
       })}
+
+      {/*
+       * L'appel à l'action de fin.
+       *
+       * Sur fond Forest, comme les bandeaux de la charte : la page se referme
+       * sur une plage sombre qui la sépare du pied.
+       */}
+      <Section fond="forest" contenuClassName="lg:py-20">
+        <Apparition className="mx-auto max-w-2xl text-center">
+          <h2 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-white sm:text-[34px]">
+            Découvrez SMARTEX SustWay en action
+          </h2>
+          <p className="mt-5 text-[17px] leading-relaxed text-white/75">
+            Demandez une démonstration et découvrez comment la plateforme peut s’intégrer à votre processus de pilotage
+            RSE, ESG et Développement Durable.
+          </p>
+          {/* Le bouton reste blanc sur le fond Forest : le vert de marque ne
+              s'y détache qu'à 2,03:1, là où un composant d'interface en demande
+              trois. */}
+          <Link
+            to="/contact"
+            className="group mt-8 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[15px] font-semibold text-forest transition-colors hover:bg-brand-100"
+          >
+            Demander une démo
+            <ArrowRight
+              className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
+              strokeWidth={2}
+              aria-hidden
+            />
+          </Link>
+        </Apparition>
+      </Section>
     </>
   );
 }

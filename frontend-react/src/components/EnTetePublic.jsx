@@ -63,7 +63,7 @@ const LIENS = [
     vers: '/fonctionnalites',
     libelle: 'Fonctionnalités',
     sous: [
-      { vers: '/fonctionnalites#collecte-des-donnees', libelle: 'Collecte des données' },
+      { vers: '/fonctionnalites#collecter-les-donnees', libelle: 'Collecter les données' },
       { vers: '/fonctionnalites#documenter', libelle: 'Documenter' },
       { vers: '/fonctionnalites#analyse-resultats', libelle: 'Analyse & Résultats' },
       { vers: '/fonctionnalites#remedier-piloter', libelle: 'Remédier & Piloter' },
