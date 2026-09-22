@@ -39,17 +39,27 @@ import Logo from '../Logo';
  * C'est le seul nombre à changer pour régler la durée du voile : tout le
  * reste en découle, y compris le pas de progression et le délai de sécurité.
  *
- * Une minute, à la demande. À noter pour plus tard : c'est très long pour
- * un visiteur qui arrive sur le site et veut le lire — quelques secondes
- * suffisent à faire voir l'animation. Remettre 2600 y revient.
+ * Le voile dure 2,8 s en tout, reparties sur les trois temps ci-dessous.
+ *
+ * Les ecrans de chargement des sites primes tiennent presque tous entre deux
+ * et quatre secondes, et le modele dont celui-ci s'inspire dure 4,5 s. On
+ * prend le bas de la fourchette : l'accueil ne porte qu'un heros, sans image
+ * lourde, et il est pret en quelques centaines de millisecondes. Tout ce qui
+ * depasse est une attente qu'on ajoute, non une attente qu'on habille.
+ *
+ * Ces trois nombres s'additionnent : regler la seule course laisse de cote
+ * pres de deux secondes de palier et de sortie. Mesure a l'appui, une course
+ * de 2800 ms donnait 4,7 s de voile.
  */
-const DUREE_COURSE = 57000;
+
+/** La barre traverse la page. */
+const DUREE_COURSE = 1600;
 
 /** Temps pendant lequel 100 % reste lisible avant que le voile ne parte. */
-const PALIER_FINAL = 650;
+const PALIER_FINAL = 400;
 
-/** Durée du glissement vers le haut. Doit suivre la classe `duration-[1100ms]`. */
-const DUREE_SORTIE = 1100;
+/** Glissement vers le haut. Doit suivre la classe `duration-[800ms]` plus bas. */
+const DUREE_SORTIE = 800;
 
 /** Intervalle entre deux avancées de la barre. Assez court pour qu'elle
     paraisse couler et non sauter, quelle que soit la durée totale. */
@@ -203,7 +213,7 @@ export default function EcranChargement() {
     <div
       aria-hidden
       inert=""
-      className={`fixed inset-0 z-[60] flex flex-col bg-forest transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
+      className={`fixed inset-0 z-[60] flex flex-col bg-forest transition-[opacity,transform] duration-[800ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
         sortant ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
