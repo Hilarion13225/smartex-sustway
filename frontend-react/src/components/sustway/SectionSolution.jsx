@@ -3,24 +3,25 @@ import { Check, ScrollText } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
 import { ApercuTableauDeBord } from './ApercusFonctionnalites';
-import SchemaPerformance from './SchemaPerformance';
 import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
 
 /*
- * Corps de la page « Solution », en cinq temps.
+ * Corps de la page « Solution », en quatre temps.
  *
  * Presentation dit ce que fait la demarche, Methodologie comment elle s'y
- * prend, Referentiels sur quoi elle s'appuie, Livrables ce qu'elle produit, et
- * Performance durable ce qu'elle concilie.
+ * prend, Referentiels sur quoi elle s'appuie, Livrables ce qu'elle produit.
  *
- * Les quatre premieres portent une ancre — `#presentation`, `#methodologie`,
- * `#referentiels`, `#livrables` — que le menu deroulant de la barre vise
- * directement. Performance durable garde la sienne mais ne figure plus au
- * menu : le schema des quatre performances reste a lire en defilant, sans
- * qu'une sixieme entree vienne allonger un menu qui en compte deja quatre.
+ * Chacune porte son ancre — `#presentation`, `#methodologie`, `#referentiels`,
+ * `#livrables` — que le menu deroulant de la barre vise directement : la page
+ * compte donc autant de sections que le menu d'entrees.
  *
- * Cinq sections d'une meme page plutot que cinq pages : elles se lisent a la
- * suite, et le lecteur qui arrive par le menu atterrit au bon endroit sans
+ * Une cinquieme section, « Performance durable », la fermait avec le schema
+ * des quatre performances. Elle a ete retiree : elle ne figurait plus au menu
+ * depuis la refonte de la navigation, et redisait en image ce que les quatre
+ * autres enoncent.
+ *
+ * Quatre sections d'une meme page plutot que quatre pages : elles se lisent a
+ * la suite, et le lecteur qui arrive par le menu atterrit au bon endroit sans
  * perdre le fil de ce qui precede.
  *
  * Chacune occupe une fenetre entiere a partir de 1024 px, contenu centre —
@@ -30,7 +31,7 @@ import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
  * la presentation depassait de 67 px la fenetre qu'elle doit tenir.
  *
  * Presentation porte le `h1` de la page : le bandeau photo qui l'ouvrait a
- * ete retire, et c'est donc elle qui annonce desormais le sujet. Les quatre
+ * ete retire, et c'est donc elle qui annonce desormais le sujet. Les trois
  * autres sections ouvrent en `h2`.
  */
 
@@ -159,7 +160,7 @@ export default function SectionSolution() {
           surTitre="Référentiels"
           sousTitre="Les référentiels constituent le cadre de référence. Ils permettent de définir les critères d’évaluation, de structurer la collecte des données, d’analyser les écarts et d’orienter les actions."
         >
-          Des cadres reconnus, et non des critères maison
+          Des cadres reconnus
         </TitreBloc>
 
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -206,17 +207,6 @@ export default function SectionSolution() {
         </ul>
       </Section>
 
-      {/* --- E. Performance durable -------------------------------------- */}
-      <Section id="performance-durable" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
-        <TitreBloc
-          surTitre="Performance durable"
-          sousTitre="Maîtrisez vos impacts sociaux et environnementaux sans compromettre votre performance financière, grâce à un pilotage unifié, structuré et transparent."
-        >
-          Concilier rentabilité et responsabilité
-        </TitreBloc>
-
-        <SchemaPerformance />
-      </Section>
     </>
   );
 }
