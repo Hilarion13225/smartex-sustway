@@ -29,7 +29,7 @@ const RUBRIQUES = [
     surTitre: 'Articles',
     titre: 'Comprendre les évolutions RSE, ESG & DD',
     texte:
-      'Retrouvez nos analyses et actualités sur les tendances RSE, les critères ESG et les stratégies de développement durable en entreprise.',
+      'Retrouvez nos analyses et actualités sur les tendances RSE, ESG & DD, les critères d’évaluation et les stratégies en entreprise.',
     action: 'Voir les articles',
     icone: Newspaper,
   },

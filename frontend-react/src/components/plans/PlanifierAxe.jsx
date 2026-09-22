@@ -165,7 +165,7 @@ export default function PlanifierAxe({ entrepriseId, auditId, axe, onTermine, on
                 id={`titre-plan-${axe.id}`}
                 className="input"
                 maxLength={255}
-                placeholder="Renforcement de la gouvernance RSE"
+                placeholder="Renforcement de la gouvernance RSE, ESG & DD"
                 value={titrePlan}
                 onChange={(e) => setTitrePlan(e.target.value)}
               />

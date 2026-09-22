@@ -78,7 +78,7 @@ export default function FormulaireActionPlan({
           required
           maxLength={255}
           className="input"
-          placeholder="Formaliser et diffuser la politique RSE"
+          placeholder="Formaliser et diffuser la politique RSE, ESG & DD"
           value={formulaire.titre}
           onChange={(e) => setFormulaire({ ...formulaire, titre: e.target.value })}
         />

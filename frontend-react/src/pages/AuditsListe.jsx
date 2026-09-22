@@ -189,7 +189,7 @@ export default function AuditsListe() {
       <PageTitre
         icone={ClipboardList}
         titre={titre}
-        description={`Pilotez et suivez l’ensemble de vos missions d’évaluation RSE — ${entreprise.raisonSociale}.`}
+        description={`Pilotez et suivez l’ensemble de vos missions d’évaluation RSE, ESG & DD — ${entreprise.raisonSociale}.`}
         actions={
           peutCreerAudit ? (
             <button type="button" className="btn-primary shrink-0" onClick={() => setAfficherFormulaire((v) => !v)}>
@@ -366,7 +366,7 @@ function NouvelAuditFormulaire({ entrepriseId, referentiels, onCree }) {
             id="audit-nom"
             required
             className="input"
-            placeholder="Audit RSE 2026"
+            placeholder="Audit RSE, ESG & DD 2026"
             value={formulaire.nom}
             onChange={(e) => setFormulaire({ ...formulaire, nom: e.target.value })}
           />

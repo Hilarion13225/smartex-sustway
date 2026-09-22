@@ -49,7 +49,7 @@ export default function FormulairePlan({ entrepriseId, plan, onEnregistrer, onAn
           required
           maxLength={255}
           className="input"
-          placeholder="Renforcer la gouvernance RSE"
+          placeholder="Renforcer la gouvernance RSE, ESG & DD"
           value={formulaire.titre}
           onChange={(e) => setFormulaire({ ...formulaire, titre: e.target.value })}
         />

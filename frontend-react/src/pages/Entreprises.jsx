@@ -292,7 +292,7 @@ export default function Entreprises() {
           </span>
           <p className="relative mt-4 text-base font-semibold text-ink-900">Aucune organisation pour l’instant</p>
           <p className="relative mx-auto mt-1 max-w-md text-sm text-ink-500">
-            Créez votre première organisation pour lancer une évaluation RSE et suivre votre score domaine par domaine.
+            Créez votre première organisation pour lancer une évaluation RSE, ESG & DD et suivre votre score domaine par domaine.
           </p>
           <button type="button" className="btn-vitrine relative mt-5" onClick={() => setAfficherFormulaire(true)}>
             <Sparkles className="h-4 w-4" aria-hidden />

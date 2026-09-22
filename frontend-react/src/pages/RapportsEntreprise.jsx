@@ -56,12 +56,12 @@ export default function RapportsEntreprise() {
           entreprises.length > 1 && entreprise
             ? { libelle: entreprise.raisonSociale, vers: `/app/${entrepriseId}` }
             : null,
-          { libelle: 'Rapports RSE' },
+          { libelle: 'Rapports RSE, ESG & DD' },
         ]}
       />
       <PageTitre
         icone={FileText}
-        titre="Rapports RSE"
+        titre="Rapports RSE, ESG & DD"
         description={`${entreprise.raisonSociale} — toutes missions confondues : synthèse, plan d'actions et rapports détaillés, mission par mission.`}
       />
 

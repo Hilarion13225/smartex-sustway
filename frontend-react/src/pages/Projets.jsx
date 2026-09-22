@@ -247,7 +247,7 @@ function NouveauProjet({ referentiels, entreprises, onAnnuler, onCree }) {
             maxLength={200}
             value={formulaire.nom}
             onChange={(e) => setFormulaire({ ...formulaire, nom: e.target.value })}
-            placeholder="Campagne RSE 2026 — portefeuille agro"
+            placeholder="Campagne RSE, ESG & DD 2026 — portefeuille agro"
           />
         </label>
 

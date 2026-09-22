@@ -398,7 +398,7 @@ export default function TableauDeBord() {
           <p className="mt-1 text-sm text-ink-500">
             {plusieursOrganisations
               ? `Votre portefeuille : ${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}.`
-              : 'Voici la situation actuelle de vos missions d’audit RSE.'}
+              : 'Voici la situation actuelle de vos missions d’audit RSE, ESG & DD.'}
           </p>
         </div>
         {/* Le raccourci annonce une création : ne le proposer qu'à qui peut
@@ -648,7 +648,7 @@ export default function TableauDeBord() {
               ) : null}
               <Link to={`/app/${premiereEntreprise}/rapports`} className="btn-secondary">
                 <FileText className="h-4 w-4" aria-hidden />
-                Rapports RSE
+                Rapports RSE, ESG & DD
               </Link>
             </>
           ) : null}

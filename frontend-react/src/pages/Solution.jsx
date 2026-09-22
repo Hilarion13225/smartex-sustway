@@ -18,7 +18,7 @@ import { useMetaPage } from '../components/sustway/useMetaPage';
 export default function Solution() {
   useMetaPage(
     'La solution — SMARTEX SustWay',
-    'L’opérationnalisation de la RSE au service de la performance : diagnostiquer, structurer, piloter, optimiser et mesurer votre démarche RSE, ESG & DD.'
+    'L’opérationnalisation RSE, ESG & DD au service de la performance : diagnostiquer, structurer, piloter, optimiser et mesurer votre démarche RSE, ESG & DD.'
   );
 
   return (

@@ -42,7 +42,7 @@ import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
  * figuraient, non reformules.
  */
 const LIVRABLES = [
-  'Rapport de synthèse : profil RSE global et profil par domaine évalué',
+  'Rapport de synthèse : profil RSE, ESG & DD global et profil par domaine évalué',
   'Conformités et non-conformités, degré de maturité de la démarche',
   'Plans d’actions correctives, priorisés selon les risques identifiés',
   'Indice de préparation à l’éligibilité au financement vert des PTF',
@@ -110,7 +110,7 @@ export default function SectionSolution() {
               surTitre="Présentation"
               className="mb-0"
             >
-              L’opérationnalisation de la RSE au service de la performance
+              L’opérationnalisation RSE, ESG & DD au service de la performance
             </TitreBloc>
 
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-ink-600">

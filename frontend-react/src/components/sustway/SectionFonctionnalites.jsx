@@ -59,7 +59,7 @@ const DOMAINES = [
     titre: 'Documenter',
     sousTitre: 'Gardez chaque élément justificatif sous contrôle',
     phrases: [
-      'Centralisez et sécurisez l’ensemble de vos pièces justificatives : politiques RSE, chartes d’éthique, factures énergétiques, rapports d’audit.',
+      'Centralisez et sécurisez l’ensemble de vos pièces justificatives : politiques RSE, ESG & DD, chartes d’éthique, factures énergétiques, rapports d’audit.',
       'Associez chaque preuve directement aux contrôles et aux critères évalués.',
       'Garantissez une traçabilité irréprochable et un niveau de preuve prêt pour les audits externes et les exigences réglementaires.',
     ],

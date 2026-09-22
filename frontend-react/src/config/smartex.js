@@ -6,7 +6,7 @@
 export const SMARTEX = {
   editeur: 'SMARTEX Expertises',
   produit: 'SMARTEX SustWay',
-  accroche: 'Évaluation RSE intelligente',
+  accroche: 'Évaluation RSE, ESG & DD intelligente',
   signature: 'Évaluer. Analyser. Progresser.',
   baseline: 'Conseil, audit et outillage numérique de la performance durable.',
   mission: 'Mesurer la maturité et la performance de votre entreprise en matière de RSE, ESG & DD.',
@@ -41,7 +41,7 @@ export const RESEAUX_SOCIAUX = [
 export const METIERS = [
   {
     code: 'diagnostic',
-    titre: 'Diagnostic RSE',
+    titre: 'Diagnostic RSE, ESG & DD',
     texte:
       'Cadrage du périmètre, collecte des preuves et évaluation des critères applicables à votre secteur d’activité.',
   },
