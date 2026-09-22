@@ -17,8 +17,14 @@ import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
  * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
  * renverrait le visiteur à la case départ sans message d'erreur.
  *
- * « Formations » a quitté la colonne Ressources : la page qu'elle désignait
- * a été supprimée, et le pied ne renvoie qu'à des pages qui existent.
+ * Les cinq colonnes tiennent chacune trois à quatre entrées. La colonne
+ * « Offres » n'en avait plus qu'une depuis le retrait de la page Formules,
+ * et faisait maigre à côté des autres : les trois offres et le socle
+ * commun portent désormais une ancre, et s'y désignent une à une.
+ *
+ * Les pages Services, Méthodologie, Déploiement, Formation, Formules et
+ * Mentions légales ont été supprimées : le pied ne renvoie qu'à des pages
+ * qui existent, et sa barre inférieure ne porte plus que le copyright.
  */
 const COLONNES = [
   {
@@ -42,7 +48,10 @@ const COLONNES = [
   {
     titre: 'Offres',
     liens: [
-      { vers: '/offres', libelle: 'Les trois offres' },
+      { vers: '/offres#essential', libelle: 'Essential' },
+      { vers: '/offres#business', libelle: 'Business' },
+      { vers: '/offres#enterprise', libelle: 'Enterprise' },
+      { vers: '/offres#socle', libelle: 'Le socle commun' },
     ],
   },
   {

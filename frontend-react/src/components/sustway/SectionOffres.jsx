@@ -25,6 +25,7 @@ import { Apparition, Section } from './Section';
  */
 const OFFRES = [
   {
+    ancre: 'essential',
     nom: 'Essential',
     promesse: 'Structurer',
     texte:
@@ -46,6 +47,7 @@ const OFFRES = [
     },
   },
   {
+    ancre: 'business',
     nom: 'Business',
     promesse: 'Piloter',
     texte:
@@ -68,6 +70,7 @@ const OFFRES = [
     },
   },
   {
+    ancre: 'enterprise',
     nom: 'Enterprise',
     promesse: 'Déployer à grande échelle',
     texte:
@@ -110,7 +113,10 @@ const SOCLE = [
 export default function SectionOffres() {
   return (
     <>
-      <Section fond="mist">
+      {/* Les trois offres et le socle portent une ancre : le pied de page
+          les designe une a une, et un lien partage peut viser une offre
+          precise plutot que le haut de la page. */}
+      <Section id="les-offres" fond="mist">
         {/* `items-stretch` : les trois cartes prennent la hauteur de la plus
             haute, et leurs boutons s'alignent. Sans cela, une liste plus
             courte remontait son bouton au milieu de la carte voisine. */}
@@ -120,8 +126,9 @@ export default function SectionOffres() {
             return (
               <Apparition key={offre.nom} delai={index * 110} className="h-full">
                 <article
+                  id={offre.ancre}
                   className={clsx(
-                    'flex h-full flex-col overflow-hidden rounded-2xl bg-surface',
+                    'flex h-full flex-col overflow-hidden rounded-2xl bg-surface scroll-mt-24',
                     offre.misEnAvant
                       ? 'border-2 border-forest shadow-soft'
                       : 'border border-ink-200'
@@ -234,7 +241,7 @@ export default function SectionOffres() {
       </Section>
 
       {/* --- Le socle commun, en pleine largeur --- */}
-      <Section fond="blanc">
+      <Section id="socle" fond="blanc">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,2.1fr)] lg:gap-14">
           <Apparition>
             <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">
