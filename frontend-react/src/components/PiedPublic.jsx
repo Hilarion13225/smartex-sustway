@@ -17,9 +17,8 @@ import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
  * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
  * renverrait le visiteur à la case départ sans message d'erreur.
  *
- * « Formations » reste sous Ressources bien que le menu ne la porte pas : la
- * page existe, et le pied de page est le seul endroit commun à tout le site
- * d'où elle soit atteignable autrement que depuis la page Contact.
+ * « Formations » a quitté la colonne Ressources : la page qu'elle désignait
+ * a été supprimée, et le pied ne renvoie qu'à des pages qui existent.
  */
 const COLONNES = [
   {
@@ -53,7 +52,6 @@ const COLONNES = [
       { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
       { vers: '/ressources#documentation', libelle: 'Documentation' },
       { vers: '/ressources#faq', libelle: 'FAQ' },
-      { vers: '/formation', libelle: 'Formations' },
     ],
   },
   {

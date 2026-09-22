@@ -10,7 +10,6 @@ import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
 import Ressources from './pages/Ressources';
-import Formation from './pages/Formation';
 import Contact from './pages/Contact';
 import MentionsLegales from './pages/MentionsLegales';
 import ConnexionReelle from './pages/ConnexionReelle';
@@ -98,7 +97,10 @@ export default function App() {
                 Solution, ou ses anciens liens aboutissent. */}
             <Route path="/deploiement" element={<Navigate to="/solution#methodologie" replace />} />
             <Route path="/ressources" element={<Ressources />} />
-            <Route path="/formation" element={<Formation />} />
+            {/* La page Formation a ete supprimee. Aucune autre page ne decrit
+                l'offre de formation : ses anciens liens menent au contact,
+                seul endroit ou la demander. */}
+            <Route path="/formation" element={<Navigate to="/contact" replace />} />
             <Route path="/contact" element={<Contact />} />
             {/* La page Methodologie ne portait aucune FAQ : l'ancre #questions
                 qu'on visait ici n'existait pas. La rubrique FAQ de la page

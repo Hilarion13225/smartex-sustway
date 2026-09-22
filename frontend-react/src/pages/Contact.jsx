@@ -50,19 +50,15 @@ function cadreOsm(portee) {
 }
 
 /*
- * Renvois de bas de page. Deux liens soulignés à la place des deux cartes
- * illustrées : ce sont des raccourcis, pas des offres.
+ * Renvoi de bas de page. Un lien souligné à la place d'une carte illustrée :
+ * c'est un raccourci, pas une offre. Le second, qui menait aux formations,
+ * est parti avec la page qu'il désignait.
  */
 const RENVOIS = [
   {
     titre: 'Articles, guides et documentation.',
     texte: `Les ressources publiées autour de ${SMARTEX.produit} : analyses, méthodes et documentation.`,
-    lien: { vers: '/ressources#faq', libelle: 'Voir les ressources' },
-  },
-  {
-    titre: 'Former vos équipes à la RSE et à l’ESG.',
-    texte: 'Ateliers, séminaires et certificats de spécialisation, adaptés à votre secteur.',
-    lien: { vers: '/formation', libelle: 'Découvrir les formations' },
+    lien: { vers: '/ressources', libelle: 'Voir les ressources' },
   },
 ];
 
