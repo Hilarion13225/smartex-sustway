@@ -34,7 +34,22 @@ import Logo from '../Logo';
  */
 
 /** Durée maximale du voile, sécurité comprise. Au-delà, il se retire. */
-const DELAI_MAXIMAL = 6000;
+const DELAI_MAXIMAL = 9000;
+
+/**
+ * Temps que met la barre à finir sa course une fois la page prête.
+ *
+ * La page est presque toujours prête avant que la barre n'arrive au bout :
+ * sans cette attente, le voile passait en deux secondes et l'animation se
+ * voyait à peine. Elle est ce qui fixe la durée réelle du voile.
+ */
+const DUREE_COURSE = 2600;
+
+/** Temps pendant lequel 100 % reste lisible avant que le voile ne parte. */
+const PALIER_FINAL = 650;
+
+/** Durée du glissement vers le haut. Doit suivre la classe `duration-[1100ms]`. */
+const DUREE_SORTIE = 1100;
 
 export default function EcranChargement() {
   /*
@@ -81,10 +96,14 @@ export default function EcranChargement() {
      * La montée jusqu'à 90 %. Le pas décroît à mesure qu'on approche : une
      * progression linéaire donne l'impression d'un compteur, une progression
      * qui ralentit donne celle d'un travail en cours.
+     *
+     * Le diviseur est calé sur DUREE_COURSE : à 110 ms par pas, la barre doit
+     * approcher 85 % au moment où la course se termine. Trop lent, elle sautait
+     * de 55 à 100 % — mesuré au navigateur — et le saut se voyait.
      */
     const battement = setInterval(() => {
-      definirProgression((p) => (p >= 90 ? p : p + Math.max(1, (90 - p) / 12)));
-    }, 90);
+      definirProgression((p) => (p >= 90 ? p : p + Math.max(0.6, (90 - p) / 14)));
+    }, 110);
     minuteries.current.push(battement);
 
     const terminer = () => {
@@ -109,14 +128,19 @@ export default function EcranChargement() {
       }
       // Le voile ne part pas à l'instant où le compteur atteint 100 : on laisse
       // voir le nombre atteint, sinon la course paraît coupée.
-      ajouter(setTimeout(() => definirSortant(true), 420));
-      ajouter(setTimeout(() => definirActif(false), 420 + 900));
+      ajouter(setTimeout(() => definirSortant(true), PALIER_FINAL));
+      ajouter(setTimeout(() => definirActif(false), PALIER_FINAL + DUREE_SORTIE));
     };
 
-    if (document.readyState === 'complete') {
-      ajouter(setTimeout(terminer, 900));
-    } else {
-      window.addEventListener('load', terminer, { once: true });
+    /*
+     * La page est presque toujours prête avant la fin de la course : on laisse
+     * la barre aller au bout plutôt que de couper l'animation à l'instant où
+     * le navigateur a fini. Quand elle ne l'est pas, `load` ne fait qu'avancer
+     * la fin, jamais la retarder au-delà du délai maximal.
+     */
+    ajouter(setTimeout(terminer, DUREE_COURSE));
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', () => ajouter(setTimeout(terminer, 400)), { once: true });
     }
 
     // Sécurité : quoi qu'il arrive, le voile se retire.
@@ -148,7 +172,7 @@ export default function EcranChargement() {
     <div
       aria-hidden
       inert=""
-      className={`fixed inset-0 z-[60] flex flex-col bg-forest transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
+      className={`fixed inset-0 z-[60] flex flex-col bg-forest transition-[opacity,transform] duration-[1100ms] ease-[cubic-bezier(0.65,0,0.35,1)] ${
         sortant ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'
       }`}
     >
