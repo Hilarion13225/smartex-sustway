@@ -14,6 +14,19 @@ import BandeauReferentiels from './vitrine/BandeauReferentiels';
 const PAGES_SUSTWAY = ['/', '/solution', '/fonctionnalites', '/offres', '/ressources'];
 
 /*
+ * Les pages qui n'ont pas de pied de page.
+ *
+ * L'accueil seul. Il ne porte plus que son héros et tient dans une fenêtre,
+ * sans rien à faire défiler : un pied de page en dessous rouvrirait le
+ * défilement pour lui seul, et l'écran d'entrée ne serait plus fixe.
+ *
+ * Le plan du site et les mentions légales restent atteignables, puisque toutes
+ * les autres pages publiques gardent leur pied. La barre de navigation, elle,
+ * est présente ici comme ailleurs.
+ */
+const PAGES_SANS_PIED = ['/'];
+
+/*
  * Pages dont le haut est sombre, et sur lesquelles la barre de navigation se
  * pose en transparent avec un texte clair.
  *
@@ -116,6 +129,7 @@ export default function LayoutPublic() {
 
   const estSustWay = PAGES_SUSTWAY.includes(pathname);
   const enTeteSombre = PAGES_EN_TETE_SOMBRE.includes(pathname);
+  const avecPied = !PAGES_SANS_PIED.includes(pathname);
 
   return (
     <div className={`${estSustWay ? 'sustway' : 'vitrine'} flex min-h-full flex-col bg-ink-50 text-ink-600`}>
@@ -125,7 +139,7 @@ export default function LayoutPublic() {
         <Outlet />
       </main>
 
-      <PiedPublic />
+      {avecPied ? <PiedPublic /> : null}
 
       {/* Le bandeau des référentiels est la contrepartie basse de la barre de
           navigation : il est donc rendu ici, une fois pour toutes les pages

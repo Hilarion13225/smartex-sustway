@@ -1,4 +1,5 @@
 import SectionSolution from '../components/sustway/SectionSolution';
+import SectionConfiance from '../components/sustway/SectionConfiance';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -20,5 +21,14 @@ export default function Solution() {
     'L’opérationnalisation de la RSE au service de la performance : diagnostiquer, structurer, piloter, optimiser et mesurer votre démarche RSE, ESG et développement durable.'
   );
 
-  return <SectionSolution />;
+  return (
+    <>
+      <SectionSolution />
+      {/* Les organisations closent la page : elles répondent à la question
+          que se pose un lecteur qui vient de parcourir la démarche, les
+          référentiels et les livrables — qui s'en sert déjà. Elles ouvraient
+          l'accueil, qui tient désormais en un seul écran. */}
+      <SectionConfiance />
+    </>
+  );
 }
