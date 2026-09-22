@@ -4,31 +4,35 @@ import Logo from './Logo';
 import { SMARTEX, RESEAUX_SOCIAUX } from '../config/smartex';
 
 /**
- * Colonnes de liens du pied de page — cinq, calquées sur la barre de
- * navigation.
+ * Colonnes de liens du pied de page — trois.
  *
- * Le pied reprend maintenant le même découpage que le menu, sous-entrées
- * comprises : un visiteur arrivé en bas de page doit y retrouver le plan qu'il
- * a vu en haut, et non un second classement qui l'obligerait à réapprendre où
- * sont les choses. Les ancres sont celles des sections, pas de nouvelles
- * pages.
+ * Elles étaient cinq, calquées sur le menu, sous-entrées comprises : vingt
+ * liens dans un pied de page, là où le visiteur cherche un repère et non un
+ * second plan de site. Le détail des Fonctionnalités, des Offres et des
+ * Ressources reste atteignable : les menus déroulants de la barre le portent,
+ * et la barre est visible depuis n’importe quel endroit de la page.
+ *
+ * Ne restent donc que trois entrées : où aller, ce que contient la Solution,
+ * et comment entrer dans le produit.
  *
  * Toutes les destinations sont des pages réellement déclarées dans App.jsx :
- * la route attrape-tout redirigeant vers l'accueil, un libellé sans page
- * renverrait le visiteur à la case départ sans message d'erreur.
- *
- * Les cinq colonnes tiennent chacune trois à quatre entrées. La colonne
- * « Offres » n'en avait plus qu'une depuis le retrait de la page Formules,
- * et faisait maigre à côté des autres : les trois offres et le socle
- * commun portent désormais une ancre, et s'y désignent une à une.
- *
- * Les pages Services, Méthodologie, Déploiement, Formation, Formules et
- * Mentions légales ont été supprimées : le pied ne renvoie qu'à des pages
- * qui existent, et sa barre inférieure ne porte plus que le copyright.
+ * la route attrape-tout redirigeant vers l’accueil, un libellé sans page
+ * renverrait le visiteur à la case départ sans message d’erreur.
  */
 const COLONNES = [
   {
-    titre: 'Solution',
+    titre: 'Liens rapides',
+    liens: [
+      { vers: '/', libelle: 'Accueil' },
+      { vers: '/solution', libelle: 'Solution' },
+      { vers: '/fonctionnalites', libelle: 'Fonctionnalités' },
+      { vers: '/offres', libelle: 'Offres' },
+      { vers: '/ressources', libelle: 'Ressources' },
+      { vers: '/contact', libelle: 'Contact' },
+    ],
+  },
+  {
+    titre: 'La solution',
     liens: [
       { vers: '/solution#presentation', libelle: 'Présentation' },
       { vers: '/solution#methodologie', libelle: 'Méthodologie' },
@@ -37,38 +41,11 @@ const COLONNES = [
     ],
   },
   {
-    titre: 'Fonctionnalités',
+    titre: 'SMARTEX SustWay',
     liens: [
-      { vers: '/fonctionnalites#collecte-des-donnees', libelle: 'Collecte des données' },
-      { vers: '/fonctionnalites#documenter', libelle: 'Documenter' },
-      { vers: '/fonctionnalites#analyse-resultats', libelle: 'Analyse & Résultats' },
-      { vers: '/fonctionnalites#remedier-piloter', libelle: 'Remédier & Piloter' },
-    ],
-  },
-  {
-    titre: 'Offres',
-    liens: [
-      { vers: '/offres#essential', libelle: 'Essential' },
-      { vers: '/offres#business', libelle: 'Business' },
-      { vers: '/offres#enterprise', libelle: 'Enterprise' },
-      { vers: '/offres#socle', libelle: 'Le socle commun' },
-    ],
-  },
-  {
-    titre: 'Ressources',
-    liens: [
-      { vers: '/ressources#articles', libelle: 'Articles' },
-      { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
-      { vers: '/ressources#documentation', libelle: 'Documentation' },
-      { vers: '/ressources#faq', libelle: 'FAQ' },
-    ],
-  },
-  {
-    titre: 'Contact',
-    liens: [
-      { vers: '/contact', libelle: 'Demander une démo' },
-      { vers: '/inscription', libelle: 'S’inscrire' },
       { vers: '/connexion', libelle: 'Se connecter' },
+      { vers: '/inscription', libelle: 'S’inscrire' },
+      { vers: '/contact', libelle: 'Demander une démo' },
       { href: SMARTEX.siteWeb, libelle: 'Site de SMARTEX Expertises' },
     ],
   },
@@ -147,7 +124,7 @@ export default function PiedPublic() {
          * plus de deux cents pixels chacune, et seuls deux intitulés passent
          * sur deux lignes.
          */}
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,3.1fr)] lg:gap-12">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-12">
           {/* Marque */}
           <div className="max-w-sm">
             <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
@@ -169,9 +146,9 @@ export default function PiedPublic() {
             </p>
           </div>
 
-          {/* Deux colonnes sur téléphone, trois à partir de 640 px, les cinq à
-              partir de 1024 px. */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-5">
+          {/* Deux colonnes sur téléphone, les trois à
+              partir de 640 px. */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 lg:gap-x-10">
             {COLONNES.map((colonne) => (
               <div key={colonne.titre}>
                 <h2 className="text-[12px] font-bold uppercase tracking-[0.14em] text-white">{colonne.titre}</h2>
