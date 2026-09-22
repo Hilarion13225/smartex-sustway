@@ -1,4 +1,5 @@
 import SectionHero from '../components/sustway/SectionHero';
+import EcranChargement from '../components/sustway/EcranChargement';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
 /**
@@ -24,5 +25,12 @@ export default function Accueil() {
     'SMARTEX SustWay est la plateforme SaaS qui permet de structurer, piloter et mesurer la performance RSE, ESG et développement durable : évaluations, indicateurs extra-financiers, preuves, tableaux de bord, plans d’action et reporting de durabilité.'
   );
 
-  return <SectionHero />;
+  return (
+    <>
+      {/* Le voile d'attente ne paraît qu'ici, et une seule fois par session.
+          Il se retire de lui-même ; voir EcranChargement pour ses securites. */}
+      <EcranChargement />
+      <SectionHero />
+    </>
+  );
 }
