@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import Logo from './Logo';
@@ -27,6 +28,14 @@ import { SMARTEX } from '../config/smartex';
  * qu'il remplissait.
  */
 export default function CadreAuth({ titre, description, badge, large = false, children }) {
+  /*
+   * Le panneau porte une photographie, et retombe sur ses bandes de lumiere si
+   * elle manque. Deux decors pour un seul emplacement, parce que le fichier
+   * vit dans `public/` : rien ne garantit au moment du rendu qu'il a ete
+   * depose. Un panneau vide serait pire que l'un ou l'autre.
+   */
+  const [fondCharge, definirFondCharge] = useState(false);
+
   return (
     <div className="vitrine flex min-h-full flex-col bg-forest text-ink-600">
       <div
@@ -66,6 +75,39 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
              * écran — c'est lui qu'on est venu remplir.
              */}
             <aside className="relative hidden flex-col overflow-hidden rounded-[20px] bg-ink-900 p-8 text-white lg:flex">
+              {/*
+               * La photographie, et par-dessus elle un voile.
+               *
+               * Le voile n'est pas un effet : le texte du panneau est blanc, et
+               * l'image est claire par endroits — sans lui, « Par SMARTEX
+               * Expertises » et la mention de securite passeraient en blanc sur
+               * vert pale. Il est plus dense en haut et en bas, ou le texte se
+               * trouve, et s'allege au centre, ou le logotype se detache seul.
+               *
+               * `onError` plutot qu'un test d'existence : le fichier vit dans
+               * `public/`, hors du build, et c'est le navigateur qui sait s'il
+               * est la. L'image reste invisible tant qu'elle n'a pas charge,
+               * pour qu'un fichier manquant ne laisse pas d'icone brisee.
+               */}
+              <img
+                src="/auth/fond.png"
+                alt=""
+                aria-hidden
+                loading="lazy"
+                onLoad={() => definirFondCharge(true)}
+                onError={() => definirFondCharge(false)}
+                className={clsx(
+                  'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700',
+                  fondCharge ? 'opacity-100' : 'opacity-0'
+                )}
+              />
+              {fondCharge ? (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/85 via-ink-900/45 to-ink-900/90"
+                />
+              ) : null}
+
               <p className="relative z-10 text-sm text-white/60">Par {SMARTEX.editeur}</p>
 
               {/* Le logotype tient la place du discours qui occupait ce panneau
@@ -116,7 +158,12 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                * `blur-2xl` plutôt que des bords nets : à cette échelle, des
                * colonnes franches se liraient comme un graphique, et le
                * panneau annoncerait une donnée qu'il n'a pas.
+               *
+               * Elles ne paraissent plus que si la photographie manque : les
+               * superposer reviendrait à poser un dégradé de couleur sur une
+               * image qui porte déjà les siennes.
                */}
+              {fondCharge ? null : (
               <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%] overflow-hidden">
                 <div className="absolute bottom-0 left-[4%] h-[75%] w-[20%] rounded-t-[999px] bg-growth blur-xl" />
                 <div className="absolute bottom-0 left-[26%] h-[100%] w-[18%] rounded-t-[999px] bg-brand-300 blur-xl" />
@@ -128,6 +175,7 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                     plus rien a lire. */}
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-900/10 via-ink-900/55 to-ink-900" />
               </div>
+              )}
             </aside>
 
             <main className="min-w-0 px-2 py-6 sm:px-8 sm:py-10">

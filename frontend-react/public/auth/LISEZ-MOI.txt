@@ -1,0 +1,20 @@
+fond.png — arriere-plan du panneau de marque des pages Connexion,
+Inscription et Accepter une invitation (voir components/CadreAuth.jsx).
+
+A REMPLACER. Le fichier depose ici est l'apercu fourni par Hilarion le
+23/09/2026 : il porte le filigrane « Adobe Stock » et mesure 234 x 125 px.
+
+Deux raisons de ne pas le laisser en production :
+
+1. Droits — un apercu filigrane n'est pas licencie. Il faut la version
+   achetee, sans filigrane.
+
+2. Definition — le panneau fait jusqu'a 500 px de large et environ 490 px
+   de haut, et le double sur un ecran a forte densite. Viser 1000 x 1000 px
+   au minimum ; en dessous l'image est visiblement floue.
+
+Remplacer le fichier suffit : aucun code a toucher, le nom et le chemin
+sont figes. Si le fichier est absent, le panneau retrouve les bandes de
+lumiere qu'il portait avant — la page ne casse pas.
+
+Format : JPEG ou WebP de preference (photo), cadrage vertical ou carre.
