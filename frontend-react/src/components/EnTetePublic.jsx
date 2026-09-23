@@ -277,7 +277,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
       )}
     >
       <div className="mx-auto flex h-[72px] max-w-[90rem] items-center gap-4 px-5 sm:px-8">
-        <Link to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
+        <Link viewTransition to="/" onClick={fermer} className="shrink-0" aria-label="SMARTEX SustWay, page d’entrée">
           <Logo taille="sm" variante={surSombre ? 'clair' : 'sombre'} />
           <p
             className={clsx(
@@ -314,7 +314,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                   if (!evenement.currentTarget.contains(evenement.relatedTarget)) definirMenuDeploye(null);
                 }}
               >
-                <NavLink
+                <NavLink viewTransition
                   to={lien.vers}
                   className={classeLien(surSombre)}
                   aria-expanded={menuDeploye === index}
@@ -336,7 +336,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                     <ul className="min-w-[232px] overflow-hidden rounded-xl border border-ink-200 bg-surface py-2 shadow-[0_12px_32px_-12px_rgb(var(--marine)/0.28)]">
                       {lien.sous.map((sous) => (
                         <li key={sous.vers}>
-                          <Link
+                          <Link viewTransition
                             to={sous.vers}
                             onClick={() => definirMenuDeploye(null)}
                             className="block px-4 py-2.5 text-[15px] text-ink-700 transition-colors hover:bg-brand-50 hover:text-brand-700"
@@ -350,7 +350,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                 ) : null}
               </div>
             ) : (
-              <NavLink key={lien.vers} to={lien.vers} className={classeLien(surSombre)}>
+              <NavLink viewTransition key={lien.vers} to={lien.vers} className={classeLien(surSombre)}>
                 {lien.libelle}
               </NavLink>
             )
@@ -373,7 +373,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                 {action.libelle}
               </button>
             ) : (
-              <Link key={action.libelle} to={action.vers} className={classe}>
+              <Link viewTransition key={action.libelle} to={action.vers} className={classe}>
                 {action.libelle}
               </Link>
             );
@@ -443,7 +443,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
             permet, et un bouton de menu de 48 px — la taille d'un doigt, et
             non les 36 px de la version précédente. */}
         <div className="ml-auto flex items-center gap-2 min-[1200px]:hidden">
-          <Link
+          <Link viewTransition
             to={ACTIONS.find((action) => action.principale).vers}
             onClick={fermer}
             /* Visible dès 375 px, la largeur d'un iPhone SE ou mini. Mesuré au
@@ -501,7 +501,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
               repliable y ajouterait un geste sans rien révéler de plus. */}
           {LIENS.map((lien) => (
             <div key={lien.vers} className="border-b border-ink-200">
-              <NavLink
+              <NavLink viewTransition
                 to={lien.vers}
                 onClick={fermer}
                 className={({ isActive }) =>
@@ -518,7 +518,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                 <ul className="pb-3 pl-4">
                   {lien.sous.map((sous) => (
                     <li key={sous.vers}>
-                      <Link
+                      <Link viewTransition
                         to={sous.vers}
                         onClick={fermer}
                         className="flex min-h-11 items-center border-l border-ink-200 pl-4 text-[15px] text-ink-600 transition-colors hover:text-brand-700"
@@ -555,7 +555,7 @@ export default function EnTetePublic({ surFondSombre = false }) {
                   {action.libelle}
                 </button>
               ) : (
-                <Link key={action.libelle} to={action.vers} onClick={fermer} className={classe}>
+                <Link viewTransition key={action.libelle} to={action.vers} onClick={fermer} className={classe}>
                   {action.libelle}
                 </Link>
               );

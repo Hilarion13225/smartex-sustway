@@ -128,7 +128,7 @@ export default function PiedPublic() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-12">
           {/* Marque */}
           <div className="max-w-sm">
-            <Link to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
+            <Link viewTransition to="/" className="inline-block" aria-label="SMARTEX SustWay, page d’entrée">
               <Logo taille="sm" variante="clair" />
             </Link>
             {/* Signature de la charte. Les quatre verbes disent la démarche dans
@@ -179,7 +179,7 @@ export default function PiedPublic() {
                           <span className="sr-only"> (nouvel onglet)</span>
                         </a>
                       ) : (
-                        <Link
+                        <Link viewTransition
                           to={lien.vers}
                           className="flex min-h-11 items-center text-[15px] text-white/85 transition-colors hover:text-white sm:min-h-8 lg:min-h-7"
                         >

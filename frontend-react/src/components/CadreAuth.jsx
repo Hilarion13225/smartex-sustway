@@ -24,10 +24,10 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
     <div className="vitrine min-h-full bg-ink-50 text-ink-600">
       <div className={clsx('mx-auto px-5 pb-12 pt-6 sm:pt-8', large ? 'max-w-[75rem]' : 'max-w-[64rem]')}>
         <div className="flex items-center justify-between gap-4">
-          <Link to="/" className="shrink-0" aria-label="SMARTEX SustWay, retour au site">
+          <Link viewTransition to="/" className="shrink-0" aria-label="SMARTEX SustWay, retour au site">
             <Logo taille="sm" />
           </Link>
-          <Link to="/" className="lien-trait text-[15px]">
+          <Link viewTransition to="/" className="lien-trait text-[15px]">
             Retour au site
           </Link>
         </div>

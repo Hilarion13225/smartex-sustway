@@ -20,6 +20,25 @@
   }
 
   /*
+   * Le defilement vers une ancre se fait en glissant, non en sautant.
+   *
+   * Tout le menu deroulant vise des ancres : Solution, Fonctionnalites et
+   * Ressources n'ont pas de sous-pages, leurs entrees pointent a l'interieur
+   * d'une meme page. Sans ce glissement, un clic teleporte le visiteur au
+   * milieu d'un document dont il n'a rien vu defiler, et rien ne lui dit ou il
+   * a atterri ni d'ou il vient. Le mouvement n'est pas un ornement : c'est ce
+   * qui rend le deplacement comprehensible.
+   *
+   * Sous `prefers-reduced-motion`, le saut reprend : quelqu'un qui a demande
+   * moins de mouvement prefere arriver que voyager.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /*
    * Palette "ink" et "surface" en variables CSS plutôt qu'en hexadécimal figé
    * dans tailwind.config.js : la classe .dark (posée sur l'élément html par
    * ThemeProvider, voir theme/ThemeContext.jsx) redéfinit ces variables, donc

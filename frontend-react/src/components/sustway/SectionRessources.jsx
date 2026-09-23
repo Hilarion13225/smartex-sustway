@@ -126,7 +126,7 @@ export default function SectionRessources() {
                   {/* Un lien quand la rubrique existe, une phrase quand elle
                       n'existe pas encore. Jamais un bouton inerte. */}
                   {rubrique.vers ? (
-                    <Link
+                    <Link viewTransition
                       to={rubrique.vers}
                       className="group mt-6 inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-brand-700"
                     >

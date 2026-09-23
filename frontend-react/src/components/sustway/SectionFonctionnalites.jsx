@@ -151,7 +151,7 @@ export default function SectionFonctionnalites() {
                     {domaine.capacites.map((capacite) => (
                       <li
                         key={capacite}
-                        className="rounded-full border border-ink-200 bg-surface px-3 py-1.5 text-[13px] font-medium text-ink-700"
+                        className="rounded-full border border-ink-200 bg-surface px-3 py-1.5 text-[13px] font-medium text-ink-700 transition-colors duration-200 hover:border-brand-300 hover:text-brand-700"
                       >
                         {capacite}
                       </li>
@@ -165,7 +165,7 @@ export default function SectionFonctionnalites() {
                  * blanc, et sans cet arrière-plan ses bords s'y confondraient.
                  */}
                 <div className={`min-w-0 ${inverse ? 'lg:order-1' : ''}`}>
-                  <div className="rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50 to-growth/25 p-4 sm:p-6">
+                  <div className="rounded-2xl bg-gradient-to-br from-brand-50 via-brand-50 to-growth/25 p-4 transition-transform duration-500 ease-out motion-safe:hover:-translate-y-1.5 motion-reduce:transition-none sm:p-6">
                     <Apercu />
                   </div>
                 </div>

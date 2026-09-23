@@ -227,7 +227,7 @@ export default function SectionSolution() {
                 contact : aucune page du site ne detaille les referentiels un a
                 un, et un bouton vers une page inexistante vaut moins qu'un
                 bouton vers quelqu'un. */}
-            <Link
+            <Link viewTransition
               to="/contact"
               className="group mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-growth px-6 text-[15px] font-semibold text-forest transition-colors hover:bg-white"
             >
@@ -249,7 +249,7 @@ export default function SectionSolution() {
                 key={reference.code}
                 balise="li"
                 delai={index * 90}
-                className="flex w-full flex-col items-center text-center"
+                className="group flex w-full flex-col items-center text-center"
               >
                 {/*
                  * Le logo est decoratif : le nom qui le suit dit la meme chose,
@@ -272,7 +272,7 @@ export default function SectionSolution() {
                  * et noir, bleu — qu'un fond vert avalerait, et l'anneau clair
                  * detache le disque du vert comme sur le modele.
                  */}
-                <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-3 ring-2 ring-growth/60 ring-offset-4 ring-offset-forest sm:h-24 sm:w-24 sm:p-4">
+                <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-3 ring-2 ring-growth/60 ring-offset-4 ring-offset-forest transition-[transform,box-shadow] duration-300 ease-out motion-safe:group-hover:-translate-y-1 motion-safe:group-hover:ring-growth motion-reduce:transition-none sm:h-24 sm:w-24 sm:p-4">
                   <img
                     src={`/referentiels/${reference.code.toLowerCase().replace(/_/g, '-')}.png`}
                     alt=""

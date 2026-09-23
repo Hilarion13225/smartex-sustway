@@ -70,7 +70,7 @@ export default function Bouton({
 
   if (vers) {
     return (
-      <Link to={vers} className={classes} {...reste}>
+      <Link viewTransition to={vers} className={classes} {...reste}>
         {children}
       </Link>
     );

@@ -169,7 +169,13 @@ export default function SectionOffres() {
                 <article
                   id={offre.ancre}
                   className={clsx(
+                    /* La carte survolee se souleve et prend une ombre. C'est la page ou
+                       l on compare trois colonnes de listes proches, et ou le regard perd
+                       facilement la ligne qu il suivait : le relief dit laquelle on tient.
+                       La translation reste a six pixels — au-dela, les trois cartes se
+                       mettent a bouger au moindre passage de souris. */
                     'flex h-full flex-col overflow-hidden rounded-2xl bg-surface scroll-mt-24',
+                    'transition-[transform,box-shadow] duration-300 ease-out motion-safe:hover:-translate-y-1.5 motion-safe:hover:shadow-lg motion-reduce:transition-none',
                     offre.misEnAvant
                       ? 'border-2 border-forest shadow-soft'
                       : 'border border-ink-200'
@@ -266,7 +272,7 @@ export default function SectionOffres() {
                         </>
                       )}
 
-                      <Link
+                      <Link viewTransition
                         to={offre.action.vers}
                         className={clsx(
                           'group mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg text-[15px] font-semibold transition-colors',
@@ -294,7 +300,7 @@ export default function SectionOffres() {
         <Apparition className="mt-8">
           <p className="text-[15px] text-ink-600">
             Les montants ci-dessus sont ceux du catalogue. Les conditions se précisent avec vous.{' '}
-            <Link
+            <Link viewTransition
               to="/contact"
               className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 transition-colors hover:text-brand-800 hover:decoration-brand-600"
             >
