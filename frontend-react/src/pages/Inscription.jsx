@@ -6,7 +6,6 @@ import {
   CreditCard,
   Mail,
   Smartphone,
-  UserPlus,
   Wallet,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -263,14 +262,10 @@ export default function Inscription() {
   return (
     <CadreAuth
       large
-      badge={
-        <>
-          <UserPlus className="h-3.5 w-3.5" aria-hidden />
-          Création de compte
-        </>
-      }
-      titre="Créez votre espace SMARTEX SustWay"
-      description="Cinq étapes guidées : formule, compte, vérification, paiement puis accès immédiat à la plateforme."
+      // Le sur-titre portait deja « Creation de compte » : le titre le reprenant
+      // desormais, le garder aurait affiche deux fois la meme phrase, l'une
+      // au-dessus de l'autre.
+      titre="Création de compte"
     >
       {/* Seul retour possible : de « Compte » vers « Formule », avant que le
           compte n'existe. Au-delà, revenir en arrière recréerait un compte ou
@@ -297,10 +292,6 @@ export default function Inscription() {
       {etape === 'formule' ? (
         <div>
           <h2 className="font-display text-xl font-bold text-ink-900">Choix de la formule</h2>
-          <p className="mt-1 text-[15px] text-ink-600">
-            La formule est choisie avant la création du compte et détermine immédiatement les fonctionnalités
-            actives.
-          </p>
           <div className="mt-5 space-y-3">
             {formules.map((option) => (
               <label

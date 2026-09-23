@@ -82,12 +82,23 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                  * mesures pour 432 px utiles, que le panneau coupait en silence
                  * puisqu'il est en `overflow-hidden`.
                  *
-                 * Les deux valeurs sont calees sur la largeur utile mesuree, et
-                 * visent 95 % de celle-ci : 400 px entre 1024 et 1280 px, 432 px
-                 * au-dela, ou le panneau cesse de grandir. Le logotype occupe
-                 * 9,53 px de large par pixel de corps.
+                 * Les valeurs sont calees sur la largeur utile mesuree, et visent
+                 * 95 % de celle-ci ; le logotype occupe 9,53 px de large par
+                 * pixel de corps.
+                 *
+                 * Deux jeux, parce que le panneau n'a pas la meme largeur selon
+                 * la page. En `large` — l'inscription, dont le formulaire tient
+                 * cinq etapes — il est fige a 24 rem, soit 320 px utiles : les
+                 * valeurs de l'autre jeu y debordaient de 92 px et coupaient le
+                 * S de SMARTEX. Sinon il suit la moitie de la carte, 400 px
+                 * entre 1024 et 1280 px puis 432 px au-dela, ou il cesse de
+                 * grandir.
                  */}
-                <Logo taille="md" variante="clair" className="text-[2.5rem] xl:text-[2.7rem]" />
+                <Logo
+                  taille="md"
+                  variante="clair"
+                  className={large ? 'text-[2rem]' : 'text-[2.5rem] xl:text-[2.7rem]'}
+                />
               </div>
 
               <p className="relative z-10 pt-8 text-sm text-white/70">
