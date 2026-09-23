@@ -431,6 +431,64 @@ export default function TableauDeBord() {
         <OrganisationsATraiter bilan={aTraiter} total={lignesPortefeuille.length} />
       ) : null}
 
+      {/* --- Indicateurs --- */}
+      {/*
+       * Les indicateurs ouvrent le tableau de bord.
+       *
+       * Ils venaient apres les missions et les alertes, au motif que celles-ci
+       * menent a un ecran ou agir quand les indicateurs ne portaient qu'un
+       * etat. L'objection tombe : chaque carte est desormais un lien vers
+       * l'ecran qui detaille son chiffre. Un indicateur qu'on peut suivre
+       * jusqu'a sa source n'est plus un constat, et c'est par la qu'on lit un
+       * tableau de bord — le chiffre d'abord, le detail ensuite.
+       *
+       * Quatre cartes et non cinq : cinq sur une grille de quatre colonnes
+       * laissaient une orpheline sur une seconde ligne. Les plans
+       * d'amelioration rejoignent la consolidation, ou ils sont a leur place.
+       *
+       * La premiere carte porte le fond de marque. Une seule : la mise en
+       * avant ne dit quelque chose que si elle designe.
+       */}
+      <Revele>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <CarteKpi
+            icone={Building2}
+            ton="marque"
+            enAvant
+            valeur={kpis.actives}
+            libelle="Missions actives"
+            vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
+            precision={`${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}`}
+          />
+          <CarteKpi
+            icone={ClipboardList}
+            valeur={kpis.enCours}
+            libelle="En cours"
+            vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
+            precision={`${kpis.brouillons} en brouillon`}
+          />
+          <CarteKpi
+            icone={TriangleAlert}
+            ton="alerte"
+            valeur={kpis.aRisque}
+            libelle="À risque"
+            vers={premiereEntreprise ? `/app/${premiereEntreprise}/non-conformites` : null}
+            precision="Au moins un écart critique"
+          />
+          {/* Le taux de completion ne mene nulle part : il agrege tout le
+              portefeuille, et aucun ecran ne le detaille tel quel. Il garde
+              donc son icone plutot qu'une fleche. */}
+          <CarteKpi
+            icone={Gauge}
+            ton="succes"
+            valeur={`${kpis.completion}%`}
+            libelle="Taux de complétion"
+            ratio={kpis.completion}
+            precision={`${kpis.totalEvalues} critères évalués`}
+          />
+        </div>
+      </Revele>
+
       {/* Ce que l’utilisateur doit traiter vient avant ce qu’il doit
           savoir : les alertes portent des liens vers l’écran où agir, les
           indicateurs ne portent qu’un état. Elles étaient jusqu’ici sous
@@ -477,56 +535,6 @@ export default function TableauDeBord() {
         </div>
       </Revele>
 
-      {/* --- Indicateurs --- */}
-      <Revele delai={60}>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-          <CarteKpi
-            icone={Building2}
-            ton="marque"
-            valeur={kpis.actives}
-            libelle="Missions actives"
-            precision={`${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}`}
-          />
-          <CarteKpi
-            icone={ClipboardList}
-            valeur={kpis.enCours}
-            libelle="En cours"
-            precision={`${kpis.brouillons} en brouillon`}
-          />
-          <CarteKpi
-            icone={TriangleAlert}
-            ton="alerte"
-            valeur={kpis.aRisque}
-            libelle="À risque"
-            precision="Au moins un écart critique"
-          />
-          {/* Les deux seuls indicateurs qui soient une part d'un tout
-              portent une jauge : un pourcentage se situe mieux sur sa
-              piste que seul. Les trois autres comptent des objets, dont
-              le maximum n'est pas connu. */}
-          <CarteKpi
-            icone={Gauge}
-            ton="succes"
-            valeur={`${kpis.completion}%`}
-            libelle="Taux de complétion"
-            ratio={kpis.completion}
-            precision={`${kpis.totalEvalues} critères évalués`}
-          />
-          <CarteKpi
-            icone={Target}
-            ton="neutre"
-            valeur={syntheseePlans.total}
-            libelle="Plans d’amélioration"
-            ratio={syntheseePlans.total === 0 ? null : syntheseePlans.avancement}
-            precision={
-              syntheseePlans.total === 0
-                ? 'Aucun plan en cours'
-                : `${syntheseePlans.actifs} actif(s) · ${syntheseePlans.avancement}% d’avancement`
-            }
-          />
-        </div>
-      </Revele>
-
       {/* --- Consolidation du portefeuille --- */}
       {consolide.missions > 0 ? (
         <Revele delai={30}>
@@ -538,7 +546,13 @@ export default function TableauDeBord() {
                 {consolide.missions > 1 ? 's' : ''}
               </p>
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-3 sm:gap-4">
+            {/*
+             * Les plans d'amelioration tiennent ici plutot que dans la rangee
+             * d'indicateurs : ils disent ce qu'on fait des ecarts que la
+             * notation vient de mesurer, et se lisent donc apres elle.
+             */}
+            <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <dl className="grid grid-cols-3 gap-3 sm:gap-4">
               <div className="rounded-xl border border-ink-100 p-4">
                 <dd className="text-2xl font-bold tabular-nums text-ink-900">
                   {consolide.note.toFixed(0)}
@@ -557,7 +571,21 @@ export default function TableauDeBord() {
                 </dd>
                 <dt className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">Score / 5</dt>
               </div>
-            </dl>
+              </dl>
+          <CarteKpi
+            icone={Target}
+            ton="neutre"
+            valeur={syntheseePlans.total}
+            libelle="Plans d’amélioration"
+            ratio={syntheseePlans.total === 0 ? null : syntheseePlans.avancement}
+            vers={premiereEntreprise ? `/app/${premiereEntreprise}/plans` : null}
+            precision={
+              syntheseePlans.total === 0
+                ? 'Aucun plan en cours'
+                : `${syntheseePlans.actifs} actif(s) · ${syntheseePlans.avancement}% d’avancement`
+            }
+          />
+            </div>
             <p className="mt-3 text-xs text-ink-500">
               Le score du portefeuille est le quotient des deux sommes, non la moyenne des scores de
               mission : une mission de quatre-vingt-douze critères y pèse plus qu'une de seize.
