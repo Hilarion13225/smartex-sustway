@@ -1,20 +1,24 @@
 fond.png — arriere-plan du panneau de marque des pages Connexion,
 Inscription et Accepter une invitation (voir components/CadreAuth.jsx).
 
-A REMPLACER. Le fichier depose ici est l'apercu fourni par Hilarion le
-23/09/2026 : il porte le filigrane « Adobe Stock » et mesure 234 x 125 px.
+Image fournie par Hilarion le 23/09/2026 : mains filaires tenant une
+feuille lumineuse, fond vert sombre. 736 x 572 px, sans filigrane.
 
-Deux raisons de ne pas le laisser en production :
+Rendu : l'image est ramenee a 55 % d'opacite et recouverte d'un voile plus
+dense au centre. Ce n'est pas un effet — son halo lumineux tombe
+exactement derriere le logotype, et sans cela les deux feuilles se
+superposaient sans qu'aucune ne se lise.
 
-1. Droits — un apercu filigrane n'est pas licencie. Il faut la version
-   achetee, sans filigrane.
+Deux reserves, si une version meilleure existe :
 
-2. Definition — le panneau fait jusqu'a 500 px de large et environ 490 px
-   de haut, et le double sur un ecran a forte densite. Viser 1000 x 1000 px
-   au minimum ; en dessous l'image est visiblement floue.
+1. Definition — le panneau fait jusqu'a 500 px de large et 490 px de haut,
+   le double sur un ecran a forte densite. 736 x 572 suffit en 1x, pas en
+   2x. Viser 1000 x 1000 px.
+
+2. Cadrage — l'image est en paysage, le panneau presque carre. En
+   `object-cover`, les cotes sont coupes d'environ 100 px chacun. Un
+   cadrage vertical ou carre perdrait moins.
 
 Remplacer le fichier suffit : aucun code a toucher, le nom et le chemin
 sont figes. Si le fichier est absent, le panneau retrouve les bandes de
 lumiere qu'il portait avant — la page ne casse pas.
-
-Format : JPEG ou WebP de preference (photo), cadrage vertical ou carre.
