@@ -74,8 +74,20 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                   où il dit de qui est le compte sans rien ajouter à lire.
                   Centré sur la hauteur libre, entre l'éditeur et la mention du
                   bas, plutôt que posé contre l'un des deux. */}
-              <div className="relative z-10 flex flex-1 items-center">
-                <Logo taille="md" variante="clair" />
+              <div className="relative z-10 flex flex-1 items-center justify-center">
+                {/*
+                 * La taille est donnee ici et non par `taille`, dont aucun cran
+                 * ne convenait : `md` laissait le logotype flotter au milieu du
+                 * panneau, `lg` et `text-5xl` le faisaient deborder — 458 px
+                 * mesures pour 432 px utiles, que le panneau coupait en silence
+                 * puisqu'il est en `overflow-hidden`.
+                 *
+                 * Les deux valeurs sont calees sur la largeur utile mesuree, et
+                 * visent 95 % de celle-ci : 400 px entre 1024 et 1280 px, 432 px
+                 * au-dela, ou le panneau cesse de grandir. Le logotype occupe
+                 * 9,53 px de large par pixel de corps.
+                 */}
+                <Logo taille="md" variante="clair" className="text-[2.5rem] xl:text-[2.7rem]" />
               </div>
 
               <p className="relative z-10 pt-8 text-sm text-white/70">
