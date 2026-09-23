@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Building2, FolderKanban, Plus, X } from 'lucide-react';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Badge, Loader, PageTitre, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -56,6 +57,13 @@ export default function Projets() {
 
   return (
     <div>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Projets d’audit' },
+        ]}
+      />
+
       <PageTitre
         icone={FolderKanban}
         titre="Projets d’audit"

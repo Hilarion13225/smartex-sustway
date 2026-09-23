@@ -5,6 +5,7 @@ import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLES_SUPERVISION } from '../auth/permissions';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Badge, Card, PageTitre, Tableau } from '../components/ui';
 import { parOrganisation, usePortefeuille, vueDesMissions } from '../lib/portefeuille';
 import { formaterScore } from '../lib/scoreAffiche';
@@ -168,6 +169,13 @@ export default function Entreprises() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Organisations' },
+        ]}
+      />
+
       <PageTitre
         icone={Building2}
         titre="Organisations"

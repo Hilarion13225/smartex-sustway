@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Download, Medal } from 'lucide-react';
 import clsx from 'clsx';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { chargerDernieresMissions } from '../lib/portefeuille';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -116,6 +117,13 @@ export default function Classement() {
 
   return (
     <div className="space-y-5">
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Classement' },
+        ]}
+      />
+
       <PageTitre
         icone={Medal}
         titre="Classement"

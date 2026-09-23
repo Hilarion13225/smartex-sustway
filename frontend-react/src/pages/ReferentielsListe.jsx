@@ -14,6 +14,7 @@ import {
 import clsx from 'clsx';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { GraphiqueAnneau } from '../components/charts';
 import CarteKpi from '../components/tableau-bord/CarteKpi';
@@ -226,6 +227,13 @@ export default function ReferentielsListe() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Référentiels' },
+        ]}
+      />
+
       <PageTitre
         icone={BookOpen}
         titre="Référentiels"

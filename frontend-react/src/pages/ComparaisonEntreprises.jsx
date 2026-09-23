@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Columns3, Download } from 'lucide-react';
 import Revele from '../components/Revele';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { COULEURS, GraphiqueBarres, GraphiqueRadar } from '../components/charts';
 import { chargerDernieresMissions } from '../lib/portefeuille';
@@ -71,6 +72,13 @@ export default function ComparaisonEntreprises() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Comparer les organisations' },
+        ]}
+      />
+
       <PageTitre
         icone={Columns3}
         titre="Comparer les organisations"

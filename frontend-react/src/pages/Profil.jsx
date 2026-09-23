@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyRound, Save, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import { useApiAuth } from '../auth/useApiAuth';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Card, CardHeader, PageTitre } from '../components/ui';
 import { ApiError } from '../lib/apiClient';
 
@@ -10,6 +11,13 @@ export default function Profil() {
 
   return (
     <>
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Profil & sécurité' },
+        ]}
+      />
+
       <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification." />
 
       <div className="grid gap-6 lg:grid-cols-2">

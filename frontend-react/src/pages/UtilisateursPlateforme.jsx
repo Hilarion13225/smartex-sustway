@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Ban, Building2, KeyRound, ShieldCheck, Users } from 'lucide-react';
+import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Badge, Card, Loader, PageTitre, Tableau, Vide } from '../components/ui';
 import { api } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -184,6 +185,13 @@ export default function UtilisateursPlateforme() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumb
+        elements={[
+          { libelle: 'Tableau de bord', vers: '/app' },
+          { libelle: 'Utilisateurs de la plateforme' },
+        ]}
+      />
+
       <PageTitre
         titre="Utilisateurs de la plateforme"
         description="Tous les comptes rattachés à une organisation, quel que soit son portefeuille."
