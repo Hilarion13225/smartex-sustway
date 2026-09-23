@@ -133,12 +133,16 @@ export default function AuditScore() {
                 icone={Gauge}
                 ton={score.nombreCriteresEvalues > 0 ? tonScore(score.scoreGlobal) : 'neutre'}
               />
+              {/* Ces deux cartes comptent des criteres, et l'ecran qui les
+                  liste existe : elles y menent. Le score global, lui, n'a pas
+                  d'ecran qui le detaille tel quel et reste un constat. */}
               <StatCard
                 libelle="Critères évalués"
                 valeur={`${score.nombreCriteresEvalues} / ${score.nombreCriteresTotal}`}
                 detail="Évaluation validée par l’IA"
                 icone={CheckCircle2}
                 ton="vert"
+                vers={`/app/${entrepriseId}/audits/${auditId}`}
               />
               <StatCard
                 libelle="Non évalués"
@@ -146,6 +150,7 @@ export default function AuditScore() {
                 detail="Aucune évaluation lancée"
                 icone={HelpCircle}
                 ton="neutre"
+                vers={`/app/${entrepriseId}/audits/${auditId}`}
               />
               {/* Une évaluation en revue ne compte ni dans le score ni parmi
                   les non évalués : sans cette vignette, elle n'apparaissait

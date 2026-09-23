@@ -536,7 +536,7 @@
     @apply relative overflow-hidden rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm transition duration-300 hover:border-brand-200 hover:shadow-soft motion-safe:hover:-translate-y-1;
   }
   .carte-stat {
-    @apply flex items-center gap-4 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm transition duration-300 hover:shadow-soft;
+    @apply flex items-center gap-4 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm;
   }
 }
 

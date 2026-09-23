@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ClipboardX, Download } from 'lucide-react';
+import { ClipboardList, ClipboardX, Download, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, Vide } from '../components/ui';
 import { COULEURS, GraphiqueAnneau } from '../components/charts';
@@ -108,12 +108,16 @@ export default function NonConformitesEntreprise() {
         <>
           <Revele>
             <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              <StatCard libelle="Total" valeur={lignes.length} icone={ClipboardX} ton="neutre" />
+              {/* Les trois cartes portaient la meme icone : trois chiffres
+                  differents, un seul signe, qui ne distinguait donc rien. Chacune
+                  prend celui de ce qu'elle compte — un releve, un ecart encore
+                  ouvert, un ecart critique. */}
+              <StatCard libelle="Total" valeur={lignes.length} icone={ClipboardList} ton="neutre" />
               <StatCard libelle="Encore ouvertes" valeur={ouvertes} icone={ClipboardX} ton={ouvertes > 0 ? 'ambre' : 'vert'} />
               <StatCard
                 libelle="Critiques"
                 valeur={lignes.filter((l) => l.nc.niveau === 'CRITIQUE').length}
-                icone={ClipboardX}
+                icone={TriangleAlert}
                 ton="rouge"
               />
             </div>

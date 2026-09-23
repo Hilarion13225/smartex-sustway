@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { Info } from 'lucide-react';
+import { ArrowUpRight, Info } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SustwayLoader from './SustwayLoader';
 export function Card({
   children,
@@ -65,18 +66,40 @@ export function Badge({
       {children}
     </span>;
 }
+/**
+ * Chiffre mis en avant au-dessus d'une liste : une valeur, son intitule, un
+ * detail.
+ *
+ * `vers` fait de la carte un lien vers l'ecran qui porte le detail — meme
+ * contrat que `CarteKpi` sur le tableau de bord, et pour la meme raison : un
+ * chiffre qu'on peut suivre jusqu'a sa source n'est plus un simple constat.
+ *
+ * Le survol suit le lien, et rien d'autre. La carte reagissait au survol dans
+ * tous les cas, alors qu'elle n'a jamais ete cliquable : trente-sept cartes
+ * promettaient un clic qui ne venait pas. Une carte qui ne mene nulle part ne
+ * bouge plus ; celle qui mene quelque part se souleve et porte une fleche, et
+ * les deux natures se distinguent enfin au premier coup d'oeil.
+ */
 export function StatCard({
   libelle,
   valeur,
   detail,
   icone: Icone,
-  ton = 'neutre'
+  ton = 'neutre',
+  vers = null
 }) {
-  return <div className="carte-stat">
+  const Enveloppe = vers ? Link : 'div';
+  return <Enveloppe
+      {...(vers ? { to: vers, viewTransition: true } : {})}
+      className={clsx(
+        'carte-stat',
+        vers && 'group transition-[transform,box-shadow] duration-300 ease-out motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-soft motion-reduce:transition-none'
+      )}
+    >
       <span className={clsx('rounded-xl p-3', TONS[ton])}>
         <Icone className="h-5 w-5" aria-hidden />
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-xs font-medium uppercase tracking-wide text-ink-500">{libelle}</p>
         <p className="mt-0.5 text-2xl font-semibold text-ink-900">{valeur}</p>
         {/* `truncate` est voulu, mais a 1024 px le detail perd jusqu'a 27 % de sa
@@ -87,7 +110,16 @@ export function StatCard({
           </p>
         ) : null}
       </div>
-    </div>;
+      {/* La fleche ne parait que sur les cartes qui menent quelque part : c'est
+          elle qui annonce le clic que le survol laisse deviner. */}
+      {vers ? (
+        <ArrowUpRight
+          aria-hidden
+          className="h-4 w-4 shrink-0 text-ink-400 transition-colors group-hover:text-brand-600"
+          strokeWidth={2}
+        />
+      ) : null}
+    </Enveloppe>;
 }
 export function Barre({
   valeur,
