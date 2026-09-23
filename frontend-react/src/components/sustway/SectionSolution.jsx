@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { Check, ScrollText } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
 import { ApercuTableauDeBord } from './ApercusFonctionnalites';
@@ -152,33 +152,67 @@ export default function SectionSolution() {
       {/*
        * Les cinq references sont celles de `config/smartex.js`, deja affichees
        * par le bandeau qui court au bas de toutes les pages. La liste est
-       * partagee, pas recopiee : le bandeau n'en donne que les noms, cette
-       * section en donne aussi la portee.
+       * partagee, pas recopiee.
+       *
+       * Les logos vivent dans `public/referentiels/`, nommes d'apres le code du
+       * referentiel en minuscules, les soulignes changes en tirets. Ils avaient
+       * ete deposes pour le carrousel de la page Methodologie, supprimee
+       * depuis ; ils reprennent du service ici.
+       *
+       * Pastilles blanches sur fond Forest : les fichiers ont un fond blanc et
+       * des couleurs propres a chaque organisme — jaune et noir, bleu — qu'un
+       * fond vert avalerait. Le cercle blanc leur rend leur lisibilite et donne
+       * a la rangee son unite, chaque logo gardant ses couleurs.
        */}
-      <Section id="referentiels" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
-        <TitreBloc
-          surTitre="Référentiels"
-          sousTitre="Les référentiels constituent le cadre de référence. Ils permettent de définir les critères d’évaluation, de structurer la collecte des données, d’analyser les écarts et d’orienter les actions."
-        >
-          Des cadres reconnus
-        </TitreBloc>
+      <Section id="referentiels" fond="forest" pleineHauteur contenuClassName="lg:py-8">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+          <Apparition>
+            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-growth">Référentiels</p>
+            <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-white sm:text-[30px]">
+              Des cadres reconnus
+            </h2>
+            <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-white/75">
+              Les référentiels constituent le cadre de référence. Ils permettent de définir les critères d’évaluation,
+              de structurer la collecte des données, d’analyser les écarts et d’orienter les actions.
+            </p>
+          </Apparition>
 
-        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {REFERENCES_METHODOLOGIQUES.map((reference, index) => (
-            <Apparition
-              key={reference.code}
-              balise="li"
-              delai={index * 90}
-              className="flex h-full flex-col rounded-2xl border border-ink-200 bg-surface p-6"
-            >
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                  <ScrollText className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+          {/* Trois de front sur telephone large, les cinq en rang au-dela de
+              1024 px. Jamais cinq en dessous : une pastille de 96 px et un nom
+              de trois mots demandent chacun leur place. */}
+          <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-3">
+            {REFERENCES_METHODOLOGIQUES.map((reference, index) => (
+              <Apparition
+                key={reference.code}
+                balise="li"
+                delai={index * 90}
+                className="flex w-full flex-col items-center text-center"
+              >
+                {/*
+                 * Le logo est decoratif : le nom qui le suit dit la meme chose,
+                 * et le faire lire deux fois n'apprend rien. D'ou `alt` vide.
+                 *
+                 * `onError` masque l'image plutot que de laisser l'icone de
+                 * fichier casse : tant qu'un logo manque, la pastille reste, et
+                 * le nom en dessous porte l'information — c'est la regle que
+                 * pose deja le LISEZ-MOI du dossier.
+                 */}
+                <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-3 ring-1 ring-white/25 sm:h-24 sm:w-24 sm:p-4">
+                  <img
+                    src={`/referentiels/${reference.code.toLowerCase().replace(/_/g, '-')}.png`}
+                    alt=""
+                    loading="lazy"
+                    className="h-full w-full object-contain"
+                    onError={(evenement) => {
+                      evenement.currentTarget.style.display = 'none';
+                    }}
+                  />
                 </span>
-                <h3 className="mt-4 text-[18px] font-semibold text-forest">{reference.nom}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{reference.texte}</p>
-            </Apparition>
-          ))}
-        </ul>
+                <p className="mt-4 text-[13px] font-semibold leading-snug text-white sm:text-sm">{reference.nom}</p>
+              </Apparition>
+            ))}
+          </ul>
+        </div>
       </Section>
 
       {/* --- D. Livrables -------------------------------------------------- */}
