@@ -79,7 +79,7 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
                 </ul>
               ) : null}
 
-              <p className="relative z-10 mt-auto pt-8 text-sm text-white/55">
+              <p className="relative z-10 mt-auto pt-8 text-sm text-white/70">
                 Chiffrement au repos et en transit · isolation par entreprise · conformité RGPD
               </p>
 
@@ -95,17 +95,26 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
                * colonnes franches se liraient comme un graphique, et le
                * panneau annoncerait une donnée qu'il n'a pas.
                */}
-              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 overflow-hidden">
-                <div className="absolute bottom-0 left-[6%] h-[70%] w-[18%] rounded-t-full bg-growth/70 blur-2xl" />
-                <div className="absolute bottom-0 left-[26%] h-[95%] w-[16%] rounded-t-full bg-brand-400/60 blur-2xl" />
-                <div className="absolute bottom-0 left-[46%] h-[55%] w-[20%] rounded-t-full bg-growth/50 blur-2xl" />
-                <div className="absolute bottom-0 left-[70%] h-[80%] w-[14%] rounded-t-full bg-brand-500/45 blur-2xl" />
+              <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%] overflow-hidden">
+                <div className="absolute bottom-0 left-[4%] h-[75%] w-[20%] rounded-t-[999px] bg-growth blur-xl" />
+                <div className="absolute bottom-0 left-[26%] h-[100%] w-[18%] rounded-t-[999px] bg-brand-300 blur-xl" />
+                <div className="absolute bottom-0 left-[50%] h-[60%] w-[22%] rounded-t-[999px] bg-growth/80 blur-xl" />
+                <div className="absolute bottom-0 left-[76%] h-[88%] w-[16%] rounded-t-[999px] bg-brand-400 blur-xl" />
+                {/* Un voile rend au texte son fond : sans lui, la mention du
+                    bas et le dernier atout passaient sur les bandes claires, en
+                    blanc sur vert pale. Il s'eteint vers le bas, ou il n'y a
+                    plus rien a lire. */}
+                <div className="absolute inset-0 bg-gradient-to-t from-ink-900/10 via-ink-900/55 to-ink-900" />
               </div>
             </aside>
 
             <main className="min-w-0 px-2 py-6 sm:px-8 sm:py-10">
-              {/* Le logotype ouvre la colonne, comme sur le modèle. */}
-              <Logo taille="sm" />
+              {/* Le logotype ouvre la colonne, comme sur le modèle. Dans son
+                  propre bloc : il est en `inline-flex`, et le sur-titre qui le
+                  suit venait se ranger a cote de lui au lieu de passer dessous. */}
+              <div>
+                <Logo taille="sm" />
+              </div>
 
               {badge ? <p className="sur-titre mt-8 [&_svg]:hidden">{badge}</p> : null}
               <h1 className={clsx('titre-auth text-ink-900', badge ? 'mt-3' : 'mt-8')}>{titre}</h1>
