@@ -1,5 +1,6 @@
 import clsx from 'clsx';
-import { Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Check, Leaf } from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
 import { ApercuTableauDeBord } from './ApercusFonctionnalites';
@@ -150,6 +151,10 @@ export default function SectionSolution() {
 
       {/* --- C. Referentiels ---------------------------------------------- */}
       {/*
+       * La bande des referentiels, sur le modele fourni : un aplat vert borde
+       * de deux courbes, le discours a gauche, une rangee de pastilles a
+       * droite.
+       *
        * Les cinq references sont celles de `config/smartex.js`, deja affichees
        * par le bandeau qui court au bas de toutes les pages. La liste est
        * partagee, pas recopiee.
@@ -158,16 +163,58 @@ export default function SectionSolution() {
        * referentiel en minuscules, les soulignes changes en tirets. Ils avaient
        * ete deposes pour le carrousel de la page Methodologie, supprimee
        * depuis ; ils reprennent du service ici.
-       *
-       * Pastilles blanches sur fond Forest : les fichiers ont un fond blanc et
-       * des couleurs propres a chaque organisme — jaune et noir, bleu — qu'un
-       * fond vert avalerait. Le cercle blanc leur rend leur lisibilite et donne
-       * a la rangee son unite, chaque logo gardant ses couleurs.
        */}
-      <Section id="referentiels" fond="forest" pleineHauteur contenuClassName="lg:py-8">
+      <Section
+        id="referentiels"
+        fond="forest"
+        pleineHauteur
+        className="relative overflow-hidden"
+        contenuClassName="relative lg:py-8"
+        decor={
+          <>
+            {/*
+             * Les deux courbes qui bordent la bande, en haut et en bas.
+             *
+             * Elles sont dessinees dans la couleur de la page et non dans celle
+             * de la bande : c'est le blanc qui mord sur le vert, comme sur le
+             * modele. `preserveAspectRatio="none"` les etire sur toute la
+             * largeur — une courbe qui garderait ses proportions laisserait un
+             * vide sur les ecrans larges.
+             *
+             * Elles passent par `decor` et non par le contenu : bornees a la
+             * largeur de lecture, elles faisaient 1200 px sur une section de
+             * 1440 et s'arretaient avant les bords.
+             *
+             * `aria-hidden` et `pointer-events-none` : elles ne sont ni a lire
+             * ni a cliquer, et couvrent toute la largeur au-dessus du contenu.
+             */}
+            <svg
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 h-8 w-full text-surface sm:h-12"
+              viewBox="0 0 1440 48"
+              preserveAspectRatio="none"
+            >
+              <path d="M0 0h1440v10c-240 26-480 38-720 38S240 36 0 10z" fill="currentColor" />
+            </svg>
+            <svg
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 w-full text-surface sm:h-12"
+              viewBox="0 0 1440 48"
+              preserveAspectRatio="none"
+            >
+              <path d="M0 48h1440V38c-240-26-480-38-720-38S240 12 0 38z" fill="currentColor" />
+            </svg>
+          </>
+        }
+      >
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
           <Apparition>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-growth">Référentiels</p>
+            {/* La feuille reprend celle du logotype : c'est le seul signe de la
+                marque qui tienne dans un sur-titre. */}
+            <p className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-growth">
+              <Leaf className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+              Référentiels
+            </p>
             <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-white sm:text-[30px]">
               Des cadres reconnus
             </h2>
@@ -175,6 +222,22 @@ export default function SectionSolution() {
               Les référentiels constituent le cadre de référence. Ils permettent de définir les critères d’évaluation,
               de structurer la collecte des données, d’analyser les écarts et d’orienter les actions.
             </p>
+
+            {/* Le modele porte ici un bouton « en savoir plus ». Il mene au
+                contact : aucune page du site ne detaille les referentiels un a
+                un, et un bouton vers une page inexistante vaut moins qu'un
+                bouton vers quelqu'un. */}
+            <Link
+              to="/contact"
+              className="group mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-growth px-6 text-[15px] font-semibold text-forest transition-colors hover:bg-white"
+            >
+              Parler des référentiels
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-200 motion-safe:group-hover:translate-x-1"
+                strokeWidth={2}
+                aria-hidden
+              />
+            </Link>
           </Apparition>
 
           {/* Trois de front sur telephone large, les cinq en rang au-dela de
@@ -196,8 +259,20 @@ export default function SectionSolution() {
                  * fichier casse : tant qu'un logo manque, la pastille reste, et
                  * le nom en dessous porte l'information — c'est la regle que
                  * pose deja le LISEZ-MOI du dossier.
+                 *
+                 * Seul le nom suit la pastille. La portee de chaque referentiel
+                 * — « sante et securite au travail », « dix principes
+                 * couvrant... » — y tenait aussi, et donnait a la rangee cinq
+                 * colonnes de hauteurs inegales, celle du Pacte mondial montant
+                 * a six lignes. Le paragraphe de gauche dit ce que les
+                 * referentiels font ; la rangee dit lesquels.
+                 *
+                 * Pastilles blanches cerclees de Butterfly : les fichiers ont un
+                 * fond blanc et des couleurs propres a chaque organisme — jaune
+                 * et noir, bleu — qu'un fond vert avalerait, et l'anneau clair
+                 * detache le disque du vert comme sur le modele.
                  */}
-                <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-3 ring-1 ring-white/25 sm:h-24 sm:w-24 sm:p-4">
+                <span className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-white p-3 ring-2 ring-growth/60 ring-offset-4 ring-offset-forest sm:h-24 sm:w-24 sm:p-4">
                   <img
                     src={`/referentiels/${reference.code.toLowerCase().replace(/_/g, '-')}.png`}
                     alt=""
@@ -208,7 +283,7 @@ export default function SectionSolution() {
                     }}
                   />
                 </span>
-                <p className="mt-4 text-[13px] font-semibold leading-snug text-white sm:text-sm">{reference.nom}</p>
+                <p className="mt-5 text-[13px] font-semibold leading-snug text-white sm:text-sm">{reference.nom}</p>
               </Apparition>
             ))}
           </ul>

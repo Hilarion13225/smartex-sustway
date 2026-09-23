@@ -48,7 +48,14 @@ const FONDS = {
  * Meme motif que `SectionConfiance`, qui s'etire deja sur la fenetre moins la
  * hauteur du pied.
  */
-export function Section({ id, fond = 'blanc', pleineHauteur = false, className, contenuClassName, children }) {
+/*
+ * `decor` : ce qui se pose sur la section elle-meme, hors de la largeur de
+ * lecture — une courbe qui borde la bande, un aplat. Le contenu, lui, reste
+ * borne a 1200 px, et un decor qui y vivrait s'arreterait avec lui : mesure
+ * faite, une courbe placee dans le contenu faisait 1200 px de large sur une
+ * section de 1440.
+ */
+export function Section({ id, fond = 'blanc', pleineHauteur = false, decor, className, contenuClassName, children }) {
   return (
     <section
       id={id}
@@ -60,6 +67,7 @@ export function Section({ id, fond = 'blanc', pleineHauteur = false, className, 
         className
       )}
     >
+      {decor}
       <div className={clsx('mx-auto w-full max-w-[1200px] px-5 py-20 sm:px-8 lg:py-28', contenuClassName)}>
         {children}
       </div>
