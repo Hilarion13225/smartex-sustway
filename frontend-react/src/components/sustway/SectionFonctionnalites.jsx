@@ -9,8 +9,13 @@ import {
 } from './ApercusFonctionnalites';
 
 /*
- * Corps de la page « Fonctionnalités » : une introduction, quatre temps, un
- * appel à l'action.
+ * Corps de la page « Fonctionnalités » : quatre temps et un appel à
+ * l'action.
+ *
+ * L'introduction — texte descriptif et demande de démonstration — est
+ * remontée dans le bandeau de titre, où elle prolonge l'accroche. Sous
+ * le bandeau, dans une section blanche, elle se lisait comme un second
+ * départ.
  *
  * Les quatre temps suivent l'ordre dans lequel une évaluation se déroule —
  * rassembler les données, les justifier, les lire, puis agir — et non un
@@ -100,31 +105,6 @@ const DOMAINES = [
 export default function SectionFonctionnalites() {
   return (
     <>
-      {/*
-       * L'introduction de la page.
-       *
-       * Le titre et l'accroche de la specification sont portes par le bandeau
-       * de titre, juste au-dessus : les repeter ici aurait donne deux titres
-       * voisins disant la meme chose. Ne reste que le texte descriptif.
-       *
-       * L'appel a l'action y figure deja : un visiteur convaincu des l'accroche
-       * ne doit pas avoir a parcourir les quatre temps pour trouver comment
-       * demander une demonstration.
-       */}
-      {/* `lg:py-8` et non `lg:py-20` : Section pose deja `lg:py-28`, et
-          Tailwind trie ses utilitaires par nom — « 20 » precede « 28 » et
-          perd, « 8 » lui succede et gagne. Mesure avant correction : 112 px
-          de padding la ou 80 etaient demandes. */}
-      <Section fond="blanc" contenuClassName="py-12 lg:py-8">
-        <Apparition className="max-w-3xl">
-          <p className="text-[17px] leading-relaxed text-ink-700">
-            SMARTEX SustWay réunit les outils nécessaires pour simplifier le travail des équipes et donner aux
-            responsables une vision claire de l’avancement et de la performance extra-financière.
-          </p>
-          <BoutonDemo className="mt-8" />
-        </Apparition>
-      </Section>
-
       {DOMAINES.map((domaine, index) => {
         const Icone = domaine.icone;
         const { Apercu } = domaine;

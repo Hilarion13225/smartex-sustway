@@ -25,7 +25,7 @@
  * central est dimensionné pour les couvrir tous les trois — voir la mesure de
  * contraste plus bas.
  */
-export default function EnTetePage({ titre, sousTitre, image, children }) {
+export default function EnTetePage({ titre, sousTitre, image, dansLeBandeau, children }) {
   return (
     <>
       {/* `min-h` plutôt qu'un simple remplissage : la hauteur ne dépend plus
@@ -102,6 +102,18 @@ export default function EnTetePage({ titre, sousTitre, image, children }) {
               {sousTitre}
             </p>
           ) : null}
+
+          {/*
+           * Ce que la page veut ajouter au bandeau : un paragraphe, un bouton.
+           *
+           * Distinct de `children`, qui vient après le bandeau : ceci s'y
+           * inscrit, à la suite du sous-titre et centré comme lui. La page
+           * Fonctionnalités y pose son texte descriptif et sa demande de
+           * démonstration, qui tenaient dans une section blanche juste en
+           * dessous — deux blocs de texte séparés par une coupure de fond,
+           * alors qu'ils se lisent d'un trait.
+           */}
+          {dansLeBandeau ? <div className="mt-10 sm:mt-12">{dansLeBandeau}</div> : null}
         </div>
       </section>
 
