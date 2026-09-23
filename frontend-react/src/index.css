@@ -1133,10 +1133,8 @@ input.border-none:focus-visible {
 }
 .vitrine .bandeau-arret:hover .bandeau-defile,
 .vitrine .bandeau-arret:focus-within .bandeau-defile,
-.vitrine .bandeau-defile[data-pause='true'],
 .sustway .bandeau-arret:hover .bandeau-defile,
-.sustway .bandeau-arret:focus-within .bandeau-defile,
-.sustway .bandeau-defile[data-pause='true'] {
+.sustway .bandeau-arret:focus-within .bandeau-defile {
   animation-play-state: paused;
 }
 @keyframes defile-bandeau {

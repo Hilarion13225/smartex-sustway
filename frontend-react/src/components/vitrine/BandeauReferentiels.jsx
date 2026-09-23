@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { Pause, Play } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
 
 /**
@@ -14,15 +13,19 @@ import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
  * Ce que cela coûte, et qu'il faut savoir : la barre occupe en permanence une
  * cinquantaine de pixels de hauteur d'écran, ce qui pèse sur un portable posé
  * à l'horizontale, et un mouvement continu demeure dans le champ de vision du
- * lecteur. Le bouton de pause est donc ici moins un confort qu'une nécessité.
+ * lecteur.
  *
  * Les noms viennent de `REFERENCES_METHODOLOGIQUES` : rien n'est écrit ici, et
  * ajouter un standard à la configuration l'ajoute au bandeau.
  *
- * Le défilement est un mouvement continu, donc il s'arrête de trois façons :
- * au survol, au focus clavier, et par le bouton. La liste est écrite deux
- * fois pour que la boucle soit invisible ; la copie est masquée aux
- * technologies d'assistance, qui ne lisent donc chaque nom qu'une fois.
+ * Le défilement s'arrête au survol, au focus clavier, et de lui-même pour qui
+ * a demandé moins d'animations à son système (`prefers-reduced-motion`). Le
+ * bouton de pause explicite a été retiré à la demande d'Hilarion ; les trois
+ * autres arrêts restent, et sont ce qui tient lieu de commande.
+ *
+ * La liste est écrite deux fois pour que la boucle soit invisible ; la copie
+ * est masquée aux technologies d'assistance, qui ne lisent donc chaque nom
+ * qu'une fois.
  */
 const NOMS = REFERENCES_METHODOLOGIQUES.map((reference) => reference.nom);
 
@@ -40,7 +43,6 @@ function Suite({ copie = false }) {
 }
 
 export default function BandeauReferentiels() {
-  const [enPause, definirEnPause] = useState(false);
   const cadre = useRef(null);
 
   // Une barre fixe recouvre le bas de la page — ici la fin du pied de page, qui
@@ -84,25 +86,9 @@ export default function BandeauReferentiels() {
       ref={cadre}
       className="bandeau-arret fixed inset-x-0 bottom-0 z-30 flex items-center overflow-hidden bg-vert-profond py-3.5"
     >
-      <div className="bandeau-defile flex min-w-max" data-pause={enPause ? 'true' : 'false'}>
+      <div className="bandeau-defile flex min-w-max">
         <Suite />
         <Suite copie />
-      </div>
-
-      {/* Posé sur le bandeau plutôt qu'à côté : la commande doit être là où le
-          mouvement se produit, et le dégradé la détache sans masquer un nom. */}
-      <div className="absolute inset-y-0 right-0 flex items-center bg-gradient-to-l from-vert-profond via-vert-profond to-transparent pl-10 pr-3">
-        <button
-          type="button"
-          onClick={() => definirEnPause((avant) => !avant)}
-          aria-pressed={enPause}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/35 text-white transition-colors hover:bg-white/15"
-        >
-          {enPause ? <Play className="h-4 w-4" aria-hidden /> : <Pause className="h-4 w-4" aria-hidden />}
-          <span className="sr-only">
-            {enPause ? 'Reprendre le défilement des référentiels' : 'Arrêter le défilement des référentiels'}
-          </span>
-        </button>
       </div>
     </div>
   );
