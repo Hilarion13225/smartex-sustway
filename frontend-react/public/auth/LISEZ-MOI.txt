@@ -1,24 +1,21 @@
 fond.png — arriere-plan du panneau de marque des pages Connexion,
 Inscription et Accepter une invitation (voir components/CadreAuth.jsx).
 
-A REMPLACER. Le fichier depose ici est l'apercu fourni par Hilarion le
-23/09/2026 : il porte le filigrane « Adobe Stock » et mesure 234 x 125 px.
+Image fournie par Hilarion le 23/09/2026 : un doigt touchant une feuille
+verte lumineuse, fond noir. 615 x 1135 px, sans filigrane.
 
-Deux raisons de ne pas le laisser en production :
+C'est la troisieme essayee ici, et celle qui convient le mieux : son
+cadrage est vertical, comme le panneau, la ou les deux precedentes etaient
+en paysage et perdaient une centaine de pixels de chaque cote.
 
-1. Droits — un apercu filigrane n'est pas licencie. Il faut la version
-   achetee, sans filigrane.
+Le voile qui la recouvre n'est pas un effet. Le texte du panneau est
+blanc, et le « SustWay » du logotype est en bordeaux ; sans voile, le
+premier passerait sur les zones vertes claires et le second sur le doigt,
+ou ce rouge perd son contraste.
 
-2. Definition — le panneau fait jusqu'a 500 px de large et environ 490 px
-   de haut, et le double sur un ecran a forte densite. Viser 1000 x 1000 px
-   au minimum ; en dessous l'image est visiblement floue.
-
-Une autre image (mains filaires tenant une feuille) a ete essayee ici le
-meme jour puis retiree : elle doit servir ailleurs. Elle attend son
-emplacement dans public/images/, avec sa propre note.
+Reserve : 615 px de large suffisent en 1x pour un panneau qui en fait 500,
+mais pas sur un ecran a forte densite, qui en demanderait 1000.
 
 Remplacer le fichier suffit : aucun code a toucher, le nom et le chemin
 sont figes. Si le fichier est absent, le panneau retrouve les bandes de
 lumiere qu'il portait avant — la page ne casse pas.
-
-Format : JPEG ou WebP de preference (photo), cadrage vertical ou carre.

@@ -82,7 +82,9 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                * l'image est claire par endroits — sans lui, « Par SMARTEX
                * Expertises » et la mention de securite passeraient en blanc sur
                * vert pale. Il est plus dense en haut et en bas, ou le texte se
-               * trouve, et s'allege au centre, ou le logotype se detache seul.
+               * trouve, sans trop s'alleger au centre : le « SustWay » du
+               * logotype y est en bordeaux, et l'image porte a cette hauteur un
+               * doigt clair sur lequel ce rouge perdait son contraste.
                *
                * `onError` plutot qu'un test d'existence : le fichier vit dans
                * `public/`, hors du build, et c'est le navigateur qui sait s'il
@@ -104,7 +106,7 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
               {fondCharge ? (
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/85 via-ink-900/45 to-ink-900/90"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/85 via-ink-900/65 to-ink-900/90"
                 />
               ) : null}
 
