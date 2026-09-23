@@ -1,6 +1,6 @@
 import EnTetePage from '../components/sustway/EnTetePage';
 import BoutonDemo from '../components/sustway/BoutonDemo';
-import bandeau from '../assets/methodologie/avantages-illustration.jpg';
+import bandeau from '../assets/methodologie/fonctionnalites-banniere.png';
 import SectionFonctionnalites from '../components/sustway/SectionFonctionnalites';
 import { useMetaPage } from '../components/sustway/useMetaPage';
 
