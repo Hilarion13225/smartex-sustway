@@ -8,12 +8,6 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { ApiError } from '../lib/apiClient';
 import { ROLE_LIBELLE } from '../auth/permissions';
 
-const ATOUTS = [
-  'Vos scores, preuves et plans d’action réunis dans un seul espace sécurisé.',
-  'Double authentification disponible sur chaque compte.',
-  'Suivi de la conformité domaine par domaine, dans le temps.',
-];
-
 /**
  * RG05 — acceptation d'une invitation reçue par email (collaborateur sans
  * compte existant, voir InvitationResource côté API) : crée le compte et
@@ -71,7 +65,6 @@ export default function AccepterInvitation() {
       }
       titre="Rejoindre une organisation"
       description="Créez votre compte pour accepter l’invitation reçue par email."
-      atouts={ATOUTS}
     >
       {statut === 'chargement' ? (
         <div className="flex justify-center py-8">

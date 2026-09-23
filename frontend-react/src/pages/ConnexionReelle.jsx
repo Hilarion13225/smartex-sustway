@@ -7,12 +7,6 @@ import { useApiAuth } from '../auth/useApiAuth';
 import { Alerte } from '../components/ui';
 import { ApiError } from '../lib/apiClient';
 
-const ATOUTS = [
-  'Vos scores, preuves et plans d’action réunis dans un seul espace sécurisé.',
-  'Double authentification disponible sur chaque compte.',
-  'Suivi de la conformité domaine par domaine, dans le temps.',
-];
-
 /**
  * Connexion RÉELLE — parle effectivement à l'API Quarkus (voir useApiAuth).
  * Pour la création de compte, voir /inscription (le vrai wizard, désormais
@@ -79,12 +73,11 @@ export default function ConnexionReelle() {
         </>
       }
       titre={enDeuxFa ? 'Vérification en deux étapes' : 'Content de vous revoir'}
-      description={
-        enDeuxFa
-          ? 'Saisissez le code de sécurité pour finaliser la connexion.'
-          : 'Connectez-vous pour retrouver vos évaluations RSE, ESG & DD et vos plans d’action.'
-      }
-      atouts={ATOUTS}
+      // La phrase d'accueil est retiree a la demande d'Hilarion : « Content de
+      // vous revoir » au-dessus d'un champ d'e-mail se passe d'explication.
+      // Celle de la deuxieme etape reste — elle dit quoi saisir, ce que le
+      // titre seul ne dit pas.
+      description={enDeuxFa ? 'Saisissez le code de sécurité pour finaliser la connexion.' : undefined}
     >
       {etape === 'identifiants' ? (
         <form className="space-y-5" onSubmit={soumettreIdentifiants}>

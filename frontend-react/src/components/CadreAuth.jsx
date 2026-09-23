@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Check } from 'lucide-react';
 import clsx from 'clsx';
 import Logo from './Logo';
 import { SMARTEX } from '../config/smartex';
@@ -13,16 +12,21 @@ import { SMARTEX } from '../config/smartex';
  * formulaire à droite. Trois plans, donc, au lieu de deux blocs posés sur un
  * fond gris : le regard va au centre sans qu'on ait à le lui dire.
  *
- * Le logotype est passé au-dessus du titre, dans la colonne du formulaire. Il
- * tenait dans un en-tête au-dessus de la carte, où il servait surtout de
- * décor ; là, il dit de qui est le compte qu'on ouvre, juste avant de le
- * demander.
+ * Le logotype est passé dans le panneau de marque, à la place du titre, de
+ * l'accroche et des trois atouts qui l'occupaient — retirés à la demande
+ * d'Hilarion. Le panneau ne porte plus que l'éditeur, la marque et la mention
+ * de sécurité : trois lignes au lieu d'un argumentaire, devant un formulaire
+ * qui n'avait pas à être plaidé.
+ *
+ * Sous 1024 px, où ce panneau est masqué, le logotype reparaît en tête de la
+ * colonne du formulaire : la marque ne disparaît pas sur un téléphone.
  *
  * `badge` reste accepté et s'affiche comme un libellé en casse de phrase ;
  * son icône éventuelle est ignorée par la charte, qui ne met pas d'icône
- * décorative devant un intitulé.
+ * décorative devant un intitulé. Le prop `atouts` a disparu avec la liste
+ * qu'il remplissait.
  */
-export default function CadreAuth({ titre, description, badge, atouts = [], large = false, children }) {
+export default function CadreAuth({ titre, description, badge, large = false, children }) {
   return (
     <div className="vitrine flex min-h-full flex-col bg-forest text-ink-600">
       <div
@@ -63,23 +67,18 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
              */}
             <aside className="relative hidden flex-col overflow-hidden rounded-[20px] bg-ink-900 p-8 text-white lg:flex">
               <p className="relative z-10 text-sm text-white/60">Par {SMARTEX.editeur}</p>
-              <p className="relative z-10 mt-6 text-[1.9rem] font-bold leading-[1.1] tracking-[-0.02em] text-white [text-wrap:balance]">
-                Votre démarche RSE, ESG &amp; DD, notée sur vos preuves.
-              </p>
-              <p className="relative z-10 mt-4 text-[15px] leading-relaxed text-white/70">{SMARTEX.baseline}</p>
 
-              {atouts.length ? (
-                <ul className="relative z-10 mt-8 space-y-3 border-t border-white/15 pt-6 text-[15px] leading-snug text-white/85">
-                  {atouts.map((atout) => (
-                    <li key={atout} className="flex items-start gap-3">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-growth" strokeWidth={2.5} aria-hidden />
-                      <span>{atout}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              {/* Le logotype tient la place du discours qui occupait ce panneau
+                  — un titre, une accroche et trois atouts, retirés à la demande
+                  d'Hilarion. Il ouvrait la colonne du formulaire ; il passe ici,
+                  où il dit de qui est le compte sans rien ajouter à lire.
+                  Centré sur la hauteur libre, entre l'éditeur et la mention du
+                  bas, plutôt que posé contre l'un des deux. */}
+              <div className="relative z-10 flex flex-1 items-center">
+                <Logo taille="md" variante="clair" />
+              </div>
 
-              <p className="relative z-10 mt-auto pt-8 text-sm text-white/70">
+              <p className="relative z-10 pt-8 text-sm text-white/70">
                 Chiffrement au repos et en transit · isolation par entreprise · conformité RGPD
               </p>
 
@@ -109,15 +108,15 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
             </aside>
 
             <main className="min-w-0 px-2 py-6 sm:px-8 sm:py-10">
-              {/* Le logotype ouvre la colonne, comme sur le modèle. Dans son
-                  propre bloc : il est en `inline-flex`, et le sur-titre qui le
-                  suit venait se ranger a cote de lui au lieu de passer dessous. */}
-              <div>
+              {/* Le logotype est passé dans le panneau de marque. Il reste ici
+                  sous 1024 px, où ce panneau est masqué : sans cela, la page de
+                  connexion n'aurait plus porté la marque sur un téléphone. */}
+              <div className="lg:hidden">
                 <Logo taille="sm" />
               </div>
 
-              {badge ? <p className="sur-titre mt-8 [&_svg]:hidden">{badge}</p> : null}
-              <h1 className={clsx('titre-auth text-ink-900', badge ? 'mt-3' : 'mt-8')}>{titre}</h1>
+              {badge ? <p className="sur-titre mt-8 [&_svg]:hidden lg:mt-0">{badge}</p> : null}
+              <h1 className={clsx('titre-auth text-ink-900', badge ? 'mt-3' : 'mt-8 lg:mt-0')}>{titre}</h1>
               {description ? (
                 <p className="mt-3 max-w-[56ch] text-base leading-relaxed text-ink-600">{description}</p>
               ) : null}

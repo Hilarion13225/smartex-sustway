@@ -20,11 +20,6 @@ import CadreAuth from '../components/CadreAuth';
 import EtapesParcours from '../components/EtapesParcours';
 import SaisieCodeOtp, { LONGUEUR_CODE } from '../components/SaisieCodeOtp';
 
-const ATOUTS = [
-  'Analyse documentaire par un pipeline d’agents IA, avec indice de confiance par critère.',
-  'Score, plan d’action et rapport exportable dès la première évaluation.',
-];
-
 /** Force indicative du mot de passe, calculée uniquement dans le navigateur. */
 function evaluerMotDePasse(valeur) {
   let score = 0;
@@ -276,7 +271,6 @@ export default function Inscription() {
       }
       titre="Créez votre espace SMARTEX SustWay"
       description="Cinq étapes guidées : formule, compte, vérification, paiement puis accès immédiat à la plateforme."
-      atouts={ATOUTS}
     >
       {/* Seul retour possible : de « Compte » vers « Formule », avant que le
           compte n'existe. Au-delà, revenir en arrière recréerait un compte ou
