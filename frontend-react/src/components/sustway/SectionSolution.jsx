@@ -227,8 +227,12 @@ export default function SectionSolution() {
                 contact : aucune page du site ne detaille les referentiels un a
                 un, et un bouton vers une page inexistante vaut moins qu'un
                 bouton vers quelqu'un. */}
+            {/* Vers la rubrique qui detaille ces cadres, et non vers le
+                formulaire de contact : le bouton suit le titre qui le precede,
+                et cette page n'a pas a developper un sujet qu'une autre porte
+                deja. */}
             <Link viewTransition
-              to="/contact"
+              to="/ressources#referentiels"
               className="group mt-8 inline-flex min-h-12 items-center gap-2 rounded-full bg-growth px-6 text-[15px] font-semibold text-forest transition-colors hover:bg-white"
             >
               Parler des référentiels
@@ -296,7 +300,7 @@ export default function SectionSolution() {
           surTitre="Livrables"
           sousTitre="La démarche SMARTEX SustWay transforme les données et les analyses en livrables utiles à la décision et au pilotage."
         >
-          Ce que la démarche vous remet
+          Des résultats pour décider et agir
         </TitreBloc>
 
         <ul className="grid gap-4 sm:grid-cols-2">

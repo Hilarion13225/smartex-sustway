@@ -74,6 +74,7 @@ const LIENS = [
     vers: '/ressources',
     libelle: 'Ressources',
     sous: [
+      { vers: '/ressources#referentiels', libelle: 'Référentiels & concepts' },
       { vers: '/ressources#articles', libelle: 'Articles' },
       { vers: '/ressources#guides', libelle: 'Guides & bonnes pratiques' },
       { vers: '/ressources#documentation', libelle: 'Documentation' },

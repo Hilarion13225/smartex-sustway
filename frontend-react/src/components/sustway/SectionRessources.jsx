@@ -1,7 +1,8 @@
-import { ArrowRight, BookOpen, FileText, HelpCircle, Newspaper } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, HelpCircle, Library, Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Badge from './Badge';
 import { Apparition, Section } from './Section';
+import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
 
 /*
  * Corps de la page « Ressources » : quatre rubriques, chacune avec son ancre.
@@ -24,6 +25,19 @@ import { Apparition, Section } from './Section';
  * côté du discours militant plutôt que du côté de l'outil de pilotage.
  */
 const RUBRIQUES = [
+  {
+    // Seule rubrique qui porte deja son contenu, et c'est pourquoi elle ouvre
+    // la page : les quatre autres annoncent ce qui vient, celle-ci montre ce
+    // qui est la. Elle se rend autrement — la liste des references remplace la
+    // vignette, et aucun badge « A venir » ne la coiffe.
+    ancre: 'referentiels',
+    surTitre: 'Référentiels & concepts',
+    titre: 'Les cadres sur lesquels la notation s’appuie',
+    texte:
+      'Les référentiels constituent le cadre de référence de la méthodologie : ils définissent les critères d’évaluation, structurent la collecte des données et orientent les actions. Voici ceux sur lesquels SMARTEX SustWay s’appuie.',
+    icone: Library,
+    references: true,
+  },
   {
     ancre: 'articles',
     surTitre: 'Articles',
@@ -98,18 +112,62 @@ function Vignette({ Icone, attenuee }) {
   );
 }
 
+/*
+ * Les references de `config/smartex.js`, la meme liste que le bandeau du bas et
+ * que la page Solution : partagee, jamais recopiee. Les logos vivent dans
+ * `public/referentiels/`, nommes d'apres le code en minuscules, soulignes
+ * changes en tirets — et s'effacent si le fichier manque, plutot que de
+ * laisser une image cassee.
+ */
+function ListeReferences() {
+  return (
+    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {REFERENCES_METHODOLOGIQUES.map((reference) => (
+        <li
+          key={reference.code}
+          className="flex items-start gap-4 rounded-2xl border border-ink-100 bg-surface p-4"
+        >
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-ink-100">
+            <img
+              src={`/referentiels/${reference.code.toLowerCase().replace(/_/g, '-')}.png`}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-contain"
+              onError={(evenement) => {
+                evenement.currentTarget.style.display = 'none';
+              }}
+            />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold leading-snug text-forest">{reference.nom}</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-ink-600">{reference.texte}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function SectionRessources() {
   return (
     <>
       {RUBRIQUES.map((rubrique, index) => {
         const Icone = rubrique.icone;
         const inverse = index % 2 === 1;
-        const aVenir = !rubrique.vers;
+        const aVenir = !rubrique.vers && !rubrique.references;
 
         return (
           <Section key={rubrique.ancre} id={rubrique.ancre} fond={inverse ? 'mist' : 'blanc'}>
             <Apparition>
-              <article className="group/rubrique grid items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+              {/* Deux colonnes pour les rubriques a vignette ; une seule pour
+                  celle qui porte les references, ou la colonne droite serrait
+                  cinq cartes dans un tiers de la largeur et hachait chaque
+                  description en lignes de trois mots. */}
+              <article
+                className={`group/rubrique grid items-center gap-8 lg:gap-14 ${
+                  rubrique.references ? '' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]'
+                }`}
+              >
                 <div className={`min-w-0 ${inverse ? 'lg:order-2' : ''}`}>
                   <div className="flex flex-wrap items-center gap-3">
                     <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">
@@ -121,7 +179,9 @@ export default function SectionRessources() {
                   <h2 className="mt-4 text-[26px] font-semibold leading-tight tracking-[-0.02em] text-forest sm:text-[30px]">
                     {rubrique.titre}
                   </h2>
-                  <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-ink-600">{rubrique.texte}</p>
+                  <p className={`mt-4 text-[16px] leading-relaxed text-ink-600 ${rubrique.references ? 'max-w-3xl' : 'max-w-xl'}`}>
+                    {rubrique.texte}
+                  </p>
 
                   {/* Un lien quand la rubrique existe, une phrase quand elle
                       n'existe pas encore. Jamais un bouton inerte. */}
@@ -137,7 +197,7 @@ export default function SectionRessources() {
                         aria-hidden
                       />
                     </Link>
-                  ) : (
+                  ) : rubrique.references ? null : (
                     <p className="mt-6 text-[14px] italic text-ink-500">
                       Cette rubrique est en préparation. Nous préférons le dire plutôt que publier des contenus de
                       remplissage.
@@ -146,7 +206,13 @@ export default function SectionRessources() {
                 </div>
 
                 <div className={`min-w-0 ${inverse ? 'lg:order-1' : ''}`}>
-                  <Vignette Icone={Icone} attenuee={aVenir} />
+                  {rubrique.references ? (
+                    <div className="mt-2">
+                      <ListeReferences />
+                    </div>
+                  ) : (
+                    <Vignette Icone={Icone} attenuee={aVenir} />
+                  )}
                 </div>
               </article>
             </Apparition>
