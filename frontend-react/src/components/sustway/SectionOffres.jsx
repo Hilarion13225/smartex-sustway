@@ -1,17 +1,18 @@
 import { ArrowRight, BarChart3, Building2, Check, ClipboardCheck, Gauge, Layers, Network, ShieldCheck, Target } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useApiAuth } from '../../auth/useApiAuth';
+import { formaterMontant } from '../../lib/export';
 import clsx from 'clsx';
 import { Apparition, Section } from './Section';
 
 /*
  * Corps de la page « Offres » : trois niveaux de service.
  *
- * Aucun montant n'est affiché parce qu'aucun ne nous a été communiqué. La
- * ligne de prix est tout de même présente, et porte « À définir » : la retirer
- * laisserait croire que ces offres n'en ont pas, alors qu'elles en auront. Les
- * conditions détaillées vivent sur la page « Formules », vers laquelle le bas
- * de page renvoie — les dupliquer ici garantirait qu'un des deux endroits
- * finisse par mentir.
+ * Les montants viennent du catalogue, par l'API publique des formules : ce
+ * sont ceux de la table `formule_abonnement`, en licence annuelle. Ils ne sont
+ * pas recopiés ici — deux endroits qui énoncent un prix finissent par se
+ * contredire.
  *
  * Les trois cartes gardent la même structure et la même hauteur. Seule
  * « Business » se détache, par un bandeau, une bordure et une ombre, jamais
@@ -26,6 +27,7 @@ import { Apparition, Section } from './Section';
 const OFFRES = [
   {
     ancre: 'essential',
+    code: 'STANDARD',
     nom: 'Essential',
     promesse: 'Structurer',
     texte:
@@ -37,7 +39,6 @@ const OFFRES = [
       'Tableaux de bord essentiels',
       'Plans d’action et suivi simple',
     ],
-    prix: 'À définir',
     action: { libelle: 'Commencer', vers: '/inscription' },
     icone: Layers,
     teinte: {
@@ -48,6 +49,7 @@ const OFFRES = [
   },
   {
     ancre: 'business',
+    code: 'AVANCEES',
     nom: 'Business',
     promesse: 'Piloter',
     texte:
@@ -59,7 +61,6 @@ const OFFRES = [
       'Reporting extra-financier consolidé',
       'Historique et suivi d’amélioration continue',
     ],
-    prix: 'À définir',
     action: { libelle: 'Commencer', vers: '/inscription' },
     icone: Network,
     misEnAvant: true,
@@ -110,7 +111,47 @@ const SOCLE = [
   { titre: 'Pilotage', texte: 'Tableaux de bord et reporting.', icone: Gauge },
 ];
 
+/*
+ * Les tarifs viennent de la table `formule_abonnement`, par l'API publique
+ * `/api/v1/formules` — celle que consultait déjà la page Formules avant sa
+ * suppression. Ils ne sont pas écrits ici : deux endroits qui énoncent un prix
+ * finissent par se contredire, et c'est le catalogue qui fait foi.
+ *
+ * Chaque offre nomme le code de la formule qui porte son prix. « Enterprise »
+ * n'en a pas : elle reste sur devis, comme l'offre entreprise de l'ancienne
+ * grille.
+ */
+function useTarifs() {
+  const { listerFormules } = useApiAuth();
+  const [parCode, definirParCode] = useState(null);
+
+  useEffect(() => {
+    let actif = true;
+    listerFormules()
+      .then((liste) => {
+        if (!actif) return;
+        const table = {};
+        for (const formule of Array.isArray(liste) ? liste : []) {
+          table[formule.code] = formule;
+        }
+        definirParCode(table);
+      })
+      // `{}` et non `null` : on distingue « pas encore chargé » de
+      // « le catalogue a répondu et ne contient rien ».
+      .catch(() => {
+        if (actif) definirParCode({});
+      });
+    return () => {
+      actif = false;
+    };
+  }, [listerFormules]);
+
+  return parCode;
+}
+
 export default function SectionOffres() {
+  const tarifs = useTarifs();
+
   return (
     <>
       {/* Les trois offres et le socle portent une ancre : le pied de page
@@ -189,14 +230,38 @@ export default function SectionOffres() {
                     {/* `mt-auto` aligne prix et boutons sur une même ligne,
                         quelle que soit la longueur de la liste au-dessus. */}
                     <div className="mt-auto pt-8">
+                      {/*
+                       * Trois états, et non deux : le tarif connu, le catalogue
+                       * qui n'a pas répondu, et l'offre sur devis. Afficher un
+                       * montant de repli quand l'API est muette reviendrait à
+                       * inventer un prix.
+                       */}
                       {offre.surDevis ? (
-                        <p className="text-[22px] font-semibold text-forest">{offre.prix}</p>
+                        <>
+                          <p className="text-[22px] font-semibold text-forest">{offre.prix}</p>
+                          <p className="mt-1 text-[13px] text-ink-500">
+                            Périmètre et accompagnement définis avec vous
+                          </p>
+                        </>
+                      ) : tarifs?.[offre.code] ? (
+                        <>
+                          <p className="mt-0.5 flex items-baseline gap-1.5">
+                            {/* Chiffres tabulaires : les prix s'alignent d'une
+                                carte à l'autre. */}
+                            <span className="text-[22px] font-semibold tabular-nums text-forest">
+                              {formaterMontant(Number(tarifs[offre.code].prix))}
+                            </span>
+                            <span className="text-[13px] text-ink-500">/ an</span>
+                          </p>
+                          <p className="mt-1 text-[13px] text-ink-500">Licence annuelle, renouvelable</p>
+                        </>
                       ) : (
                         <>
-                          <p className="text-[13px] text-ink-500">À partir de</p>
-                          <p className="mt-0.5 flex items-baseline gap-1.5">
-                            <span className="text-[22px] font-semibold text-forest">{offre.prix}</span>
-                            <span className="text-[13px] text-ink-500">/ mois</span>
+                          <p className="text-[22px] font-semibold text-forest">
+                            {tarifs === null ? '…' : 'Sur demande'}
+                          </p>
+                          <p className="mt-1 text-[13px] text-ink-500">
+                            {tarifs === null ? 'Tarif en cours de chargement' : 'Tarif communiqué sur demande'}
                           </p>
                         </>
                       )}
@@ -228,7 +293,7 @@ export default function SectionOffres() {
             ici même. Un contact reste le chemin pour les détailler. */}
         <Apparition className="mt-8">
           <p className="text-[15px] text-ink-600">
-            Les montants et les conditions de chaque offre se précisent avec vous.{' '}
+            Les montants ci-dessus sont ceux du catalogue. Les conditions se précisent avec vous.{' '}
             <Link
               to="/contact"
               className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-4 transition-colors hover:text-brand-800 hover:decoration-brand-600"
