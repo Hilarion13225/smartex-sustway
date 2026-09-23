@@ -32,9 +32,16 @@ export default function CadreAuth({ titre, description, badge, atouts = [], larg
           </Link>
         </div>
 
+        {/* Le cadre entre en montant legerement.
+
+            Une page de connexion s'ouvre sur un formulaire vide : rien n'y
+            bouge, rien n'y arrive, et le cadre apparait d'un bloc. L'entree
+            douce marque l'arrivee sans rien demander — c'est la seule
+            animation de ces pages, le formulaire lui-meme ne devant pas
+            distraire de ce qu'il attend. */}
         <div
           className={clsx(
-            'mt-8 grid items-stretch gap-6',
+            'mt-8 grid items-stretch gap-6 motion-safe:animate-apparition-bas',
             large ? 'lg:grid-cols-[22rem_1fr]' : 'lg:grid-cols-[0.9fr_1.1fr]'
           )}
         >

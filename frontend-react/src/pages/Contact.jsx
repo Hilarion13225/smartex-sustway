@@ -4,6 +4,7 @@ import { MapPin, Minus, Plus } from 'lucide-react';
 import { Alerte } from '../components/ui';
 import { SMARTEX } from '../config/smartex';
 import { api, ApiError } from '../lib/apiClient';
+import Revele from '../components/Revele';
 
 const SUJETS = [
   'Demande de démonstration',
@@ -244,7 +245,10 @@ export default function Contact() {
       </section>
 
       {/* ------------------------------------------ Coordonnées + formulaire */}
-      <section id="formulaire" className="border-b border-ink-200">
+      {/* Les deux dernieres sections se revelent au defilement. La page est
+          longue, et rien n'y marquait le passage d'un bloc au suivant ; le
+          heros, lui, est deja en place a l'arrivee et n'a rien a reveler. */}
+      <Revele as="section" id="formulaire" className="border-b border-ink-200">
         <div className="mx-auto grid max-w-[90rem] gap-12 px-5 py-16 sm:py-20 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
           {/* ---------- Coordonnées et carte ---------- */}
           <div className="order-2 min-w-0 lg:order-1">
@@ -566,10 +570,10 @@ export default function Contact() {
           </form>
           )}
         </div>
-      </section>
+      </Revele>
 
       {/* ---------------------------------------------------------- Renvois */}
-      <section className="bg-surface">
+      <Revele as="section" delai={80} className="bg-surface">
         <ul className="mx-auto grid max-w-[90rem] gap-10 px-5 py-16 sm:py-20 md:grid-cols-2 md:gap-16">
           {RENVOIS.map((renvoi) => (
             <li key={renvoi.lien.vers} className="flex flex-col border-t border-ink-300 pt-5">
@@ -581,7 +585,7 @@ export default function Contact() {
             </li>
           ))}
         </ul>
-      </section>
+      </Revele>
     </div>
   );
 }

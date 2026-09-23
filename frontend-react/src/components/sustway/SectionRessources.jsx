@@ -67,7 +67,7 @@ function Vignette({ Icone, attenuee }) {
   return (
     <div
       aria-hidden
-      className={`relative flex h-40 items-end overflow-hidden rounded-2xl sm:h-48 ${
+      className={`relative flex h-40 items-end overflow-hidden rounded-2xl transition-transform duration-500 ease-out motion-safe:group-hover/rubrique:scale-[1.02] motion-reduce:transition-none sm:h-48 ${
         attenuee ? 'bg-ink-100' : 'bg-brand-50'
       }`}
     >
@@ -109,7 +109,7 @@ export default function SectionRessources() {
         return (
           <Section key={rubrique.ancre} id={rubrique.ancre} fond={inverse ? 'mist' : 'blanc'}>
             <Apparition>
-              <article className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+              <article className="group/rubrique grid items-center gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
                 <div className={`min-w-0 ${inverse ? 'lg:order-2' : ''}`}>
                   <div className="flex flex-wrap items-center gap-3">
                     <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-brand-600">
