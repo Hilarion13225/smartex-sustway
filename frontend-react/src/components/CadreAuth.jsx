@@ -79,16 +79,10 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                * La photographie, et par-dessus elle un voile.
                *
                * Le voile n'est pas un effet : le texte du panneau est blanc, et
-               * l'image porte un halo lumineux — sans lui, « Par SMARTEX
+               * l'image est claire par endroits — sans lui, « Par SMARTEX
                * Expertises » et la mention de securite passeraient en blanc sur
-               * vert pale.
-               *
-               * Il est au contraire plus dense au centre, et non sur les bords
-               * comme dans sa premiere version. Le sujet de l'image est un
-               * cercle lumineux qui tombe exactement derriere le logotype : les
-               * deux feuilles se superposaient et aucune ne se lisait. L'image
-               * est aussi ramenee a 55 % d'opacite — un arriere-plan doit
-               * rester en arriere, et celui-ci se disputait le premier plan.
+               * vert pale. Il est plus dense en haut et en bas, ou le texte se
+               * trouve, et s'allege au centre, ou le logotype se detache seul.
                *
                * `onError` plutot qu'un test d'existence : le fichier vit dans
                * `public/`, hors du build, et c'est le navigateur qui sait s'il
@@ -104,13 +98,13 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                 onError={() => definirFondCharge(false)}
                 className={clsx(
                   'pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700',
-                  fondCharge ? 'opacity-55' : 'opacity-0'
+                  fondCharge ? 'opacity-100' : 'opacity-0'
                 )}
               />
               {fondCharge ? (
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/55 via-ink-900/75 to-ink-900/80"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-ink-900/85 via-ink-900/45 to-ink-900/90"
                 />
               ) : null}
 
