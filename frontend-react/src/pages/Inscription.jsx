@@ -660,6 +660,29 @@ export default function Inscription() {
           </div>
         </div>
       ) : null}
+
+      {/*
+       * Le pendant du « Pas encore de compte ? Creer un compte » de la page de
+       * connexion : qui arrive ici en ayant deja un compte doit pouvoir en
+       * repartir sans passer par le site.
+       *
+       * Sur les deux premieres etapes seulement, c'est-a-dire tant que le
+       * compte n'existe pas — meme borne que le retour de « Compte » vers
+       * « Formule » plus haut. Au-dela, le compte est cree et l'inscription se
+       * poursuit : proposer de se connecter y romprait un parcours engage.
+       */}
+      {etape === 'formule' || etape === 'infos' ? (
+        <p className="mt-7 text-center text-[15px] text-ink-600">
+          Déjà un compte ?{' '}
+          <Link
+            viewTransition
+            to="/connexion"
+            className="font-semibold text-ink-900 underline decoration-ink-300 underline-offset-4 hover:decoration-ink-900"
+          >
+            Se connecter
+          </Link>
+        </p>
+      ) : null}
       </div>
     </CadreAuth>
   );
