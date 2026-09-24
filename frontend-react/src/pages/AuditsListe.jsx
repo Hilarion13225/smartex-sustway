@@ -94,7 +94,19 @@ export default function AuditsListe() {
       .catch(() => setAbonnement(null));
   }, [rafraichir, entrepriseId, recupererAbonnement]);
 
-  const peutCreerAudit = peut('audit:creer', abonnement?.formuleCode);
+  /*
+   * Tant que l'abonnement n'est pas charge, `formuleCode` est indefini et
+   * `peut()` replie sur FREE, qui retire `audit:creer` : la page affichait
+   * alors « la creation n'est pas disponible avec la formule actuelle »
+   * pendant que les missions chargeaient. Un message faux, et alarmant, du a
+   * l'absence de donnee et non a une restriction reelle — l'organisation est
+   * en STANDARD, qui autorise la creation.
+   *
+   * `abonnementConnu` separe donc les deux : on ne se prononce pas avant de
+   * savoir.
+   */
+  const abonnementConnu = abonnement !== null;
+  const peutCreerAudit = abonnementConnu && peut('audit:creer', abonnement?.formuleCode);
 
   const missionsVue = useMemo(
     () =>
@@ -200,7 +212,7 @@ export default function AuditsListe() {
         }
       />
 
-      {!peutCreerAudit ? (
+      {abonnementConnu && !peutCreerAudit ? (
         <Alerte ton="ambre">
           La création d’une nouvelle mission n’est pas disponible avec la formule actuelle de cette
           organisation.
