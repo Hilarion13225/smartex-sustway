@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
 import { CheckCircle2, Gauge, HelpCircle, Hourglass, TriangleAlert } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -190,7 +190,14 @@ export default function AuditScore() {
                       ]}
                     />
                   ) : (
-                    <Vide message="Aucune évaluation validée pour l’instant." />
+                    <Vide
+                      message="Aucune évaluation validée pour l’instant : le score se calcule à partir des critères évalués."
+                      action={
+                        <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-secondary">
+                          Évaluer les critères
+                        </Link>
+                      }
+                    />
                   )}
                 </div>
               </Card>
@@ -211,7 +218,14 @@ export default function AuditScore() {
                       ]}
                     />
                   ) : (
-                    <Vide message="Aucune évaluation validée pour l’instant." />
+                    <Vide
+                      message="Aucune évaluation validée pour l’instant : le score se calcule à partir des critères évalués."
+                      action={
+                        <Link to={`/app/${entrepriseId}/audits/${auditId}`} className="btn-secondary">
+                          Évaluer les critères
+                        </Link>
+                      }
+                    />
                   )}
                 </div>
               </Card>

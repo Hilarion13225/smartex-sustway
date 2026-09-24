@@ -206,7 +206,37 @@ export default function PlanActions() {
       {chargement ? (
         <Loader message="Consolidation des actions correctives…" />
       ) : lignes.length === 0 ? (
-        <Vide message="Aucune action corrective enregistrée. Créez-en une depuis « Nouvelle action » ou depuis une non-conformité." />
+        /*
+         * L'ecran vide disait « Creez-en une depuis "Nouvelle action" » — un
+         * bouton qui n'existe que si des non-conformites ont ete relevees et si
+         * le role pilote la mission. Sans elles, il renvoyait a un bouton
+         * absent de la page.
+         *
+         * Trois etats, donc, selon ce qui manque reellement : le geste quand il
+         * est possible, l'etape precedente quand elle ne l'est pas, et le
+         * constat seul pour qui ne pilote pas.
+         */
+        <Vide
+          message={
+            nonConformites.length === 0
+              ? 'Aucune action corrective : il n’y a pas encore d’écart à traiter. Les actions naissent des non-conformités relevées pendant une mission.'
+              : peutPiloter
+                ? 'Aucune action corrective enregistrée pour l’instant.'
+                : 'Aucune action corrective enregistrée. Votre rôle ne permet pas d’en créer.'
+          }
+          action={
+            nonConformites.length === 0 ? (
+              <Link to={`/app/${entrepriseId}/non-conformites`} className="btn-secondary">
+                Voir les non-conformités
+              </Link>
+            ) : peutPiloter ? (
+              <button type="button" className="btn-primary" onClick={() => setFormulaireOuvert(true)}>
+                <PlusCircle className="h-4 w-4" aria-hidden />
+                Créer la première action
+              </button>
+            ) : null
+          }
+        />
       ) : (
         <>
           <Revele>
