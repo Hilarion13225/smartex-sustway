@@ -258,7 +258,10 @@ export default function TableauDeBord() {
         ton: 'attention',
         titre: `${nonEvalues} critère${nonEvalues > 1 ? 's' : ''} encore à évaluer`,
         detail: `« ${laPlusEnRetard.nom} » en concentre ${laPlusEnRetard.nonEvalues}.`,
-        lien: laPlusEnRetard.lien,
+        // Vers les criteres, et non vers la vue d'ensemble de la mission :
+        // l'alerte nomme un travail, elle doit ouvrir l'ecran ou il se fait.
+        // C'est possible depuis que l'onglet vit dans l'URL (voir AuditDetail).
+        lien: `${laPlusEnRetard.lien}?onglet=criteres`,
       });
     }
 

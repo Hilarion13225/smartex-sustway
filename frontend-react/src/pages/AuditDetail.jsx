@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
@@ -119,7 +119,34 @@ export default function AuditDetail() {
   const [score, setScore] = useState(null);
   const [nonConformites, setNonConformites] = useState([]);
   const [chargement, setChargement] = useState(true);
-  const [onglet, setOnglet] = useState('synthese');
+  /*
+   * L'onglet vit dans l'URL, et non dans un etat local.
+   *
+   * Il y vivait, et rien ne pouvait donc pointer vers le travail a faire :
+   * l'alerte « 119 criteres encore a evaluer » du tableau de bord ne savait
+   * mener qu'a la mission, qui ouvre sur sa vue d'ensemble. Il fallait
+   * retrouver l'onglet a la main, et le retrouver encore apres chaque
+   * rechargement, qui ramenait a « Vue d'ensemble ».
+   *
+   * Dans l'URL, un lien peut viser l'onglet, le retour du navigateur y revient,
+   * et une adresse partagee rouvre l'ecran ou on l'a laisse. Un onglet inconnu
+   * retombe sur la vue d'ensemble plutot que d'afficher du vide.
+   *
+   * `replace` : changer d'onglet n'empile pas d'entree dans l'historique, sans
+   * quoi le retour rejouerait chaque onglet visite au lieu de quitter la page.
+   */
+  const [parametres, definirParametres] = useSearchParams();
+  const ongletDemande = parametres.get('onglet');
+  const onglet = ONGLETS.some((o) => o.cle === ongletDemande) ? ongletDemande : 'synthese';
+  const setOnglet = useCallback(
+    (cle) => {
+      const suite = new URLSearchParams(parametres);
+      if (cle === 'synthese') suite.delete('onglet');
+      else suite.set('onglet', cle);
+      definirParametres(suite, { replace: true });
+    },
+    [parametres, definirParametres]
+  );
 
   const [sitesEntreprise, setSitesEntreprise] = useState([]);
   const [sitesAudit, setSitesAudit] = useState([]);
