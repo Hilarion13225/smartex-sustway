@@ -58,6 +58,9 @@ export default function SaisieCritereMission({
    */
   domaineInitial,
 }) {
+  // Verrou d'envoi : une touche maintenue enfoncee emet des repetitions, et
+  // deux enregistrements simultanes feraient sauter un critere.
+  const envoiEnCours = useRef(false);
   const [indice, setIndice] = useState(() => {
     if (!domaineInitial) return 0;
     const premier = criteres.findIndex((c) => c.domaineCode === domaineInitial);
@@ -271,8 +274,51 @@ export default function SaisieCritereMission({
   }
 
   async function surContinuer() {
-    if (await enregistrer()) allerA(indice + 1);
+    if (envoiEnCours.current) return;
+    envoiEnCours.current = true;
+    try {
+      if (await enregistrer()) allerA(indice + 1);
+    } finally {
+      envoiEnCours.current = false;
+    }
   }
+
+  /*
+   * Entrée enregistre et passe au critère suivant.
+   *
+   * Une mission en compte quatre-vingt-douze : la série se fait au clavier si
+   * on le permet, à la souris sinon. Le raccourci ne remplace pas le bouton,
+   * il évite d'y retourner à chaque fois.
+   *
+   * Il se tait dès qu'un champ a le focus — un dépôt de preuve, une recherche
+   * — et dès qu'un modificateur est enfoncé, pour ne pas voler le Ctrl+Entrée
+   * ou le Entrée d'un formulaire voisin.
+   *
+   * Il reste actif sur les boutons de niveau, et c'est le point important :
+   * choisir un niveau au clic y laisse le focus, et c'est précisément là qu'on
+   * tape Entrée pour valider. Seuls les boutons du pied collant sont exclus —
+   * Entrée les active déjà, et le raccourci ferait doublon.
+   *
+   * `envoiEnCours` empêche un second envoi tant que le premier n'a pas rendu :
+   * une touche maintenue enfoncée émet des répétitions.
+   */
+  useEffect(() => {
+    if (!peutSaisir) return undefined;
+    function surTouche(evenement) {
+      if (evenement.key !== 'Enter') return;
+      if (evenement.ctrlKey || evenement.metaKey || evenement.altKey || evenement.shiftKey) return;
+      const cible = evenement.target;
+      const balise = (cible?.tagName ?? '').toLowerCase();
+      if (['input', 'textarea', 'select', 'a'].includes(balise)) return;
+      if (cible?.isContentEditable) return;
+      // Le pied porte deja « Enregistrer et continuer » : Entree l'y active.
+      if (balise === 'button' && cible.closest('.sticky')) return;
+      evenement.preventDefault();
+      surContinuer();
+    }
+    window.addEventListener('keydown', surTouche);
+    return () => window.removeEventListener('keydown', surTouche);
+  });
 
 
   function allerA(nouvelIndice) {

@@ -54,6 +54,12 @@ export default function ActionsCritere({ surPrecedent, surBrouillon, surContinue
         className="group inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition duration-300 hover:bg-brand-700"
       >
         Enregistrer et continuer
+        {/* Le raccourci est annonce sur le bouton : un raccourci qu'on ne
+            decouvre qu'en le tapant par hasard n'existe pas. Masque sous 640 px,
+            ou il n'y a pas de clavier a portee. */}
+        <kbd className="hidden rounded border border-white/30 px-1.5 py-0.5 text-[11px] font-medium text-white/80 sm:inline">
+          Entrée
+        </kbd>
         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" aria-hidden />
       </button>
     </div>
