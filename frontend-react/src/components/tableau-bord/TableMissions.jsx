@@ -80,7 +80,11 @@ export default function TableMissions({
               <th className={entete}>Mission</th>
               <th className={entete}>Progression</th>
               <th className={entete}>Score</th>
-              <th className={entete}>Conformité</th>
+              {/* Masquee en compact : la conformite est la traduction du score
+                  en pourcentage, et le panneau du tableau de bord ne dispose que
+                  de 670 px. Avec elle, le tableau en demandait 766 et coupait
+                  ses deux dernieres colonnes — le statut devenait « En… ». */}
+              {compact ? null : <th className={entete}>Conformité</th>}
               <th className={entete}>Risque</th>
               <th className={entete}>Statut</th>
               {compact ? null : <th className={entete}>Échéance</th>}
@@ -96,8 +100,26 @@ export default function TableMissions({
                 <td className={clsx(cellule, 'truncate font-medium text-ink-900', compact ? 'max-w-[8rem]' : 'max-w-[11rem]')} title={mission.organisation}>
                   {mission.organisation}
                 </td>
+                {/*
+                 * Le nom ouvre la mission.
+                 *
+                 * Il ne l'ouvrait pas : seule la fleche de la derniere colonne
+                 * menait quelque part, et c'est pourtant le nom que l'oeil vise.
+                 * La vue en cartes, juste dessous, fait deja de toute la carte
+                 * un lien — le tableau etait le seul a demander qu'on aille
+                 * chercher une cible de seize pixels a l'autre bout de la ligne.
+                 *
+                 * La fleche reste : elle nomme l'action pour un lecteur d'ecran
+                 * (« Ouvrir <mission> ») la ou le nom seul ne dirait pas ce
+                 * qu'un clic dessus provoque.
+                 */}
                 <td className={clsx(cellule, 'truncate', compact ? 'max-w-[9rem]' : 'max-w-[12rem]')} title={mission.nom}>
-                  {mission.nom}
+                  <Link
+                    to={mission.lien}
+                    className="rounded underline-offset-4 transition-colors hover:text-brand-700 hover:underline dark:hover:text-brand-400"
+                  >
+                    {mission.nom}
+                  </Link>
                 </td>
                 <td className={cellule}>
                   <Progression pourcentage={mission.progression} compact={compact} />
@@ -111,6 +133,7 @@ export default function TableMissions({
                     `${formaterScore(mission.score)} / 5`
                   )}
                 </td>
+{compact ? null : (
                 <td className={clsx(cellule, 'whitespace-nowrap tabular-nums')}>
                   {mission.conformite == null ? (
                     <span className="text-ink-400">—</span>
@@ -118,6 +141,7 @@ export default function TableMissions({
                     `${mission.conformite}%`
                   )}
                 </td>
+)}
                 <td className={clsx(cellule, 'whitespace-nowrap')}>
                   {mission.risque ? (
                     <span className="inline-flex items-center gap-2">

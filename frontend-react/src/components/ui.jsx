@@ -182,9 +182,6 @@ export function Tableau({
   children
 }) {
   return <div>
-      <p className="mb-2 text-xs text-ink-400 sm:hidden">
-        Faites défiler le tableau horizontalement pour voir toutes les colonnes.
-      </p>
       <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-ink-100">
         <thead className="bg-ink-50">
