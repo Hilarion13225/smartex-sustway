@@ -4,6 +4,7 @@ import { ArrowRight, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin }
 import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
 import SaisieCritereMission from '../components/audit/SaisieCritereMission';
+import ReprendreMission from '../components/audit/ReprendreMission';
 import SyntheseMission from '../components/audit/SyntheseMission';
 import OngletsMission from '../components/audit/OngletsMission';
 import VoletAnalysesIa from '../components/audit/VoletAnalysesIa';
@@ -158,6 +159,7 @@ export default function AuditDetail() {
   // « Domaines ». Dans l'URL comme l'onglet, pour la meme raison : un lien
   // doit pouvoir viser le travail, pas seulement l'ecran qui le contient.
   const domaineDemande = parametres.get('domaine');
+  const critereDemande = parametres.get('critere');
   const onglet = ONGLETS.some((o) => o.cle === ongletDemande) ? ongletDemande : 'synthese';
   const setOnglet = useCallback(
     (cle) => {
@@ -229,11 +231,31 @@ export default function AuditDetail() {
    */
   const peutVoirIndice = peut('bailleur:consulter', audit?.formuleCode);
 
+  /*
+   * Les deux comptes que la page confondait : « renseigne » est une reponse de
+   * l'organisation, « evalue » une note produite par l'analyse IA. La jauge
+   * affichait les seconds sous le libelle « criteres evalues » pendant que le
+   * bloc d'analyse annoncait les premiers — 1 et 4 pour la meme mission.
+   */
+  const criteresDuPerimetre = (criteres ?? []).filter(estDansPerimetre);
+  const criteresRenseignes = criteresDuPerimetre.filter(estRenseigne);
+  const prochainCritere = criteresDuPerimetre.find((critere) => !estRenseigne(critere)) ?? null;
+
+  /** Ouvre la saisie sur le premier critere sans reponse. */
+  const reprendreLaCollecte = useCallback(() => {
+    const suite = new URLSearchParams(parametres);
+    suite.set('onglet', 'criteres');
+    suite.delete('domaine');
+    if (prochainCritere?.critereCode) suite.set('critere', prochainCritere.critereCode);
+    definirParametres(suite);
+  }, [parametres, definirParametres, prochainCritere]);
+
   /** Ouvre la saisie sur le premier critere d'un domaine. */
   const ouvrirDomaine = useCallback(
     (codeDomaine) => {
       const suite = new URLSearchParams(parametres);
       suite.set('onglet', 'criteres');
+      suite.delete('critere');
       suite.set('domaine', codeDomaine);
       definirParametres(suite);
     },
@@ -363,6 +385,25 @@ export default function AuditDetail() {
           <div className="mt-5">
             {onglet === 'synthese' ? (
               <div className="space-y-5">
+                {/*
+                 * En tete, avant les jauges.
+                 *
+                 * Cette vue ouvrait sur la progression, la conformite et le
+                 * risque, puis proposait « Analyser » et « Cloturer » — les deux
+                 * gestes de la fin, sur un ecran qu'on ouvre pendant tout le
+                 * milieu. Le geste du milieu, reprendre la collecte, n'existait
+                 * nulle part : il fallait passer par l'onglet des criteres, qui
+                 * rouvrait sur le premier de la liste.
+                 */}
+                <ReprendreMission
+                  total={criteresDuPerimetre.length}
+                  renseignes={criteresRenseignes.length}
+                  evalues={score?.nombreCriteresEvalues ?? 0}
+                  prochainCode={prochainCritere?.critereCode ?? null}
+                  peutSaisir={peutSaisirLesCriteres}
+                  surReprendre={reprendreLaCollecte}
+                />
+
                 <SyntheseMission
                   score={score}
                   risque={risqueGlobal}
@@ -451,6 +492,7 @@ export default function AuditDetail() {
                 peutAnalyser={peutAnalyser}
                 surChangement={rafraichirSilencieux}
                 domaineInitial={domaineDemande}
+                critereInitial={critereDemande}
               />
             ) : null}
 

@@ -57,14 +57,26 @@ export default function SaisieCritereMission({
    * une grille de quatre-vingt-douze codes.
    */
   domaineInitial,
+  /*
+   * Critere par lequel commencer, prioritaire sur le domaine. « Reprendre
+   * l'evaluation » vise le prochain critere sans reponse, qui n'est pas le
+   * premier de son domaine des qu'on en a deja traite quelques-uns.
+   */
+  critereInitial,
 }) {
   // Verrou d'envoi : une touche maintenue enfoncee emet des repetitions, et
   // deux enregistrements simultanes feraient sauter un critere.
   const envoiEnCours = useRef(false);
   const [indice, setIndice] = useState(() => {
-    if (!domaineInitial) return 0;
-    const premier = criteres.findIndex((c) => c.domaineCode === domaineInitial);
-    return premier >= 0 ? premier : 0;
+    if (critereInitial) {
+      const vise = criteres.findIndex((c) => c.critereCode === critereInitial);
+      if (vise >= 0) return vise;
+    }
+    if (domaineInitial) {
+      const premier = criteres.findIndex((c) => c.domaineCode === domaineInitial);
+      if (premier >= 0) return premier;
+    }
+    return 0;
   });
   const [niveau, setNiveau] = useState(null);
   const [question, setQuestion] = useState(null);
