@@ -102,8 +102,13 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
               <tbody className="divide-y divide-ink-100">
                 {domaines.map((domaine) => (
                   <tr key={domaine.domaineCode}>
+                    {/* 9 rem et non 14 : le tableau demandait 28 px de plus que
+                        son cadre et coupait la colonne Score, celle qu'on vient
+                        lire. Le nom du domaine est deja tronque et porte son
+                        `title` — il perd quelques caracteres, le score ne
+                        disparait plus. */}
                     <td
-                      className="td max-w-[14rem] truncate"
+                      className="td max-w-[9rem] truncate"
                       title={domaine.domaineNom ?? domaine.domaineCode}
                     >
                       {domaine.domaineNom ?? domaine.domaineCode}

@@ -267,32 +267,44 @@ export default function AuditDetail() {
             icone={ClipboardCheck}
             titre={audit.nom}
             description={`${audit.referentielCode} — ${audit.nombreCriteres} critères — début le ${audit.dateDebut}`}
-            actions={
-              <>
-                {/* « Score » et non « Tableau de bord » : ce dernier nomme
-                    l'accueil de l'application, et cet ecran-ci porte le score
-                    de la mission — c'est d'ailleurs le mot que son propre fil
-                    d'Ariane emploie. */}
-                <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
-                  <Gauge className="h-4 w-4" aria-hidden />
-                  Score
-                </Link>
-                <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
-                  <ClipboardX className="h-4 w-4" aria-hidden />
-                  Non-conformités
-                </Link>
-                <Link to={`/app/${entrepriseId}/audits/${auditId}/rapports`} className="btn-secondary">
-                  <FileText className="h-4 w-4" aria-hidden />
-                  Rapports
-                </Link>
-                <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
-                  <Leaf className="h-4 w-4" aria-hidden />
-                  Indice IFC/SFI
-                </Link>
-                <Badge ton="bleu">{audit.statut}</Badge>
-              </>
-            }
+            actions={<Badge ton="bleu">{audit.statut}</Badge>}
           />
+
+          {/*
+           * Les resultats de la mission, nommes comme tels.
+           *
+           * Ces quatre liens etaient poses dans le titre, a cote du statut, et
+           * ne se distinguaient en rien des sept onglets juste dessous : onze
+           * destinations sur la meme mission, reparties entre deux mecanismes
+           * sans qu'aucun libelle ne dise pourquoi. Leurs routes sont pourtant
+           * toutes bornees a la mission, comme les onglets — la portee ne les
+           * separait pas.
+           *
+           * Ce qui les separe est leur nature : les onglets portent le travail
+           * — saisir, prouver, analyser, traiter — et ceux-ci ce qui en sort.
+           * L'intitule le dit, et la barre le montre en les tenant ensemble.
+           */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">Résultats</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
+                <Gauge className="h-4 w-4" aria-hidden />
+                Score
+              </Link>
+              <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
+                <ClipboardX className="h-4 w-4" aria-hidden />
+                Non-conformités
+              </Link>
+              <Link to={`/app/${entrepriseId}/audits/${auditId}/rapports`} className="btn-secondary">
+                <FileText className="h-4 w-4" aria-hidden />
+                Rapports
+              </Link>
+              <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
+                <Leaf className="h-4 w-4" aria-hidden />
+                Indice IFC/SFI
+              </Link>
+            </div>
+          </div>
 
           {erreurSites ? <Alerte ton="rouge">{erreurSites}</Alerte> : null}
 
