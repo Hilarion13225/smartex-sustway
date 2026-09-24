@@ -242,9 +242,13 @@ export default function AuditDetail() {
             description={`${audit.referentielCode} — ${audit.nombreCriteres} critères — début le ${audit.dateDebut}`}
             actions={
               <>
+                {/* « Score » et non « Tableau de bord » : ce dernier nomme
+                    l'accueil de l'application, et cet ecran-ci porte le score
+                    de la mission — c'est d'ailleurs le mot que son propre fil
+                    d'Ariane emploie. */}
                 <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
                   <Gauge className="h-4 w-4" aria-hidden />
-                  Tableau de bord
+                  Score
                 </Link>
                 <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
                   <ClipboardX className="h-4 w-4" aria-hidden />

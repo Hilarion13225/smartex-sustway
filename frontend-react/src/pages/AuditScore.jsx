@@ -98,7 +98,12 @@ export default function AuditScore() {
 
           <PageTitre
             icone={Gauge}
-            titre={`Tableau de bord — ${audit.nom}`}
+            // « Score », comme le dit le fil d'Ariane juste au-dessus et comme
+            // le nomme desormais le bouton qui y mene. Le titre annoncait
+            // « Tableau de bord », qui est le nom de l'accueil de
+            // l'application : le meme ecran portait trois noms, et l'un d'eux
+            // designait deja autre chose.
+            titre={`Score — ${audit.nom}`}
             description={`${audit.referentielCode} — score pondéré, calculé sur les critères actifs et applicables de la mission.`}
             actions={<Badge ton="bleu">{audit.statut}</Badge>}
           />
