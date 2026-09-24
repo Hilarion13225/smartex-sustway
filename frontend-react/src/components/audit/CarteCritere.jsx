@@ -44,7 +44,10 @@ export default function CarteCritere({
   peutSaisir = true,
 }) {
   return (
-    <article className="rounded-2xl border border-ink-100 bg-surface p-6 shadow-sm sm:p-8">
+    // `pb-0` : le pied collant apporte son propre rembourrage bas. Sans cela,
+    // le padding de l'article s'ajoutait sous lui et laissait une bande vide
+    // sous la barre d'action une fois arrive en bas de la carte.
+    <article className="rounded-2xl border border-ink-100 bg-surface p-6 pb-0 shadow-sm sm:p-8 sm:pb-0">
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm font-semibold text-brand-600 dark:text-brand-400">{code}</span>
         <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-400">
@@ -157,8 +160,15 @@ export default function CarteCritere({
 
       {/* Sans droit de saisie, il n'y a rien à enregistrer : la navigation
           reste accessible par les flèches au-dessus de la carte. */}
+      {/* Le pied colle au bas de la fenetre. « Enregistrer et continuer » se
+          trouvait 511 px sous le pli sur un ecran de 950, 693 px sur un
+          portable de 768 — jamais visible sans defiler, et une mission compte
+          quatre-vingt-douze criteres.
+          Le sticky vit ici et non dans ActionsCritere : un element `sticky` ne
+          se deplace que dans les limites de son parent direct, et la, ce parent
+          faisait exactement la hauteur du pied. */}
       {peutSaisir ? (
-        <div className="mt-8">
+        <div className="sticky bottom-0 z-10 -mx-6 mt-8 sm:-mx-8">
           <ActionsCritere
             surPrecedent={surPrecedent}
             surBrouillon={surBrouillon}
