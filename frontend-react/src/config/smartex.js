@@ -130,6 +130,18 @@ export const REFERENCES_METHODOLOGIQUES = [
     nom: 'OCDE',
     texte: 'Principes directeurs à l’intention des entreprises multinationales.',
   },
+  {
+    code: 'IFC',
+    nom: 'IFC',
+    texte:
+      'Normes de performance de la Société financière internationale (Groupe Banque mondiale) en matière de durabilité environnementale et sociale.',
+  },
+  { code: 'SA_8000', nom: 'SA 8000', texte: 'Responsabilité sociale des organisations et conditions de travail.' },
+  { code: 'ISO_9001', nom: 'ISO 9001', texte: 'Systèmes de management de la qualité.' },
+  { code: 'ISO_14001', nom: 'ISO 14001', texte: 'Systèmes de management environnemental.' },
+  { code: 'ISO_37001', nom: 'ISO 37001', texte: 'Systèmes de management anti-corruption.' },
+  { code: 'ISO_20400', nom: 'ISO 20400', texte: 'Lignes directrices relatives aux achats responsables.' },
+  { code: 'ISO_50001', nom: 'ISO 50001', texte: 'Systèmes de management de l’énergie.' },
 ];
 
 /** Référentiels réellement chargés dans la plateforme et sélectionnables pour une évaluation. */

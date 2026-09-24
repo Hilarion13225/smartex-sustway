@@ -1,4 +1,7 @@
-Logos des référentiels affichés par le carrousel de la page Méthodologie.
+Logos des référentiels. Trois surfaces les affichent : les pastilles de la
+page Solution, la rubrique « Référentiels & concepts » de la page Ressources,
+et le bandeau qui court au bas de toutes les pages. La liste vit dans
+src/config/smartex.js — ajouter une entrée là et un fichier ici suffit.
 
 Déposez ici un fichier .png par référentiel, nommé d'après son code en
 minuscules, les soulignés remplacés par des tirets :
@@ -13,3 +16,24 @@ minuscules, les soulignés remplacés par des tirets :
 Fond transparent ou blanc, hauteur utile d'environ 128 px, largeur libre.
 Tant qu'un fichier manque, la fiche affiche le nom du référentiel sans logo :
 rien ne casse.
+
+
+--- Ce que la mise en page attend d'un fichier (constate le 24/09/2026) ---
+
+Les pastilles sont rondes, 80 a 96 px, et l'image y est en `object-contain` :
+un logo large n'y occupe que sa largeur, et le reste est du vide. Mesure sur
+les douze : ISO 26000, ISO 9001 et ISO 50001 remplissent la pastille a 100 %,
+le Pacte mondial a 40 % et l'OCDE a 55 %. Ils paraissent donc plus petits que
+les autres sans que rien ne soit casse.
+
+Un fichier carre, cadre au plus pres du logo et sans marge blanche, occupe
+toute la pastille. C'est le seul reglage qui compte ici.
+
+Deux fichiers a remplacer quand une meilleure source existera :
+
+  iso-37001.png   89 x 99 px a l'origine. Suffit en 1x, flou sur un ecran
+                  dense, qui en demanderait le double.
+
+  iso-20400.png   c'est une infographie — un cercle rouge entoure de quatre
+                  legendes — et non un logo. A 96 px les legendes sont
+                  illisibles ; seul le cercle central se lit.

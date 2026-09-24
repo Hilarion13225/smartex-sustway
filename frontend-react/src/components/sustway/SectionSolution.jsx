@@ -244,15 +244,18 @@ export default function SectionSolution() {
             </Link>
           </Apparition>
 
-          {/* Trois de front sur telephone large, les cinq en rang au-dela de
-              1024 px. Jamais cinq en dessous : une pastille de 96 px et un nom
-              de trois mots demandent chacun leur place. */}
-          <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-3">
+          {/* Quatre de front au-dela de 1024 px, et non cinq : la liste est
+              passee de cinq references a douze, qui se rangent en trois rangees
+              pleines sur quatre colonnes quand cinq en auraient laisse deux
+              orphelines sur une troisieme ligne.
+              Trois de front sur telephone large, deux en dessous : une pastille
+              de 96 px et un nom de trois mots demandent chacun leur place. */}
+          <ul className="grid grid-cols-2 justify-items-center gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-3">
             {REFERENCES_METHODOLOGIQUES.map((reference, index) => (
               <Apparition
                 key={reference.code}
                 balise="li"
-                delai={index * 90}
+                delai={index * 45}
                 className="group flex w-full flex-col items-center text-center"
               >
                 {/*
