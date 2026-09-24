@@ -72,6 +72,15 @@ export default function SaisieCritereMission({
   // déclaration renseigne, quelle que soit son échelle de réponse.
   const [premiereQuestionId, setPremiereQuestionId] = useState(null);
   const [reponseBinaire, setReponseBinaire] = useState(null);
+  /*
+   * La declaration textuelle n'est plus saisissable — le champ « Situation de
+   * l'organisation sur ce critere » a ete retire a la demande d'Hilarion.
+   *
+   * L'etat reste : il porte la valeur lue au chargement et la renvoie telle
+   * quelle a l'enregistrement. Sans lui, chaque sauvegarde effacerait la
+   * declaration deja ecrite par l'organisation, et l'IA perdrait une mise en
+   * contexte que personne n'a demande a supprimer.
+   */
   const [scenario, setScenario] = useState('');
   const [preuves, setPreuves] = useState([]);
   const [chargement, setChargement] = useState(true);
@@ -412,7 +421,6 @@ export default function SaisieCritereMission({
               surSelectionNiveau={saisissable ? setNiveau : () => {}}
               reponseBinaire={reponseBinaire}
               surSelectionBinaire={saisissable ? setReponseBinaire : () => {}}
-              scenario={scenario}
               surChangementScenario={saisissable ? setScenario : () => {}}
               fichiers={preuves.map((preuve) => ({
                 id: preuve.id,
