@@ -26,15 +26,36 @@ export default function IndicePreparation() {
   const rafraichir = useCallback(() => {
     setChargement(true);
     setErreurGlobale(null);
+    /*
+     * L'indice est charge a part, et son echec n'emporte plus les deux autres
+     * appels.
+     *
+     * Il est reserve a la formule Avancees (RG39-RG43) : sur une organisation
+     * en STANDARD l'API repond 403, le `Promise.all` rejetait tout, `audit`
+     * restait nul et l'ecran concluait « Audit introuvable ou non accessible ».
+     * L'audit existait pourtant, et le message envoyait chercher une panne la
+     * ou il n'y avait qu'une formule.
+     */
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}`),
       api.get('/api/v1/bailleurs'),
-      api.get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/indice-preparation`),
     ])
-      .then(([a, b, i]) => {
+      .then(([a, b]) => {
         setAudit(a);
         setBailleurs(b);
-        setIndices(i);
+        return api
+          .get(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/indice-preparation`)
+          .then(setIndices)
+          .catch((err) => {
+            if (err instanceof ApiError && err.statut === 403) {
+              setErreurGlobale(
+                'L’indice de préparation bailleur n’est pas accessible avec la formule souscrite par cette organisation.'
+              );
+              setIndices([]);
+              return;
+            }
+            throw err;
+          });
       })
       .catch((err) => setErreurGlobale(err instanceof ApiError ? err.message : 'Erreur inattendue'))
       .finally(() => setChargement(false));

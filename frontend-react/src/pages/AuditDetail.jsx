@@ -199,6 +199,14 @@ export default function AuditDetail() {
   // et l'API le refuse aussi — ce masquage n'est qu'une commodité.
   const peutAnalyser = peut('analyse:executer', audit?.formuleCode);
   const peutCloturer = peut('audit:cloturer', audit?.formuleCode);
+  /*
+   * L'indice de preparation bailleur est reserve a la formule Avancees
+   * (RG39-RG43). Le lien s'affichait sans condition : sur une organisation en
+   * STANDARD, il menait a un 403, et l'ecran repondait « Audit introuvable ou
+   * non accessible » — un message faux, l'audit existant parfaitement.
+   * Meme permission que « Financements verts » dans la barre laterale.
+   */
+  const peutVoirIndice = peut('bailleur:consulter', audit?.formuleCode);
 
   // Le responsable audit supervise, il ne remplit pas le questionnaire :
   // déclarer un niveau et déposer une preuve appartiennent à l'organisation
@@ -299,10 +307,12 @@ export default function AuditDetail() {
                 <FileText className="h-4 w-4" aria-hidden />
                 Rapports
               </Link>
-              <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
-                <Leaf className="h-4 w-4" aria-hidden />
-                Indice IFC/SFI
-              </Link>
+              {peutVoirIndice ? (
+                <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
+                  <Leaf className="h-4 w-4" aria-hidden />
+                  Indice IFC/SFI
+                </Link>
+              ) : null}
             </div>
           </div>
 
