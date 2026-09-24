@@ -484,7 +484,7 @@ export default function TableauDeBord() {
             valeur={`${kpis.completion}%`}
             libelle="Taux de complétion"
             ratio={kpis.completion}
-            precision={`${kpis.totalEvalues} critères évalués`}
+            precision={`${kpis.totalEvalues} critère${kpis.totalEvalues > 1 ? 's' : ''} évalué${kpis.totalEvalues > 1 ? 's' : ''}`}
           />
         </div>
       </Revele>
@@ -736,11 +736,37 @@ function OrganisationsATraiter({ bilan, total }) {
         </div>
 
         {rienASignaler ? (
-          <p className="mt-4 rounded-xl border border-dashed border-ink-200 px-4 py-8 text-center text-sm text-ink-500">
-            {total === 0
-              ? 'Aucune organisation dans le portefeuille pour l’instant.'
-              : 'Aucun écart critique, aucune mission en attente de validation.'}
-          </p>
+          /*
+           * Rien a signaler n'est pas rien a faire.
+           *
+           * Ce bloc ouvre le tableau de bord et occupait 196 px pour annoncer
+           * une absence, pendant que la seule information actionnable de la
+           * carte — les organisations qui n'ont pas encore de mission — etait
+           * reléguee en gris sous le bloc. Elle remonte ici, avec le geste
+           * qu'elle appelle.
+           *
+           * Trois cas, du plus vide au plus sain : aucune organisation, des
+           * organisations sans mission, et enfin le portefeuille qui tourne —
+           * seul ce dernier ne propose rien, parce qu'il n'y a rien a faire.
+           */
+          <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-dashed border-ink-200 px-4 py-8 text-center">
+            <p className="text-sm text-ink-500">
+              {total === 0
+                ? 'Aucune organisation dans le portefeuille pour l’instant.'
+                : sansMission > 0
+                  ? `Aucun écart critique ni mission à valider. ${sansMission} organisation${sansMission > 1 ? 's' : ''} n’${sansMission > 1 ? 'ont' : 'a'} pas encore de mission ouverte.`
+                  : 'Aucun écart critique, aucune mission en attente de validation.'}
+            </p>
+            {total === 0 ? (
+              <Link to="/app/entreprises" className="btn-secondary">
+                Ajouter une organisation
+              </Link>
+            ) : sansMission > 0 ? (
+              <Link to="/app/entreprises" className="btn-secondary">
+                Ouvrir une mission
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <ul className="mt-4 space-y-2">
             {urgentes.map((l) => (
@@ -782,7 +808,9 @@ function OrganisationsATraiter({ bilan, total }) {
             {reste > 0
               ? `${reste} autre${reste > 1 ? 's' : ''} organisation${reste > 1 ? 's' : ''} signalée${reste > 1 ? 's' : ''}. `
               : ''}
-            {sansMission > 0
+            {/* Repetee seulement quand le bloc ne l'a pas dite : au-dessus,
+                l'etat vide la porte deja, avec le geste qui va avec. */}
+            {sansMission > 0 && !rienASignaler
               ? `${sansMission} organisation${sansMission > 1 ? 's' : ''} sans mission ouverte.`
               : ''}
           </p>
