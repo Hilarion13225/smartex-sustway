@@ -77,6 +77,18 @@ export default function AuditScore() {
     return <Vide message="Organisation introuvable ou non accessible." />;
   }
 
+  /*
+   * Part du perimetre reellement evaluee, en pourcentage entier.
+   *
+   * Calculee ici plutot qu'au fil du rendu : trois endroits s'en servent —
+   * l'avertissement, le libelle de la carte et sa couleur — et trois calculs
+   * separes finiraient par diverger.
+   */
+  const couverture =
+    score && score.nombreCriteresTotal > 0
+      ? Math.round((score.nombreCriteresEvalues / score.nombreCriteresTotal) * 100)
+      : 0;
+
   return (
     <>
       {chargement ? (
@@ -108,10 +120,32 @@ export default function AuditScore() {
             actions={<Badge ton="bleu">{audit.statut}</Badge>}
           />
 
+          {/*
+           * Un score se lit avec sa couverture.
+           *
+           * L'avertissement ne paraissait qu'a zero critere evalue. A un sur
+           * quatre-vingt-douze il disparaissait, et l'ecran annoncait
+           * « 1.00 / 5 » et « 20 % de conformite » comme des chiffres etablis,
+           * calcules sur un pour cent du perimetre. Un mauvais score affiche
+           * avant d'avoir travaille decourage, et il est faux.
+           *
+           * Le seuil est la moitie des criteres. Il est arbitraire — aucun
+           * seuil ne serait juste dans l'absolu — mais il est explicable, et
+           * la phrase donne toujours le chiffre exact de la couverture, qui
+           * lui ne l'est pas.
+           */}
           {score.nombreCriteresEvalues === 0 ? (
             <Alerte ton="ambre">
               Aucun critère n’a encore d’évaluation validée — le score global n’est pas encore représentatif de la
               conformité réelle de l’organisation.
+            </Alerte>
+          ) : couverture < 50 ? (
+            <Alerte ton="ambre">
+              Score provisoire : {score.nombreCriteresEvalues} critère
+              {score.nombreCriteresEvalues > 1 ? 's' : ''} évalué
+              {score.nombreCriteresEvalues > 1 ? 's' : ''} sur {score.nombreCriteresTotal}, soit {couverture} % du
+              périmètre. Il évoluera à mesure que la mission avance et ne reflète pas encore la conformité réelle de
+              l’organisation.
             </Alerte>
           ) : null}
 
@@ -132,11 +166,18 @@ export default function AuditScore() {
               )}
             >
               <StatCard
-                libelle="Score global"
+                libelle={couverture < 50 && score.nombreCriteresEvalues > 0 ? 'Score global (provisoire)' : 'Score global'}
                 valeur={score.nombreCriteresEvalues > 0 ? `${formaterScore(score.scoreGlobal)} / 5` : '—'}
-                detail="Notes / coefficients"
+                detail={
+                  score.nombreCriteresEvalues > 0
+                    ? `Sur ${couverture} % du périmètre évalué`
+                    : 'Notes / coefficients'
+                }
                 icone={Gauge}
-                ton={score.nombreCriteresEvalues > 0 ? tonScore(score.scoreGlobal) : 'neutre'}
+                // Un score calcule sur une poignee de criteres ne prend pas la
+                // couleur de sa valeur : un « rouge » assis sur 1 % du perimetre
+                // alarmerait sur rien.
+                ton={score.nombreCriteresEvalues > 0 && couverture >= 50 ? tonScore(score.scoreGlobal) : 'neutre'}
               />
               {/* Ces deux cartes comptent des criteres, et l'ecran qui les
                   liste existe : elles y menent. Le score global, lui, n'a pas

@@ -125,12 +125,30 @@ export default function TableMissions({
                   <Progression pourcentage={mission.progression} compact={compact} />
                 </td>
                 {/* Score sur 5, l'échelle de la grille d'évaluation ; la
-                    conformité en est la traduction en pourcentage. */}
-                <td className={clsx(cellule, 'whitespace-nowrap font-medium tabular-nums text-ink-900')}>
+                    conformité en est la traduction en pourcentage.
+                    Sous la moitie du perimetre evalue, il est atténue et porte
+                    un `title` : « 1.00 / 5 » assis sur un critere sur
+                    quatre-vingt-douze se lit sinon comme un fait etabli. */}
+                <td className={cellule}>
                   {mission.score == null ? (
                     <span className="font-normal text-ink-400">—</span>
                   ) : (
-                    `${formaterScore(mission.score)} / 5`
+                    <span
+                      className={clsx(
+                        'whitespace-nowrap tabular-nums',
+                        mission.progression < 50
+                          ? 'font-normal text-ink-500'
+                          : 'font-medium text-ink-900'
+                      )}
+                      title={
+                        mission.progression < 50
+                          ? `Score provisoire : ${mission.progression}% du périmètre évalué`
+                          : undefined
+                      }
+                    >
+                      {formaterScore(mission.score)} / 5
+                      {mission.progression < 50 ? <span className="ml-1 text-ink-400">*</span> : null}
+                    </span>
                   )}
                 </td>
 {compact ? null : (
@@ -204,6 +222,7 @@ export default function TableMissions({
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-500">
                 <span>
                   Score : {mission.score == null ? '—' : `${formaterScore(mission.score)} / 5`}
+                  {mission.score != null && mission.progression < 50 ? ' (provisoire)' : ''}
                 </span>
                 <span>
                   Conformité : {mission.conformite == null ? '—' : `${mission.conformite}%`}
