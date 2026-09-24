@@ -4,7 +4,16 @@ import { Card } from '../ui';
 import { formaterScore } from '../../lib/scoreAffiche';
 
 /** Palette de la jauge : rempli en émeraude, reste en gris neutre. */
-const COULEURS_JAUGE = ['#059669', '#e2e8f0'];
+/*
+ * Gris ardoise pour un chiffre qui ne juge pas encore.
+ *
+ * La jauge provisoire reprenait d'abord le vert : elle rassurait sur une
+ * conformite de 20 %, ce qui est le defaut inverse de celui qu'on corrigeait.
+ * Le bordeaux alarmait sur quatre criteres sur quatre-vingt-douze, le vert
+ * rassurait sur les memes. Ni l'un ni l'autre : une teinte qui ne dit rien,
+ * puisqu'il n'y a rien a dire tant que la couverture est faible.
+ */
+const COULEURS_JAUGE_PROVISOIRE = ['#94a3b8', '#e2e8f0'];
 const COULEURS_JAUGE_CONFORMITE = ['#921f18', '#e2e8f0'];
 
 const TONS_RISQUE = {
@@ -46,9 +55,7 @@ function Jauge({ pourcentage, legende, couleurs }) {
  * (RG31) : mis côte à côte avec un taux d'avancement, deux échelles
  * différentes se liraient mal.
  */
-export default function SyntheseMission({ score, risque, criteresTotal, criteresEvalues }) {
-  const progression =
-    criteresTotal > 0 ? Math.round((criteresEvalues / criteresTotal) * 100) : 0;
+export default function SyntheseMission({ score, risque, criteresTotal, criteresEvalues }) {
   // V74-C3-B11 : sans critère évalué, le score 0 du serveur n'est pas une conformité nulle.
   const conformite =
     (score?.nombreCriteresEvalues ?? 0) > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null;
@@ -60,25 +67,25 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
   const noteTotale = score?.noteTotale ?? null;
   const coefficientTotal = score?.coefficientTotal ?? null;
   const ton = risque ? TONS_RISQUE[risque] : null;
+  // Meme seuil que l'ecran du score et le tableau de bord : sous la moitie du
+  // perimetre, un chiffre ne se donne pas pour un fait.
+  const couverture = criteresTotal > 0 ? Math.round((criteresEvalues / criteresTotal) * 100) : 0;
+  const provisoire = criteresEvalues > 0 && couverture < 50;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.8fr)_minmax(0,0.8fr)]">
-      {/* --- Avancement --- */}
-      <Card className="p-5">
-        <h2 className="text-base font-semibold text-ink-900">Progression globale</h2>
-        <div className="mt-4">
-          <Jauge pourcentage={progression} legende="Complété" couleurs={COULEURS_JAUGE} />
-        </div>
-        <p className="mt-3 text-center text-xs text-ink-500">
-          {criteresEvalues} / {criteresTotal} critères évalués
-        </p>
-        {enRevue > 0 ? (
-          <p className="mt-1 text-center text-xs font-medium text-violet-700 dark:text-violet-300">
-            {enRevue} en attente de revue
-          </p>
-        ) : null}
-      </Card>
-
+    /*
+     * « Progression globale » a quitte cette grille.
+     *
+     * Elle affichait les criteres notes par l'IA sous le libelle « Complete »,
+     * quand le bloc de tete annonce les criteres renseignes : deux jauges, deux
+     * comptes, 1 % contre 4 % pour la meme mission. La progression de la
+     * collecte appartient au bloc de reprise, qui la donne avec le bon compte
+     * et le geste qui va avec ; cette grille garde ce qui releve du resultat.
+     *
+     * Les critères en attente de revue rejoignent la carte de conformite : ils
+     * disent pourquoi un score ne bouge pas encore, et non ou en est la saisie.
+     */
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,0.9fr)]">
       {/* --- Score par domaine --- */}
       <Card className="min-w-0 p-5">
         <h2 className="text-base font-semibold text-ink-900">Par domaine</h2>
@@ -147,21 +154,41 @@ export default function SyntheseMission({ score, risque, criteresTotal, criteres
       {/* --- Conformité et risque --- */}
       <div className="space-y-4">
         <Card className="p-5">
-          <h2 className="text-base font-semibold text-ink-900">Conformité</h2>
+          <h2 className="text-base font-semibold text-ink-900">
+            Conformité{provisoire ? <span className="font-normal text-ink-500"> (provisoire)</span> : null}
+          </h2>
           {conformite == null ? (
             <p className="mt-4 text-xs text-ink-500">Aucune évaluation.</p>
           ) : (
             <>
               <div className="mt-3">
+                {/*
+                 * Sous la moitie du perimetre, la jauge perd sa legende et ses
+                 * couleurs de jugement. « Faible » assis sur quatre criteres
+                 * sur quatre-vingt-douze n'est pas un constat, c'est une
+                 * alarme sur rien — meme regle que le score, qui s'annonce
+                 * provisoire dans les memes conditions.
+                 */}
                 <Jauge
                   pourcentage={conformite}
-                  legende={conformite >= 75 ? 'Élevée' : conformite >= 50 ? 'Moyenne' : 'Faible'}
-                  couleurs={COULEURS_JAUGE_CONFORMITE}
+                  legende={
+                    provisoire ? '' : conformite >= 75 ? 'Élevée' : conformite >= 50 ? 'Moyenne' : 'Faible'
+                  }
+                  couleurs={provisoire ? COULEURS_JAUGE_PROVISOIRE : COULEURS_JAUGE_CONFORMITE}
                 />
               </div>
-              <p className="mt-2 text-center text-[11px] text-ink-500">Score moyen pondéré</p>
+              <p className="mt-2 text-center text-[11px] text-ink-500">
+                {provisoire
+                  ? `Sur ${couverture} % du périmètre évalué`
+                  : 'Score moyen pondéré'}
+              </p>
             </>
           )}
+          {enRevue > 0 ? (
+            <p className="mt-2 text-center text-[11px] font-medium text-violet-700 dark:text-violet-300">
+              {enRevue} critère{enRevue > 1 ? 's' : ''} en attente de revue
+            </p>
+          ) : null}
         </Card>
 
         <Card className="p-5">
