@@ -4,7 +4,7 @@ import { ClipboardList, PlusCircle, Search } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import Revele from '../components/Revele';
 import Breadcrumb from '../components/Breadcrumb';
-import TableMissions from '../components/tableau-bord/TableMissions';
+import CartesMissions from '../components/audit/CartesMissions';
 import { Alerte, Card, Loader, PageTitre, Vide } from '../components/ui';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
@@ -133,6 +133,9 @@ export default function AuditsListe() {
           conformite:
             evalues > 0 ? Math.round((Number(score.scoreGlobal) / 5) * 100) : null,
           risque,
+          // Repris tels quels par la carte, qui annonce ce qu'il reste a faire.
+          criteresEvalues: evalues,
+          criteresTotal: total,
           statut: audit.statut,
           echeance: audit.dateFin ? formaterDate(audit.dateFin) : null,
           lien: `/app/${entrepriseId}/audits/${audit.id}`,
@@ -234,7 +237,13 @@ export default function AuditsListe() {
         </Revele>
       ) : null}
 
-      {/* --- Recherche et filtres --- */}
+      {/* --- Recherche et filtres ---
+          Affiches a partir de huit missions. En dessous, quatre controles pour
+          deux lignes coutaient soixante-douze pixels, la moitie de la hauteur
+          de la liste qu'ils servaient a reduire. Un filtre deja pose par l'URL
+          les fait reparaitre : la barre laterale pointe sur ?statut=EN_COURS,
+          et il faut pouvoir voir — et defaire — le filtre actif. */}
+      {missionsVue.length >= 8 || filtreStatut || filtreRisque || filtrePeriode || recherche ? (
       <div className="rounded-2xl border border-ink-100 bg-surface p-4 shadow-sm">
         <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
           <div className="relative">
@@ -289,6 +298,7 @@ export default function AuditsListe() {
           </select>
         </div>
       </div>
+      ) : null}
 
       {chargement ? (
         <Loader message="Chargement des missions…" />
@@ -299,9 +309,8 @@ export default function AuditsListe() {
               {missionsFiltrees.length} mission{missionsFiltrees.length > 1 ? 's' : ''} affichée
               {missionsFiltrees.length > 1 ? 's' : ''} sur {missionsVue.length}.
             </p>
-            <TableMissions
+            <CartesMissions
               missions={missionsFiltrees}
-              etiquettePremiereColonne="Référentiel"
               // Proposé uniquement quand la liste est vraiment vide : après un
               // filtrage, le geste attendu est de relâcher le filtre, pas de
               // créer une mission de plus.
