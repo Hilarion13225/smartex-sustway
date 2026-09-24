@@ -50,8 +50,19 @@ export default function SaisieCritereMission({
   peutSaisir,
   peutAnalyser,
   surChangement,
+  /*
+   * Domaine par lequel commencer, quand la page arrive depuis l'onglet
+   * « Domaines ». Ses cartes annoncent « 0 / 25 criteres evalues » sans mener
+   * nulle part : il fallait ouvrir les criteres, puis chercher le domaine dans
+   * une grille de quatre-vingt-douze codes.
+   */
+  domaineInitial,
 }) {
-  const [indice, setIndice] = useState(0);
+  const [indice, setIndice] = useState(() => {
+    if (!domaineInitial) return 0;
+    const premier = criteres.findIndex((c) => c.domaineCode === domaineInitial);
+    return premier >= 0 ? premier : 0;
+  });
   const [niveau, setNiveau] = useState(null);
   const [question, setQuestion] = useState(null);
   // Question factuelle : la réponse est un oui/non rangé dans le

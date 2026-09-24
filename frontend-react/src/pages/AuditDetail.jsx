@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, ClipboardX, FileText, Gauge, Leaf, MapPin } from 'lucide-react';
 import Breadcrumb from '../components/Breadcrumb';
 import Revele from '../components/Revele';
 import SaisieCritereMission from '../components/audit/SaisieCritereMission';
@@ -45,7 +45,7 @@ const ONGLETS = [
  * Les compteurs viennent des critères déjà chargés par la page ; le score,
  * lui, n'existe que pour les domaines comportant au moins une évaluation.
  */
-function VoletDomaines({ score, criteres }) {
+function VoletDomaines({ score, criteres, surOuvrir }) {
   const parDomaine = new Map();
   // RG35 : un critère non applicable ou retiré du périmètre ne compte pas dans
   // le total du domaine, comme dans le score.
@@ -80,7 +80,19 @@ function VoletDomaines({ score, criteres }) {
       {lignes.map((ligne) => {
         const avancement = ligne.total > 0 ? Math.round((ligne.evalues / ligne.total) * 100) : 0;
         return (
-          <Card key={ligne.code} className="p-5">
+          <Card
+            key={ligne.code}
+            className="p-0"
+          >
+            {/* La carte ouvre la saisie sur son domaine. Elle annoncait
+                « 0 / 25 criteres evalues » sans mener nulle part : il fallait
+                ouvrir l'onglet des criteres, puis retrouver le domaine dans une
+                grille de quatre-vingt-douze codes. */}
+            <button
+              type="button"
+              onClick={() => surOuvrir?.(ligne.code)}
+              className="group w-full rounded-2xl p-5 text-left transition-colors hover:bg-ink-50 dark:hover:bg-white/5"
+            >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h3 className="truncate text-sm font-semibold text-ink-900" title={ligne.nom}>
@@ -98,9 +110,14 @@ function VoletDomaines({ score, criteres }) {
                 style={{ width: `${avancement}%` }}
               />
             </div>
-            <p className="mt-2 text-xs text-ink-500">
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-ink-500">
               {ligne.evalues} / {ligne.total} critères évalués
+              <ArrowRight
+                className="h-3.5 w-3.5 text-ink-300 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-600"
+                aria-hidden
+              />
             </p>
+            </button>
           </Card>
         );
       })}
@@ -137,6 +154,10 @@ export default function AuditDetail() {
    */
   const [parametres, definirParametres] = useSearchParams();
   const ongletDemande = parametres.get('onglet');
+  // Domaine par lequel ouvrir la saisie, pose par les cartes de l'onglet
+  // « Domaines ». Dans l'URL comme l'onglet, pour la meme raison : un lien
+  // doit pouvoir viser le travail, pas seulement l'ecran qui le contient.
+  const domaineDemande = parametres.get('domaine');
   const onglet = ONGLETS.some((o) => o.cle === ongletDemande) ? ongletDemande : 'synthese';
   const setOnglet = useCallback(
     (cle) => {
@@ -207,6 +228,17 @@ export default function AuditDetail() {
    * Meme permission que « Financements verts » dans la barre laterale.
    */
   const peutVoirIndice = peut('bailleur:consulter', audit?.formuleCode);
+
+  /** Ouvre la saisie sur le premier critere d'un domaine. */
+  const ouvrirDomaine = useCallback(
+    (codeDomaine) => {
+      const suite = new URLSearchParams(parametres);
+      suite.set('onglet', 'criteres');
+      suite.set('domaine', codeDomaine);
+      definirParametres(suite);
+    },
+    [parametres, definirParametres]
+  );
 
   // Le responsable audit supervise, il ne remplit pas le questionnaire :
   // déclarer un niveau et déposer une preuve appartiennent à l'organisation
@@ -406,7 +438,9 @@ export default function AuditDetail() {
               </div>
             ) : null}
 
-            {onglet === 'domaines' ? <VoletDomaines score={score} criteres={criteres ?? []} /> : null}
+            {onglet === 'domaines' ? (
+              <VoletDomaines score={score} criteres={criteres ?? []} surOuvrir={ouvrirDomaine} />
+            ) : null}
 
             {onglet === 'criteres' ? (
               <SaisieCritereMission
@@ -416,6 +450,7 @@ export default function AuditDetail() {
                 peutSaisir={peutSaisirLesCriteres}
                 peutAnalyser={peutAnalyser}
                 surChangement={rafraichirSilencieux}
+                domaineInitial={domaineDemande}
               />
             ) : null}
 
