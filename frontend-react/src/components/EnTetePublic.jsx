@@ -25,7 +25,7 @@ import clsx from 'clsx';
 import Logo from './Logo';
 import logoEditeurBlanc from '../assets/smartex-expertises-blanc.png';
 import logoEditeurCouleur from '../assets/smartex-expertises.png';
-import { SMARTEX } from '../config/smartex';
+import { SMARTEX, VIDEO_DEMO } from '../config/smartex';
 import ModaleVideo from './ModaleVideo';
 import IconeMenu from './vitrine/IconeMenu';
 
@@ -569,8 +569,8 @@ export default function EnTetePublic({ surFondSombre = false }) {
 
       {videoOuverte ? (
         <ModaleVideo
-          source="/videos/methodologie-overview.mp4"
-          titre="Démonstration SMARTEX SustWay"
+          source={VIDEO_DEMO.source}
+          titre={VIDEO_DEMO.titre}
           surFermeture={() => definirVideoOuverte(false)}
         />
       ) : null}

@@ -167,3 +167,19 @@ export const REFERENTIELS_EVALUABLES = [
   { code: 'ITIE', nom: 'ITIE', texte: 'Initiative pour la Transparence dans les Industries Extractives — secteur minier.' },
   { code: 'IFC_SFI', nom: 'IFC/SFI', texte: 'Référentiel bailleur transversal, superposé aux autres pour les financements verts.' },
 ];
+
+/**
+ * La video de demonstration, declaree une seule fois.
+ *
+ * Son chemin vivait recopie dans trois composants — la barre de navigation, le
+ * heros de l'accueil et le bouton de demonstration des pages. Changer de video
+ * demandait de les retrouver tous les trois, et d'en oublier un les faisait
+ * diverger : deux boutons « Demo » auraient lance deux films differents.
+ *
+ * Pour remplacer la video : deposer le fichier dans `public/videos/` et
+ * changer `source` ici. Aucun composant a toucher.
+ */
+export const VIDEO_DEMO = {
+  source: '/videos/sllide.mp4',
+  titre: 'Démonstration SMARTEX SustWay',
+};

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { VIDEO_DEMO } from '../../config/smartex';
 import { Layers, PlayCircle } from 'lucide-react';
 import FondTech from '../FondTech';
 import ModaleVideo from '../ModaleVideo';
@@ -183,8 +184,8 @@ export default function SectionHero() {
           seulement vu la page. */}
       {videoOuverte ? (
         <ModaleVideo
-          source="/videos/methodologie-overview.mp4"
-          titre="Vidéo de présentation SMARTEX SustWay"
+          source={VIDEO_DEMO.source}
+          titre={VIDEO_DEMO.titre}
           surFermeture={() => definirVideoOuverte(false)}
         />
       ) : null}

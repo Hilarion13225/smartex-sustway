@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { VIDEO_DEMO } from '../../config/smartex';
 import { PlayCircle } from 'lucide-react';
 import clsx from 'clsx';
 import ModaleVideo from '../ModaleVideo';
@@ -63,8 +64,8 @@ export default function BoutonDemo({
           personne ne doit payer pour avoir seulement vu la page. */}
       {ouverte ? (
         <ModaleVideo
-          source="/videos/methodologie-overview.mp4"
-          titre="Démonstration SMARTEX SustWay"
+          source={VIDEO_DEMO.source}
+          titre={VIDEO_DEMO.titre}
           surFermeture={() => definirOuverte(false)}
         />
       ) : null}
