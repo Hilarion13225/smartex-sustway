@@ -112,12 +112,13 @@ export default function SectionSolution() {
               surTitre="Présentation"
               className="mb-0"
             >
-              L’opérationnalisation RSE, ESG & DD au service de la performance
+              Opérationnalisation de la RSE, ESG &amp; DD au service de la performance globale des
+              organisations
             </TitreBloc>
 
             <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-ink-600">
               SMARTEX SustWay est une solution dédiée à l’accompagnement des organisations dans la structuration,
-              l’évaluation et le pilotage de leurs démarches RSE, ESG & DD.
+              l’évaluation et le pilotage de leur démarche RSE, ESG &amp; DD.
             </p>
             <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-ink-600">
               Elle permet aux organisations de passer d’une démarche souvent fragmentée à une approche structurée,
