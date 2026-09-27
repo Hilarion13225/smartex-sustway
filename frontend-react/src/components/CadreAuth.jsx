@@ -37,35 +37,23 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
   const [fondCharge, definirFondCharge] = useState(false);
 
   return (
-    <div className="vitrine flex min-h-full flex-col bg-forest text-ink-600">
-      <div
-        className={clsx(
-          'mx-auto flex w-full flex-1 flex-col justify-center px-4 py-6 sm:px-6 sm:py-10',
-          large ? 'max-w-[78rem]' : 'max-w-[68rem]'
-        )}
-      >
-        {/* Le retour au site, posé sur la plage verte et non dans la carte :
-            c'est une sortie, elle n'appartient pas au formulaire. */}
-        <div className="mb-4 flex justify-end">
-          <Link
-            viewTransition
-            to="/"
-            className="rounded-lg px-2 py-1 text-[14px] font-medium text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
-          >
-            Retour au site
-          </Link>
-        </div>
-
-        {/*
-         * La carte entre en montant légèrement.
-         *
-         * Une page de connexion s'ouvre sur un formulaire vide : rien n'y
-         * bouge, rien n'y arrive. L'entrée douce marque l'arrivée sans rien
-         * demander — c'est la seule animation de ces pages, le formulaire
-         * lui-même ne devant pas distraire de ce qu'il attend.
-         */}
-        <div className="rounded-[28px] bg-surface p-3 shadow-2xl motion-safe:animate-apparition-bas sm:p-4">
-          <div className={clsx('grid items-stretch gap-3 sm:gap-4', large ? 'lg:grid-cols-[24rem_1fr]' : 'lg:grid-cols-2')}>
+    /*
+     * Pleine page, sans carte.
+     *
+     * Ces deux ecrans tenaient dans une carte blanche posee sur une plage
+     * Forest : trois plans imbriques pour un formulaire de deux champs. La
+     * carte est retiree a la demande d'Hilarion — la photographie occupe sa
+     * moitie d'ecran d'un bord a l'autre, le formulaire l'autre.
+     *
+     * Plus de largeur maximale non plus : c'est la grille qui borne, et le
+     * formulaire garde la sienne pour ne pas s'etirer sur un grand ecran.
+     */
+    <div
+      className={clsx(
+        'vitrine grid min-h-screen bg-surface text-ink-600',
+        large ? 'lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : 'lg:grid-cols-2'
+      )}
+    >
             {/*
              * Panneau de marque. Encre pleine et non Forest : sur une carte
              * posée elle-même sur du Forest, un panneau de la même teinte se
@@ -74,7 +62,7 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
              * Masqué sous 1024 px, où le formulaire passe seul en premier
              * écran — c'est lui qu'on est venu remplir.
              */}
-            <aside className="relative hidden flex-col overflow-hidden rounded-[20px] bg-ink-900 p-8 text-white lg:flex">
+      <aside className="relative hidden flex-col overflow-hidden bg-ink-900 p-8 text-white lg:flex xl:p-10">
               {/*
                * La photographie, et par-dessus elle un voile.
                *
@@ -180,7 +168,28 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
               )}
             </aside>
 
-            <main className="min-w-0 px-2 py-6 sm:px-8 sm:py-10">
+      <main className="flex min-w-0 flex-col px-5 py-8 sm:px-10 lg:px-14 lg:py-12">
+        {/* Le retour au site : il vivait sur la plage verte, au-dessus de la
+            carte. Sans carte, il se pose en haut de la colonne du formulaire,
+            ou il reste une sortie sans appartenir au formulaire. */}
+        <div className="flex justify-end">
+          <Link
+            viewTransition
+            to="/"
+            className="rounded-lg px-2 py-1 text-[14px] font-medium text-ink-500 underline-offset-4 transition-colors hover:text-brand-700 hover:underline dark:hover:text-brand-400"
+          >
+            Retour au site
+          </Link>
+        </div>
+
+        {/*
+         * Le contenu entre en montant legerement, et se centre sur la hauteur.
+         *
+         * Une page de connexion s'ouvre sur un formulaire vide : rien n'y
+         * bouge, rien n'y arrive. L'entree douce marque l'arrivee sans rien
+         * demander — c'est la seule animation de ces pages.
+         */}
+        <div className="mx-auto flex w-full max-w-[30rem] flex-1 flex-col justify-center py-8 motion-safe:animate-apparition-bas">
               {/* Le logotype est passé dans le panneau de marque. Il reste ici
                   sous 1024 px, où ce panneau est masqué : sans cela, la page de
                   connexion n'aurait plus porté la marque sur un téléphone. */}
@@ -197,11 +206,9 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
               {/* Le filet sépare ce qui présente de ce qui demande. */}
               <hr className="mt-8 border-ink-200" />
 
-              <div className="mt-8">{children}</div>
-            </main>
-          </div>
+          <div className="mt-8">{children}</div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
