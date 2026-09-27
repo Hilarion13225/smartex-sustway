@@ -175,9 +175,27 @@ function CarteMission({ mission }) {
   );
 }
 
-export default function CartesMissions({ missions, action }) {
+export default function CartesMissions({ missions, action, filtreActif = false }) {
   if (missions.length === 0) {
-    return <Vide message="Aucune mission ne correspond à cette recherche." action={action} />;
+    /*
+     * Deux vides, deux phrases.
+     *
+     * Le composant annoncait « Aucune mission ne correspond a cette recherche »
+     * dans les deux cas. Sur une organisation qui n'a jamais eu de mission —
+     * la situation d'un nouveau client — l'ecran parlait d'une recherche que
+     * personne n'avait faite, et le geste attendu n'etait pas de relacher un
+     * filtre mais de creer la premiere mission.
+     */
+    return (
+      <Vide
+        message={
+          filtreActif
+            ? 'Aucune mission ne correspond à cette recherche.'
+            : 'Aucune mission d’audit pour cette organisation.'
+        }
+        action={action}
+      />
+    );
   }
   return (
     <ul className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">

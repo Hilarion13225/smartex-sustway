@@ -16,6 +16,7 @@ import Revele from '../components/Revele';
 import Breadcrumb from '../components/Breadcrumb';
 import { useApiAuth } from '../auth/useApiAuth';
 import { groupesDeLOrganisation } from '../lib/navigationOrganisation';
+import EtatOrganisation from '../components/entreprise/EtatOrganisation';
 import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
 import { COULEURS, GraphiqueLigne } from '../components/charts';
 import { api, ApiError } from '../lib/apiClient';
@@ -111,6 +112,12 @@ export default function EntrepriseDetail() {
           ) : null
         }
       />
+
+      {/* Avant le menu : celui-ci propose onze destinations a egalite, dont
+          quatre menent a des ecrans vides tant que rien n'est evalue. Le
+          bandeau dit d'abord ou en est l'organisation, et ne propose qu'un
+          geste — celui qui a un sens a ce moment-la. */}
+      <EtatOrganisation entrepriseId={entrepriseId} />
 
       <AccesOrganisation
         entrepriseId={entrepriseId}

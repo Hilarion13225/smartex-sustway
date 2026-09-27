@@ -311,6 +311,7 @@ export default function AuditsListe() {
             </p>
             <CartesMissions
               missions={missionsFiltrees}
+              filtreActif={Boolean(filtreStatut || filtreRisque || filtrePeriode || recherche)}
               // Proposé uniquement quand la liste est vraiment vide : après un
               // filtrage, le geste attendu est de relâcher le filtre, pas de
               // créer une mission de plus.
