@@ -1,10 +1,29 @@
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, Leaf } from 'lucide-react';
+import {
+  ArrowRight,
+  Briefcase,
+  Check,
+  FileCheck2,
+  GraduationCap,
+  Leaf,
+  Route,
+  Scale,
+  ShieldCheck,
+} from 'lucide-react';
 import { Apparition, Section } from './Section';
 import FriseDemarche from './FriseDemarche';
 import { ApercuTableauDeBord } from './ApercusFonctionnalites';
-import { REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
+import { FONDEMENTS, REFERENCES_METHODOLOGIQUES } from '../../config/smartex';
+
+/*
+ * Les icones des six principes, appariees par nom.
+ *
+ * `FONDEMENTS` vit dans la configuration et ne porte que le nom de son icone :
+ * un fichier de contenu n'a pas a importer une bibliotheque de dessins. La
+ * correspondance se fait donc ici, la ou le rendu se decide.
+ */
+const ICONES_PRINCIPES = { FileCheck2, Route, GraduationCap, Briefcase, ShieldCheck, Scale };
 
 /*
  * Corps de la page « Solution », en quatre temps.
@@ -299,6 +318,50 @@ export default function SectionSolution() {
       </Section>
 
       {/* --- D. Livrables -------------------------------------------------- */}
+      {/*
+       * Les six principes, apres la methodologie qu'ils fondent et avant les
+       * livrables qu'elle produit.
+       *
+       * Ils vivaient sur la page « Methodologie », supprimee ; `FONDEMENTS`
+       * etait reste dans la configuration sans plus rien pour l'afficher. Le
+       * texte est celui d'alors, repris tel quel.
+       *
+       * Filet lateral plutot qu'un trait entre les cartes : il marque le debut
+       * de chacune au lieu de les separer deux a deux. L'icone ne fait que
+       * doubler l'intitule, elle reste donc masquee aux lecteurs d'ecran.
+       */}
+      <Section id="principes" fond="blanc" pleineHauteur contenuClassName="lg:py-8">
+        <TitreBloc
+          surTitre="Principes"
+          sousTitre="Ce sur quoi la notation s’appuie, et ce qui la rend opposable : une note se justifie, se retrace et ne depend pas de qui la produit."
+        >
+          Six principes fondent la démarche
+        </TitreBloc>
+
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {FONDEMENTS.map((principe, index) => {
+            const Icone = ICONES_PRINCIPES[principe.icone];
+            return (
+              <Apparition
+                key={principe.titre}
+                balise="li"
+                delai={index * 70}
+                className="relative h-full overflow-hidden rounded-2xl bg-ink-50 p-6 pl-7"
+              >
+                <span aria-hidden className="absolute inset-y-0 left-0 w-1 bg-brand-600" />
+                {Icone ? (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface text-brand-600 shadow-sm">
+                    <Icone className="h-5 w-5" strokeWidth={1.8} aria-hidden />
+                  </span>
+                ) : null}
+                <h3 className="mt-4 text-[17px] font-semibold text-forest">{principe.titre}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-ink-600">{principe.texte}</p>
+              </Apparition>
+            );
+          })}
+        </ul>
+      </Section>
+
       <Section id="livrables" fond="mist" pleineHauteur contenuClassName="lg:py-8">
         <TitreBloc
           surTitre="Livrables"

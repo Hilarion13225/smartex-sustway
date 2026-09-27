@@ -55,6 +55,7 @@ const LIENS = [
     sous: [
       { vers: '/solution#presentation', libelle: 'Présentation' },
       { vers: '/solution#methodologie', libelle: 'Méthodologie' },
+      { vers: '/solution#principes', libelle: 'Principes' },
       { vers: '/solution#referentiels', libelle: 'Référentiels' },
       { vers: '/solution#livrables', libelle: 'Livrables' },
     ],
