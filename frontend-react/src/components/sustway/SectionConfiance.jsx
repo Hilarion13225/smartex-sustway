@@ -59,8 +59,8 @@ export default function SectionConfiance() {
            section du site tenue a une hauteur, et dix-huit pixels y comptent. */
         titreClassName="lg:text-[32px]"
         surTitre="Ils nous font confiance"
-        titre="Des organisations qui pilotent déjà leur performance durable"
-        sousTitre="Groupes industriels, énergéticiens, agro-industrie et organisation patronale : des structures de tailles et de secteurs différents, engagées dans une démarche RSE, ESG & DD."
+        titre="Formation, Études, Conseil, Gestion de projets, (…)"
+        sousTitre="Des acteurs intervenant dans des secteurs variés. Cela montre notre maîtrise de différents secteurs d’activité, notre capacité et la capacité de notre solution à s’adapter aux enjeux significatifs sectoriels."
       />
 
       {/*
