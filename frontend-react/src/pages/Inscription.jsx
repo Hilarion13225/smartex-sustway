@@ -261,7 +261,6 @@ export default function Inscription() {
 
   return (
     <CadreAuth
-      large
       // Le sur-titre portait deja « Creation de compte » : le titre le reprenant
       // desormais, le garder aurait affiche deux fois la meme phrase, l'une
       // au-dessus de l'autre.

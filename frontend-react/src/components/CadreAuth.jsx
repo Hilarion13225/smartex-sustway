@@ -27,7 +27,7 @@ import { SMARTEX } from '../config/smartex';
  * décorative devant un intitulé. Le prop `atouts` a disparu avec la liste
  * qu'il remplissait.
  */
-export default function CadreAuth({ titre, description, badge, large = false, children }) {
+export default function CadreAuth({ titre, description, badge, children }) {
   /*
    * Le panneau porte une photographie, et retombe sur ses bandes de lumiere si
    * elle manque. Deux decors pour un seul emplacement, parce que le fichier
@@ -47,13 +47,15 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
      *
      * Plus de largeur maximale non plus : c'est la grille qui borne, et le
      * formulaire garde la sienne pour ne pas s'etirer sur un grand ecran.
+     *
+     * Moitie-moitie pour les deux pages. L'inscription donnait 26 rem au
+     * panneau et tout le reste au formulaire, un heritage de la carte ou
+     * celui-ci s'etalait vraiment. Depuis qu'il est borne, il occupe 480 px
+     * dans les deux cas : sa colonne large ne produisait plus que du blanc —
+     * 544 px mesures a 1440 — et deux panneaux de tailles differentes pour
+     * deux ecrans jumeaux.
      */
-    <div
-      className={clsx(
-        'vitrine grid min-h-screen bg-surface text-ink-600',
-        large ? 'lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]' : 'lg:grid-cols-2'
-      )}
-    >
+    <div className="vitrine grid min-h-screen bg-surface text-ink-600 lg:grid-cols-2">
             {/*
              * Panneau de marque. Encre pleine et non Forest : sur une carte
              * posée elle-même sur du Forest, un panneau de la même teinte se
@@ -118,18 +120,13 @@ export default function CadreAuth({ titre, description, badge, large = false, ch
                  * 95 % de celle-ci ; le logotype occupe 9,53 px de large par
                  * pixel de corps.
                  *
-                 * Deux jeux, parce que le panneau n'a pas la meme largeur selon
-                 * la page. En `large` — l'inscription, dont le formulaire tient
-                 * cinq etapes — il est fige a 24 rem, soit 320 px utiles : les
-                 * valeurs de l'autre jeu y debordaient de 92 px et coupaient le
-                 * S de SMARTEX. Sinon il suit la moitie de la carte, 400 px
-                 * entre 1024 et 1280 px puis 432 px au-dela, ou il cesse de
-                 * grandir.
+                 * Le panneau occupe la moitie de l'ecran : sa largeur utile
+                 * suit donc la fenetre, et le logotype avec elle.
                  */}
                 <Logo
                   taille="md"
                   variante="clair"
-                  className={large ? 'text-[2rem]' : 'text-[2.5rem] xl:text-[2.7rem]'}
+                  className="text-[2.5rem] xl:text-[2.7rem]"
                 />
               </div>
 
