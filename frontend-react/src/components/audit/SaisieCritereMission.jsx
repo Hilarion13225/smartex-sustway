@@ -3,7 +3,8 @@ import { Landmark } from 'lucide-react';
 import EnTeteDomaine from './EnTeteDomaine';
 import ListeCriteres from './ListeCriteres';
 import NavigationCritere from './NavigationCritere';
-import CarteCritere from './CarteCritere';
+import CarteCritere from './CarteCritere';import ModaleConfirmation from '../ModaleConfirmation';
+
 import PanneauAnalyseIa from './PanneauAnalyseIa';
 import { analyseDepuisEvaluation } from './analyseCritere';
 import { memeTexte } from './libelles';
@@ -66,7 +67,9 @@ export default function SaisieCritereMission({
 }) {
   // Verrou d'envoi : une touche maintenue enfoncee emet des repetitions, et
   // deux enregistrements simultanes feraient sauter un critere.
-  const envoiEnCours = useRef(false);
+  const envoiEnCours = useRef(false);
+  // La preuve dont la suppression est demandee, et qui attend confirmation.
+  const [preuveASupprimer, definirPreuveASupprimer] = useState(null);
   const [indice, setIndice] = useState(() => {
     if (critereInitial) {
       const vise = criteres.findIndex((c) => c.critereCode === critereInitial);
@@ -356,13 +359,6 @@ export default function SaisieCritereMission({
    * affiché tel quel, puisque lui seul connaît la raison du refus.
    */
   async function supprimerPreuve(preuveId) {
-    const piece = preuves.find((p) => p.id === preuveId);
-    const nom = piece?.documentNomOriginal ?? 'ce fichier';
-    if (!window.confirm(
-      `Supprimer « ${nom} » ? Il sera retiré de ce critère et de la bibliothèque documentaire.`
-    )) {
-      return;
-    }
     setErreur(null);
     try {
       await api.delete(`/api/v1/entreprises/${entrepriseId}/audits/${auditId}/preuves/${preuveId}`);
@@ -403,6 +399,7 @@ export default function SaisieCritereMission({
   }
 
   return (
+    <>
     <div className="space-y-5">
       <EnTeteDomaine
         icone={Landmark}
@@ -485,7 +482,7 @@ export default function SaisieCritereMission({
                 nom: preuve.documentNomOriginal ?? preuve.description ?? 'Document',
               }))}
               surAjoutFichiers={ajouterPreuves}
-              surSuppressionFichier={supprimerPreuve}
+              surSuppressionFichier={(preuveId) => definirPreuveASupprimer(preuveId)}
               depotEnCours={depotEnCours}
               surPrecedent={() => allerA(indice - 1)}
               surBrouillon={surBrouillon}
@@ -512,5 +509,30 @@ export default function SaisieCritereMission({
         />
       </div>
     </div>
+      {/* La confirmation remplace `window.confirm` : une suppression de preuve
+          retire le fichier du critere et de la bibliotheque, et la boite du
+          navigateur ne pouvait ni mettre le nom du fichier en evidence ni
+          nommer le geste sur son bouton. */}
+      {preuveASupprimer ? (
+        <ModaleConfirmation
+          titre="Supprimer cette preuve ?"
+          message={
+            <>
+              <span className="font-semibold text-ink-900">
+                « {preuves.find((p) => p.id === preuveASupprimer)?.documentNomOriginal ?? 'Ce fichier'} »
+              </span>{' '}
+              sera retiré de ce critère.
+            </>
+          }
+          detail="Il quitte aussi la bibliothèque documentaire de l’organisation."
+          libelleConfirmer="Supprimer la preuve"
+          surConfirmer={async () => {
+            await supprimerPreuve(preuveASupprimer);
+            definirPreuveASupprimer(null);
+          }}
+          surAnnuler={() => definirPreuveASupprimer(null)}
+        />
+      ) : null}
+    </>
   );
 }

@@ -1,76 +1,35 @@
-import { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import { useRef } from 'react';
 import { X } from 'lucide-react';
+import Modale from './Modale';
 
 /**
  * Lecteur vidéo en surimpression. Monté uniquement à l'ouverture : la vidéo
  * n'est donc téléchargée qu'au moment où l'on demande à la lire, et elle
  * s'arrête d'elle-même à la fermeture puisque l'élément est démonté.
  *
- * Fermeture à la touche Échap et au clic sur le fond. Le focus entre dans la
- * boîte à l'ouverture et revient sur l'élément déclencheur à la fermeture,
- * pour ne pas perdre la navigation au clavier.
- *
- * Montée dans <body> par portail plutôt qu'à sa place dans l'arbre : appelée
- * depuis l'en-tête, qui porte un `backdrop-blur`, elle héritait de lui son bloc
- * conteneur — un filtre d'arrière-plan en crée un pour ses descendants
- * `fixed`. La surimpression se retrouvait alors haute de 84 px au lieu de
- * couvrir la fenêtre, et la vidéo débordait au-dessus de l'écran.
+ * Tout ce qui fait une surimpression — portail, Échap, clic sur le fond, focus
+ * retenu puis rendu au déclencheur, défilement bloqué — vient de `Modale`. Ce
+ * composant avait mis ces règles au point et les gardait pour lui ; elles sont
+ * désormais partagées avec la confirmation de suppression.
  */
 export default function ModaleVideo({ source, titre = 'Vidéo de présentation', surFermeture }) {
   const boutonFermer = useRef(null);
 
-  useEffect(() => {
-    const elementActif = document.activeElement;
-    boutonFermer.current?.focus();
+  return (
+    <Modale titre={titre} surFermeture={surFermeture} className="relative w-full max-w-5xl">
+      <button
+        ref={boutonFermer}
+        type="button"
+        onClick={surFermeture}
+        className="absolute -top-12 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+      >
+        <X className="h-5 w-5" aria-hidden />
+        <span className="sr-only">Fermer la vidéo</span>
+      </button>
 
-    const surTouche = (evenement) => {
-      if (evenement.key === 'Escape') surFermeture();
-    };
-    document.addEventListener('keydown', surTouche);
-
-    // Empêche la page de défiler derrière la surimpression.
-    const debordementInitial = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', surTouche);
-      document.body.style.overflow = debordementInitial;
-      elementActif?.focus?.();
-    };
-  }, [surFermeture]);
-
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={titre}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0b0f16]/80 p-4 backdrop-blur-sm motion-safe:animate-apparition-douce"
-      onClick={surFermeture}
-    >
-      {/* Le clic sur la vidéo ne doit pas refermer la boîte. */}
-      <div className="relative w-full max-w-5xl" onClick={(evenement) => evenement.stopPropagation()}>
-        <button
-          ref={boutonFermer}
-          type="button"
-          onClick={surFermeture}
-          className="absolute -top-12 right-0 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
-        >
-          <X className="h-5 w-5" aria-hidden />
-          <span className="sr-only">Fermer la vidéo</span>
-        </button>
-
-        <video
-          src={source}
-          controls
-          autoPlay
-          playsInline
-          className="w-full rounded-2xl bg-black shadow-soft"
-        >
-          <track kind="captions" />
-        </video>
-      </div>
-    </div>,
-    document.body
+      <video src={source} controls autoPlay playsInline className="w-full rounded-2xl bg-black shadow-soft">
+        <track kind="captions" />
+      </video>
+    </Modale>
   );
 }

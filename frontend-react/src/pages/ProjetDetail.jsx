@@ -3,7 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowRight, Download, FolderKanban, Trash2 } from 'lucide-react';
 import Revele from '../components/Revele';
 import Breadcrumb from '../components/Breadcrumb';
-import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
+import { Alerte, Badge, Card, Loader, PageTitre, Vide } from '../components/ui';
+import ModaleConfirmation from '../components/ModaleConfirmation';
 import { api } from '../lib/apiClient';
 import { exporterCsv } from '../lib/export';
 import { formaterScore } from '../lib/scoreAffiche';
@@ -42,7 +43,8 @@ export default function ProjetDetail() {
 
   const [projet, setProjet] = useState(null);
   const [scores, setScores] = useState({});
-  const [chargement, setChargement] = useState(true);
+  const [chargement, setChargement] = useState(true);
+  const [confirmationOuverte, definirConfirmationOuverte] = useState(false);
   const [erreur, setErreur] = useState(null);
   const [domaineChoisi, setDomaineChoisi] = useState('');
 
@@ -139,9 +141,6 @@ export default function ProjetDetail() {
   }
 
   async function supprimer() {
-    if (!window.confirm(`Supprimer le projet « ${projet.nom} » ? Les missions déjà créées sont conservées.`)) {
-      return;
-    }
     await api.delete(`/api/v1/projets/${projetId}`);
     navigate('/app/projets');
   }
@@ -205,12 +204,30 @@ export default function ProjetDetail() {
             <Download className="h-4 w-4" aria-hidden />
             Exporter
           </button>
-          <button type="button" className="btn-secondary" onClick={supprimer}>
+          <button type="button" className="btn-secondary" onClick={() => definirConfirmationOuverte(true)}>
             <Trash2 className="h-4 w-4" aria-hidden />
             Supprimer
           </button>
         </div>
       </div>
+
+      {/* La confirmation remplace `window.confirm` : la boite du navigateur ne
+          pouvait pas mettre le nom du projet en evidence, et son bouton disait
+          « OK » plutot que ce qu'il allait faire. */}
+      {confirmationOuverte ? (
+        <ModaleConfirmation
+          titre="Supprimer ce projet ?"
+          message={
+            <>
+              Le projet <span className="font-semibold text-ink-900">« {projet.nom} »</span> sera supprimé.
+            </>
+          }
+          detail="Les missions déjà créées dans ce projet sont conservées."
+          libelleConfirmer="Supprimer le projet"
+          surConfirmer={supprimer}
+          surAnnuler={() => definirConfirmationOuverte(false)}
+        />
+      ) : null}
 
       {sansMission.length > 0 ? (
         <Alerte ton="ambre">
