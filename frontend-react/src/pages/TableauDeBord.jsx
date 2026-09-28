@@ -233,6 +233,22 @@ export default function TableauDeBord() {
         return somme ? Math.round((somme.total / somme.nombre / 5) * 100) : null;
       }),
       pointsConnus: historique.length,
+      /*
+       * Les mois qui portent une valeur, et non le nombre de releves.
+       *
+       * Une courbe demande deux points pour montrer une evolution. Avec un
+       * seul, le graphique tracait un point isole sur six mois vides : une
+       * ligne qui n'existe pas, et une echelle verticale calee sur une seule
+       * valeur. `historique.length` ne le disait pas — dix releves du meme mois
+       * n'en font qu'un sur cette courbe.
+       */
+      moisRenseignes: mois.filter((m) => sommes.has(m.cle)).length,
+      dernierScore: (() => {
+        const dernier = [...mois].reverse().find((m) => sommes.has(m.cle));
+        if (!dernier) return null;
+        const somme = sommes.get(dernier.cle);
+        return { mois: dernier.libelle, valeur: Math.round((somme.total / somme.nombre / 5) * 100) };
+      })(),
     };
   }, [historique]);
 
@@ -256,8 +272,8 @@ export default function TableauDeBord() {
       liste.push({
         icone: FolderOpen,
         ton: 'attention',
-        titre: `${nonEvalues} critère${nonEvalues > 1 ? 's' : ''} encore à évaluer`,
-        detail: `« ${laPlusEnRetard.nom} » en concentre ${laPlusEnRetard.nonEvalues}.`,
+        titre: `${nonEvalues} critère${nonEvalues > 1 ? 's' : ''} sans note`,
+        detail: `« ${laPlusEnRetard.nom} » en concentre ${laPlusEnRetard.nonEvalues} — repondus ou non, ils n’entrent pas encore dans le score.`,
         // Vers les criteres, et non vers la vue d'ensemble de la mission :
         // l'alerte nomme un travail, elle doit ouvrir l'ecran ou il se fait.
         // C'est possible depuis que l'onglet vit dans l'URL (voir AuditDetail).
@@ -313,7 +329,9 @@ export default function TableauDeBord() {
         valeur: kpis.totalEvalues,
         // « Portefeuille » ne veut rien dire pour qui suit une seule
         // organisation, et encore moins pour qui y execute des taches.
-        libelle: plusieursOrganisations ? 'Critères évalués sur le portefeuille' : 'Critères évalués',
+        libelle: plusieursOrganisations
+          ? 'Critères analysés sur le portefeuille'
+          : 'Critères analysés',
       },
       { valeur: analysees, libelle: 'Missions comportant une analyse' },
       { valeur: ecarts, libelle: 'Écarts critiques remontés' },
@@ -481,13 +499,27 @@ export default function TableauDeBord() {
           {/* Le taux de completion ne mene nulle part : il agrege tout le
               portefeuille, et aucun ecran ne le detaille tel quel. Il garde
               donc son icone plutot qu'une fleche. */}
+          {/*
+           * « Analyse » et non « completion ».
+           *
+           * Ce chiffre compte les criteres notes par l'IA — `nombreCriteresEvalues`
+           * du score — et non les reponses de l'organisation. Sous le libelle
+           * « taux de completion », il annoncait 1 % quand quatre criteres sur
+           * quatre-vingt-douze etaient renseignes, et contredisait la page d'une
+           * mission qui dit « 4 renseignes ». Deux comptes distincts portaient le
+           * meme mot.
+           *
+           * Compter la collecte ici demanderait de charger les criteres de chaque
+           * mission du portefeuille — un appel par mission. Le libelle exact coute
+           * moins cher qu'un chiffre approchant.
+           */}
           <CarteKpi
             icone={Gauge}
             ton="succes"
             valeur={`${kpis.completion}%`}
-            libelle="Taux de complétion"
+            libelle="Taux d’analyse"
             ratio={kpis.completion}
-            precision={`${kpis.totalEvalues} critère${kpis.totalEvalues > 1 ? 's' : ''} évalué${kpis.totalEvalues > 1 ? 's' : ''}`}
+            precision={`${kpis.totalEvalues} critère${kpis.totalEvalues > 1 ? 's' : ''} analysé${kpis.totalEvalues > 1 ? 's' : ''} par l’IA`}
           />
         </div>
       </Revele>
@@ -605,11 +637,29 @@ export default function TableauDeBord() {
             <p className="mt-0.5 text-xs text-ink-500">
               Score moyen du portefeuille sur les six derniers mois.
             </p>
+            {/*
+             * Trois etats, parce qu'une courbe ne dit quelque chose qu'a partir
+             * de deux points. A un seul, on montre le chiffre — c'est tout ce
+             * qu'on sait — plutot qu'un point isole sur six mois vides.
+             */}
             <div className="mt-4 h-64">
-              {evolution.pointsConnus === 0 ? (
+              {evolution.moisRenseignes === 0 ? (
                 <p className="flex h-full items-center justify-center rounded-xl border border-dashed border-ink-200 px-4 text-center text-xs text-ink-500">
                   L’historique se remplit à mesure que les missions sont évaluées.
                 </p>
+              ) : evolution.moisRenseignes === 1 ? (
+                <div className="flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-ink-200 px-4 text-center">
+                  <p className="text-3xl font-bold tabular-nums text-ink-900">
+                    {evolution.dernierScore?.valeur}&nbsp;%
+                  </p>
+                  <p className="mt-1 text-xs text-ink-500">
+                    Score moyen en {evolution.dernierScore?.mois}
+                  </p>
+                  <p className="mt-3 max-w-xs text-xs text-ink-500">
+                    Un seul mois est renseigné : la courbe apparaîtra au second relevé, quand il y aura une
+                    évolution à montrer.
+                  </p>
+                </div>
               ) : (
                 <GraphiqueLigne
                   labels={evolution.labels}
