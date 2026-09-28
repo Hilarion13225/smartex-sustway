@@ -293,9 +293,21 @@ export default function TableauDeBord() {
     return liste;
   }, [missionsVue, kpis]);
 
-  /** Fil d'activité : les huit dernières entrées du journal, groupées par jour. */
+  /**
+   * Fil d'activité : les huit dernières entrées du journal, groupées par jour.
+   *
+   * Les evenements d'authentification en sont retires. Le panneau annonce
+   * « dernieres actions enregistrees » et affichait trois CONNEXION_REUSSIE
+   * d'affilee : une trace technique, utile au journal d'audit — ou elle reste —
+   * mais qui chasse du tableau de bord les depots de preuve, les evaluations et
+   * les clotures, c'est-a-dire ce qui avance reellement.
+   *
+   * Filtre sur le prefixe plutot que sur une liste fermee : un
+   * CONNEXION_ECHOUEE ou un DECONNEXION a venir serait du meme bruit ici.
+   */
   const groupesActivite = useMemo(() => {
     const recentes = [...journal]
+      .filter((entree) => !/^(CONNEXION|DECONNEXION|AUTH)/i.test(entree.action ?? ''))
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 8);
 
@@ -472,21 +484,41 @@ export default function TableauDeBord() {
        */}
       <Revele>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          {/*
+           * Le score ouvre la rangee, et porte le fond de marque.
+           *
+           * Il vivait en troisieme position, sous « Notation consolidee », a
+           * quelque huit cents pixels du haut de page : le chiffre que le
+           * produit vend n'etait pas sur le premier ecran. La place qu'il prend
+           * etait celle de « Missions actives », qui disait la meme chose que
+           * « En cours » — deux actives, une en cours, une en brouillon.
+           *
+           * Provisoire sous la moitie du perimetre analyse, comme partout
+           * ailleurs : un score assis sur un critere sur quatre-vingt-douze ne
+           * se donne pas pour un fait.
+           */}
           <CarteKpi
-            icone={Building2}
+            icone={Gauge}
             ton="marque"
             enAvant
-            valeur={kpis.actives}
-            libelle="Missions actives"
-            vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
-            precision={`${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}`}
+            valeur={consolide.score == null ? '—' : `${formaterScore(consolide.score)} / 5`}
+            libelle={
+              consolide.score != null && kpis.completion < 50 ? 'Score global (provisoire)' : 'Score global'
+            }
+            precision={
+              consolide.score == null
+                ? 'Aucune mission notée pour l’instant'
+                : kpis.completion < 50
+                  ? `Sur ${kpis.completion} % du périmètre analysé`
+                  : `Sur ${consolide.missions} mission${consolide.missions > 1 ? 's' : ''} évaluée${consolide.missions > 1 ? 's' : ''}`
+            }
           />
           <CarteKpi
             icone={ClipboardList}
             valeur={kpis.enCours}
-            libelle="En cours"
+            libelle="Missions en cours"
             vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
-            precision={`${kpis.brouillons} en brouillon`}
+            precision={`${kpis.actives} active${kpis.actives > 1 ? 's' : ''} · ${kpis.brouillons} en brouillon`}
           />
           <CarteKpi
             icone={TriangleAlert}
