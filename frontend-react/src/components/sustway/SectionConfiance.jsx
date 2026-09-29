@@ -59,8 +59,8 @@ export default function SectionConfiance() {
            section du site tenue a une hauteur, et dix-huit pixels y comptent. */
         titreClassName="lg:text-[32px]"
         surTitre="Ils nous font confiance"
-        titre="Des secteurs vari\u00e9s, une m\u00e9thode \u00e9prouv\u00e9e"
-        sousTitre="Industrie, \u00e9nergie, agro-alimentaire, services : notre solution s\u2019adapte aux enjeux significatifs de chaque secteur d\u2019activit\u00e9."
+        titre="Formation, \u00c9tudes, Conseil, Gestion de projets, (\u2026)"
+        sousTitre="Des acteurs intervenant dans des secteurs vari\u00e9s. Cela montre notre ma\u00eetrise de diff\u00e9rents secteurs d\u2019activit\u00e9, notre capacit\u00e9 et la capacit\u00e9 de notre solution \u00e0 s\u2019adapter aux enjeux significatifs sectoriels."
       />
 
       {/*
