@@ -105,10 +105,10 @@ public class MembreEntrepriseResource {
      * cet endpoint que SUPER_ADMIN crée les comptes internes.
      */
     private static final Set<String> ROLES_ATTRIBUABLES_CLIENT =
-            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR");
+            Set.of("COLLABORATEUR");
 
     private static final Set<String> ROLES_ATTRIBUABLES =
-            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR", "ADMIN_AUDIT");
+            Set.of("COLLABORATEUR");
 
     private static final int DUREE_VALIDITE_INVITATION_JOURS = 7;
 
