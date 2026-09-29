@@ -55,7 +55,7 @@ public class CritereCreationResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response creer(@PathParam("referentielCode") String referentielCode,
                            @PathParam("domaineCode") String domaineCode, CritereCreateRequestDto requete) {
         Referentiel referentiel = referentielRepository.parCode(referentielCode)

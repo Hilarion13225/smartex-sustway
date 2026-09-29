@@ -50,7 +50,7 @@ public class CritereModificationResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response modifier(@PathParam("critereId") UUID critereId, CritereUpdateRequestDto requete) {
         Critere critere = critereRepository.findById(critereId);
         if (critere == null) {

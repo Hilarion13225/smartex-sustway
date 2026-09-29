@@ -35,7 +35,7 @@ import java.util.UUID;
 @Path("/api/v1/referentiels/criteres/{critereId}/secteurs")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+@RolesAllowed("SUPER_ADMIN")
 public class CritereSecteurResource {
 
     @Inject CritereRepository critereRepository;

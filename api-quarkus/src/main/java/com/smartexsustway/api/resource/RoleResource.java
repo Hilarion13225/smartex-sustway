@@ -20,7 +20,7 @@ public class RoleResource {
     RoleRepository roleRepository;
 
     /**
-     * Rôles attribuables. Les rôles désactivés (ADMIN_AUDIT, EMPLOYE,
+     * Rôles attribuables. Les rôles désactivés (EMPLOYE,
      * VISITEUR depuis V44) restent en base pour l'historique mais ne sont
      * plus proposés : les lister reviendrait à offrir un choix que la base
      * refuse ensuite.

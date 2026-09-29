@@ -57,7 +57,7 @@ public class DomaineResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response creer(@PathParam("referentielCode") String referentielCode, DomaineCreateRequestDto requete) {
         Referentiel referentiel = trouverReferentiel(referentielCode);
         if (requete == null) {
@@ -87,7 +87,7 @@ public class DomaineResource {
     @Path("/{domaineCode}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response modifier(@PathParam("referentielCode") String referentielCode,
                               @PathParam("domaineCode") String domaineCode, DomaineUpdateRequestDto requete) {
         Referentiel referentiel = trouverReferentiel(referentielCode);

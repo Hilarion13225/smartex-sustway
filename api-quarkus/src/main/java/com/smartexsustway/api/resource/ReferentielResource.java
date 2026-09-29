@@ -125,7 +125,7 @@ public class ReferentielResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response creer(ReferentielCreateRequestDto requete) {
         if (requete == null) {
             return erreur(400, "Corps de requête manquant");
@@ -167,7 +167,7 @@ public class ReferentielResource {
     @Path("/{code}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
-    @RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+    @RolesAllowed("SUPER_ADMIN")
     public Response modifier(@PathParam("code") String code, ReferentielUpdateRequestDto requete) {
         Referentiel referentiel = trouverParCode(code);
         if (requete == null) {
