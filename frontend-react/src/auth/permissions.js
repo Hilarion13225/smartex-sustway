@@ -6,7 +6,7 @@
  *
  * PERMISSIONS_PAR_ROLE fixe ce qu'un rôle peut faire en théorie.
  * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule, mais
- * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE, VISITEUR)
+ * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE)
  * — le personnel interne Smartex (SUPER_ADMIN) n'est jamais
  * bridé par la formule d'un client : il audite/administre au nom de
  * Smartex, pas au nom de l'entreprise.

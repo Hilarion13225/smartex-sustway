@@ -124,7 +124,7 @@ export default function App() {
           <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
           <Route element={<RouteProtegee />}>
-            <Route path="/app" element={<Suspense fallback={<Loader />}><Layout /></Suspense>}>
+            <Route path="/app" element={<Layout />}>
               <Route index element={<TableauDeBord />} />
               <Route path="entreprises" element={<Entreprises />} />
               {/* Vue plateforme, distincte de `:entrepriseId/utilisateurs` qui
