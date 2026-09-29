@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
@@ -644,7 +644,9 @@ export default function Layout() {
               qui connaît un identifiant de mission sans en connaître le nom
               peut les relire ici plutôt que de refaire l'appel pour un seul
               libellé. Rien n'est chargé de plus pour les exposer. */}
-          <Outlet context={{ missions: missionsCourantes, entrepriseCouranteId }} />
+          <Suspense fallback={<div className="flex items-center justify-center py-24 text-sm text-ink-500">Chargement…</div>}>
+            <Outlet context={{ missions: missionsCourantes, entrepriseCouranteId }} />
+          </Suspense>
         </main>
       </div>
     </div>
