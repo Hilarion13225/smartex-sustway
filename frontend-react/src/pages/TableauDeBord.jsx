@@ -422,9 +422,11 @@ export default function TableauDeBord() {
               organisations clientes : le dire autrement lui faisait lire un
               écran qui n'était pas le sien. */}
           <p className="mt-1 text-sm text-ink-500">
-            {plusieursOrganisations
-              ? `Votre portefeuille : ${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}.`
-              : 'Voici la situation actuelle de vos missions d’audit RSE, ESG & DD.'}
+            {entrepriseCouranteId && entreprises.length === 1
+              ? entreprises[0].raisonSociale
+              : plusieursOrganisations
+                ? `Votre portefeuille : ${toutesEntreprises.length} organisation${toutesEntreprises.length > 1 ? "s" : ""} suivie${toutesEntreprises.length > 1 ? "s" : ""}.`
+                : "Voici la situation actuelle de vos missions d’audit RSE, ESG & DD."}
           </p>
         </div>
         {/* Le raccourci annonce une création : ne le proposer qu'à qui peut
