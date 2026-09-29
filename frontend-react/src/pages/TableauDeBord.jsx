@@ -582,7 +582,7 @@ export default function TableauDeBord() {
               </p>
               <div className="mt-4 h-48">
                 <GraphiqueAnneau
-                  labels={["\u00c9lev\u00e9", "Moyen", "Faible", "Non \u00e9valu\u00e9"]}
+                  labels={["Élevé", "Moyen", "Faible", "Non évalué"]}
                   data={[
                     repartitionRisques.ELEVE,
                     repartitionRisques.MOYEN,
@@ -665,7 +665,7 @@ function ResumeScore({ consolide, kpis, evolution, syntheseePlans, premiereEntre
         </p>
         <div className="mt-3 flex items-baseline gap-3">
           <p className="text-4xl font-bold tabular-nums text-white sm:text-5xl">
-            {aucuneNote ? "\u2014" : formaterScore(consolide.score)}
+            {aucuneNote ? "—" : formaterScore(consolide.score)}
           </p>
           <span className="text-lg font-normal text-white/50">/ 5</span>
           {tendance && tendance.valeur !== 0 ? (
@@ -700,7 +700,7 @@ function ResumeScore({ consolide, kpis, evolution, syntheseePlans, premiereEntre
           ) : (
             <>
               <span className="tabular-nums">
-                {consolide.missions}{" mission"}{consolide.missions > 1 ? "s" : ""}{" \u00e9valu\u00e9e"}{consolide.missions > 1 ? "s" : ""}
+                {consolide.missions}{" mission"}{consolide.missions > 1 ? "s" : ""}{" évaluée"}{consolide.missions > 1 ? "s" : ""}
               </span>
               {syntheseePlans.actifs > 0 ? (
                 <span className="tabular-nums">

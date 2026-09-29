@@ -348,7 +348,7 @@ export default function AuditDetail() {
            */}
           <div className="rounded-2xl border border-ink-100 bg-surface px-5 py-3 shadow-sm">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">R\u00e9sultats</span>
+              <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">Résultats</span>
               <div className="flex flex-wrap items-center gap-2">
                 <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
                   <Gauge className="h-4 w-4" aria-hidden />
@@ -356,7 +356,7 @@ export default function AuditDetail() {
                 </Link>
                 <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
                   <ClipboardX className="h-4 w-4" aria-hidden />
-                  Non-conformit\u00e9s
+                  Non-conformités
                 </Link>
                 <Link to={`/app/${entrepriseId}/audits/${auditId}/rapports`} className="btn-secondary">
                   <FileText className="h-4 w-4" aria-hidden />
