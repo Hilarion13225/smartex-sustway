@@ -17,7 +17,7 @@ const SEUIL_RECHERCHE = 6;
 /** Référence stable : passée au hook, elle lui évite de relancer sa collecte à chaque rendu. */
 const AUCUNE = [];
 
-/** RG24/RG25 : la création exige une formule payante (Free refusée par l'API). */
+/** RG24/RG25 : création d'une organisation avec abonnement. */
 export default function Entreprises() {
   const { entreprises, creerEntreprise, peut, roleCourant } = useApiAuth();
   const [recherche, setRecherche] = useState('');
@@ -74,7 +74,7 @@ export default function Entreprises() {
   // La formule évaluée est celle que le formulaire s'apprête à demander, et
   // non celle d'une organisation déjà créée : `entreprise:creer` porte sur
   // l'entreprise à naître. C'est aussi ce que fait l'API, qui lit la formule
-  // de la requête (EntrepriseResource.creer, refus RG25 si Free). Le
+  // de la requête (EntrepriseResource.creer). Le
   // sélecteur n'offre que Standard et Avancées, donc aucune formule fictive
   // n'est inventée ici — on passe celle qui sera réellement envoyée.
   const peutCreer = entreprises.length === 0 || peut('entreprise:creer', formulaire.formuleCode);

@@ -36,10 +36,9 @@ const COULEURS_FORCE = ['bg-brand-600', 'bg-brand-600', 'bg-amber-500', 'bg-feui
 /**
  * Inscription RÉELLE — parle effectivement à l'API Quarkus à chaque étape
  * (formules, compte, vérification email, entreprise, abonnement, paiement).
- * RG24/RG25 : la formule Free ne crée pas d'entreprise (mode démo
- * uniquement) ; les formules payantes créent entreprise + abonnement dans
- * la même transaction côté API, puis exigent un paiement pour activer
- * l'abonnement.
+ * RG24/RG25 : les formules (Standard, Avancées) créent entreprise +
+ * abonnement dans la même transaction côté API, puis exigent un
+ * paiement pour activer l'abonnement.
  *
  * Le parcours est un enchaînement d'étapes nommées plutôt qu'un simple
  * index numérique, car son déroulé diffère selon la formule choisie
