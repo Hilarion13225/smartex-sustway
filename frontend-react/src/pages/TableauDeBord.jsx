@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import {
   ArrowRight,
@@ -472,23 +472,23 @@ export default function TableauDeBord() {
               valeur={kpis.enCours}
               libelle="Missions en cours"
               vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
-              precision={kpis.actives + " active" + (kpis.actives > 1 ? "s" : "") + " \u00b7 " + kpis.brouillons + " en brouillon"}
+              precision={kpis.actives + " active" + (kpis.actives > 1 ? "s" : "") + " · " + kpis.brouillons + " en brouillon"}
             />
             <CarteKpi
               icone={TriangleAlert}
               ton="alerte"
               valeur={kpis.aRisque}
-              libelle="\u00c0 risque"
+              libelle="À risque"
               vers={premiereEntreprise ? `/app/${premiereEntreprise}/non-conformites` : null}
-              precision="Au moins un \u00e9cart critique"
+              precision="Au moins un écart critique"
             />
             <CarteKpi
               icone={Gauge}
               ton="succes"
               valeur={`${kpis.completion}%`}
-              libelle="Taux d\u2019analyse"
+              libelle="Taux d’analyse"
               ratio={kpis.completion}
-              precision={kpis.totalEvalues + " crit\u00e8re" + (kpis.totalEvalues > 1 ? "s" : "") + " analys\u00e9" + (kpis.totalEvalues > 1 ? "s" : "") + " par l\u2019IA"}
+              precision={kpis.totalEvalues + " critère" + (kpis.totalEvalues > 1 ? "s" : "") + " analysé" + (kpis.totalEvalues > 1 ? "s" : "") + " par l’IA"}
             />
           </div>
         </div>
