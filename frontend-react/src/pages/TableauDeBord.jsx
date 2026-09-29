@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useOutletContext } from 'react-router-dom';
 import {
   ArrowRight,
@@ -422,9 +422,11 @@ export default function TableauDeBord() {
               organisations clientes : le dire autrement lui faisait lire un
               écran qui n'était pas le sien. */}
           <p className="mt-1 text-sm text-ink-500">
-            {plusieursOrganisations
-              ? `Votre portefeuille : ${entreprises.length} organisation${entreprises.length > 1 ? 's' : ''} suivie${entreprises.length > 1 ? 's' : ''}.`
-              : 'Voici la situation actuelle de vos missions d’audit RSE, ESG & DD.'}
+            {entrepriseCouranteId && entreprises.length === 1
+              ? entreprises[0].raisonSociale
+              : plusieursOrganisations
+                ? `Votre portefeuille : ${toutesEntreprises.length} organisation${toutesEntreprises.length > 1 ? "s" : ""} suivie${toutesEntreprises.length > 1 ? "s" : ""}.`
+                : "Voici la situation actuelle de vos missions d’audit RSE, ESG & DD."}
           </p>
         </div>
         {/* Le raccourci annonce une création : ne le proposer qu'à qui peut
@@ -472,23 +474,23 @@ export default function TableauDeBord() {
               valeur={kpis.enCours}
               libelle="Missions en cours"
               vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
-              precision={kpis.actives + " active" + (kpis.actives > 1 ? "s" : "") + " \u00b7 " + kpis.brouillons + " en brouillon"}
+              precision={kpis.actives + " active" + (kpis.actives > 1 ? "s" : "") + " · " + kpis.brouillons + " en brouillon"}
             />
             <CarteKpi
               icone={TriangleAlert}
               ton="alerte"
               valeur={kpis.aRisque}
-              libelle="\u00c0 risque"
+              libelle="À risque"
               vers={premiereEntreprise ? `/app/${premiereEntreprise}/non-conformites` : null}
-              precision="Au moins un \u00e9cart critique"
+              precision="Au moins un écart critique"
             />
             <CarteKpi
               icone={Gauge}
               ton="succes"
               valeur={`${kpis.completion}%`}
-              libelle="Taux d\u2019analyse"
+              libelle="Taux d’analyse"
               ratio={kpis.completion}
-              precision={kpis.totalEvalues + " crit\u00e8re" + (kpis.totalEvalues > 1 ? "s" : "") + " analys\u00e9" + (kpis.totalEvalues > 1 ? "s" : "") + " par l\u2019IA"}
+              precision={kpis.totalEvalues + " critère" + (kpis.totalEvalues > 1 ? "s" : "") + " analysé" + (kpis.totalEvalues > 1 ? "s" : "") + " par l’IA"}
             />
           </div>
         </div>
@@ -582,7 +584,7 @@ export default function TableauDeBord() {
               </p>
               <div className="mt-4 h-48">
                 <GraphiqueAnneau
-                  labels={["\u00c9lev\u00e9", "Moyen", "Faible", "Non \u00e9valu\u00e9"]}
+                  labels={["Élevé", "Moyen", "Faible", "Non évalué"]}
                   data={[
                     repartitionRisques.ELEVE,
                     repartitionRisques.MOYEN,
@@ -665,7 +667,7 @@ function ResumeScore({ consolide, kpis, evolution, syntheseePlans, premiereEntre
         </p>
         <div className="mt-3 flex items-baseline gap-3">
           <p className="text-4xl font-bold tabular-nums text-white sm:text-5xl">
-            {aucuneNote ? "\u2014" : formaterScore(consolide.score)}
+            {aucuneNote ? "—" : formaterScore(consolide.score)}
           </p>
           <span className="text-lg font-normal text-white/50">/ 5</span>
           {tendance && tendance.valeur !== 0 ? (
@@ -700,7 +702,7 @@ function ResumeScore({ consolide, kpis, evolution, syntheseePlans, premiereEntre
           ) : (
             <>
               <span className="tabular-nums">
-                {consolide.missions}{" mission"}{consolide.missions > 1 ? "s" : ""}{" \u00e9valu\u00e9e"}{consolide.missions > 1 ? "s" : ""}
+                {consolide.missions}{" mission"}{consolide.missions > 1 ? "s" : ""}{" évaluée"}{consolide.missions > 1 ? "s" : ""}
               </span>
               {syntheseePlans.actifs > 0 ? (
                 <span className="tabular-nums">

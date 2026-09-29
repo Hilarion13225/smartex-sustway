@@ -15,11 +15,11 @@ export default function Profil() {
       <Breadcrumb
         elements={[
           { libelle: 'Tableau de bord', vers: '/app' },
-          { libelle: 'Profil & s\u00e9curit\u00e9' },
+          { libelle: 'Profil & sécurité' },
         ]}
       />
 
-      <PageTitre icone={UserCog} titre="Profil & s\u00e9curit\u00e9" description="Informations du compte et double authentification." />
+      <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification." />
 
       <div className="mb-6 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
         <div className="flex flex-wrap items-center gap-5">
