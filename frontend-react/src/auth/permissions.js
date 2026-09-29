@@ -131,7 +131,7 @@ export const ROLE_LIBELLE = {
   SUPER_ADMIN: 'Administrateur global',
   RESPONSABLE_ENTREPRISE: 'Responsable entreprise',
   COLLABORATEUR: 'Collaborateur',
-  AUCUN_ROLE_ATTRIBUE: 'Free',
+  AUCUN_ROLE_ATTRIBUE: 'Sans rôle',
   // Rôles historiques, conservés pour la lisibilité des traces.
   ADMIN_AUDIT: 'Administrateur métier (rôle retiré)',
   EMPLOYE: 'Employé (rôle retiré)',

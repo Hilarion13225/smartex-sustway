@@ -34,7 +34,7 @@ public class AutorisationService {
      * restrictif.
      */
     public static final Set<String> ROLES_ADMINISTRATION_ENTREPRISE =
-            Set.of("SUPER_ADMIN", "ADMIN_AUDIT", "RESPONSABLE_ENTREPRISE");
+            Set.of("SUPER_ADMIN", "RESPONSABLE_ENTREPRISE");
 
     /**
      * Rôles autorisés à lister, ajouter, modifier ou révoquer (désactiver)
@@ -79,7 +79,7 @@ public class AutorisationService {
      * utilisateur affecté comme auditeur d'une mission (RG06) porte bien un
      * rôle interne, pas un rôle client.
      */
-    public static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN", "ADMIN_AUDIT");
+    public static final Set<String> ROLES_INTERNES_SMARTEX = Set.of("SUPER_ADMIN");
 
     /**
      * Permissions retirées selon la formule souscrite — rôles côté client
@@ -99,8 +99,6 @@ public class AutorisationService {
             // missions en cours restent sans issue tant qu'elle ne reprend pas
             // une formule payante. C'est le point de friction voulu ; il n'est
             // pas le produit d'un oubli.
-            "FREE", Set.of("entreprise:creer", "entreprise:modifier", "audit:creer", "audit:modifier",
-                    "preuve:deposer", "rapport:detaille", "bailleur:consulter", "evaluation:valider"),
             "STANDARD", Set.of("rapport:detaille", "bailleur:consulter"),
             "AVANCEES", Set.of()
     );
@@ -113,7 +111,7 @@ public class AutorisationService {
      * de tous les clients à ce stade du produit — exiger un rattachement
      * entreprise par entreprise n'aurait aucun sens opérationnel.
      */
-    private static final Set<String> ROLES_ACCES_GLOBAL = Set.of("SUPER_ADMIN", "ADMIN_AUDIT");
+    private static final Set<String> ROLES_ACCES_GLOBAL = Set.of("SUPER_ADMIN");
 
     @Inject
     UtilisateurEntrepriseRepository utilisateurEntrepriseRepository;
@@ -182,11 +180,11 @@ public class AutorisationService {
         // pouvoir rendre sa valeur par défaut. Le repli sur FREE annoncé par
         // la javadoc ne s'appliquait donc jamais, et une mission sans formule
         // rendait 500 au lieu du refus attendu.
-        String formuleEffective = formuleCode == null ? "FREE" : formuleCode;
+        String formuleEffective = formuleCode == null ? "STANDARD" : formuleCode;
 
         String roleCode = rattachement.getRole().getCode();
         if (!ROLES_INTERNES_SMARTEX.contains(roleCode)
-                && RESTRICTIONS_PAR_PLAN.getOrDefault(formuleEffective, RESTRICTIONS_PAR_PLAN.get("FREE")).contains(codePermission)) {
+                && RESTRICTIONS_PAR_PLAN.getOrDefault(formuleEffective, RESTRICTIONS_PAR_PLAN.get("STANDARD")).contains(codePermission)) {
             throw new ForbiddenException(
                     "Permission '%s' non disponible avec la formule %s".formatted(codePermission, formuleEffective));
         }

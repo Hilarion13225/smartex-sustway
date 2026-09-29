@@ -44,7 +44,7 @@ import java.util.UUID;
  */
 @Path("/api/v1/projets")
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+@RolesAllowed("SUPER_ADMIN")
 public class ProjetResource {
 
     @Inject ProjetRepository projetRepository;

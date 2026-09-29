@@ -40,7 +40,7 @@ import java.util.UUID;
 @Path("/api/v1/referentiels/criteres/{critereId}/coefficient-secteur")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@RolesAllowed({"SUPER_ADMIN", "ADMIN_AUDIT"})
+@RolesAllowed("SUPER_ADMIN")
 public class CoefficientSecteurResource {
 
     /** Mêmes bornes que la contrainte CHECK de critere_coefficient_secteur. */
