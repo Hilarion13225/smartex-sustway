@@ -89,8 +89,15 @@ public class AnalyseCritereService {
         /** Le critère porte désormais une évaluation IA. */
         record Analyse(Evaluation evaluation) implements Resultat {}
 
-        /** Rien à analyser : ni preuve, ni réponse, ni scénario. */
-        record RienAAnalyser() implements Resultat {}
+        /**
+         * Le critère ne portait ni preuve, ni réponse, ni scénario :
+         * l'absence a été constatée et notée au minimum de la grille.
+         *
+         * Ce n'est pas une analyse — aucun agent n'a été sollicité — mais ce
+         * n'est plus une abstention : le critère entre dans le score, au
+         * dénominateur comme au numérateur.
+         */
+        record AbsenceConstatee(Evaluation evaluation) implements Resultat {}
 
         /** Le pipeline ou le stockage a échoué ; le message est destiné à l'appelant. */
         record Echec(String message) implements Resultat {}
@@ -130,7 +137,7 @@ public class AnalyseCritereService {
         // ici, comme celle de RG35 juste au-dessus, pour que l'analyse
         // unitaire comme la passe de mission s'y heurtent — un filtre pose
         // seulement dans les appelants se contournerait par un appel direct.
-        if (evaluationRepository.laPlusRecenteParAuditCritere(auditCritere.getId()).isPresent()) {
+        if (evaluationRepository.instruit(auditCritere.getId())) {
             return new Resultat.DejaAnalyse();
         }
 
@@ -141,7 +148,7 @@ public class AnalyseCritereService {
         String scenario = auditCritere.getScenario();
 
         if (preuves.isEmpty() && reponses.isEmpty() && scenario == null) {
-            return new Resultat.RienAAnalyser();
+            return constaterAbsence(audit, auditCritere);
         }
 
         // RG21 : le pipeline d'agents dépend de la formule souscrite — elle
@@ -279,6 +286,67 @@ public class AnalyseCritereService {
         cycleVieMissionService.constaterDemarrage(audit);
 
         return new Resultat.Analyse(evaluation);
+    }
+
+    /**
+     * Constate qu'un critère du périmètre ne porte aucun élément.
+     *
+     * Ce que cela corrige : un critère sans déclaration ni preuve ne recevait
+     * aucune évaluation, et sortait donc du score — ni au numérateur, ni au
+     * dénominateur. Ne rien répondre ne coûtait rien. Sur une mission réelle,
+     * treize critères instruits sur quatre-vingt-douze affichaient le même
+     * score qu'une mission complète.
+     *
+     * La note est le niveau 1, minimum de la grille de Likert (RG27). Elle
+     * passe par {@link ScoringEngine} comme toutes les autres : une
+     * probabilité de conformité nulle, convertie par la même règle. Écrire
+     * « 1 » en dur ici installerait une seconde table de conversion.
+     *
+     * Le constat est réversible, et trois choix le rendent tel :
+     *   - sa source est SYSTEME, que {@code instruit()} ne compte pas — le
+     *     critère reste donc sélectionné par les passes suivantes ;
+     *   - le statut du critère n'est pas passé à ÉVALUÉ : l'organisation n'a
+     *     rien renseigné, et l'écran de collecte doit continuer de le dire ;
+     *   - la mission n'est pas « démarrée » par un constat : constater une
+     *     absence n'est pas instruire un dossier.
+     *
+     * Le jour où l'organisation renseigne le critère, la passe suivante
+     * l'analyse pour de bon et l'évaluation IA prend le pas — le scoring lit
+     * le constat seulement à défaut d'analyse.
+     */
+    private Resultat constaterAbsence(Audit audit, AuditCritere auditCritere) {
+        // Un constat déjà posé n'est pas reposé : la passe repasse sur ces
+        // critères à chaque tour, et empiler un constat par tour gonflerait
+        // l'historique d'évaluations sans rien apprendre à personne.
+        var existant = evaluationRepository.dernierConstatAbsence(auditCritere.getId());
+        if (existant.isPresent()) {
+            return new Resultat.AbsenceConstatee(existant.get());
+        }
+
+        BigDecimal probabilite = BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP);
+        int niveau = ScoringEngine.niveauEngagement(probabilite);
+
+        Evaluation evaluation = new Evaluation(auditCritere, probabilite, (short) niveau);
+        evaluation.setSource(SourceEvaluation.SYSTEME);
+        evaluation.setStatut(StatutEvaluation.VALIDEE);
+        evaluation.setCouverturePreuve(false);
+        evaluation.setJustification(
+                "Aucun élément fourni sur ce critère : ni réponse au questionnaire, ni preuve"
+                        + " documentaire, ni scénario. Le critère est noté au niveau minimal de la"
+                        + " grille et compte dans le score. Cette note n'est pas un jugement du"
+                        + " pipeline d'agents — aucun n'a été sollicité, faute de matière à lire."
+                        + " Elle sera remplacée par une analyse dès que le critère sera renseigné.");
+        evaluationRepository.persistAndFlush(evaluation);
+
+        // Un critère du périmètre sur lequel rien n'est fourni est un écart au
+        // même titre qu'un critère mal couvert : il suit la même règle que
+        // toute évaluation sous le niveau maximal. L'en dispenser créerait
+        // l'anomalie inverse — un critère noté 1 par le pipeline ouvrirait une
+        // non-conformité, le même critère noté 1 faute d'élément, non.
+        nonConformiteService.genererSiNecessaire(evaluation);
+        scoreHistoriqueService.enregistrer(audit);
+
+        return new Resultat.AbsenceConstatee(evaluation);
     }
 
     /** Niveau déclaré sur ce critère, s'il en existe un. */

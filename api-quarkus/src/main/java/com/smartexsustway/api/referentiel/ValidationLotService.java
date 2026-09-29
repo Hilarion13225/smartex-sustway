@@ -1,10 +1,12 @@
 package com.smartexsustway.api.referentiel;
 
 import com.smartexsustway.api.audit.AuditLogService;
+import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Exigence;
 import com.smartexsustway.api.domain.entity.PreuveAttendue;
 import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.entity.RegleAnalyse;
+import com.smartexsustway.api.domain.repository.CritereRepository;
 import com.smartexsustway.api.domain.repository.ExigenceRepository;
 import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
 import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
@@ -50,6 +52,7 @@ public class ValidationLotService {
     public static final int TAILLE_LOT_MAXIMALE = 500;
 
     @Inject ValidationContenuImporteService validationService;
+    @Inject CritereRepository critereRepository;
     @Inject ExigenceRepository exigenceRepository;
     @Inject PreuveAttendueRepository preuveAttendueRepository;
     @Inject RegleAnalyseRepository regleAnalyseRepository;
@@ -112,6 +115,11 @@ public class ValidationLotService {
         UUID versionAttendue = version.getId();
 
         return switch (nature(vise)) {
+            case "CRITERE" -> {
+                Critere critere = critereRepository.findById(vise.id());
+                exigerTrouve(critere, vise);
+                yield validationService.validerCritere(critere, versionAttendue, utilisateurId);
+            }
             case "EXIGENCE" -> {
                 Exigence exigence = exigenceRepository.findById(vise.id());
                 exigerTrouve(exigence, vise);

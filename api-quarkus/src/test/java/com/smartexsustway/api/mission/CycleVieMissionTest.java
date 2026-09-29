@@ -158,7 +158,7 @@ class CycleVieMissionTest {
                 exigenceRepository.persistAndFlush(exigence);
 
                 var auditCritere = new AuditCritere(audit, critere, critere.getCriticite(), BigDecimal.ONE);
-                // Sans matière, `analyser` rend RienAAnalyser et n'écrit rien.
+                // Sans matière, `analyser` ne ferait que constater l'absence, sans rien soumettre.
                 auditCritere.setScenario("Scénario du critère " + rang + ".");
                 auditCritereRepository.persistAndFlush(auditCritere);
                 ids.add(auditCritere.getId());

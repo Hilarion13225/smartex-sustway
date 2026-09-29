@@ -26,7 +26,7 @@ import java.util.UUID;
  * existants, et le dupliquer ici en ferait une seconde source de vérité.
  *
  * {@code publiable} n'autorise rien : le déclencheur
- * {@code refuser_publication_sans_validation} (V58) reste seul à trancher au
+ * {@code refuser_publication_sans_validation} (V75) reste seul à trancher au
  * moment de la publication. Le calculer ici évite seulement de proposer un
  * bouton qui échouerait.
  */
@@ -37,6 +37,7 @@ public record BrouillonImporteDto(
         String referentielCode,
         String referentielNom,
         Map<String, Object> metadonneesImport,
+        int criteresAValider,
         int exigencesAValider,
         int preuvesAttenduesAValider,
         int reglesAValider,
@@ -89,6 +90,9 @@ public record BrouillonImporteDto(
     }
 
     /**
+     * @param criteres      critères importés restant à trancher — la ligne
+     *                      entière, libellé, description, applicabilité,
+     *                      coefficient et criticité compris
      * @param exigences     exigences importées restant à trancher
      * @param preuves       preuves attendues importées restant à trancher
      * @param regles        règles importées restant à trancher
@@ -105,6 +109,7 @@ public record BrouillonImporteDto(
      */
     public static BrouillonImporteDto depuis(ReferentielVersion version,
                                              Map<String, Object> metadonneesImport,
+                                             List<Critere> criteres,
                                              List<Exigence> exigences,
                                              List<PreuveAttendue> preuves,
                                              List<RegleAnalyse> regles,
@@ -113,6 +118,12 @@ public record BrouillonImporteDto(
                                              int importesTotal,
                                              List<Map<String, Object>> doublons) {
         var elements = new ArrayList<ElementAValiderDto>();
+        // Le critère se désigne lui-même : sa nature est CRITERE, et le
+        // libellé montré est le sien. Il vient en tête, parce qu'écarter un
+        // critère dispense de trancher ce qu'il porte.
+        criteres.forEach(c -> elements.add(ElementAValiderDto.de(
+                "CRITERE", c.getId(), c, c.getCode(), c.getLibelle(),
+                ProvenanceDto.depuis(c))));
         exigences.forEach(e -> elements.add(ElementAValiderDto.de(
                 "EXIGENCE", e.getId(), e.getCritere(), e.getCode(), e.getIntitule(),
                 ProvenanceDto.depuis(e))));
@@ -130,6 +141,7 @@ public record BrouillonImporteDto(
                 version.getReferentiel().getCode(),
                 version.getReferentiel().getNom(),
                 metadonneesImport,
+                criteres.size(),
                 exigences.size(),
                 preuves.size(),
                 regles.size(),

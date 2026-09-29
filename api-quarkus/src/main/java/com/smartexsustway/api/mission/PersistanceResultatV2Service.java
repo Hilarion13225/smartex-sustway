@@ -29,7 +29,9 @@ import com.smartexsustway.api.domain.repository.EvaluationPreuveRepository;
 import com.smartexsustway.api.domain.repository.EvaluationRepository;
 import com.smartexsustway.api.domain.repository.ExecutionAgentRepository;
 import com.smartexsustway.api.domain.repository.ExigenceRepository;
+import com.smartexsustway.api.domain.entity.ReponseQuestion;
 import com.smartexsustway.api.domain.repository.PreuveRepository;
+import com.smartexsustway.api.domain.repository.ReponseQuestionRepository;
 import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
 import com.smartexsustway.api.domain.rules.ScoringEngine;
 import com.smartexsustway.api.ia.contrat.ConstructionContexteIa;
@@ -82,6 +84,7 @@ public class PersistanceResultatV2Service {
     @Inject ExigenceRepository exigenceRepository;
     @Inject RegleAnalyseRepository regleAnalyseRepository;
     @Inject PreuveRepository preuveRepository;
+    @Inject ReponseQuestionRepository reponseQuestionRepository;
 
     /**
      * Persiste l'enveloppe complète et rend l'évaluation créée.
@@ -509,8 +512,26 @@ public class PersistanceResultatV2Service {
                 .findFirst();
     }
 
+    /**
+     * Le niveau que l'organisation s'est attribué sur ce critère.
+     *
+     * <p>Cette méthode rendait {@code null} en dur, si bien qu'aucune
+     * évaluation du V2 ne portait la déclaration — alors que le V1 la
+     * calculait déjà. Le texte de la déclaration, lui, atteignait bien les
+     * agents : c'est sur cette base que l'agent de risque écrit
+     * « l'organisation déclare… ». Seul le chiffre manquait, et c'est
+     * précisément ce que la relecture humaine compare au verdict de l'IA.
+     *
+     * <p>Même lecture que {@code AnalyseCritereService.niveauDeclare} : la
+     * première réponse qui porte un niveau. Un critère peut porter plusieurs
+     * questions, mais une seule échelle de maturité.
+     */
     private Short niveauDeclare(AuditCritere auditCritere) {
-        return null;
+        return reponseQuestionRepository.parAuditCritere(auditCritere.getId()).stream()
+                .map(ReponseQuestion::getNiveau)
+                .filter(java.util.Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     private static BigDecimal arrondi(Double valeur) {

@@ -95,6 +95,18 @@ public class MembreEntrepriseResource {
      * preuve:deposer/rapport:consulter) pour ne pas casser les rattachements
      * déjà existants ni compliquer sa réintroduction.
      */
+    /**
+     * Rôles qu'un compte <em>client</em> peut attribuer. ADMIN_AUDIT en est
+     * exclu : c'est un rôle interne Smartex, et le responsable d'une
+     * entreprise cliente qui pourrait l'accorder se donnerait un auditeur —
+     * ou se le donnerait à lui-même en invitant sa propre adresse.
+     *
+     * <p>Le personnel Smartex garde ROLES_ATTRIBUABLES au complet : c'est par
+     * cet endpoint que SUPER_ADMIN crée les comptes internes.
+     */
+    private static final Set<String> ROLES_ATTRIBUABLES_CLIENT =
+            Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR");
+
     private static final Set<String> ROLES_ATTRIBUABLES =
             Set.of("RESPONSABLE_ENTREPRISE", "VISITEUR", "ADMIN_AUDIT");
 
@@ -121,7 +133,6 @@ public class MembreEntrepriseResource {
     public Response lister(@PathParam("entrepriseId") UUID entrepriseId) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
-        exigerNonResponsableEntreprise(utilisateurId, entrepriseId);
 
         var membres = utilisateurEntrepriseRepository.parEntreprise(entrepriseId).stream()
                 .map(MembreEntrepriseDto::depuis)
@@ -153,7 +164,7 @@ public class MembreEntrepriseResource {
                     .build();
         }
 
-        Role role = trouverRoleAttribuable(requete.roleCode());
+        Role role = trouverRoleAttribuable(requete.roleCode(), utilisateurId);
         Site site = requete.siteId() == null ? null : trouverSiteDeLEntreprise(entrepriseId, requete.siteId());
 
         // Un accès révoqué est réactivé plutôt que dupliqué : les index
@@ -218,7 +229,7 @@ public class MembreEntrepriseResource {
                     .build();
         }
 
-        Role role = trouverRoleAttribuable(requete.roleCode());
+        Role role = trouverRoleAttribuable(requete.roleCode(), utilisateurId);
         Site site = requete.siteId() == null ? null : trouverSiteDeLEntreprise(entreprise.getId(), requete.siteId());
         Utilisateur invitePar = utilisateurRepository.findById(utilisateurId);
 
@@ -252,7 +263,7 @@ public class MembreEntrepriseResource {
         exigerRattachementDUnTiers(rattachement, utilisateurId,
                 "Vous ne pouvez pas modifier votre propre rôle sur cette entreprise");
 
-        rattachement.setRole(trouverRoleAttribuable(requete.roleCode()));
+        rattachement.setRole(trouverRoleAttribuable(requete.roleCode(), utilisateurId));
         rattachement.setSite(
                 requete.siteId() == null ? null : trouverSiteDeLEntreprise(entrepriseId, requete.siteId()));
 
@@ -282,24 +293,8 @@ public class MembreEntrepriseResource {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
         autorisationService.exigerAccesEntreprise(utilisateurId, entrepriseId);
         autorisationService.exigerRoleSurEntreprise(
-                utilisateurId, entrepriseId, AutorisationService.ROLES_GESTION_MEMBRES);
+                utilisateurId, entrepriseId, AutorisationService.ROLES_GESTION_MEMBRES_ENTREPRISE);
         return utilisateurId;
-    }
-
-    /**
-     * Décision produit : RESPONSABLE_ENTREPRISE n'a plus accès du tout à
-     * cette ressource, même en lecture — ni la liste des collaborateurs, ni
-     * la matrice de permissions qui s'appuie dessus côté frontend. Les
-     * autres rôles rattachés (staff Smartex, VISITEUR) gardent l'accès en
-     * lecture inchangé.
-     */
-    private void exigerNonResponsableEntreprise(UUID utilisateurId, UUID entrepriseId) {
-        boolean estResponsableEntreprise = utilisateurEntrepriseRepository
-                .actifsParUtilisateurEtEntreprise(utilisateurId, entrepriseId).stream()
-                .anyMatch(r -> ROLE_RESPONSABLE_ENTREPRISE.equals(r.getRole().getCode()));
-        if (estResponsableEntreprise) {
-            throw new ForbiddenException("Le responsable de l'entreprise n'a pas accès à la gestion des utilisateurs");
-        }
     }
 
     /**
@@ -313,10 +308,20 @@ public class MembreEntrepriseResource {
         }
     }
 
-    private Role trouverRoleAttribuable(String roleCode) {
-        if (!ROLES_ATTRIBUABLES.contains(roleCode)) {
+    /**
+     * Le jeu de rôles attribuables dépend de qui invite : le personnel Smartex
+     * les porte tous, un compte client non. Sans cette distinction, rouvrir la
+     * gestion des membres au responsable d'entreprise lui aurait permis de
+     * créer un compte ADMIN_AUDIT.
+     */
+    private Role trouverRoleAttribuable(String roleCode, UUID auteurId) {
+        Set<String> attribuables = autorisationService.possedeRoleDePlateforme(
+                auteurId, AutorisationService.ROLES_INTERNES_SMARTEX)
+                ? ROLES_ATTRIBUABLES
+                : ROLES_ATTRIBUABLES_CLIENT;
+        if (!attribuables.contains(roleCode)) {
             throw new BadRequestException(
-                    "Rôle non attribuable depuis un espace entreprise : " + roleCode + " (attendu " + ROLES_ATTRIBUABLES + ")");
+                    "Rôle non attribuable depuis un espace entreprise : " + roleCode + " (attendu " + attribuables + ")");
         }
         return roleRepository.parCode(roleCode)
                 .orElseThrow(() -> new IllegalStateException("Rôle " + roleCode + " absent — vérifier les seeds"));
@@ -329,7 +334,13 @@ public class MembreEntrepriseResource {
      */
     private UtilisateurEntreprise trouverRattachementDeLEntreprise(UUID entrepriseId, UUID membreId) {
         UtilisateurEntreprise rattachement = utilisateurEntrepriseRepository.findById(membreId);
-        if (rattachement == null || !rattachement.getEntreprise().getId().equals(entrepriseId)) {
+        // L'entreprise peut être absente depuis V76 : un rôle de plateforme
+        // n'appartient à aucune organisation. Un tel rattachement n'est donc
+        // jamais « le membre d'une entreprise », et l'écrire ainsi évite aussi
+        // de déréférencer un null.
+        if (rattachement == null
+                || rattachement.getEntreprise() == null
+                || !rattachement.getEntreprise().getId().equals(entrepriseId)) {
             throw new NotFoundException("Accès introuvable pour cette entreprise : " + membreId);
         }
         return rattachement;

@@ -53,6 +53,7 @@ import static org.mockito.Mockito.when;
 class ValidationContenuImporteTest {
 
     private static final String IMPORTS = "/api/v1/referentiels/imports";
+    private static final String CRITERES = "/api/v1/referentiels/criteres";
     private static final String EXIGENCES = "/api/v1/referentiels/exigences";
     private static final String PREUVES = "/api/v1/referentiels/preuves-attendues";
     private static final String REGLES = "/api/v1/referentiels/regles";
@@ -86,8 +87,8 @@ class ValidationContenuImporteTest {
      * Un brouillon issu d'un import, avec une exigence, une preuve attendue et
      * une règle — les trois natures que la validation doit couvrir.
      */
-    private record Brouillon(String versionId, String exigenceId, String preuveId,
-                             String regleId, String importId) {
+    private record Brouillon(String versionId, String critereId, String exigenceId,
+                             String preuveId, String regleId, String importId) {
     }
 
     private Brouillon brouillonImporte(String jeton) {
@@ -113,6 +114,7 @@ class ValidationContenuImporteTest {
                 .then().statusCode(200).extract().path("versionId");
 
         return new Brouillon(versionId,
+                idPremier("SELECT id FROM critere WHERE referentiel_version_id = '" + versionId + "'"),
                 idPremier("SELECT id FROM exigence WHERE referentiel_version_id = '" + versionId + "'"),
                 idPremier("SELECT id FROM preuve_attendue WHERE referentiel_version_id = '" + versionId + "'"),
                 idPremier("SELECT id FROM regle_analyse WHERE referentiel_version_id = '" + versionId + "'"),
@@ -377,6 +379,7 @@ class ValidationContenuImporteTest {
         var b = brouillonImporte(jeton);
 
         // Tout valider puis publier : la version devient figée.
+        validerElement(jeton, CRITERES, b.critereId(), null).statusCode(200);
         validerElement(jeton, EXIGENCES, b.exigenceId(), null).statusCode(200);
         validerElement(jeton, PREUVES, b.preuveId(), null).statusCode(200);
         validerElement(jeton, REGLES, b.regleId(), null).statusCode(200);
@@ -483,16 +486,19 @@ class ValidationContenuImporteTest {
         String jeton = jetonSuperAdmin();
         var b = brouillonImporte(jeton);
 
-        // Trois éléments proposés, aucun relu.
+        // Quatre éléments proposés, aucun relu — le critère compte depuis V75.
         var refus = assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
         assertTrue(deroule(refus).contains("validé"), deroule(refus));
 
         // Un seul relu : la barrière tient toujours.
-        validerElement(jeton, EXIGENCES, b.exigenceId(), null).statusCode(200);
+        validerElement(jeton, CRITERES, b.critereId(), null).statusCode(200);
         refus = assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
         assertTrue(deroule(refus).contains("validé"), deroule(refus));
 
-        // Deux sur trois : elle tient encore.
+        validerElement(jeton, EXIGENCES, b.exigenceId(), null).statusCode(200);
+        assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
+
+        // Trois sur quatre : elle tient encore.
         validerElement(jeton, PREUVES, b.preuveId(), null).statusCode(200);
         assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
 
@@ -511,7 +517,7 @@ class ValidationContenuImporteTest {
         given().header("Authorization", "Bearer " + jeton)
                 .when().get(IMPORTS + "/" + b.importId() + "/brouillon")
                 .then().statusCode(200)
-                .body("elementsImportesTotal", equalTo(3))
+                .body("elementsImportesTotal", equalTo(4))
                 .body("elementsValides", equalTo(0))
                 .body("publiable", equalTo(false));
 
@@ -522,18 +528,20 @@ class ValidationContenuImporteTest {
                 .then().statusCode(200)
                 // Le total ne diminue pas quand on valide : il compte sur
                 // `origine_initiale`, seule colonne qui ne bouge pas.
-                .body("elementsImportesTotal", equalTo(3))
+                .body("elementsImportesTotal", equalTo(4))
                 .body("elementsValides", equalTo(1))
                 .body("exigencesAValider", equalTo(0))
+                .body("criteresAValider", equalTo(1))
                 .body("publiable", equalTo(false));
 
+        validerElement(jeton, CRITERES, b.critereId(), null).statusCode(200);
         validerElement(jeton, PREUVES, b.preuveId(), null).statusCode(200);
         validerElement(jeton, REGLES, b.regleId(), null).statusCode(200);
 
         given().header("Authorization", "Bearer " + jeton)
                 .when().get(IMPORTS + "/" + b.importId() + "/brouillon")
                 .then().statusCode(200)
-                .body("elementsValides", equalTo(3))
+                .body("elementsValides", equalTo(4))
                 .body("publiable", equalTo(true));
     }
 

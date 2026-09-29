@@ -21,12 +21,20 @@ class Settings(BaseSettings):
     # SMARTEX Expertises avant tout traitement de données clients réelles
     # (voir README, section "Agents IA").
     gemini_api_key: str = ""
-    # TEMPORAIRE — bascule sur Flash-Lite pour contourner le quota gratuit
-    # épuisé sur gemini-3.6-flash (paliers de quota distincts par modèle).
-    # À REMETTRE sur "gemini-3.6-flash" une fois le quota principal
-    # reconstitué (qualité légèrement inférieure sur Flash-Lite, acceptable
-    # pour un test mais pas recommandé en continu).
-    gemini_model: str = "gemini-3.5-flash-lite"
+    # Le quota et la disponibilité se mesurent par modèle, jamais en général :
+    # les paliers sont distincts, et un modèle saturé n'apprend rien sur son
+    # voisin. Relevé du 28/09/2026, quatre appels par modèle :
+    #
+    #   gemini-3.5-flash-lite   0/4   503  (l'ancien repli, mort)
+    #   gemini-3.1-flash-lite   0/4   503
+    #   gemini-3.6-flash        0/4   429  (quota épuisé par deux passes)
+    #   gemini-3.8-flash        4/4   200
+    #
+    # D'où celui-ci. La valeur n'a rien de définitif : elle vaut ce que vaut
+    # la disponibilité du jour. Avant d'en changer, refaire la mesure plutôt
+    # que de supposer — c'est SMARTEX_GEMINI_MODEL qui bascule, sans
+    # reconstruire l'image.
+    gemini_model: str = "gemini-3.8-flash"
 
     # --- Authentification des appels entrants ---
     # Vérification des jetons de service émis par l'API. La clé publique

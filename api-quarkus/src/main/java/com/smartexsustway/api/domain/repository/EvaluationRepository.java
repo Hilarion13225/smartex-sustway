@@ -31,4 +31,26 @@ public class EvaluationRepository implements PanacheRepositoryBase<Evaluation, U
         return find("auditCritere.id = ?1 and source = ?2 order by dateEvaluation desc",
                 auditCritereId, SourceEvaluation.IA).firstResultOptional();
     }
+
+    /**
+     * Le critere a-t-il ete instruit — par le pipeline ou par une personne ?
+     *
+     * Un constat d'absence (source SYSTEME) ne compte pas : il dit seulement
+     * que rien n'avait ete fourni au moment ou la passe est passee. C'est ce
+     * qui rend le constat reversible — le critere reste selectionne par les
+     * passes suivantes, et une analyse veritable le remplacera le jour ou
+     * l'organisation le renseignera. Une garde posee sur toutes les sources
+     * confondues le figerait pour toujours.
+     */
+    public boolean instruit(UUID auditCritereId) {
+        return count("auditCritere.id = ?1 and source in ?2",
+                auditCritereId,
+                List.of(SourceEvaluation.IA, SourceEvaluation.EXPERT)) > 0;
+    }
+
+    /** Dernier constat d'absence pose sur le critere, s'il en porte un. */
+    public Optional<Evaluation> dernierConstatAbsence(UUID auditCritereId) {
+        return find("auditCritere.id = ?1 and source = ?2 order by dateEvaluation desc",
+                auditCritereId, SourceEvaluation.SYSTEME).firstResultOptional();
+    }
 }

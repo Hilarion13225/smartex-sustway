@@ -170,7 +170,7 @@ class ContexteIaFiltreTest {
             auditRepository.persistAndFlush(audit);
 
             var auditCritere = new AuditCritere(audit, critere, critere.getCriticite(), BigDecimal.ONE);
-            // Sans matière, `analyser` rend RienAAnalyser et n'appelle personne.
+            // Sans matière, `analyser` se borne à constater l'absence et n'appelle personne.
             auditCritere.setScenario("Scénario de contexte, pour que l'analyse ait de quoi partir.");
             auditCritereRepository.persistAndFlush(auditCritere);
 

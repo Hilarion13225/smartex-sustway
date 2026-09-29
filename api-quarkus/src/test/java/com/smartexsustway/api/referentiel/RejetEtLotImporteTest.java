@@ -48,6 +48,7 @@ import static org.mockito.Mockito.when;
 class RejetEtLotImporteTest {
 
     private static final String IMPORTS = "/api/v1/referentiels/imports";
+    private static final String CRITERES = "/api/v1/referentiels/criteres";
     private static final String EXIGENCES = "/api/v1/referentiels/exigences";
     private static final String PREUVES = "/api/v1/referentiels/preuves-attendues";
     private static final String REGLES = "/api/v1/referentiels/regles";
@@ -75,8 +76,8 @@ class RejetEtLotImporteTest {
         return superAdmin().token;
     }
 
-    private record Brouillon(String versionId, String exigenceId, String preuveId,
-                             String regleId, String importId) {
+    private record Brouillon(String versionId, String critereId, String exigenceId,
+                             String preuveId, String regleId, String importId) {
     }
 
     private Brouillon brouillonImporte(String jeton) {
@@ -102,6 +103,7 @@ class RejetEtLotImporteTest {
                 .then().statusCode(200).extract().path("versionId");
 
         return new Brouillon(versionId,
+                id("SELECT id FROM critere WHERE referentiel_version_id = '" + versionId + "'"),
                 id("SELECT id FROM exigence WHERE referentiel_version_id = '" + versionId + "'"),
                 id("SELECT id FROM preuve_attendue WHERE referentiel_version_id = '" + versionId + "'"),
                 id("SELECT id FROM regle_analyse WHERE referentiel_version_id = '" + versionId + "'"),
@@ -280,29 +282,33 @@ class RejetEtLotImporteTest {
         String jeton = jetonSuperAdmin();
         var b = brouillonImporte(jeton);
 
-        // Trois propositions, aucune tranchée.
+        // Quatre propositions, aucune tranchée — le critère compte depuis V75.
         assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
 
-        // Une rejetée : deux restent à voir.
+        // Une rejetée : trois restent à voir.
         agir(jeton, EXIGENCES, b.exigenceId(), "rejet", null).statusCode(200);
         assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
 
-        // Une validée, une rejetée : la troisième bloque toujours.
+        // Une validée, une rejetée : les deux autres bloquent toujours.
         agir(jeton, PREUVES, b.preuveId(), "validation", null).statusCode(200);
         assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
 
-        // La dernière tranchée, la barrière tombe.
         agir(jeton, REGLES, b.regleId(), "rejet", null).statusCode(200);
+        assertThrows(Exception.class, () -> publierEnBase(b.versionId()));
+
+        // La dernière tranchée, la barrière tombe.
+        agir(jeton, CRITERES, b.critereId(), "validation", null).statusCode(200);
         publierEnBase(b.versionId());
         assertEquals("PUBLIEE", valeur("SELECT statut::text FROM referentiel_version WHERE id = '"
                 + b.versionId() + "'").toString());
     }
 
     @Test
-    void troisRejets_suffisentAPublier() {
+    void quatreRejets_suffisentAPublier() {
         String jeton = jetonSuperAdmin();
         var b = brouillonImporte(jeton);
 
+        agir(jeton, CRITERES, b.critereId(), "rejet", null).statusCode(200);
         agir(jeton, EXIGENCES, b.exigenceId(), "rejet", null).statusCode(200);
         agir(jeton, PREUVES, b.preuveId(), "rejet", null).statusCode(200);
         agir(jeton, REGLES, b.regleId(), "rejet", null).statusCode(200);
@@ -353,6 +359,7 @@ class RejetEtLotImporteTest {
         String jeton = jetonSuperAdmin();
         var b = brouillonImporte(jeton);
 
+        agir(jeton, CRITERES, b.critereId(), "rejet", null).statusCode(200);
         agir(jeton, EXIGENCES, b.exigenceId(), "rejet", null).statusCode(200);
         agir(jeton, PREUVES, b.preuveId(), "rejet", null).statusCode(200);
         agir(jeton, REGLES, b.regleId(), "rejet", null).statusCode(200);
@@ -394,18 +401,22 @@ class RejetEtLotImporteTest {
         given().header("Authorization", "Bearer " + jeton)
                 .contentType(ContentType.JSON)
                 .body(Map.of("elements", List.of(
+                        // « CRITERE » doit être reconnu par le lot : sans lui,
+                        // le critère serait compté bloquant sans pouvoir être
+                        // tranché, et la version deviendrait impubliable.
+                        Map.of("nature", "CRITERE", "id", b.critereId()),
                         Map.of("nature", "EXIGENCE", "id", b.exigenceId()),
                         Map.of("nature", "PREUVE_ATTENDUE", "id", b.preuveId()),
                         Map.of("nature", "REGLE_ANALYSE", "id", b.regleId()))))
                 .when().post(IMPORTS + "/" + b.importId() + "/validations")
                 .then().statusCode(200)
-                .body("traites", equalTo(3))
+                .body("traites", equalTo(4))
                 .body("dejaValides", equalTo(0));
 
         given().header("Authorization", "Bearer " + jeton)
                 .when().get(IMPORTS + "/" + b.importId() + "/brouillon")
                 .then().statusCode(200)
-                .body("elementsValides", equalTo(3))
+                .body("elementsValides", equalTo(4))
                 .body("publiable", equalTo(true));
     }
 
@@ -647,15 +658,17 @@ class RejetEtLotImporteTest {
         String jeton = jetonSuperAdmin();
         var b = brouillonImporte(jeton);
 
+        agir(jeton, CRITERES, b.critereId(), "validation", null).statusCode(200);
         agir(jeton, EXIGENCES, b.exigenceId(), "validation", null).statusCode(200);
         agir(jeton, PREUVES, b.preuveId(), "rejet", null).statusCode(200);
 
         given().header("Authorization", "Bearer " + jeton)
                 .when().get(IMPORTS + "/" + b.importId() + "/brouillon")
                 .then().statusCode(200)
-                .body("elementsImportesTotal", equalTo(3))
-                .body("elementsValides", equalTo(1))
+                .body("elementsImportesTotal", equalTo(4))
+                .body("elementsValides", equalTo(2))
                 .body("elementsRejetes", equalTo(1))
+                .body("criteresAValider", equalTo(0))
                 .body("reglesAValider", equalTo(1))
                 .body("elementsAValider.size()", equalTo(1))
                 .body("publiable", equalTo(false));

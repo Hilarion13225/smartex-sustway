@@ -55,6 +55,22 @@ public class AuditScoreService {
             // à l'analyse annulerait la rectification que l'IA vient de rendre.
             Evaluation derniere = evaluationRepository.laPlusRecenteIaParAuditCritere(auditCritere.getId())
                     .orElse(null);
+            // À défaut d'analyse, le constat d'absence.
+            //
+            // Un critère du périmètre sur lequel l'organisation n'a rien
+            // fourni portait auparavant zéro évaluation, et sortait donc du
+            // calcul des deux côtés : ni note, ni coefficient. Ne rien
+            // répondre laissait le score intact. Le constat le ramène au
+            // dénominateur avec son coefficient, et au numérateur avec le
+            // niveau minimal de la grille.
+            //
+            // L'ordre compte : l'analyse prime toujours. Le jour où le critère
+            // est renseigné puis analysé, c'est l'analyse qui fait la note, et
+            // le constat cesse d'être lu sans avoir à être effacé — la trace
+            // de ce que la mission valait avant reste en base.
+            if (derniere == null) {
+                derniere = evaluationRepository.dernierConstatAbsence(auditCritere.getId()).orElse(null);
+            }
             if (derniere == null) {
                 continue;
             }

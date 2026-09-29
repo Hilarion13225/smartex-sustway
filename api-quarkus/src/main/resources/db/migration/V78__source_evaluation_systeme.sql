@@ -1,0 +1,20 @@
+-- Une troisième source d'évaluation : le constat d'absence.
+--
+-- Jusqu'ici un critère sur lequel l'organisation n'avait rien fourni — ni
+-- déclaration, ni preuve, ni scénario — ne recevait aucune évaluation. Il
+-- sortait donc du score : ni au numérateur, ni au dénominateur. Ne rien
+-- répondre ne coûtait rien, et une mission renseignée à 14 % affichait le
+-- même score qu'une mission complète.
+--
+-- Ces critères sont désormais constatés : niveau 1, le minimum de la grille
+-- de Likert (RG27), et ils pèsent au dénominateur avec leur coefficient.
+--
+-- La source est distincte de IA parce qu'aucun modèle n'a travaillé : ce
+-- constat est déterministe, il découle de l'absence d'élément et de rien
+-- d'autre. Le ranger sous IA ferait passer une règle de gestion pour un
+-- jugement d'agent, et rendrait les deux indiscernables à l'audit.
+--
+-- ALTER TYPE ... ADD VALUE s'exécute dans la transaction de la migration sur
+-- PostgreSQL 12+, à condition que la valeur ajoutée n'y soit pas utilisée —
+-- c'est le cas ici, cette migration n'écrit aucune ligne.
+ALTER TYPE source_evaluation ADD VALUE IF NOT EXISTS 'SYSTEME';

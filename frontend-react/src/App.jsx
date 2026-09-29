@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ApiAuthProvider } from './auth/ApiAuthContext';
 import { ThemeProvider } from './theme/ThemeContext';
@@ -5,50 +6,56 @@ import { useApiAuth } from './auth/useApiAuth';
 import Layout from './components/Layout';
 import LayoutPublic from './components/LayoutPublic';
 import { Loader } from './components/ui';
+
+// Vitrine : chargement immediat (premier ecran visible).
 import Accueil from './pages/Accueil';
 import Solution from './pages/Solution';
 import Fonctionnalites from './pages/Fonctionnalites';
 import Offres from './pages/Offres';
 import Ressources from './pages/Ressources';
 import Contact from './pages/Contact';
+
+// Auth : chargement immediat (parcours critique).
 import ConnexionReelle from './pages/ConnexionReelle';
 import Inscription from './pages/Inscription';
 import AccepterInvitation from './pages/AccepterInvitation';
 import MotDePasseOublie from './pages/MotDePasseOublie';
 import ReinitialiserMotDePasse from './pages/ReinitialiserMotDePasse';
-import TableauDeBord from './pages/TableauDeBord';
-import Entreprises from './pages/Entreprises';
-import EntrepriseDetail from './pages/EntrepriseDetail';
-import AuditsListe from './pages/AuditsListe';
-import AuditDetail from './pages/AuditDetail';
-import AuditScore from './pages/AuditScore';
-import NonConformites from './pages/NonConformites';
-import NonConformitesEntreprise from './pages/NonConformitesEntreprise';
-import Rapports from './pages/Rapports';
-import RapportsEntreprise from './pages/RapportsEntreprise';
-import FinancementsVerts from './pages/FinancementsVerts';
-import PipelineIA from './pages/PipelineIA';
-import ComparaisonEntreprises from './pages/ComparaisonEntreprises';
-import Classement from './pages/Classement';
-import Projets from './pages/Projets';
-import ProjetDetail from './pages/ProjetDetail';
-import ReferentielsListe from './pages/ReferentielsListe';
-import ReferentielDetail from './pages/ReferentielDetail';
-import ImportReferentiel from './pages/ImportReferentiel';
-import IndicePreparation from './pages/IndicePreparation';
-import PageIntrouvable from './pages/PageIntrouvable';
-import CritereEvaluation from './pages/CritereEvaluation';
-import Documents from './pages/Documents';
-import Questionnaire from './pages/Questionnaire';
-import Abonnement from './pages/Abonnement';
-import Utilisateurs from './pages/Utilisateurs';
-import UtilisateursPlateforme from './pages/UtilisateursPlateforme';
-import Journal from './pages/Journal';
-import PlanActions from './pages/PlanActions';
-import PlansAmelioration from './pages/PlansAmelioration';
-import MesActions from './pages/MesActions';
-import PlanAmeliorationDetail from './pages/PlanAmeliorationDetail';
-import Profil from './pages/Profil';
+
+// Espace connecte : lazy-loaded apres authentification.
+const TableauDeBord = lazy(() => import('./pages/TableauDeBord'));
+const Entreprises = lazy(() => import('./pages/Entreprises'));
+const EntrepriseDetail = lazy(() => import('./pages/EntrepriseDetail'));
+const AuditsListe = lazy(() => import('./pages/AuditsListe'));
+const AuditDetail = lazy(() => import('./pages/AuditDetail'));
+const AuditScore = lazy(() => import('./pages/AuditScore'));
+const NonConformites = lazy(() => import('./pages/NonConformites'));
+const NonConformitesEntreprise = lazy(() => import('./pages/NonConformitesEntreprise'));
+const Rapports = lazy(() => import('./pages/Rapports'));
+const RapportsEntreprise = lazy(() => import('./pages/RapportsEntreprise'));
+const FinancementsVerts = lazy(() => import('./pages/FinancementsVerts'));
+const PipelineIA = lazy(() => import('./pages/PipelineIA'));
+const ComparaisonEntreprises = lazy(() => import('./pages/ComparaisonEntreprises'));
+const Classement = lazy(() => import('./pages/Classement'));
+const Projets = lazy(() => import('./pages/Projets'));
+const ProjetDetail = lazy(() => import('./pages/ProjetDetail'));
+const ReferentielsListe = lazy(() => import('./pages/ReferentielsListe'));
+const ReferentielDetail = lazy(() => import('./pages/ReferentielDetail'));
+const ImportReferentiel = lazy(() => import('./pages/ImportReferentiel'));
+const IndicePreparation = lazy(() => import('./pages/IndicePreparation'));
+const PageIntrouvable = lazy(() => import('./pages/PageIntrouvable'));
+const CritereEvaluation = lazy(() => import('./pages/CritereEvaluation'));
+const Documents = lazy(() => import('./pages/Documents'));
+const Questionnaire = lazy(() => import('./pages/Questionnaire'));
+const Abonnement = lazy(() => import('./pages/Abonnement'));
+const Utilisateurs = lazy(() => import('./pages/Utilisateurs'));
+const UtilisateursPlateforme = lazy(() => import('./pages/UtilisateursPlateforme'));
+const Journal = lazy(() => import('./pages/Journal'));
+const PlanActions = lazy(() => import('./pages/PlanActions'));
+const PlansAmelioration = lazy(() => import('./pages/PlansAmelioration'));
+const MesActions = lazy(() => import('./pages/MesActions'));
+const PlanAmeliorationDetail = lazy(() => import('./pages/PlanAmeliorationDetail'));
+const Profil = lazy(() => import('./pages/Profil'));
 
 function RouteProtegee() {
   const { estConnecte, chargement } = useApiAuth();
@@ -117,7 +124,7 @@ export default function App() {
           <Route path="/mot-de-passe-oublie" element={<MotDePasseOublie />} />
           <Route path="/reinitialiser-mot-de-passe" element={<ReinitialiserMotDePasse />} />
           <Route element={<RouteProtegee />}>
-            <Route path="/app" element={<Layout />}>
+            <Route path="/app" element={<Suspense fallback={<Loader />}><Layout /></Suspense>}>
               <Route index element={<TableauDeBord />} />
               <Route path="entreprises" element={<Entreprises />} />
               {/* Vue plateforme, distincte de `:entrepriseId/utilisateurs` qui

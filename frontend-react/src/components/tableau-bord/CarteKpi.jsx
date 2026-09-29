@@ -35,6 +35,7 @@ export default function CarteKpi({
   ratio = null,
   vers = null,
   enAvant = false,
+  className,
 }) {
   const tons = {
     neutre: 'bg-ink-100 text-ink-500',
@@ -64,7 +65,8 @@ export default function CarteKpi({
           ? 'border-transparent bg-brand-700 text-white'
           : 'border-ink-100 bg-surface',
         vers &&
-          'transition-[transform,box-shadow] duration-300 ease-out motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-md motion-reduce:transition-none'
+          'transition-[transform,box-shadow] duration-300 ease-out motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-md motion-reduce:transition-none',
+        className
       )}
     >
       <div className="flex items-start justify-between gap-3">

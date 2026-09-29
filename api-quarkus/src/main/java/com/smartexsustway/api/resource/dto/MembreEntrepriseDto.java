@@ -24,6 +24,14 @@ public record MembreEntrepriseDto(
         UUID siteId,
         String siteNom,
         String statut,
+        /**
+         * Statut du compte lui-même — ACTIF, SUSPENDU… — à ne pas confondre
+         * avec {@code statut}, qui est celui du rattachement. Un compte
+         * suspendu ne peut plus se connecter du tout ; un rattachement révoqué
+         * ne lui retire qu'une organisation. L'administration des comptes a
+         * besoin des deux pour dire lequel des deux états elle montre.
+         */
+        String statutCompte,
         OffsetDateTime dateAffectation
 ) {
     public static MembreEntrepriseDto depuis(UtilisateurEntreprise rattachement) {
@@ -42,6 +50,7 @@ public record MembreEntrepriseDto(
                 site != null ? site.getId() : null,
                 site != null ? site.getNom() : null,
                 rattachement.getStatut().name(),
+                utilisateur.getStatut() == null ? null : utilisateur.getStatut().name(),
                 rattachement.getDateAffectation()
         );
     }

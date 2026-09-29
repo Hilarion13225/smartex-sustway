@@ -45,18 +45,23 @@ public class AnalyseTransactionnelle {
     /**
      * Critères que la passe traitera.
      *
-     * Ceux que la mission porte réellement, moins ceux qui portent déjà une
-     * évaluation : une analyse par critère, définitive. Le filtre est ici en
+     * Ceux que la mission porte réellement, moins ceux qui ont déjà été
+     * instruits : une analyse par critère, définitive. Le filtre est ici en
      * plus de la garde du service, non pour la doubler mais pour que la passe
      * ne parcoure pas ce qu'elle ne traitera pas — sans lui, le compteur
      * annonçait quatre-vingt-douze critères pour n'en analyser que quelques-uns.
+     *
+     * « Instruit » et non « porte une évaluation » : un critère qui ne porte
+     * qu'un constat d'absence reste dans la liste. C'est ce qui rend le
+     * constat réversible — la passe y repasse, et l'analysera pour de bon le
+     * jour où l'organisation l'aura renseigné.
      */
     @Transactional
     public List<UUID> idsDesCriteresAAnalyser(UUID auditId) {
         return auditCritereRepository.parAudit(auditId).stream()
                 .filter(AuditCritere::isActif)
                 .filter(AuditCritere::isApplicable)
-                .filter(c -> evaluationRepository.laPlusRecenteParAuditCritere(c.getId()).isEmpty())
+                .filter(c -> !evaluationRepository.instruit(c.getId()))
                 .map(AuditCritere::getId)
                 .toList();
     }
@@ -72,7 +77,7 @@ public class AnalyseTransactionnelle {
         if (resultat instanceof AnalyseCritereService.Resultat.Analyse) {
             return Issue.ANALYSE;
         }
-        if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser
+        if (resultat instanceof AnalyseCritereService.Resultat.AbsenceConstatee
                 || resultat instanceof AnalyseCritereService.Resultat.DejaAnalyse) {
             // « Déjà analysé » se range avec « rien à analyser » : dans les deux
             // cas la passe n'avait pas à travailler. Le ranger dans les échecs

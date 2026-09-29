@@ -1,5 +1,6 @@
 package com.smartexsustway.api.resource.dto;
 
+import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Exigence;
 import com.smartexsustway.api.domain.entity.PreuveAttendue;
 import com.smartexsustway.api.domain.entity.RegleAnalyse;
@@ -61,6 +62,22 @@ public record ProvenanceDto(
      * avec confiance.
      */
     public record SourceDto(String texte, Map<String, Object> localisation, BigDecimal confiance) {
+    }
+
+    /**
+     * Provenance d'un critère.
+     *
+     * Les trois champs de source restent nuls : V58 ne les a posés que sur
+     * `exigence`, `preuve_attendue` et `regle_analyse`, et le service d'agents
+     * ne mesure pas d'où il tire la structure du référentiel — seulement d'où
+     * il tire son contenu. Les renseigner par défaut donnerait une
+     * traçabilité de façade.
+     */
+    public static ProvenanceDto depuis(Critere c) {
+        return construire(c.getOrigine(), c.getOrigineInitiale(),
+                c.getValideePar(), c.getValideeLe(),
+                c.getRejeteePar(), c.getRejeteeLe(), c.getMotifRejet(),
+                null, null, null);
     }
 
     public static ProvenanceDto depuis(Exigence e) {

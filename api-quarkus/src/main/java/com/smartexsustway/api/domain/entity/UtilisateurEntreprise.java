@@ -47,8 +47,14 @@ public class UtilisateurEntreprise {
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private Utilisateur utilisateur;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "entreprise_id", nullable = false)
+    /**
+     * Absente pour les rôles de plateforme — SUPER_ADMIN, ADMIN_AUDIT — qui
+     * appartiennent à l'éditeur et non aux organisations évaluées. Un
+     * déclencheur (V76) impose la règle dans les deux sens : rôle interne sans
+     * entreprise, rôle client avec.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "entreprise_id")
     private Entreprise entreprise;
 
     /** Optionnel : absent si l'utilisateur est rattaché à l'entreprise entière. */

@@ -168,7 +168,7 @@ services:
       # reseau) - a ajuster si l'IP change (voir "ipconfig"/Get-NetIPAddress).
       # 127.0.0.1:5176 / localhost:5176 : serveur Vite natif (hors Docker),
       # utilise pour les verifications rapides sans reconstruire l'image.
-      SMARTEX_CORS_ORIGINS: http://localhost:5175,http://192.168.1.7:5175,http://127.0.0.1:5176,http://localhost:5176,http://192.168.1.7:5176
+      SMARTEX_CORS_ORIGINS: http://localhost:5175,http://192.168.1.29:5175,http://127.0.0.1:5176,http://localhost:5176,http://192.168.1.29:5176
       SMARTEX_API_BASE_URL: http://localhost:8090
       # Sans cette variable, les liens envoyes par email (verification de
       # compte, reinitialisation de mot de passe, invitation) retombent sur

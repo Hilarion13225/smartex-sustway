@@ -644,7 +644,7 @@ export default function Layout() {
               qui connaît un identifiant de mission sans en connaître le nom
               peut les relire ici plutôt que de refaire l'appel pour un seul
               libellé. Rien n'est chargé de plus pour les exposer. */}
-          <Outlet context={{ missions: missionsCourantes }} />
+          <Outlet context={{ missions: missionsCourantes, entrepriseCouranteId }} />
         </main>
       </div>
     </div>
