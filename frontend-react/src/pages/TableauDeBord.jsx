@@ -1,15 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { Link, useOutletContext } from 'react-router-dom';
 import {
   ArrowRight,
-  Building2,
   ClipboardList,
   Download,
-  FileText,
   FolderOpen,
   Gauge,
   Plus,
-  Target,
   TriangleAlert,
 } from 'lucide-react';
 import Revele from '../components/Revele';
@@ -20,7 +17,7 @@ import TableMissions from '../components/tableau-bord/TableMissions';
 import PanneauAlertes from '../components/tableau-bord/PanneauAlertes';
 import PanneauIa from '../components/tableau-bord/PanneauIa';
 import FilActivite from '../components/tableau-bord/FilActivite';
-import BandeauReprise from '../components/tableau-bord/BandeauReprise';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useApiAuth } from '../auth/useApiAuth';
 import { ROLES_ADMINISTRATION_ENTREPRISE, ROLES_SUPERVISION } from '../auth/permissions';
 import {
@@ -89,32 +86,27 @@ function couleurAction(action) {
  * client faute d'endpoint d'agrégation multi-entreprises.
  */
 export default function TableauDeBord() {
-  const { entreprises, utilisateur, peut, roleCourant } = useApiAuth();
+  const { entreprises: toutesEntreprises, utilisateur, peut, roleCourant } = useApiAuth();
+  const { entrepriseCouranteId } = useOutletContext() ?? {};
   const couleursRisque = useCouleursRisque();
-  // Même permission que la page des missions : proposer une création à qui
-  // ne peut pas créer donne un raccourci qui mène à une impasse.
-  //
-  // La formule est celle de l'organisation vers laquelle le raccourci pointe
-  // — `entreprises[0]`, la même que `premiereEntreprise` plus bas, dont
-  // chaque usage de cette permission dépend. Cette page est multi-organisations,
-  // mais le lien, lui, en vise une seule : c'est sa formule qui décide, comme
-  // le fait déjà AuditsListe une fois la page ouverte.
-  //
-  // L'omettre reviendrait à replier sur FREE (voir permissions.js) et à
-  // masquer le raccourci pour tout le monde. Le backend reste l'autorité :
-  // ce contrôle n'évite qu'un aller-retour vers un bouton absent.
-  const peutCreerMission = peut('audit:creer', entreprises[0]?.formuleCode);
-  // Miroir d'AutorisationService.ROLES_ADMINISTRATION_ENTREPRISE, seule
-  // famille de rôles à laquelle l'API ouvre le journal d'audit.
-  const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
 
   const superviseur = ROLES_SUPERVISION.has(roleCourant);
   const collaborateur = roleCourant === 'COLLABORATEUR';
-  const plusieursOrganisations = superviseur || entreprises.length > 1;
 
-  // La collecte vit dans `lib/portefeuille.js` : le classement, la comparaison
-  // et l'en-tête en ont besoin aussi, et trois copies de la même boucle
-  // finissaient par rendre des chiffres qui ne concordaient plus.
+  // Quand une organisation est choisie dans la sidebar, le tableau de bord
+  // se concentre dessus. Un superviseur ou un compte multi-organisations
+  // sans selection voit le portefeuille entier.
+  const entreprises = useMemo(() => {
+    if (!entrepriseCouranteId) return toutesEntreprises;
+    const trouvee = toutesEntreprises.filter((e) => e.id === entrepriseCouranteId);
+    return trouvee.length > 0 ? trouvee : toutesEntreprises;
+  }, [toutesEntreprises, entrepriseCouranteId]);
+
+  const plusieursOrganisations = superviseur || toutesEntreprises.length > 1;
+
+  const peutCreerMission = peut("audit:creer", entreprises[0]?.formuleCode);
+  const peutLireLeJournal = ROLES_ADMINISTRATION_ENTREPRISE.has(roleCourant);
+
   const { missions, historique, journal, chargement } = usePortefeuille(entreprises, {
     avecJournal: peutLireLeJournal,
   });
@@ -418,14 +410,14 @@ export default function TableauDeBord() {
   if (chargement) return <Loader message="Chargement de vos missions…" />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* --- Accueil et action principale --- */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           {/* Convention P4.3 : H1 = 20 px / 600, comme `PageTitre`. Cet en-tete
               reprend la meme structure (titre + description) sans passer par le
               composant ; il en suit donc aussi la taille. */}
-          <h1 className="text-xl font-semibold text-ink-900">Bonjour, {prenom} 👋</h1>
+          <h1 className="text-xl font-semibold text-ink-900">Bonjour, {prenom}</h1>
           {/* Un superviseur ne regarde pas « ses » missions mais celles de ses
               organisations clientes : le dire autrement lui faisait lire un
               écran qui n'était pas le sien. */}
@@ -464,95 +456,41 @@ export default function TableauDeBord() {
         <OrganisationsATraiter bilan={aTraiter} total={lignesPortefeuille.length} />
       ) : null}
 
-      {/* --- Indicateurs --- */}
-      {/*
-       * Les indicateurs ouvrent le tableau de bord.
-       *
-       * Ils venaient apres les missions et les alertes, au motif que celles-ci
-       * menent a un ecran ou agir quand les indicateurs ne portaient qu'un
-       * etat. L'objection tombe : chaque carte est desormais un lien vers
-       * l'ecran qui detaille son chiffre. Un indicateur qu'on peut suivre
-       * jusqu'a sa source n'est plus un constat, et c'est par la qu'on lit un
-       * tableau de bord — le chiffre d'abord, le detail ensuite.
-       *
-       * Quatre cartes et non cinq : cinq sur une grille de quatre colonnes
-       * laissaient une orpheline sur une seconde ligne. Les plans
-       * d'amelioration rejoignent la consolidation, ou ils sont a leur place.
-       *
-       * La premiere carte porte le fond de marque. Une seule : la mise en
-       * avant ne dit quelque chose que si elle designe.
-       */}
+      {/* --- Score et indicateurs --- */}
       <Revele>
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-          {/*
-           * Le score ouvre la rangee, et porte le fond de marque.
-           *
-           * Il vivait en troisieme position, sous « Notation consolidee », a
-           * quelque huit cents pixels du haut de page : le chiffre que le
-           * produit vend n'etait pas sur le premier ecran. La place qu'il prend
-           * etait celle de « Missions actives », qui disait la meme chose que
-           * « En cours » — deux actives, une en cours, une en brouillon.
-           *
-           * Provisoire sous la moitie du perimetre analyse, comme partout
-           * ailleurs : un score assis sur un critere sur quatre-vingt-douze ne
-           * se donne pas pour un fait.
-           */}
-          <CarteKpi
-            icone={Gauge}
-            ton="marque"
-            enAvant
-            valeur={consolide.score == null ? '—' : `${formaterScore(consolide.score)} / 5`}
-            libelle={
-              consolide.score != null && kpis.completion < 50 ? 'Score global (provisoire)' : 'Score global'
-            }
-            precision={
-              consolide.score == null
-                ? 'Aucune mission notée pour l’instant'
-                : kpis.completion < 50
-                  ? `Sur ${kpis.completion} % du périmètre analysé`
-                  : `Sur ${consolide.missions} mission${consolide.missions > 1 ? 's' : ''} évaluée${consolide.missions > 1 ? 's' : ''}`
-            }
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <ResumeScore
+            consolide={consolide}
+            kpis={kpis}
+            evolution={evolution}
+            syntheseePlans={syntheseePlans}
+            premiereEntreprise={premiereEntreprise}
           />
-          <CarteKpi
-            icone={ClipboardList}
-            valeur={kpis.enCours}
-            libelle="Missions en cours"
-            vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
-            precision={`${kpis.actives} active${kpis.actives > 1 ? 's' : ''} · ${kpis.brouillons} en brouillon`}
-          />
-          <CarteKpi
-            icone={TriangleAlert}
-            ton="alerte"
-            valeur={kpis.aRisque}
-            libelle="À risque"
-            vers={premiereEntreprise ? `/app/${premiereEntreprise}/non-conformites` : null}
-            precision="Au moins un écart critique"
-          />
-          {/* Le taux de completion ne mene nulle part : il agrege tout le
-              portefeuille, et aucun ecran ne le detaille tel quel. Il garde
-              donc son icone plutot qu'une fleche. */}
-          {/*
-           * « Analyse » et non « completion ».
-           *
-           * Ce chiffre compte les criteres notes par l'IA — `nombreCriteresEvalues`
-           * du score — et non les reponses de l'organisation. Sous le libelle
-           * « taux de completion », il annoncait 1 % quand quatre criteres sur
-           * quatre-vingt-douze etaient renseignes, et contredisait la page d'une
-           * mission qui dit « 4 renseignes ». Deux comptes distincts portaient le
-           * meme mot.
-           *
-           * Compter la collecte ici demanderait de charger les criteres de chaque
-           * mission du portefeuille — un appel par mission. Le libelle exact coute
-           * moins cher qu'un chiffre approchant.
-           */}
-          <CarteKpi
-            icone={Gauge}
-            ton="succes"
-            valeur={`${kpis.completion}%`}
-            libelle="Taux d’analyse"
-            ratio={kpis.completion}
-            precision={`${kpis.totalEvalues} critère${kpis.totalEvalues > 1 ? 's' : ''} analysé${kpis.totalEvalues > 1 ? 's' : ''} par l’IA`}
-          />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+            <CarteKpi
+              icone={ClipboardList}
+              valeur={kpis.enCours}
+              libelle="Missions en cours"
+              vers={premiereEntreprise ? `/app/${premiereEntreprise}/audits` : null}
+              precision={kpis.actives + " active" + (kpis.actives > 1 ? "s" : "") + " \u00b7 " + kpis.brouillons + " en brouillon"}
+            />
+            <CarteKpi
+              icone={TriangleAlert}
+              ton="alerte"
+              valeur={kpis.aRisque}
+              libelle="\u00c0 risque"
+              vers={premiereEntreprise ? `/app/${premiereEntreprise}/non-conformites` : null}
+              precision="Au moins un \u00e9cart critique"
+            />
+            <CarteKpi
+              icone={Gauge}
+              ton="succes"
+              valeur={`${kpis.completion}%`}
+              libelle="Taux d\u2019analyse"
+              ratio={kpis.completion}
+              precision={kpis.totalEvalues + " crit\u00e8re" + (kpis.totalEvalues > 1 ? "s" : "") + " analys\u00e9" + (kpis.totalEvalues > 1 ? "s" : "") + " par l\u2019IA"}
+            />
+          </div>
         </div>
       </Revele>
 
@@ -566,7 +504,7 @@ export default function TableauDeBord() {
         <div className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <Card className="min-w-0 p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold text-ink-900">Missions à traiter</h2>
+              <h2 className="font-display text-base font-semibold text-ink-900">Missions à traiter</h2>
               {premiereEntreprise ? (
                 <Link
                   to={`/app/${premiereEntreprise}/audits`}
@@ -602,78 +540,14 @@ export default function TableauDeBord() {
         </div>
       </Revele>
 
-      {/* --- Consolidation du portefeuille --- */}
-      {consolide.missions > 0 ? (
-        <Revele delai={30}>
-          <Card className="p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="text-base font-semibold text-ink-900">Notation consolidée</h2>
-              <p className="text-xs text-ink-500">
-                Sur {consolide.missions} mission{consolide.missions > 1 ? 's' : ''} évaluée
-                {consolide.missions > 1 ? 's' : ''}
-              </p>
-            </div>
-            {/*
-             * Les plans d'amelioration tiennent ici plutot que dans la rangee
-             * d'indicateurs : ils disent ce qu'on fait des ecarts que la
-             * notation vient de mesurer, et se lisent donc apres elle.
-             */}
-            <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-              <dl className="grid grid-cols-3 gap-3 sm:gap-4">
-              <div className="rounded-xl border border-ink-100 p-4">
-                <dd className="text-2xl font-bold tabular-nums text-ink-900">
-                  {consolide.note.toFixed(0)}
-                </dd>
-                <dt className="mt-1 text-xs text-ink-500">Note totale</dt>
-              </div>
-              <div className="rounded-xl border border-ink-100 p-4">
-                <dd className="text-2xl font-bold tabular-nums text-ink-900">
-                  {consolide.coefficient.toFixed(0)}
-                </dd>
-                <dt className="mt-1 text-xs text-ink-500">Coefficient total</dt>
-              </div>
-              <div className="rounded-xl border border-brand-100 bg-brand-50 p-4 dark:border-brand-500/20 dark:bg-brand-500/10">
-                <dd className="text-2xl font-bold tabular-nums text-brand-700 dark:text-brand-300">
-                  {consolide.score == null ? '—' : formaterScore(consolide.score)}
-                </dd>
-                <dt className="mt-1 text-xs text-brand-700/80 dark:text-brand-300/80">Score / 5</dt>
-              </div>
-              </dl>
-          <CarteKpi
-            icone={Target}
-            ton="neutre"
-            valeur={syntheseePlans.total}
-            libelle="Plans d’amélioration"
-            ratio={syntheseePlans.total === 0 ? null : syntheseePlans.avancement}
-            vers={premiereEntreprise ? `/app/${premiereEntreprise}/plans` : null}
-            precision={
-              syntheseePlans.total === 0
-                ? 'Aucun plan en cours'
-                : `${syntheseePlans.actifs} actif(s) · ${syntheseePlans.avancement}% d’avancement`
-            }
-          />
-            </div>
-            <p className="mt-3 text-xs text-ink-500">
-              Le score du portefeuille est le quotient des deux sommes, non la moyenne des scores de
-              mission : une mission de quatre-vingt-douze critères y pèse plus qu'une de seize.
-            </p>
-          </Card>
-        </Revele>
-      ) : null}
-
       {/* --- Graphiques --- */}
-      <Revele delai={90}>
-        <div className="grid gap-5 lg:grid-cols-2">
+      <Revele delai={60}>
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <Card className="p-5">
-            <h2 className="text-base font-semibold text-ink-900">Évolution des missions</h2>
+            <h2 className="font-display text-base font-semibold text-ink-900">Évolution du score</h2>
             <p className="mt-0.5 text-xs text-ink-500">
               Score moyen du portefeuille sur les six derniers mois.
             </p>
-            {/*
-             * Trois etats, parce qu'une courbe ne dit quelque chose qu'a partir
-             * de deux points. A un seul, on montre le chiffre — c'est tout ce
-             * qu'on sait — plutot qu'un point isole sur six mois vides.
-             */}
             <div className="mt-4 h-64">
               {evolution.moisRenseignes === 0 ? (
                 <p className="flex h-full items-center justify-center rounded-xl border border-dashed border-ink-200 px-4 text-center text-xs text-ink-500">
@@ -688,105 +562,163 @@ export default function TableauDeBord() {
                     Score moyen en {evolution.dernierScore?.mois}
                   </p>
                   <p className="mt-3 max-w-xs text-xs text-ink-500">
-                    Un seul mois est renseigné : la courbe apparaîtra au second relevé, quand il y aura une
-                    évolution à montrer.
+                    Un seul mois renseigné — la courbe apparaîtra au second relevé.
                   </p>
                 </div>
               ) : (
                 <GraphiqueLigne
                   labels={evolution.labels}
-                  series={[{ label: 'Score moyen (%)', data: evolution.valeurs, couleur: COULEURS.rouge }]}
+                  series={[{ label: "Score moyen (%)", data: evolution.valeurs, couleur: COULEURS.rouge }]}
                 />
               )}
             </div>
           </Card>
 
-          <Card className="p-5">
-            <h2 className="text-base font-semibold text-ink-900">Répartition des risques</h2>
-            <p className="mt-0.5 text-xs text-ink-500">
-              {missionsVue.length} mission{missionsVue.length > 1 ? 's' : ''} au total.
-            </p>
-            <div className="mt-4 h-64">
-              <GraphiqueAnneau
-                labels={['Élevé', 'Moyen', 'Faible', 'Non évalué']}
-                data={[
-                  repartitionRisques.ELEVE,
-                  repartitionRisques.MOYEN,
-                  repartitionRisques.FAIBLE,
-                  repartitionRisques.NON_EVALUE,
-                ]}
-                couleurs={[
-                  couleursRisque.eleve,
-                  couleursRisque.moyen,
-                  couleursRisque.faible,
-                  couleursRisque.nonEvalue,
-                ]}
-              />
-            </div>
-          </Card>
+          <div className="space-y-5">
+            <Card className="p-5">
+              <h2 className="font-display text-base font-semibold text-ink-900">Risques</h2>
+              <p className="mt-0.5 text-xs text-ink-500">
+                {missionsVue.length} mission{missionsVue.length > 1 ? "s" : ""} au total.
+              </p>
+              <div className="mt-4 h-48">
+                <GraphiqueAnneau
+                  labels={["\u00c9lev\u00e9", "Moyen", "Faible", "Non \u00e9valu\u00e9"]}
+                  data={[
+                    repartitionRisques.ELEVE,
+                    repartitionRisques.MOYEN,
+                    repartitionRisques.FAIBLE,
+                    repartitionRisques.NON_EVALUE,
+                  ]}
+                  couleurs={[
+                    couleursRisque.eleve,
+                    couleursRisque.moyen,
+                    couleursRisque.faible,
+                    couleursRisque.nonEvalue,
+                  ]}
+                />
+              </div>
+            </Card>
+
+            <PanneauIa
+              metriques={metriquesIa}
+              lien={premiereEntreprise && !collaborateur ? `/app/${premiereEntreprise}/pipeline-ia` : null}
+            />
+          </div>
         </div>
       </Revele>
 
-      {/* --- Analyse IA et activité --- */}
-      <Revele delai={120}>
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <PanneauIa
-            metriques={metriquesIa}
-            // Le Pipeline IA a ete retire de la navigation du collaborateur :
-            // l'y renvoyer depuis l'accueil rouvrirait par la fenetre ce que
-            // le menu ferme. Les trois compteurs restent, ce sont des
-            // resultats, pas du raisonnement.
-            lien={premiereEntreprise && !collaborateur ? `/app/${premiereEntreprise}/pipeline-ia` : null}
-          />
-
+      {/* --- Activité récente --- */}
+      {peutLireLeJournal && groupesActivite.length > 0 ? (
+        <Revele delai={90}>
           <Card className="p-5">
-            <h2 className="text-base font-semibold text-ink-900">Activité récente</h2>
+            <h2 className="font-display text-base font-semibold text-ink-900">Activité récente</h2>
             <p className="mt-0.5 text-xs text-ink-500">Dernières actions enregistrées au journal.</p>
             <div className="mt-4">
               <FilActivite groupes={groupesActivite} />
             </div>
           </Card>
-        </div>
-      </Revele>
+        </Revele>
+      ) : null}
 
-      {/* --- Actions rapides --- */}
-      <Revele delai={150}>
-        <div className="flex flex-wrap gap-3">
-          {premiereEntreprise ? (
-            <>
-              {peutCreerMission ? (
-                <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
-                  <Plus className="h-4 w-4" aria-hidden />
-                  Nouvelle mission d’audit
-                </Link>
-              ) : (
-                <Link to={`/app/${premiereEntreprise}/audits`} className="btn-primary">
-                  <ClipboardList className="h-4 w-4" aria-hidden />
-                  Mes missions
-                </Link>
-              )}
-              {peutCreerMission ? (
-                <Link to="/app/entreprises" className="btn-secondary">
-                  <Building2 className="h-4 w-4" aria-hidden />
-                  Gérer les organisations
-                </Link>
-              ) : null}
-              <Link to={`/app/${premiereEntreprise}/rapports`} className="btn-secondary">
-                <FileText className="h-4 w-4" aria-hidden />
-                Rapports RSE, ESG & DD
-              </Link>
-            </>
-          ) : null}
+      {/* --- Export --- */}
+      {missionsVue.length > 0 ? (
+        <div className="flex justify-end">
           <button type="button" onClick={exporterMissions} className="btn-secondary">
             <Download className="h-4 w-4" aria-hidden />
             Exporter les missions
           </button>
         </div>
-      </Revele>
+      ) : null}
+    </div>
+  );
+}
 
-      <Revele delai={180}>
-        <BandeauReprise />
-      </Revele>
+/**
+ * Score global du portefeuille : la mesure que le produit vend.
+ *
+ * Ce bloc remplace à la fois l'ancien CarteKpi « Score global » et la section
+ * « Notation consolidée » — l'information n'est plus dite deux fois, et le
+ * chiffre principal occupe la place qu'il mérite sur le premier écran.
+ */
+function ResumeScore({ consolide, kpis, evolution, syntheseePlans, premiereEntreprise }) {
+  const aucuneNote = consolide.score == null;
+  const provisoire = !aucuneNote && kpis.completion < 50;
+
+  // Tendance : comparer le dernier mois renseigné au précédent.
+  const tendance = (() => {
+    if (!evolution || evolution.moisRenseignes < 2) return null;
+    const valeurs = evolution.valeurs.filter((v) => v != null);
+    if (valeurs.length < 2) return null;
+    const dernier = valeurs[valeurs.length - 1];
+    const precedent = valeurs[valeurs.length - 2];
+    const delta = dernier - precedent;
+    if (delta > 0) return { icone: TrendingUp, signe: "+", valeur: delta, couleur: "text-emerald-300" };
+    if (delta < 0) return { icone: TrendingDown, signe: "", valeur: delta, couleur: "text-rose-300" };
+    return { icone: Minus, signe: "", valeur: 0, couleur: "text-white/50" };
+  })();
+
+  return (
+    <div className="flex flex-col justify-between rounded-2xl bg-brand-700 p-5 shadow-sm sm:p-6">
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-white/65">
+          {provisoire ? "Score global (provisoire)" : "Score global"}
+        </p>
+        <div className="mt-3 flex items-baseline gap-3">
+          <p className="text-4xl font-bold tabular-nums text-white sm:text-5xl">
+            {aucuneNote ? "\u2014" : formaterScore(consolide.score)}
+          </p>
+          <span className="text-lg font-normal text-white/50">/ 5</span>
+          {tendance && tendance.valeur !== 0 ? (
+            <span className={`ml-auto flex items-center gap-1 text-sm font-medium ${tendance.couleur}`}>
+              <tendance.icone className="h-4 w-4" aria-hidden />
+              {tendance.signe}{Math.abs(tendance.valeur)}%
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-3">
+        {/* Jauge de couverture */}
+        {!aucuneNote ? (
+          <div>
+            <div className="flex items-center justify-between text-xs text-white/60">
+              <span>Périmètre analysé</span>
+              <span className="tabular-nums">{kpis.completion}%</span>
+            </div>
+            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/15">
+              <div
+                className="h-full rounded-full bg-white/80 transition-[width] duration-700 ease-out"
+                style={{ width: `${kpis.completion}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-white/55">
+          {aucuneNote ? (
+            <span>Aucune mission notée pour l'instant</span>
+          ) : (
+            <>
+              <span className="tabular-nums">
+                {consolide.missions}{" mission"}{consolide.missions > 1 ? "s" : ""}{" \u00e9valu\u00e9e"}{consolide.missions > 1 ? "s" : ""}
+              </span>
+              {syntheseePlans.actifs > 0 ? (
+                <span className="tabular-nums">
+                  {syntheseePlans.actifs} plan{syntheseePlans.actifs > 1 ? "s" : ""} actif{syntheseePlans.actifs > 1 ? "s" : ""}
+                  {premiereEntreprise ? (
+                    <Link
+                      to={`/app/${premiereEntreprise}/plans`}
+                      className="ml-1 text-white/70 underline underline-offset-2 transition-colors hover:text-white"
+                    >
+                      voir
+                    </Link>
+                  ) : null}
+                </span>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -960,3 +892,4 @@ function MesActionsDuJour({ actions, entreprises }) {
     </Revele>
   );
 }
+
