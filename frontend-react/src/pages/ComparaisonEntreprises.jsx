@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Columns3, Download } from 'lucide-react';
+import { Check, Columns3, Download } from 'lucide-react';
 import Revele from '../components/Revele';
 import Breadcrumb from '../components/Breadcrumb';
 import { Alerte, Card, CardHeader, Loader, PageTitre, Vide } from '../components/ui';
@@ -82,7 +82,7 @@ export default function ComparaisonEntreprises() {
       <PageTitre
         icone={Columns3}
         titre="Comparer les organisations"
-        description={`Comparez jusqu’à ${MAX_ENTREPRISES} organisations côte à côte, sur le score global et le profil par domaine de leur mission la plus récente.`}
+        description={`Comparez jusqu'à ${MAX_ENTREPRISES} organisations côte à côte, sur le score global et le profil par domaine de leur mission la plus récente.`}
         actions={
           resultats ? (
             <button type="button" className="btn-secondary" onClick={exporter}>
@@ -95,7 +95,12 @@ export default function ComparaisonEntreprises() {
 
       <Revele>
         <Card className="mb-6 p-5">
-          <CardHeader titre="Organisations comparées" sousTitre={`${MAX_ENTREPRISES} organisations au maximum`} />
+          <CardHeader titre="Organisations comparées" />
+          <p className="mt-1 text-sm text-ink-500">
+            {selection.length === 0
+              ? "Cliquez sur les organisations à comparer (2 minimum, 4 maximum)."
+              : `${selection.length} organisation${selection.length > 1 ? "s" : ""} sur ${MAX_ENTREPRISES}.`}
+          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {entreprises.map((e) => {
               const active = selection.includes(e.id);
@@ -107,13 +112,14 @@ export default function ComparaisonEntreprises() {
                   disabled={!active && selection.length >= MAX_ENTREPRISES}
                   onClick={() => basculer(e.id)}
                 >
+                  {active ? <Check className="h-4 w-4" aria-hidden /> : null}
                   {e.raisonSociale}
                 </button>
               );
             })}
           </div>
           {entreprises.length === 0 ? (
-            <p className="mt-3 text-sm text-ink-500">Aucune organisation accessible pour l’instant.</p>
+            <p className="mt-3 text-sm text-ink-500">Aucune organisation accessible pour l'instant.</p>
           ) : (
             <button
               type="button"
