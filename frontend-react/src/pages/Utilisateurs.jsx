@@ -27,12 +27,12 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 /**
  * Rôles attribuables depuis ce formulaire.
  *
- * RESPONSABLE_ENTREPRISE gère l'organisation et ses missions.
- * COLLABORATEUR dépose des preuves et répond aux critères, sans
- * pouvoir administrer ni lancer d'analyse.
+ * Seul COLLABORATEUR est proposé : il dépose des preuves et répond
+ * aux critères, sans pouvoir administrer ni lancer d'analyse.
+ * RESPONSABLE_ENTREPRISE est le créateur de l'organisation (RG05),
+ * il n'est pas attribué manuellement.
  */
-const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE', 'COLLABORATEUR'];
-const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT];
+const ROLES_ATTRIBUABLES_CLIENT = ['COLLABORATEUR'];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
