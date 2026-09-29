@@ -84,15 +84,17 @@ export const PERMISSIONS_PAR_ROLE = {
 const RESTRICTIONS_PAR_PLAN = {
   STANDARD: ['rapport:detaille', 'bailleur:consulter'],
   AVANCEES: [],
+  // Sans formule = tout bloqué. L'utilisateur doit souscrire un abonnement.
+  AUCUNE: Object.keys(PERMISSIONS_PAR_ROLE.RESPONSABLE_ENTREPRISE),
 };
 
 /**
  * Ramène un code de formule à une clé connue de RESTRICTIONS_PAR_PLAN.
- * Une formule absente ou inconnue retombe sur STANDARD (le plan le plus
- * restrictif restant depuis la suppression de FREE).
+ * Une formule absente ou inconnue bloque tout : l'utilisateur doit
+ * souscrire un abonnement avant de pouvoir agir.
  */
 function formuleEffective(plan) {
-  return typeof plan === 'string' && plan in RESTRICTIONS_PAR_PLAN ? plan : 'STANDARD';
+  return typeof plan === 'string' && plan in RESTRICTIONS_PAR_PLAN ? plan : 'AUCUNE';
 }
 
 // Personnel interne Smartex. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN

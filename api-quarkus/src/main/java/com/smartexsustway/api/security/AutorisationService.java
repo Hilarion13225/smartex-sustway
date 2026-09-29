@@ -87,18 +87,17 @@ public class AutorisationService {
      * côté frontend (auth/permissions.js) : les deux modèles doivent rester
      * synchronisés, l'un pour l'affichage, l'autre pour l'autorisation réelle.
      */
+    /**
+     * Toutes les permissions client : utilis&eacute; comme restriction totale
+     * quand aucune formule n'est souscrite.
+     */
+    private static final Set<String> TOUTES_PERMISSIONS_CLIENT = Set.of(
+            "entreprise:creer", "entreprise:modifier", "membres:gerer",
+            "audit:creer", "audit:modifier", "audit:cloturer", "analyse:executer",
+            "evaluation:valider", "preuve:deposer", "rapport:consulter",
+            "rapport:detaille", "bailleur:consulter");
+
     private static final Map<String, Set<String>> RESTRICTIONS_PAR_PLAN = Map.of(
-            // `evaluation:valider` est retirée de FREE par arbitrage produit :
-            // entériner un résultat d'audit est un geste de la formule payante.
-            //
-            // Conséquence assumée, à connaître avant d'y toucher : les deux
-            // autres capacités du cycle de vie d'une mission —
-            // `analyse:executer` et `audit:cloturer` — ne sont, elles, retirées
-            // par aucun plan. Une entreprise rétrogradée vers FREE peut donc
-            // encore lancer des analyses et clôturer, mais plus valider : ses
-            // missions en cours restent sans issue tant qu'elle ne reprend pas
-            // une formule payante. C'est le point de friction voulu ; il n'est
-            // pas le produit d'un oubli.
             "STANDARD", Set.of("rapport:detaille", "bailleur:consulter"),
             "AVANCEES", Set.of()
     );
@@ -180,11 +179,14 @@ public class AutorisationService {
         // pouvoir rendre sa valeur par défaut. Le repli sur FREE annoncé par
         // la javadoc ne s'appliquait donc jamais, et une mission sans formule
         // rendait 500 au lieu du refus attendu.
-        String formuleEffective = formuleCode == null ? "STANDARD" : formuleCode;
+        String formuleEffective = formuleCode == null ? null : formuleCode;
 
         String roleCode = rattachement.getRole().getCode();
         if (!ROLES_INTERNES_SMARTEX.contains(roleCode)
-                && RESTRICTIONS_PAR_PLAN.getOrDefault(formuleEffective, RESTRICTIONS_PAR_PLAN.get("STANDARD")).contains(codePermission)) {
+                && (formuleEffective == null
+                    ? TOUTES_PERMISSIONS_CLIENT
+                    : RESTRICTIONS_PAR_PLAN.getOrDefault(formuleEffective, TOUTES_PERMISSIONS_CLIENT)
+                   ).contains(codePermission)) {
             throw new ForbiddenException(
                     "Permission '%s' non disponible avec la formule %s".formatted(codePermission, formuleEffective));
         }
