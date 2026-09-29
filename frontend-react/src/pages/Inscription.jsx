@@ -115,23 +115,16 @@ export default function Inscription() {
   }, []);
 
   const formuleChoisie = formules.find((f) => f.code === plan);
-  const estFree = plan === 'FREE';
+  const estFree = false;
   const montant = formuleChoisie?.prix;
 
-  const etapes = estFree
-    ? [
-        ['formule', 'Formule'],
-        ['infos', 'Compte'],
-        ['verification', 'Vérification'],
-        ['confirmation', 'Confirmation'],
-      ]
-    : [
-        ['formule', 'Formule'],
-        ['infos', 'Compte & entreprise'],
-        ['verification', 'Vérification'],
-        ['paiement', 'Paiement'],
-        ['confirmation', 'Confirmation'],
-      ];
+  const etapes = [
+    ['formule', 'Formule'],
+    ['infos', 'Compte & entreprise'],
+    ['verification', 'Vérification'],
+    ['paiement', 'Paiement'],
+    ['confirmation', 'Confirmation'],
+  ];
   const indexCourant = etapes.findIndex(([cle]) => cle === etape);
 
   // Le focus suit l'étape, mais pas au premier affichage : la page vient de

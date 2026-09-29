@@ -38,7 +38,6 @@ export function pointsDescription(description) {
  * propres à la page commerciale.
  */
 export const SOUS_TITRES = {
-  FREE: 'Pour découvrir la plateforme',
   STANDARD: 'Pour les structures qui démarrent',
   AVANCEES: 'Pour les organisations en croissance',
 };
