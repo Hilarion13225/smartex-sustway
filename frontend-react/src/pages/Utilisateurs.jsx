@@ -39,7 +39,7 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
  * SUPER_ADMIN lui-même ne se délègue pas depuis l'application. EMPLOYE retiré
  * (décision produit, v1 : seul le responsable de l'entreprise est audité).
  */
-const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE', 'VISITEUR'];
+const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE'];
 const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT, 'ADMIN_AUDIT'];
 
 /**
@@ -377,7 +377,7 @@ export default function Utilisateurs() {
 function FormulaireMembre({ entrepriseId, membre, sites, rolesAttribuables, onTermine, onEnregistre }) {
   const [formulaire, setFormulaire] = useState({
     email: membre?.email ?? '',
-    roleCode: membre?.roleCode ?? 'VISITEUR',
+    roleCode: membre?.roleCode ?? 'RESPONSABLE_ENTREPRISE',
     siteId: membre?.siteId ?? '',
   });
   const [chargement, setChargement] = useState(false);

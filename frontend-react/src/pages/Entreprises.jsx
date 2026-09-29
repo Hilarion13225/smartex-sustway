@@ -69,7 +69,7 @@ export default function Entreprises() {
   // n'a encore aucune entreprise (rôle transitoire AUCUN_ROLE_ATTRIBUE,
   // absent du modèle de permissions — peut() renverrait toujours faux et
   // bloquerait la création de la toute première entreprise). Au-delà,
-  // un utilisateur déjà rattaché sans cette permission (VISITEUR) ne doit
+  // un utilisateur sans cette permission ne doit
   // plus voir un bouton qui échouerait au clic.
   // La formule évaluée est celle que le formulaire s'apprête à demander, et
   // non celle d'une organisation déjà créée : `entreprise:creer` porte sur
