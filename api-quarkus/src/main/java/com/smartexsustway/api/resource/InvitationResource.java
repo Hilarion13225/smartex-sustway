@@ -85,7 +85,7 @@ public class InvitationResource {
                 "INVITATION_ACCEPTEE", "invitation", invitation.getId());
 
         String jeton = jwtService.genererToken(utilisateur, invitation.getRole().getCode(), invitation.getEntreprise().getId().toString());
-        return Response.ok(ConnexionResponse.session(jeton)).build();
+        return Response.ok(ConnexionResponse.session(jeton, false)).build();
     }
 
     private Invitation trouverInvitation(String token) {

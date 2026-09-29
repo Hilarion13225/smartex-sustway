@@ -258,7 +258,7 @@ public class AuthResource {
         utilisateur.setMotDePasseHash(passwordService.hacher(requete.motDePasse()));
         auditLogService.journaliser(utilisateur.getId(), null, "MOT_DE_PASSE_REINITIALISE", "utilisateur", utilisateur.getId());
 
-        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur))).build();
+        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur), utilisateur.isDoitChangerMotDePasse())).build();
     }
 
     /**
@@ -294,7 +294,7 @@ public class AuthResource {
             return demarrerVerificationDeuxFa(utilisateur);
         }
 
-        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur))).build();
+        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur), utilisateur.isDoitChangerMotDePasse())).build();
     }
 
     /** Étape 2/2 : soumission du code 2FA, obtenu via /connexion lorsque deuxFaRequise=true. */
@@ -328,7 +328,7 @@ public class AuthResource {
         }
 
         auditLogService.journaliser(utilisateur.getId(), null, "2FA_CONNEXION_REUSSIE", "utilisateur", utilisateur.getId());
-        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur))).build();
+        return Response.ok(ConnexionResponse.session(emettreTokenSession(utilisateur), utilisateur.isDoitChangerMotDePasse())).build();
     }
 
     private Response demarrerVerificationDeuxFa(Utilisateur utilisateur) {

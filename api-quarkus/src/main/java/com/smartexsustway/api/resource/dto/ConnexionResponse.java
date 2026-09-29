@@ -12,13 +12,14 @@ public record ConnexionResponse(
         String methode,
         String tokenPreAuth,
         String token,
-        String typeToken
+        String typeToken,
+        boolean doitChangerMotDePasse
 ) {
-    public static ConnexionResponse session(String token) {
-        return new ConnexionResponse(false, null, null, token, "Bearer");
+    public static ConnexionResponse session(String token, boolean doitChangerMotDePasse) {
+        return new ConnexionResponse(false, null, null, token, "Bearer", doitChangerMotDePasse);
     }
 
     public static ConnexionResponse deuxFaRequise(String methode, String tokenPreAuth) {
-        return new ConnexionResponse(true, methode, tokenPreAuth, null, null);
+        return new ConnexionResponse(true, methode, tokenPreAuth, null, null, false);
     }
 }

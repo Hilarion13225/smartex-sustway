@@ -215,7 +215,31 @@ public class EmailService {
         envoyer(destinataire, sujet, texte, html, "l'invitation reste valide");
     }
 
-    /** Mot de passe oublié — voir AuthResource.motDePasseOublie / JwtService.PURPOSE_PASSWORD_RESET. */
+    /** Compte collaborateur cr&eacute;&eacute; par invitation : envoie les identifiants temporaires. */
+    public void envoyerCredentielsCollaborateur(String destinataire, String entrepriseNom,
+                                                 String roleNom, String motDePasseTemporaire,
+                                                 String lienConnexion) {
+        String sujet = "Votre compte SMARTEX SustWay — " + entrepriseNom;
+
+        String texte = """
+                Bonjour,
+
+                %s vous a ajout\u00e9(e) comme %s sur SMARTEX SustWay.
+
+                Votre compte est pr\u00eat. Connectez-vous avec :
+                  Email : %s
+                  Mot de passe temporaire : %s
+
+                Vous devrez changer ce mot de passe \u00e0 votre premi\u00e8re connexion.
+                %s
+
+                \u2014 L'\u00e9quipe technique SMARTEX Expertises
+                """.formatted(entrepriseNom, roleNom, destinataire, motDePasseTemporaire, lienConnexion);
+
+        envoyer(destinataire, sujet, texte, texte, "le mot de passe temporaire reste valide");
+    }
+
+    /** Mot de passe oubli&eacute; — voir AuthResource.motDePasseOublie / JwtService.PURPOSE_PASSWORD_RESET. */
     public void envoyerReinitialisationMotDePasse(String destinataire, String prenom, String lienReinitialisation) {
         String sujet = "Réinitialisez votre mot de passe — SMARTEX SustWay";
 

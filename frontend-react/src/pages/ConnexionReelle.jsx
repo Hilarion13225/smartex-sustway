@@ -15,9 +15,9 @@ import { ApiError } from '../lib/apiClient';
  */
 export default function ConnexionReelle() {
   const navigate = useNavigate();
-  const { connecter, confirmerDeuxFa } = useApiAuth();
+  const { connecter, confirmerDeuxFa, changerMotDePasse } = useApiAuth();
 
-  const [etape, setEtape] = useState('identifiants'); // 'identifiants' | '2fa'
+  const [etape, setEtape] = useState('identifiants'); // 'identifiants' | '2fa' | 'changer-mdp'
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [motDePasseVisible, setMotDePasseVisible] = useState(false);
@@ -27,6 +27,8 @@ export default function ConnexionReelle() {
   const [methode2fa, setMethode2fa] = useState(null);
   const [tokenPreAuth, setTokenPreAuth] = useState(null);
   const [code2fa, setCode2fa] = useState('');
+  const [nouveauMdp, setNouveauMdp] = useState('');
+  const [confirmationMdp, setConfirmationMdp] = useState('');
 
   async function soumettreIdentifiants(e) {
     e.preventDefault();
@@ -38,6 +40,8 @@ export default function ConnexionReelle() {
         setMethode2fa(reponse.methode);
         setTokenPreAuth(reponse.tokenPreAuth);
         setEtape('2fa');
+      } else if (reponse.doitChangerMotDePasse) {
+        setEtape('changer-mdp');
       } else {
         navigate('/app');
       }
@@ -62,7 +66,30 @@ export default function ConnexionReelle() {
     }
   }
 
+  async function soumettreChangementMdp(e) {
+    e.preventDefault();
+    setErreur(null);
+    if (nouveauMdp.length < 10) {
+      setErreur("Le mot de passe doit contenir au moins 10 caractères.");
+      return;
+    }
+    if (nouveauMdp !== confirmationMdp) {
+      setErreur("La confirmation ne correspond pas.");
+      return;
+    }
+    setChargement(true);
+    try {
+      await changerMotDePasse(motDePasse, nouveauMdp);
+      navigate('/app');
+    } catch (err) {
+      setErreur(err instanceof ApiError ? err.message : "Erreur inattendue");
+    } finally {
+      setChargement(false);
+    }
+  }
+
   const enDeuxFa = etape === '2fa';
+  const enChangementMdp = etape === 'changer-mdp';
 
   return (
     <CadreAuth
@@ -72,12 +99,8 @@ export default function ConnexionReelle() {
           Espace client
         </>
       }
-      titre={enDeuxFa ? 'Vérification en deux étapes' : 'Content de vous revoir'}
-      // La phrase d'accueil est retiree a la demande d'Hilarion : « Content de
-      // vous revoir » au-dessus d'un champ d'e-mail se passe d'explication.
-      // Celle de la deuxieme etape reste — elle dit quoi saisir, ce que le
-      // titre seul ne dit pas.
-      description={enDeuxFa ? 'Saisissez le code de sécurité pour finaliser la connexion.' : undefined}
+      titre={enChangementMdp ? 'Changez votre mot de passe' : enDeuxFa ? 'Vérification en deux étapes' : 'Content de vous revoir'}
+      description={enChangementMdp ? 'Votre mot de passe temporaire doit être remplacé avant de continuer.' : enDeuxFa ? 'Saisissez le code de sécurité pour finaliser la connexion.' : undefined}
     >
       {etape === 'identifiants' ? (
         <form className="space-y-5" onSubmit={soumettreIdentifiants}>
@@ -146,7 +169,9 @@ export default function ConnexionReelle() {
             </Link>
           </p>
         </form>
-      ) : (
+      ) : null}
+
+      {etape === '2fa' ? (
         <form className="space-y-5" onSubmit={soumettreCode2fa}>
           <Alerte ton="bleu">
             {methode2fa === 'APP' ? (
@@ -209,7 +234,47 @@ export default function ConnexionReelle() {
             Retour
           </button>
         </form>
-      )}
+      ) : null}
+
+      {enChangementMdp ? (
+        <form className="space-y-5" onSubmit={soumettreChangementMdp}>
+          {erreur ? <Alerte ton="rouge">{erreur}</Alerte> : null}
+          <div>
+            <label className="label" htmlFor="nouveau-mdp">
+              Nouveau mot de passe
+            </label>
+            <input
+              id="nouveau-mdp"
+              type="password"
+              required
+              minLength={10}
+              autoComplete="new-password"
+              className="input"
+              value={nouveauMdp}
+              onChange={(e) => setNouveauMdp(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="confirmer-mdp">
+              Confirmer
+            </label>
+            <input
+              id="confirmer-mdp"
+              type="password"
+              required
+              minLength={10}
+              autoComplete="new-password"
+              className="input"
+              value={confirmationMdp}
+              onChange={(e) => setConfirmationMdp(e.target.value)}
+            />
+          </div>
+          <button type="submit" className="btn-vitrine w-full" disabled={chargement}>
+            {chargement ? <SustwayLoader taille="sm" /> : null}
+            Changer le mot de passe
+          </button>
+        </form>
+      ) : null}
     </CadreAuth>
   );
 }

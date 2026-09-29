@@ -114,6 +114,7 @@ public class UtilisateurResource {
         }
 
         utilisateur.setMotDePasseHash(passwordService.hacher(requete.nouveauMotDePasse()));
+        utilisateur.setDoitChangerMotDePasse(false);
 
         return Response.noContent().build();
     }

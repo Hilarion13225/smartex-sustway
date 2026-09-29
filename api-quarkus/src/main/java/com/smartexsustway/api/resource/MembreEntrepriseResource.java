@@ -124,6 +124,7 @@ public class MembreEntrepriseResource {
     @Inject AutorisationService autorisationService;
     @Inject AuditLogService auditLogService;
     @Inject TenantContext tenantContext;
+    @Inject com.smartexsustway.api.security.PasswordService passwordService;
 
     @ConfigProperty(name = "smartex.frontend.base-url", defaultValue = "http://localhost:5173")
     String frontendBaseUrl;
@@ -223,27 +224,44 @@ public class MembreEntrepriseResource {
     private Response inviter(Entreprise entreprise, MembreCreateRequest requete) {
         UUID utilisateurId = tenantContext.utilisateurCourantId();
 
-        if (invitationRepository.invitationEnAttenteExiste(entreprise.getId(), requete.email())) {
-            return Response.status(Response.Status.CONFLICT)
-                    .entity(new ErreurDto("Une invitation est déjà en attente pour cet e-mail sur cette entreprise"))
-                    .build();
-        }
-
         Role role = trouverRoleAttribuable(requete.roleCode(), utilisateurId);
         Site site = requete.siteId() == null ? null : trouverSiteDeLEntreprise(entreprise.getId(), requete.siteId());
-        Utilisateur invitePar = utilisateurRepository.findById(utilisateurId);
 
-        String token = genererTokenInvitation();
-        Invitation invitation = new Invitation(entreprise, requete.email(), role, site, token, invitePar,
-                OffsetDateTime.now().plusDays(DUREE_VALIDITE_INVITATION_JOURS));
-        invitationRepository.persist(invitation);
+        // Mot de passe temporaire : 10 caracteres alphanumeriques
+        String motDePasseTemporaire = genererMotDePasseTemporaire();
 
-        String lien = frontendBaseUrl + "/invitation/" + token;
-        emailService.envoyerInvitationEntreprise(requete.email(), entreprise.getRaisonSociale(), role.getNom(), lien);
+        Utilisateur compte = new Utilisateur(
+                requete.email().split("@")[0], // prenom par defaut
+                "",                              // nom vide, a completer
+                requete.email(),
+                passwordService.hacher(motDePasseTemporaire));
+        compte.marquerEmailVerifie();
+        compte.setDoitChangerMotDePasse(true);
+        utilisateurRepository.persist(compte);
 
-        auditLogService.journaliser(utilisateurId, entreprise.getId(), "INVITATION_ENVOYEE", "invitation", invitation.getId());
+        UtilisateurEntreprise rattachement = new UtilisateurEntreprise(compte, entreprise, role);
+        if (site != null) rattachement.setSite(site);
+        utilisateurEntrepriseRepository.persist(rattachement);
 
-        return Response.status(Response.Status.ACCEPTED).entity(InvitationDto.depuis(invitation)).build();
+        emailService.envoyerCredentielsCollaborateur(
+                requete.email(), entreprise.getRaisonSociale(), role.getNom(),
+                motDePasseTemporaire, frontendBaseUrl + "/connexion");
+
+        auditLogService.journaliser(utilisateurId, entreprise.getId(),
+                "COLLABORATEUR_CREE", "utilisateur", compte.getId());
+
+        return Response.status(Response.Status.CREATED)
+                .entity(new ErreurDto("Compte cree pour " + requete.email()
+                        + " avec un mot de passe temporaire."))
+                .build();
+    }
+
+    private static String genererMotDePasseTemporaire() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+        StringBuilder sb = new StringBuilder(10);
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        for (int i = 0; i < 10; i++) sb.append(chars.charAt(random.nextInt(chars.length())));
+        return sb.toString();
     }
 
     private static String genererTokenInvitation() {
