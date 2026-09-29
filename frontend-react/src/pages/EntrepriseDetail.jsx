@@ -225,10 +225,10 @@ function AccesOrganisation({ entrepriseId, peut, formule, roleCourant }) {
       <div className="mb-6 space-y-5">
         {groupes.map((groupe) => (
           <section key={groupe.titre}>
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+            <h2 className="mb-2 font-display text-[11px] font-semibold uppercase tracking-wider text-ink-500">
               {groupe.titre}
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {groupe.liens.map((lien) => {
                 const Icone = lien.icone;
                 return (

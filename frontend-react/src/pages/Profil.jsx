@@ -1,45 +1,61 @@
 import { useEffect, useState } from 'react';
-import { KeyRound, Save, ShieldCheck, ShieldOff, Smartphone, UserCog } from 'lucide-react';
+import { KeyRound, Mail, Save, Shield, ShieldCheck, ShieldOff, Smartphone, User, UserCog } from 'lucide-react';
 import SustwayLoader from '../components/SustwayLoader';
 import { useApiAuth } from '../auth/useApiAuth';
 import Breadcrumb from '../components/Breadcrumb';
-import { Alerte, Card, CardHeader, PageTitre } from '../components/ui';
+import { Alerte, Badge, Card, CardHeader, PageTitre } from '../components/ui';
+import { ROLE_LIBELLE } from '../auth/permissions';
 import { ApiError } from '../lib/apiClient';
 
 export default function Profil() {
-  const { utilisateur } = useApiAuth();
+  const { utilisateur, roleCourant } = useApiAuth();
 
   return (
     <>
       <Breadcrumb
         elements={[
           { libelle: 'Tableau de bord', vers: '/app' },
-          { libelle: 'Profil & sécurité' },
+          { libelle: 'Profil & s\u00e9curit\u00e9' },
         ]}
       />
 
-      <PageTitre icone={UserCog} titre="Profil & sécurité" description="Informations du compte et double authentification." />
+      <PageTitre icone={UserCog} titre="Profil & s\u00e9curit\u00e9" description="Informations du compte et double authentification." />
+
+      <div className="mb-6 rounded-2xl border border-ink-100 bg-surface p-5 shadow-sm">
+        <div className="flex flex-wrap items-center gap-5">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xl font-bold text-white">
+            {(utilisateur?.prenom?.[0] ?? "").toUpperCase()}{(utilisateur?.nom?.[0] ?? "").toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-lg font-semibold text-ink-900">
+              {utilisateur?.prenom} {utilisateur?.nom}
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-ink-500">
+              <span className="inline-flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5" aria-hidden />
+                {utilisateur?.email}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Shield className="h-3.5 w-3.5" aria-hidden />
+                {utilisateur?.deuxfaActive ? "2FA active" : "2FA inactive"}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge ton={utilisateur?.statut === "ACTIF" ? "vert" : "ambre"}>
+              {utilisateur?.statut}
+            </Badge>
+            <Badge ton="bleu">{ROLE_LIBELLE[roleCourant] ?? roleCourant}</Badge>
+          </div>
+        </div>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionProfil />
         <SectionMotDePasse />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <Card className="p-5">
-          <CardHeader titre="Compte" icone={ShieldCheck} />
-          <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-ink-500">Email</dt>
-              <dd className="font-medium">{utilisateur?.email}</dd>
-            </div>
-            <div>
-              <dt className="text-ink-500">Statut du compte</dt>
-              <dd className="font-medium">{utilisateur?.statut}</dd>
-            </div>
-          </dl>
-        </Card>
-
+      <div className="mt-6">
         <SectionDeuxFa />
       </div>
     </>

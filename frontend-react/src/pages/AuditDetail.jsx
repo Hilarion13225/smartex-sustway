@@ -346,27 +346,29 @@ export default function AuditDetail() {
            * — saisir, prouver, analyser, traiter — et ceux-ci ce qui en sort.
            * L'intitule le dit, et la barre le montre en les tenant ensemble.
            */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-ink-500">Résultats</span>
-            <div className="flex flex-wrap items-center gap-2">
-              <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
-                <Gauge className="h-4 w-4" aria-hidden />
-                Score
-              </Link>
-              <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
-                <ClipboardX className="h-4 w-4" aria-hidden />
-                Non-conformités
-              </Link>
-              <Link to={`/app/${entrepriseId}/audits/${auditId}/rapports`} className="btn-secondary">
-                <FileText className="h-4 w-4" aria-hidden />
-                Rapports
-              </Link>
-              {peutVoirIndice ? (
-                <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
-                  <Leaf className="h-4 w-4" aria-hidden />
-                  Indice IFC/SFI
+          <div className="rounded-2xl border border-ink-100 bg-surface px-5 py-3 shadow-sm">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-ink-400">R\u00e9sultats</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link to={`/app/${entrepriseId}/audits/${auditId}/score`} className="btn-secondary">
+                  <Gauge className="h-4 w-4" aria-hidden />
+                  Score
                 </Link>
-              ) : null}
+                <Link to={`/app/${entrepriseId}/audits/${auditId}/non-conformites`} className="btn-secondary">
+                  <ClipboardX className="h-4 w-4" aria-hidden />
+                  Non-conformit\u00e9s
+                </Link>
+                <Link to={`/app/${entrepriseId}/audits/${auditId}/rapports`} className="btn-secondary">
+                  <FileText className="h-4 w-4" aria-hidden />
+                  Rapports
+                </Link>
+                {peutVoirIndice ? (
+                  <Link to={`/app/${entrepriseId}/audits/${auditId}/indice-preparation`} className="btn-secondary">
+                    <Leaf className="h-4 w-4" aria-hidden />
+                    Indice IFC/SFI
+                  </Link>
+                ) : null}
+              </div>
             </div>
           </div>
 
