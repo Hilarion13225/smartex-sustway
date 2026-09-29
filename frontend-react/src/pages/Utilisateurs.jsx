@@ -25,13 +25,13 @@ const PERMISSIONS_LIBELLE = {
 const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
 /**
- * Rôles attribuables depuis ce formulaire — miroir exact de
- * MembreEntrepriseResource.ROLES_ATTRIBUABLES_CLIENT.
+ * Rôles attribuables depuis ce formulaire.
  *
- * SUPER_ADMIN ne se délègue pas depuis l'application. EMPLOYE, VISITEUR
- * et ADMIN_AUDIT sont retirés (décisions produit v1/V43/V44).
+ * RESPONSABLE_ENTREPRISE gère l'organisation et ses missions.
+ * COLLABORATEUR dépose des preuves et répond aux critères, sans
+ * pouvoir administrer ni lancer d'analyse.
  */
-const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE'];
+const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE', 'COLLABORATEUR'];
 const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT];
 
 /**
@@ -365,7 +365,7 @@ export default function Utilisateurs() {
 function FormulaireMembre({ entrepriseId, membre, sites, rolesAttribuables, onTermine, onEnregistre }) {
   const [formulaire, setFormulaire] = useState({
     email: membre?.email ?? '',
-    roleCode: membre?.roleCode ?? 'RESPONSABLE_ENTREPRISE',
+    roleCode: membre?.roleCode ?? 'COLLABORATEUR',
     siteId: membre?.siteId ?? '',
   });
   const [chargement, setChargement] = useState(false);
