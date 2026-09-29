@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ClipboardList,
   Columns3,
+  FileText,
   FolderKanban,
   FolderOpen,
   LayoutDashboard,
@@ -188,15 +189,16 @@ const GROUPES_COLLABORATEUR = [
   {
     titre: 'Référence',
     liens: [
-      // Cette page montre quels critères s'appliquent à l'organisation compte
-      // tenu de son secteur (RG34) — un aperçu du périmètre, non un endroit
-      // où répondre. Elle s'appelait « Questionnaire », ce qui envoyait le
-      // collaborateur y chercher son travail : on répond aux critères depuis
-      // une mission, et « Mes missions » y mène.
       {
         chemin: (id) => `/app/${id}/questionnaire`,
         libelle: 'Périmètre applicable',
         icone: ClipboardList,
+      },
+      {
+        chemin: (id) => `/app/${id}/rapports`,
+        libelle: 'Rapports RSE',
+        icone: FileText,
+        permission: 'rapport:consulter',
       },
     ],
   },
