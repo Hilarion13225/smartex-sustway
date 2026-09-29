@@ -1,21 +1,17 @@
 /**
- * Modèle de permissions centralisé (section 4 du CDC) : le contrôle
- * d'accès ne se résume jamais à une seule vérification de rôle éparpillée
- * dans chaque page — il croise systématiquement le rôle ET la formule
- * souscrite par l'entreprise concernée.
+ * Modèle de permissions centralisé (section 4 du CDC).
+ *
+ * Trois rôles actifs :
+ * - SUPER_ADMIN : accès global, jamais bridé par la formule d'un client.
+ * - RESPONSABLE_ENTREPRISE : gère son organisation et ses missions.
+ * - COLLABORATEUR : dépose preuves et répond aux critères.
  *
  * PERMISSIONS_PAR_ROLE fixe ce qu'un rôle peut faire en théorie.
- * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule, mais
- * UNIQUEMENT pour les rôles côté client (RESPONSABLE_ENTREPRISE)
- * — le personnel interne Smartex (SUPER_ADMIN) n'est jamais
- * bridé par la formule d'un client : il audite/administre au nom de
- * Smartex, pas au nom de l'entreprise.
+ * RESTRICTIONS_PAR_PLAN retire des permissions selon la formule
+ * (STANDARD ou AVANCEES), pour les rôles côté client uniquement.
  *
- * EMPLOYE retiré du modèle (décision produit) : dans cette première
- * version, seul le responsable de l'entreprise est audité. Le rôle reste
- * défini côté API (table role, permission preuve:deposer/rapport:consulter
- * — voir V15) pour ne rien casser côté rattachements déjà existants et
- * simplifier une réintroduction dans une version ultérieure si pertinent.
+ * Rôles retirés (traces historiques dans ROLE_LIBELLE) :
+ * ADMIN_AUDIT (V43/V44), VISITEUR, EMPLOYE.
  */
 
 /**
