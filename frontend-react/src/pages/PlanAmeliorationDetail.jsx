@@ -29,7 +29,7 @@ import {
   remplacerAxesAction,
 } from '../lib/plansAction';
 
-const ROLES_ADMINISTRATION = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', 'RESPONSABLE_ENTREPRISE']);
+const ROLES_ADMINISTRATION = new Set(['SUPER_ADMIN', 'RESPONSABLE_ENTREPRISE']);
 
 /**
  * Le détail d'un plan d'amélioration et de ses actions.
