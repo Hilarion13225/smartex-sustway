@@ -1,6 +1,7 @@
 package com.smartexsustway.api.resource;
 
 import com.smartexsustway.api.audit.AuditLogService;
+import com.smartexsustway.api.domain.entity.Entreprise;
 import com.smartexsustway.api.domain.entity.UtilisateurEntreprise;
 import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.MethodeDeuxFa;
@@ -356,7 +357,13 @@ public class AuthResource {
         // que de prendre la première trouvée.
         List<UtilisateurEntreprise> rattachements = utilisateurEntrepriseRepository.parUtilisateur(utilisateur.getId());
         String roleCode = rattachements.isEmpty() ? "AUCUN_ROLE_ATTRIBUE" : rattachements.get(0).getRole().getCode();
-        UUID entrepriseId = rattachements.isEmpty() ? null : rattachements.get(0).getEntreprise().getId();
+        // Un rôle de plateforme n'a pas d'entreprise (V76) : le jeton d'un
+        // SUPER_ADMIN ne porte donc aucune entreprise courante, et son accès
+        // ne s'en trouve pas réduit — estAccesGlobalActif ne regarde que le
+        // rôle. Sans ce test, la connexion d'un administrateur levait une
+        // NullPointerException.
+        Entreprise entreprise = rattachements.isEmpty() ? null : rattachements.get(0).getEntreprise();
+        UUID entrepriseId = entreprise == null ? null : entreprise.getId();
 
         String token = jwtService.genererToken(utilisateur, roleCode, entrepriseId == null ? null : entrepriseId.toString());
         auditLogService.journaliser(utilisateur.getId(), entrepriseId, "CONNEXION_REUSSIE", "utilisateur", utilisateur.getId());

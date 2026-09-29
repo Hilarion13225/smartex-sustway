@@ -1,6 +1,7 @@
 package com.smartexsustway.api.referentiel;
 
 import com.smartexsustway.api.audit.AuditLogService;
+import com.smartexsustway.api.domain.entity.Critere;
 import com.smartexsustway.api.domain.entity.Exigence;
 import com.smartexsustway.api.domain.entity.PreuveAttendue;
 import com.smartexsustway.api.domain.entity.ReferentielVersion;
@@ -9,6 +10,7 @@ import com.smartexsustway.api.domain.entity.Utilisateur;
 import com.smartexsustway.api.domain.enums.OrigineContenu;
 import com.smartexsustway.api.domain.repository.UtilisateurRepository;
 import com.smartexsustway.api.security.AutorisationService;
+import com.smartexsustway.api.domain.repository.CritereRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -53,6 +55,7 @@ public class ValidationContenuImporteService {
 
     @Inject VersionReferentielService versionService;
     @Inject AutorisationService autorisationService;
+    @Inject CritereRepository critereRepository;
     @Inject UtilisateurRepository utilisateurRepository;
     @Inject AuditLogService auditLogService;
 
@@ -75,6 +78,32 @@ public class ValidationContenuImporteService {
     }
 
     // --- Opérations ------------------------------------------------------
+
+    /**
+     * Accepte un critère proposé par l'import.
+     *
+     * L'unité est la ligne : ce geste accepte du même coup le libellé, la
+     * description, l'applicabilité, le coefficient de pondération et la
+     * criticité. Ces valeurs viennent de la même proposition, et les séparer
+     * supposerait cinq décisions là où le relecteur n'en prend qu'une.
+     */
+    @Transactional
+    public Resultat validerCritere(Critere critere, UUID versionAttendue, UUID utilisateurId) {
+        Utilisateur auteur = exigerValidateur(critere.getReferentielVersion(), versionAttendue,
+                utilisateurId, "critere", critere.getId());
+
+        if (dejaValidee(critere.getOrigine(), critere.getValideePar())) {
+            return new Resultat(true);
+        }
+        exigerNonRejetee(critere.getRejeteePar(), "critère");
+        exigerProposition(critere.getOrigine(), critere.getOrigineInitiale(), "critère");
+
+        critere.setOrigine(OrigineContenu.CONTENU_HUMAIN);
+        critere.validerPar(auteur, Instant.now());
+        journaliser(utilisateurId, "CRITERE_IMPORTE_VALIDE", "critere", critere.getId(),
+                critere.getReferentielVersion());
+        return new Resultat(false);
+    }
 
     @Transactional
     public Resultat validerExigence(Exigence exigence, UUID versionAttendue, UUID utilisateurId) {
@@ -139,6 +168,33 @@ public class ValidationContenuImporteService {
     // deviendrait invérifiable après coup. `origine` reste à IMPORT_IA —
     // personne n'a repris cette proposition à son compte.
 
+    /**
+     * Écarte un critère proposé par l'import.
+     *
+     * La ligne subsiste, marquée. Supprimer emporterait en cascade ses
+     * exigences, ses preuves et ses règles — dont certaines peuvent avoir été
+     * validées — et effacerait la trace qu'une machine avait proposé ce
+     * critère.
+     */
+    @Transactional
+    public Resultat rejeterCritere(Critere critere, UUID versionAttendue, String motif,
+                                   UUID utilisateurId) {
+        Utilisateur auteur = exigerValidateur(critere.getReferentielVersion(), versionAttendue,
+                utilisateurId, "critere", critere.getId());
+
+        if (critere.getRejeteePar() != null) {
+            return new Resultat(true);
+        }
+        exigerNonValidee(critere.getValideePar(), "critère");
+        exigerProposition(critere.getOrigine(), critere.getOrigineInitiale(), "critère");
+
+        restaurerDescriptionHeritee(critere);
+        critere.rejeterPar(auteur, Instant.now(), motifPropre(motif));
+        journaliser(utilisateurId, "CRITERE_IMPORTE_REJETE", "critere", critere.getId(),
+                critere.getReferentielVersion(), motifPropre(motif));
+        return new Resultat(false);
+    }
+
     @Transactional
     public Resultat rejeterExigence(Exigence exigence, UUID versionAttendue, String motif,
                                     UUID utilisateurId) {
@@ -191,6 +247,35 @@ public class ValidationContenuImporteService {
         journaliser(utilisateurId, "REGLE_ANALYSE_IMPORTEE_REJETEE", "regle_analyse",
                 regle.getId(), regle.getReferentielVersion(), motifPropre(motif));
         return new Resultat(false);
+    }
+
+    /**
+     * Rend au critère la description qu'il avait dans la version précédente.
+     *
+     * La description n'a pas d'existence propre : c'est un champ du critère,
+     * non une ligne que l'on pourrait écarter. Rejeter la proposition sans
+     * défaire son écriture laisserait le texte refusé en place, actif, et
+     * visible de tous — la décision n'aurait aucun effet sur ce qui est lu.
+     *
+     * La valeur d'avant se retrouve sans rien avoir eu à stocker : le
+     * brouillon sait quelle version il remplace, et le critère de même code y
+     * porte la description héritée. Une colonne de sauvegarde n'apporterait
+     * rien de plus et demanderait une migration.
+     *
+     * Sans version remplacée — un référentiel créé par un import documentaire
+     * n'en a pas — il n'y a rien à restaurer : la description était nouvelle,
+     * elle est simplement retirée.
+     */
+    private void restaurerDescriptionHeritee(Critere critere) {
+        ReferentielVersion precedente = critere.getReferentielVersion().getRemplaceVersion();
+        if (precedente == null) {
+            critere.setDescription(null);
+            return;
+        }
+        critere.setDescription(critereRepository
+                .parVersionEtCode(precedente.getId(), critere.getCode())
+                .map(Critere::getDescription)
+                .orElse(null));
     }
 
     /**

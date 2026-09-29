@@ -151,9 +151,15 @@ public class EvaluationResource {
         if (resultat instanceof AnalyseCritereService.Resultat.DejaAnalyse) {
             return erreur(409, "Ce critère a déjà été analysé : son résultat fait foi et ne sera pas recalculé.");
         }
-        if (resultat instanceof AnalyseCritereService.Resultat.RienAAnalyser) {
-            return erreur(400, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
-                    + "— impossible de lancer l'analyse IA");
+        // 409 et non 400 : la demande est recevable, et elle a produit un
+        // effet — le critère porte désormais un constat d'absence et compte
+        // dans le score. Ce qui n'a pas eu lieu, c'est l'analyse demandée,
+        // faute de matière à soumettre aux agents.
+        if (resultat instanceof AnalyseCritereService.Resultat.AbsenceConstatee) {
+            return erreur(409, "Aucune preuve, réponse au questionnaire ni scénario sur ce critère "
+                    + "— rien à soumettre aux agents. L'absence est constatée : le critère est noté "
+                    + "au niveau minimal et compte dans le score. Renseignez-le, puis relancez "
+                    + "l'analyse.");
         }
         if (resultat instanceof AnalyseCritereService.Resultat.Echec echec) {
             return erreur(503, echec.message());

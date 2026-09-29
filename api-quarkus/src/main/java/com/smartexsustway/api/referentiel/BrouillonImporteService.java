@@ -37,10 +37,15 @@ import java.util.function.Consumer;
 /**
  * Dépose dans un brouillon la structure proposée par le service d'agents.
  *
- * Tout ce qui est écrit ici porte {@code origine = IMPORT_IA} et
- * {@code origine_initiale = IMPORT_IA}, sans validateur : c'est une
- * proposition, et le déclencheur de V57 refusera la publication de la version
- * tant qu'une personne ne l'aura pas acceptée élément par élément.
+ * Les critères, exigences, preuves et règles écrits ici portent
+ * {@code origine = IMPORT_IA} et {@code origine_initiale = IMPORT_IA}, sans
+ * validateur : ce sont des propositions, et le déclencheur
+ * {@code refuser_publication_sans_validation} (V57, étendu par V58 puis V75)
+ * refusera la publication de la version tant qu'une personne ne les aura pas
+ * acceptées ou écartées une à une.
+ *
+ * Les domaines, sous-domaines et questions ne portent pas encore cette marque :
+ * ils relèvent du même défaut, traité dans une phase distincte.
  *
  * L'écriture est faite d'un seul tenant. Un contenu à moitié inséré — trois
  * domaines, quatre critères, puis une erreur — laisserait un brouillon dont
@@ -185,6 +190,12 @@ public class BrouillonImporteService {
             var niveau = enumOu(NiveauCriticite.class, dto.criticite(), null, "criticité");
             criticiteRepository.parCode(niveau).ifPresent(critere::setCriticite);
         }
+        // Le critère porte sa provenance comme les exigences, preuves et
+        // règles depuis V75 : libellé, description, applicabilité, coefficient
+        // et criticité viennent de la même proposition, et la barrière de
+        // publication les regarde désormais.
+        critere.setOrigine(OrigineContenu.IMPORT_IA);
+        critere.setOrigineInitiale(OrigineContenu.IMPORT_IA);
         critereRepository.persist(critere);
         compte.merge("criteres", 1, Integer::sum);
 

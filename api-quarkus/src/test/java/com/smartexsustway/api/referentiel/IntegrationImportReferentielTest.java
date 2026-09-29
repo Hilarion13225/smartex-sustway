@@ -457,7 +457,10 @@ class IntegrationImportReferentielTest {
                 .when().get(CHEMIN + "/" + importId + "/brouillon")
                 .then().statusCode(200).extract().path("versionId");
 
-        for (String table : List.of("exigence", "preuve_attendue", "regle_analyse")) {
+        // `critere` depuis V75 : il porte du contenu proposé — libellé,
+        // description, applicabilité, coefficient et criticité — au même titre
+        // que les trois autres.
+        for (String table : List.of("critere", "exigence", "preuve_attendue", "regle_analyse")) {
             assertEquals(0, compter("SELECT count(*) FROM " + table + " WHERE referentiel_version_id = '"
                             + versionId + "' AND (origine <> 'IMPORT_IA' OR origine_initiale <> 'IMPORT_IA')"),
                     "Toute ligne de " + table + " issue d'un import doit porter sa provenance");
@@ -478,7 +481,7 @@ class IntegrationImportReferentielTest {
                 .when().get(CHEMIN + "/" + importId + "/brouillon")
                 .then().statusCode(200).extract().path("versionId");
 
-        for (String table : List.of("exigence", "preuve_attendue", "regle_analyse")) {
+        for (String table : List.of("critere", "exigence", "preuve_attendue", "regle_analyse")) {
             assertEquals(0, compter("SELECT count(*) FROM " + table + " WHERE referentiel_version_id = '"
                             + versionId + "' AND (validee_par IS NOT NULL OR validee_le IS NOT NULL)"),
                     "L'import ne valide rien : c'est une personne qui accepte, plus tard");
@@ -499,10 +502,13 @@ class IntegrationImportReferentielTest {
                 .when().get(CHEMIN + "/" + importId + "/brouillon")
                 .then().statusCode(200)
                 .body("publiable", equalTo(false))
+                // Le critère entre dans le compte depuis V75 : il porte du
+                // contenu proposé, et la barrière le regarde désormais.
+                .body("criteresAValider", equalTo(1))
                 .body("exigencesAValider", equalTo(1))
                 .body("preuvesAttenduesAValider", equalTo(1))
                 .body("reglesAValider", equalTo(2))
-                .body("elementsAValider.size()", equalTo(4));
+                .body("elementsAValider.size()", equalTo(5));
     }
 
     @Test

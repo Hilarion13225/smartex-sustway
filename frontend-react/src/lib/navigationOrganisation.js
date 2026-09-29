@@ -101,9 +101,11 @@ export const GROUPES_ORGANISATION = [
           { libelle: 'Import intelligent', vers: '/app/referentiels/import' },
         ],
       },
-      // `membres:gerer` est réservée à SUPER_ADMIN (voir PERMISSIONS_PAR_ROLE) :
-      // c'est la règle qu'appliquait déjà la fiche d'organisation, exprimée ici
-      // par une permission plutôt que par un test de rôle écrit à la main.
+      // `membres:gerer` est portée par SUPER_ADMIN et RESPONSABLE_ENTREPRISE
+      // (voir PERMISSIONS_PAR_ROLE) : le responsable gère son équipe depuis cet
+      // écran — invitation par e-mail, rôle, site, révocation. La règle est
+      // exprimée par une permission plutôt que par un test de rôle écrit à la
+      // main, et l'API la contrôle de son côté.
       {
         chemin: (id) => `/app/${id}/utilisateurs`,
         libelle: 'Utilisateurs et permissions',

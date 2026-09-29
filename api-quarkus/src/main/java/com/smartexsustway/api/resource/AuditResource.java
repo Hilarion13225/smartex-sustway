@@ -568,11 +568,15 @@ public class AuditResource {
             return erreur(400, "Rôle de mission inconnu : " + requete.roleMission());
         }
 
-        boolean staffRattache = utilisateurEntrepriseRepository.parUtilisateur(auditeurId).stream()
-                .anyMatch(r -> r.getEntreprise().getId().equals(entrepriseId)
-                        && AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
-        if (!staffRattache) {
-            return erreur(400, "Cet utilisateur doit être rattaché à l'entreprise avec un rôle interne Smartex "
+        // Depuis V76, un rôle interne n'est rattaché à aucune entreprise :
+        // exiger qu'il le soit à celle de la mission rendait toute affectation
+        // impossible. Ce qui compte est qu'il porte un rôle interne Smartex,
+        // lequel donne déjà l'accès à toutes les organisations
+        // (AutorisationService.estAccesGlobalActif).
+        boolean staffInterne = utilisateurEntrepriseRepository.parUtilisateur(auditeurId).stream()
+                .anyMatch(r -> AutorisationService.ROLES_INTERNES_SMARTEX.contains(r.getRole().getCode()));
+        if (!staffInterne) {
+            return erreur(400, "Cet utilisateur doit porter un rôle interne Smartex "
                     + "(SUPER_ADMIN) pour être affecté à une mission");
         }
 

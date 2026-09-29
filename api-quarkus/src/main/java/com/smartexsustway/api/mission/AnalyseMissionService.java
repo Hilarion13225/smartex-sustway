@@ -59,8 +59,11 @@ public class AnalyseMissionService {
      * Avancement d'une passe d'analyse.
      *
      * `sansElement` compte les critères sur lesquels l'organisation n'a rien
-     * fourni : ils ne sont pas des échecs, simplement rien à analyser, et
-     * resteront hors du score.
+     * fourni. Ils ne sont pas des échecs : aucun agent n'avait de matière à
+     * lire. Ils ne sont plus hors du score pour autant — la passe y pose un
+     * constat d'absence, noté au minimum de la grille, qui compte au
+     * dénominateur comme au numérateur. Ne rien fournir ne se confond donc
+     * plus avec ne pas être concerné, qui relève de RG35 et du périmètre.
      */
     public record Avancement(
             UUID auditId,
@@ -100,14 +103,16 @@ public class AnalyseMissionService {
      * la passe annonçait quatre-vingt-douze critères puis en rapportait
      * quatre-vingt-six, sans que rien n'explique l'écart.
      *
-     * Un critère déjà évalué en est exclu : une analyse par critère,
-     * définitive.
+     * Un critère déjà instruit en est exclu : une analyse par critère,
+     * définitive. Un critère qui ne porte qu'un constat d'absence, lui, y
+     * reste : le constat est réversible et sera remplacé par une analyse dès
+     * que le critère portera quelque chose à lire.
      */
     public List<AuditCritere> criteresAAnalyser(UUID auditId) {
         return auditCritereRepository.parAudit(auditId).stream()
                 .filter(AuditCritere::isActif)
                 .filter(AuditCritere::isApplicable)
-                .filter(c -> evaluationRepository.laPlusRecenteParAuditCritere(c.getId()).isEmpty())
+                .filter(c -> !evaluationRepository.instruit(c.getId()))
                 .toList();
     }
 
@@ -142,6 +147,42 @@ public class AnalyseMissionService {
      * session, chaque critère ouvrant donc sa propre transaction.
      */
     public void executer(UUID auditId) {
+        try {
+            executerLaPasse(auditId);
+        } catch (RuntimeException | Error e) {
+            /*
+             * Le fil s'execute dans un pool de travail, apres la reponse HTTP :
+             * personne n'attend son resultat et personne ne rattrape ses
+             * exceptions. Sans ce bloc, une passe interrompue laissait son
+             * avancement a `terminee = false` pour toujours, et
+             * `enCours(auditId)` refusait tout nouveau lancement — la mission
+             * restait verrouillee jusqu'au redemarrage du serveur.
+             *
+             * Constate en conditions reelles : un appel au modele depassant le
+             * delai de la transaction fait avorter celle-ci par le Transaction
+             * Reaper, puis l'ecriture leve une RollbackException qui remonte
+             * jusqu'ici. La mission affichait « 0 traite sur 91 » indefiniment.
+             */
+            LOG.errorf(e, "Analyse de la mission %s interrompue", auditId);
+            marquerTerminee(auditId);
+            throw e;
+        }
+    }
+
+    /**
+     * Libere la mission en marquant sa passe terminee, quoi qu'il soit arrive.
+     *
+     * Les compteurs deja publies sont conserves : ils disent ou la passe s'est
+     * arretee. Seul le drapeau change, pour qu'un nouveau lancement soit
+     * possible et que l'ecran cesse d'annoncer un travail en cours.
+     */
+    private void marquerTerminee(UUID auditId) {
+        avancements.computeIfPresent(auditId, (cle, a) -> a.terminee()
+                ? a
+                : new Avancement(cle, a.total(), a.traites(), a.analyses(), a.sansElement(), a.echecs(), true));
+    }
+
+    private void executerLaPasse(UUID auditId) {
         List<UUID> critereIds = transactions.idsDesCriteresAAnalyser(auditId);
         int total = critereIds.size();
         int analyses = 0;
@@ -160,7 +201,19 @@ public class AnalyseMissionService {
                     patienter(delaiEntreAnalysesMs);
                 }
                 case RIEN -> sansElement++;
-                case ECHEC -> enEchec.add(critereIds.get(i));
+                case ECHEC -> {
+                    enEchec.add(critereIds.get(i));
+                    // Meme pause qu'apres une analyse servie. Un appel refuse
+                    // compte dans le plafond du fournisseur au meme titre
+                    // qu'un appel servi, et repartir aussitot martele un
+                    // service deja sature.
+                    //
+                    // Mesure du 28/09/2026, passe de 91 criteres pendant une
+                    // saturation de Gemini : 177 appels en dix minutes, six
+                    // servis. Le plafond de l'offre gratuite est de quinze par
+                    // minute — la passe en emettait dix-huit.
+                    patienter(delaiEntreAnalysesMs);
+                }
             }
             avancements.put(auditId,
                     new Avancement(auditId, total, i + 1, analyses, sansElement, enEchec.size(), false));
@@ -180,6 +233,7 @@ public class AnalyseMissionService {
                     patienter(delaiEntreAnalysesMs);
                 } else {
                     echecsDefinitifs.add(critereId);
+                    patienter(delaiEntreAnalysesMs);
                 }
                 avancements.put(auditId,
                         new Avancement(auditId, total, total, analyses, sansElement, echecsDefinitifs.size(), false));

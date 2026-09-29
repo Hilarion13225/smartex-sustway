@@ -7,7 +7,7 @@ import { Alerte, Badge, Card, CardHeader, Loader, PageTitre, StatCard, Tableau, 
 import Breadcrumb from '../components/Breadcrumb';
 import { api, ApiError } from '../lib/apiClient';
 import { useApiAuth } from '../auth/useApiAuth';
-import { PERMISSIONS_PAR_ROLE, ROLE_LIBELLE, possedePermission } from '../auth/permissions';
+import { PERMISSIONS_PAR_ROLE, ROLES_INTERNES_SMARTEX, ROLE_LIBELLE, possedePermission } from '../auth/permissions';
 import { formaterDate } from '../lib/export';
 
 const PERMISSIONS_LIBELLE = {
@@ -26,15 +26,21 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
 /**
  * Rôles attribuables depuis ce formulaire — miroir exact de
- * MembreEntrepriseResource.ROLES_ATTRIBUABLES. Cette page n'étant plus
- * accessible qu'à SUPER_ADMIN (voir accesInterdit plus bas), elle sert
- * aussi de point d'entrée pour créer les comptes du personnel Smartex
- * (ADMIN_AUDIT) par invitation, sans rattachement manuel en base.
- * SUPER_ADMIN lui-même ne se délègue pas depuis l'application.
- * EMPLOYE retiré (décision produit, v1 : seul le responsable de
- * l'entreprise est audité).
+ * MembreEntrepriseResource : ROLES_ATTRIBUABLES pour le personnel Smartex,
+ * ROLES_ATTRIBUABLES_CLIENT pour un compte client.
+ *
+ * ADMIN_AUDIT n'est proposé qu'au personnel Smartex, pour qui cette page sert
+ * de point d'entrée à la création des comptes internes par invitation, sans
+ * rattachement manuel en base. Le responsable d'une entreprise cliente, qui
+ * gère de nouveau son équipe, ne peut pas se donner un auditeur : l'API le
+ * refuse, et le lui proposer ici ne produirait qu'une erreur au moment
+ * d'enregistrer.
+ *
+ * SUPER_ADMIN lui-même ne se délègue pas depuis l'application. EMPLOYE retiré
+ * (décision produit, v1 : seul le responsable de l'entreprise est audité).
  */
-const ROLES_ATTRIBUABLES = ['RESPONSABLE_ENTREPRISE', 'VISITEUR', 'ADMIN_AUDIT'];
+const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE', 'VISITEUR'];
+const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT, 'ADMIN_AUDIT'];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
@@ -57,20 +63,19 @@ export default function Utilisateurs() {
   const [erreur, setErreur] = useState(null);
   const [messageSucces, setMessageSucces] = useState(null);
 
-  // Réservé à SUPER_ADMIN (voir AutorisationService.ROLES_GESTION_MEMBRES) —
-  // ne jamais bypasser la formule ici : "membres:gerer" n'est jamais retiré
-  // par plan pour un rôle interne, donc l'appeler sans `plan` reste sûr.
+  // Porté par SUPER_ADMIN et RESPONSABLE_ENTREPRISE (voir
+  // AutorisationService.ROLES_GESTION_MEMBRES_ENTREPRISE) — ne jamais bypasser
+  // la formule ici : "membres:gerer" n'est jamais retiré par plan pour un rôle
+  // interne, donc l'appeler sans `plan` reste sûr.
   const peutGererMembres = peut('membres:gerer');
-  // RESPONSABLE_ENTREPRISE n'a plus accès à cette ressource du tout, même en
-  // lecture (voir MembreEntrepriseResource.exigerNonResponsableEntreprise) —
-  // inutile de tenter l'appel qui échouerait en 403.
-  const accesInterdit = roleCourant === 'RESPONSABLE_ENTREPRISE';
+
+  // Un compte client ne peut pas attribuer ADMIN_AUDIT : l'API le refuse, et
+  // le proposer ici ne produirait qu'une erreur au moment d'enregistrer.
+  const rolesAttribuables = ROLES_INTERNES_SMARTEX.has(roleCourant)
+    ? ROLES_ATTRIBUABLES_SMARTEX
+    : ROLES_ATTRIBUABLES_CLIENT;
 
   const rafraichir = useCallback(() => {
-    if (accesInterdit) {
-      setChargement(false);
-      return;
-    }
     setChargement(true);
     Promise.all([
       api.get(`/api/v1/entreprises/${entrepriseId}/membres`).catch(() => []),
@@ -89,7 +94,7 @@ export default function Utilisateurs() {
         setSites(listeSites);
       })
       .finally(() => setChargement(false));
-  }, [entrepriseId, peutGererMembres, accesInterdit]);
+  }, [entrepriseId, peutGererMembres]);
 
   useEffect(() => {
     rafraichir();
@@ -122,10 +127,6 @@ export default function Utilisateurs() {
 
   if (!entreprise) {
     return <Vide message="Organisation introuvable ou non accessible." />;
-  }
-
-  if (accesInterdit) {
-    return <Vide message="Cette page n'est pas accessible au responsable de l'organisation." />;
   }
 
   const formule = abonnement?.formuleCode;
@@ -174,6 +175,7 @@ export default function Utilisateurs() {
               entrepriseId={entrepriseId}
               membre={membreEnEdition}
               sites={sites}
+              rolesAttribuables={rolesAttribuables}
               onTermine={() => {
                 setFormulaireOuvert(false);
                 setMembreEnEdition(null);
@@ -372,7 +374,7 @@ export default function Utilisateurs() {
   );
 }
 
-function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre }) {
+function FormulaireMembre({ entrepriseId, membre, sites, rolesAttribuables, onTermine, onEnregistre }) {
   const [formulaire, setFormulaire] = useState({
     email: membre?.email ?? '',
     roleCode: membre?.roleCode ?? 'VISITEUR',
@@ -433,7 +435,7 @@ function FormulaireMembre({ entrepriseId, membre, sites, onTermine, onEnregistre
             value={formulaire.roleCode}
             onChange={(e) => setFormulaire({ ...formulaire, roleCode: e.target.value })}
           >
-            {ROLES_ATTRIBUABLES.map((code) => (
+            {rolesAttribuables.map((code) => (
               <option key={code} value={code}>
                 {ROLE_LIBELLE[code] ?? code}
               </option>

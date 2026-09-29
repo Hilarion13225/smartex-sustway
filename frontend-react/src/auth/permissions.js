@@ -36,11 +36,15 @@ export const PERMISSIONS_PAR_ROLE = {
   // ne les crée pas à leur place (voir EntrepriseResource.creer, refus 403
   // pour tout rôle interne). Miroir exact de cette contrainte backend.
   // "membres:gerer" (ajouter/modifier/révoquer un accès collaborateur) est
-  // volontairement réservée à SUPER_ADMIN seul — décision produit : même
-  // RESPONSABLE_ENTREPRISE ne gère plus son équipe en libre-service. Miroir
-  // exact de AutorisationService.ROLES_GESTION_MEMBRES côté backend, à ne
-  // pas confondre avec "entreprise:modifier" (fiche entreprise, restée plus
-  // largement accordée).
+  // portée par SUPER_ADMIN et RESPONSABLE_ENTREPRISE : le responsable gère de
+  // nouveau son équipe en libre-service. Miroir exact de
+  // AutorisationService.ROLES_GESTION_MEMBRES_ENTREPRISE côté backend — et
+  // non de ROLES_GESTION_MEMBRES, qui garde l'administration des comptes de
+  // la plateforme et reste, elle, réservée à SUPER_ADMIN.
+  //
+  // À ne pas confondre non plus avec "entreprise:modifier" (fiche entreprise,
+  // restée plus largement accordée). Les rôles qu'un compte client peut
+  // attribuer sont bornés côté API : pas de rôle interne Smartex.
   SUPER_ADMIN: [
     'entreprise:modifier',
     'membres:gerer',
@@ -62,6 +66,7 @@ export const PERMISSIONS_PAR_ROLE = {
   RESPONSABLE_ENTREPRISE: [
     'entreprise:creer',
     'entreprise:modifier',
+    'membres:gerer',
     'audit:creer',
     'audit:modifier',
     // Il lance l'analyse de ses propres missions et les clôture : deux
@@ -116,7 +121,7 @@ function formuleEffective(plan) {
 
 // Personnel interne Smartex. ADMIN_AUDIT a été fusionné dans SUPER_ADMIN
 // (V43) puis désactivé (V44) : il n'y figure plus.
-const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
+export const ROLES_INTERNES_SMARTEX = new Set(['SUPER_ADMIN']);
 
 /**
  * Rôles habilités à administrer une entreprise (abonnement, journal d'audit) —

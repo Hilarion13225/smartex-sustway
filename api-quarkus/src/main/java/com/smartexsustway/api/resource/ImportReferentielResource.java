@@ -3,6 +3,7 @@ package com.smartexsustway.api.resource;
 import com.smartexsustway.api.domain.entity.ImportReferentiel;
 import com.smartexsustway.api.domain.entity.ReferentielVersion;
 import com.smartexsustway.api.domain.enums.StatutScanDocument;
+import com.smartexsustway.api.domain.repository.CritereRepository;
 import com.smartexsustway.api.domain.repository.ExigenceRepository;
 import com.smartexsustway.api.domain.repository.PreuveAttendueRepository;
 import com.smartexsustway.api.domain.repository.RegleAnalyseRepository;
@@ -61,6 +62,7 @@ public class ImportReferentielResource {
     @Inject ImportReferentielService importService;
     @Inject AnalyseImportOrchestrateur orchestrateur;
     @Inject ValidationLotService lotService;
+    @Inject CritereRepository critereRepository;
     @Inject ExigenceRepository exigenceRepository;
     @Inject PreuveAttendueRepository preuveAttendueRepository;
     @Inject RegleAnalyseRepository regleAnalyseRepository;
@@ -176,20 +178,24 @@ public class ImportReferentielResource {
             return erreur(409, "Cet import n'a pas encore produit de brouillon");
         }
         UUID versionId = version.getId();
-        int importesTotal = (int) (exigenceRepository.compterImportes(versionId)
+        int importesTotal = (int) (critereRepository.compterImportes(versionId)
+                + exigenceRepository.compterImportes(versionId)
                 + preuveAttendueRepository.compterImportes(versionId)
                 + regleAnalyseRepository.compterImportes(versionId));
-        int rejetes = (int) (exigenceRepository.compterRejetes(versionId)
+        int rejetes = (int) (critereRepository.compterRejetes(versionId)
+                + exigenceRepository.compterRejetes(versionId)
                 + preuveAttendueRepository.compterRejetes(versionId)
                 + regleAnalyseRepository.compterRejetes(versionId));
 
+        var aTraiterCriteres = critereRepository.aTraiter(versionId);
         var aTraiterExigences = exigenceRepository.aTraiter(versionId);
         var aTraiterPreuves = preuveAttendueRepository.aTraiter(versionId);
         var aTraiterRegles = regleAnalyseRepository.aTraiter(versionId);
-        int aTraiter = aTraiterExigences.size() + aTraiterPreuves.size() + aTraiterRegles.size();
+        int aTraiter = aTraiterCriteres.size() + aTraiterExigences.size()
+                + aTraiterPreuves.size() + aTraiterRegles.size();
 
         return Response.ok(BrouillonImporteDto.depuis(version, importReferentiel.getMetadonnees(),
-                aTraiterExigences, aTraiterPreuves, aTraiterRegles,
+                aTraiterCriteres, aTraiterExigences, aTraiterPreuves, aTraiterRegles,
                 Math.max(0, importesTotal - rejetes - aTraiter), rejetes, importesTotal,
                 doublons(importReferentiel))).build();
     }

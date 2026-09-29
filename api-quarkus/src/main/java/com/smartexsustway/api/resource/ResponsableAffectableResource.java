@@ -20,15 +20,17 @@ import java.util.UUID;
  *
  * <p>Cette ressource existe pour une raison précise. L'affectation exige que
  * le responsable soit rattaché à l'entreprise de la mission — l'API refuse
- * tout autre utilisateur (403). Mais la seule route qui listait les membres,
- * {@code MembreEntrepriseResource}, est fermée au
- * {@code RESPONSABLE_ENTREPRISE} par décision produit : la gestion des accès
- * lui a été retirée. Celui qui doit affecter ne pouvait donc pas savoir à qui.
+ * tout autre utilisateur (403). Elle est née d'une époque où la seule route
+ * qui listait les membres, {@code MembreEntrepriseResource}, était fermée au
+ * {@code RESPONSABLE_ENTREPRISE} : celui qui devait affecter ne pouvait pas
+ * savoir à qui.
  *
- * <p>Le choix retenu n'est pas de rouvrir la gestion des accès — elle reste
- * fermée, {@code ROLES_GESTION_MEMBRES} est inchangé — mais d'exposer
- * <strong>uniquement ce que désigner quelqu'un demande</strong> : un
- * identifiant et un nom.
+ * <p>Cette fermeture a depuis été levée — le responsable gère de nouveau son
+ * équipe, voir {@code ROLES_GESTION_MEMBRES_ENTREPRISE} — mais cette route
+ * garde sa raison d'être : elle expose <strong>uniquement ce que désigner
+ * quelqu'un demande</strong>, un identifiant et un nom. Affecter une action
+ * n'a pas besoin de connaître les rôles et les permissions de chacun, et une
+ * route qui en dit le moins reste la bonne pour ce geste-là.
  *
  * <p>Ce que cette route ne permet pas, et ne doit jamais permettre : créer,
  * modifier, révoquer ou activer un compte, lire un rôle ou une permission,

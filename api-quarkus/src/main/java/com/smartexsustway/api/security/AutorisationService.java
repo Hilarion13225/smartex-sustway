@@ -48,6 +48,30 @@ public class AutorisationService {
     public static final Set<String> ROLES_GESTION_MEMBRES = Set.of("SUPER_ADMIN");
 
     /**
+     * Rôles autorisés à gérer les collaborateurs <em>d'une entreprise</em> :
+     * inviter, modifier un accès, le révoquer, et lire la liste.
+     *
+     * <p>Distincte de {@link #ROLES_GESTION_MEMBRES}, et c'est tout l'objet de
+     * cette constante. La précédente garde aussi {@code UtilisateurResource},
+     * c'est-à-dire l'administration des comptes de la <em>plateforme</em> :
+     * modifier n'importe quel compte, réinitialiser n'importe quel mot de
+     * passe, désactiver n'importe qui. Y ajouter RESPONSABLE_ENTREPRISE pour
+     * lui rendre la main sur son équipe lui aurait donné, du même geste, le
+     * pouvoir de réinitialiser le mot de passe d'un SUPER_ADMIN.
+     *
+     * <p>Deux portées, donc deux constantes : l'une s'exerce sur une
+     * entreprise et se vérifie avec {@link #exigerRoleSurEntreprise}, l'autre
+     * sur la plateforme et se vérifie avec {@link #exigerRoleDePlateforme}.
+     *
+     * <p>Décision produit (révisée) : le responsable d'une entreprise gère de
+     * nouveau ses collaborateurs en libre-service. Il ne peut en revanche pas
+     * attribuer un rôle interne Smartex — voir ROLES_ATTRIBUABLES_CLIENT dans
+     * MembreEntrepriseResource.
+     */
+    public static final Set<String> ROLES_GESTION_MEMBRES_ENTREPRISE =
+            Set.of("SUPER_ADMIN", "RESPONSABLE_ENTREPRISE");
+
+    /**
      * Personnel interne Smartex : audite/administre au nom de Smartex, donc
      * jamais bridé par la formule souscrite par le client (miroir exact de
      * ROLES_INTERNES_SMARTEX côté frontend, auth/permissions.js). Public
@@ -180,6 +204,35 @@ public class AutorisationService {
             throw new ForbiddenException(
                     "Rôle insuffisant sur l'entreprise %s : %s requis".formatted(entrepriseId, codesRoles));
         }
+    }
+
+    /**
+     * Vérifie un rôle de plateforme, sans entreprise de contexte.
+     *
+     * <p>{@link #exigerRoleSurEntreprise} ne convient pas ici : depuis V76,
+     * les rôles internes ne sont rattachés à aucune organisation, et une
+     * opération comme l'administration d'un compte ne s'exerce pas « sur une
+     * entreprise ». Demander laquelle n'aurait pas de sens.
+     *
+     * <p>Comme les autres contrôles, il vit dans ce service et non dans une
+     * ressource : c'est ce qui permet de le vérifier en un seul endroit.
+     */
+    public void exigerRoleDePlateforme(UUID utilisateurId, Set<String> codesRoles) {
+        if (!possedeRoleDePlateforme(utilisateurId, codesRoles)) {
+            throw new ForbiddenException("Rôle de plateforme insuffisant : %s requis".formatted(codesRoles));
+        }
+    }
+
+    /**
+     * Même contrôle que {@link #exigerRoleDePlateforme}, en réponse plutôt
+     * qu'en exception — pour les cas où l'absence du rôle n'interdit pas
+     * l'opération mais en restreint la portée. C'est ce dont
+     * MembreEntrepriseResource a besoin pour n'ouvrir les rôles internes
+     * Smartex qu'au personnel Smartex.
+     */
+    public boolean possedeRoleDePlateforme(UUID utilisateurId, Set<String> codesRoles) {
+        return utilisateurEntrepriseRepository.parUtilisateur(utilisateurId).stream()
+                .anyMatch(r -> codesRoles.contains(r.getRole().getCode()));
     }
 
     /**
