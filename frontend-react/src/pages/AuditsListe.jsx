@@ -96,7 +96,7 @@ export default function AuditsListe() {
 
   /*
    * Tant que l'abonnement n'est pas charge, `formuleCode` est indefini et
-   * `peut()` replie sur FREE, qui retire `audit:creer` : la page affichait
+   * `peut()` replie sur STANDARD : la page affichait
    * alors « la creation n'est pas disponible avec la formule actuelle »
    * pendant que les missions chargeaient. Un message faux, et alarmant, du a
    * l'absence de donnee et non a une restriction reelle — l'organisation est

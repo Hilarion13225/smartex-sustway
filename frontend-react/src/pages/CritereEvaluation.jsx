@@ -384,8 +384,7 @@ function EvaluationSection({
   // Décider d'un axe relève du pilotage de la mission, permission que l'API
   // exige déjà : `audit:modifier`. Aucune permission nouvelle n'est introduite
   // pour cet écran. La formule est passée parce que cette permission est
-  // retirée en FREE : sans elle, le bouton s'afficherait pour un compte que
-  // l'API refuserait par 403.
+  // soumise aux restrictions de formule.
   const peutDeciderDesAxes = peut('audit:modifier', formuleCode);
 
   // Valider relève d'une permission distincte de celle qui lance l'analyse :

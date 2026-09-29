@@ -126,8 +126,7 @@ export default function PlanAmeliorationDetail() {
   }
 
   const estAdministrateur = ROLES_ADMINISTRATION.has(roleCourant);
-  // Le rôle ne suffit pas : `audit:modifier` est retirée en formule FREE, et
-  // afficher un bouton que l'API refuserait serait une promesse non tenue.
+  // Le rôle ne suffit pas : la formule peut restreindre `audit:modifier`.
   const peutPiloter = estAdministrateur && peut('audit:modifier', entreprise.formuleCode);
   const gele = plan.gele;
 
