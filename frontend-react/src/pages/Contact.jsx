@@ -57,9 +57,14 @@ function cadreOsm(portee) {
  */
 const RENVOIS = [
   {
-    titre: 'Articles, guides et documentation.',
-    texte: `Les ressources publiées autour de ${SMARTEX.produit} : analyses, méthodes et documentation.`,
-    lien: { vers: '/ressources', libelle: 'Voir les ressources' },
+    titre: "D\u00e9couvrir nos offres",
+    texte: `Trois niveaux de service pour ${SMARTEX.produit}, de l\u2019essentiel au sur-mesure.`,
+    lien: { vers: "/offres", libelle: "Voir les offres" },
+  },
+  {
+    titre: "Articles, guides et documentation",
+    texte: `Les ressources publi\u00e9es autour de ${SMARTEX.produit} : analyses, m\u00e9thodes et documentation.`,
+    lien: { vers: "/ressources", libelle: "Voir les ressources" },
   },
 ];
 
