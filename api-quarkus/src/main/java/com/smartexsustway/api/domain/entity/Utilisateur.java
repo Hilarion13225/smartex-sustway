@@ -64,6 +64,9 @@ public class Utilisateur {
     @Column(name = "telephone", length = 20)
     private String telephone;
 
+    @Column(name = "doit_changer_mot_de_passe", nullable = false)
+    private boolean doitChangerMotDePasse = false;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "statut", nullable = false, columnDefinition = "statut_utilisateur")
@@ -179,6 +182,14 @@ public class Utilisateur {
 
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+    }
+
+    public boolean isDoitChangerMotDePasse() {
+        return doitChangerMotDePasse;
+    }
+
+    public void setDoitChangerMotDePasse(boolean doitChangerMotDePasse) {
+        this.doitChangerMotDePasse = doitChangerMotDePasse;
     }
 
     public StatutUtilisateur getStatut() {
