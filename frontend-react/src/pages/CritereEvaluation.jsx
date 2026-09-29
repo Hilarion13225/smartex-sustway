@@ -636,7 +636,7 @@ const LIBELLES_PRESENCE = {
 };
 
 /** Rôles auxquels le raisonnement détaillé de l'IA est ouvert. */
-const ROLES_DETAIL_IA = new Set(['SUPER_ADMIN', 'ADMIN_AUDIT', 'RESPONSABLE_ENTREPRISE']);
+const ROLES_DETAIL_IA = new Set(['SUPER_ADMIN', 'RESPONSABLE_ENTREPRISE']);
 
 /**
  * Le raisonnement de l'IA, attente par attente.

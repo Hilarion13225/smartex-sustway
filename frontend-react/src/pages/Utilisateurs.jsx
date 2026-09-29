@@ -26,21 +26,13 @@ const TOUTES_PERMISSIONS = Object.keys(PERMISSIONS_LIBELLE);
 
 /**
  * Rôles attribuables depuis ce formulaire — miroir exact de
- * MembreEntrepriseResource : ROLES_ATTRIBUABLES pour le personnel Smartex,
- * ROLES_ATTRIBUABLES_CLIENT pour un compte client.
+ * MembreEntrepriseResource.ROLES_ATTRIBUABLES_CLIENT.
  *
- * ADMIN_AUDIT n'est proposé qu'au personnel Smartex, pour qui cette page sert
- * de point d'entrée à la création des comptes internes par invitation, sans
- * rattachement manuel en base. Le responsable d'une entreprise cliente, qui
- * gère de nouveau son équipe, ne peut pas se donner un auditeur : l'API le
- * refuse, et le lui proposer ici ne produirait qu'une erreur au moment
- * d'enregistrer.
- *
- * SUPER_ADMIN lui-même ne se délègue pas depuis l'application. EMPLOYE retiré
- * (décision produit, v1 : seul le responsable de l'entreprise est audité).
+ * SUPER_ADMIN ne se délègue pas depuis l'application. EMPLOYE, VISITEUR
+ * et ADMIN_AUDIT sont retirés (décisions produit v1/V43/V44).
  */
 const ROLES_ATTRIBUABLES_CLIENT = ['RESPONSABLE_ENTREPRISE'];
-const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT, 'ADMIN_AUDIT'];
+const ROLES_ATTRIBUABLES_SMARTEX = [...ROLES_ATTRIBUABLES_CLIENT];
 
 /**
  * RG05 / section 4 — qui accède à l'entreprise, avec quel rôle, et ce que
@@ -69,11 +61,7 @@ export default function Utilisateurs() {
   // interne, donc l'appeler sans `plan` reste sûr.
   const peutGererMembres = peut('membres:gerer');
 
-  // Un compte client ne peut pas attribuer ADMIN_AUDIT : l'API le refuse, et
-  // le proposer ici ne produirait qu'une erreur au moment d'enregistrer.
-  const rolesAttribuables = ROLES_INTERNES_SMARTEX.has(roleCourant)
-    ? ROLES_ATTRIBUABLES_SMARTEX
-    : ROLES_ATTRIBUABLES_CLIENT;
+  const rolesAttribuables = ROLES_ATTRIBUABLES_CLIENT;
 
   const rafraichir = useCallback(() => {
     setChargement(true);
